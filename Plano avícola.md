@@ -6,8 +6,17 @@ Transformar o modelo hoje operado em planilhas em um sistema robusto para previs
 
 O sistema deve permitir:
 
+- prever a operação para avicultura fértil e avicultura comercial;
 - prever plantel, produção, qualidade e faturamento;
+- suportar visão por granja, núcleo, aviário, box, gaiola, lote e segmento, conforme o tipo de operação;
+- suportar classificação por macho, fêmea, vermelha, branca, linhagem e sub-linhagem;
+- suportar as fases da ave: cria, recria, produção e muda forçada;
+- prever viabilidade, entendida como mortalidade e eliminação com apuração de aves vivas ao fim da fase;
+- prever produção total de ovos;
+- prever aproveitamento, entendendo aproveitamento como número de ovos viáveis, vendáveis ou incubáveis;
+- quantificar descartes para efeito de faturamento;
 - registrar o realizado sem sobrescrever a previsão;
+- suportar projeção em três camadas: previsto inflexível, previsto ajustado ou corrigido pelo realizado e simulação por variáveis independentes;
 - comparar previsto x realizado x corrigido;
 - simular cenários de alojamento, transferência, descarte, mortalidade, aproveitamento e preço;
 - consolidar um, vários ou todos os lotes em qualquer recorte temporal.
@@ -31,7 +40,7 @@ Exemplo:
 - em 05/01, mortalidade passa a 0,14%;
 - logo, 0,10% vale de 01/01 até 04/01, e 0,14% vale de 05/01 em diante.
 
-Esse mesmo raciocínio se aplica a qualquer atributo configurável, técnico ou econômico. Mortalidade, aproveitamento, MI, ME, percentual de ovos >60g, peso médio, preço e capacidade são apenas exemplos possíveis do domínio.
+Esse mesmo raciocínio se aplica a qualquer atributo configurável, técnico ou econômico. Mortalidade, aproveitamento, MI, ME, faixas de peso, preço e capacidade são apenas exemplos possíveis do domínio.
 
 ### 2.3 Fallback por escopo
 
@@ -104,8 +113,6 @@ Cada lote deve possuir, no mínimo:
 - identificação;
 - linhagem ou padrão genético;
 - data de alojamento inicial;
-- situação atual;
-- capacidade planejada;
 - parâmetros técnicos vinculados direta ou indiretamente.
 
 ## 3.2 Segmento do lote
@@ -118,6 +125,8 @@ Um segmento existe quando parte do lote:
 - é transferida para outro local;
 - sofre descarte parcial;
 - passa a ter comportamento distinto do restante do lote.
+
+Ao alocar um lote, normalmente vindo da cria ou recria, deve-se dar sequência na idade ponderada dos lotes precedentes, usando o standard daquele que estiver em maioria ou mantendo ambos, caso seja possível acompanhar a produção de forma separada.
 
 O cálculo diário deve ocorrer no nível do segmento. O lote consolidado é a soma de seus segmentos ativos em cada data.
 
@@ -140,7 +149,7 @@ O modelo deve permitir diferenças dentro do mesmo lote ou segmento, como:
 
 - fêmeas e machos;
 - aves brancas e vermelhas;
-- outras classificações zootécnicas relevantes.
+- outras classificações zootécnicas relevantes, incluindo linhagem e sub-linhagem.
 
 Essas classificações podem impactar curvas, atributos técnicos, produção, peso, aproveitamento e valor econômico.
 
@@ -226,6 +235,8 @@ Entre os atributos que podem ser resolvidos por esse mecanismo estão, por exemp
 
 As curvas padrão por idade devem ser a base do modelo técnico. A idade deve ser resolvida como atributo do dia, e não como eixo temporal separado do cálculo. Sobre ela incidem os eventos vigentes e os ajustes específicos.
 
+A idade inicial de cada lote pode ser arbitrária, quando necessário.
+
 Na prática, a produção não nasce de um valor fixo por lote, mas da combinação entre:
 
 - idade;
@@ -310,7 +321,7 @@ O sistema deve permitir simular cenários alterando:
 - preços;
 - capacidade dos locais.
 
-O objetivo da simulação é reduzir picos e vales, equilibrar a pirâmide etária, melhorar ocupação e estabilizar produção e faturamento.
+O objetivo da simulação é reduzir picos e vales, equilibrar a pirâmide etária, melhorar ocupação e estabilizar produção e faturamento, inclusive para apoio ao PCP.
 
 ## 9. Visões e relatórios
 
@@ -474,10 +485,10 @@ O plano será considerado bem implementado quando o sistema:
 - calcular diariamente com coerência técnica;
 - explicar cada valor calculado;
 - permitir criar novo atributo de negócio sem mudança de schema;
-- suportar segmentação, transferências e descartes parciais;
+- suportar segmentação, agrupamento, transferências e descartes parciais;
 - separar claramente previsão, realizado e simulação;
 - permitir consolidação confiável por qualquer recorte;
-- reduzir dependência de planilhas paralelas;
+- eliminar dependência de planilhas paralelas;
 - apoiar decisões de cronograma, ocupação e estabilidade produtiva.
 
 ## 13. Resultado esperado
