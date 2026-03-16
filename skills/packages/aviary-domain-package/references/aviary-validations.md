@@ -1,10 +1,10 @@
-# Aviary Validations
+# Validação avícola
 
-Typical validations:
+Validação típica:
 
-- segment cannot produce outside its active lifecycle
-- age progression must be coherent
-- quantities cannot become negative
-- transfer and discard must reconcile with flock movement
-- curve reference must match applicable lineage and context
-- realized data must respect the governed attribute catalog
+- o segmento não pode produzir fora do seu ciclo de vida ativo;
+- a progressão de idade deve ser coerente;
+- quantidade não pode ficar negativa;
+- transferência e descarte devem reconciliar com a movimentação do plantel;
+- a referência de curva deve corresponder à linhagem e ao contexto aplicável;
+- o dado realizado deve respeitar o catálogo governado de atributo.

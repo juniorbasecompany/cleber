@@ -1,17 +1,17 @@
-﻿# Analytic Grains
+# Grão analítico
 
-Official base grain:
+## Grão oficial de base
 
-- daily fact
+- fato diário
 
-Derived analytical grains:
+## Grão analítico derivado
 
-- daily view
-- weekly view
-- monthly view
-- annual view
-- custom selected period
+- visão diária
+- visão semanal
+- visão mensal
+- visão anual
+- período selecionado
 
-All derived grains must come from the same daily source.
+Todo grão derivado deve nascer da mesma fonte diária.
 
-Weekly management outputs may be exposed as governed derived views or derived snapshots, but they do not replace the daily fact as the source of truth.
+Saída gerencial semanal pode existir como visão derivada governada ou como instantâneo derivado governado, mas não substitui o fato diário como fonte oficial da verdade.

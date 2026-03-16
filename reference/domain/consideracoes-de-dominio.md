@@ -61,7 +61,7 @@ Cada atributo precisa ter semântica formal mínima, incluindo:
 - unidade e precisão;
 - fórmula ou referência de cálculo, quando aplicável.
 
-Isso é o que permite que `mortalidade`, `produtividade`, `umidade`, `custo` ou qualquer outro atributo sejam tratados pelo mesmo núcleo sem exigir mudança de schema.
+Isso é o que permite que 'mortalidade', 'produtividade', 'umidade', 'custo' ou qualquer outro atributo sejam tratados pelo mesmo núcleo sem exigir mudança de esquema.
 
 ## 2. Mapeamento conceitual entre os nichos
 
@@ -98,7 +98,7 @@ Em soja, a lógica principal não é estoque animal, mas área cultivada, popula
 Impacto:
 
 - a abstração de quantidade precisa ser genérica;
-- o sistema não pode assumir que todo item tenha `cabeça`, `peso vivo` ou `mortalidade`;
+- o sistema não pode assumir que todo item tenha 'cabeça', 'peso vivo' ou 'mortalidade';
 - a semântica do atributo precisa vir do cadastro.
 
 ### 3.3 Temporalidade operacional
@@ -143,7 +143,7 @@ Em soja, capacidade envolve área física, disponibilidade operacional, janela d
 
 Impacto:
 
-- `capacidade` não pode ser um conceito rígido;
+- 'capacidade' não pode ser um conceito rígido;
 - a restrição operacional precisa ser modelada como atributo e regra, não como campo fixo.
 
 ### 3.7 Realizado
@@ -168,7 +168,7 @@ Os indicadores não são os mesmos:
 
 Impacto:
 
-- o sistema deve entregar `capacidade de criar indicador`, e não um conjunto fixo de indicadores.
+- o sistema deve entregar 'capacidade de criar indicador', e não um conjunto fixo de indicadores.
 
 ### 4.2 Granularidade útil
 
@@ -226,7 +226,7 @@ Esse pacote pode reunir, por exemplo:
 - visão padrão;
 - painel padrão.
 
-Assim, `aves` e `soja` passam a ser pacotes diferentes sobre o mesmo núcleo, e não sistemas estruturalmente distintos.
+Assim, 'aves' e 'soja' passam a ser pacotes diferentes sobre o mesmo núcleo, e não sistemas estruturalmente distintos.
 
 ## 6. O que deve ser configurável por nicho
 
@@ -317,10 +317,10 @@ Isso implica, no mínimo:
 - possibilidade de fallback por país quando houver padrão nacional;
 - persistência de fatos financeiros auditáveis apenas na moeda local da operação;
 - conversão cambial tratada apenas como visão derivada de consulta ou relatório;
-- persistência de timestamp em UTC no backend;
-- exibição de data e hora no timezone local da operação ou do usuário.
+- persistência de timestamp em UTC no back-end;
+- exibição de data e hora no fuso horário local da operação ou do usuário.
 
-Essa decisão vale para qualquer nicho. O comportamento de país, moeda e timezone deve nascer no núcleo compartilhado e nas regras transversais, enquanto o vocabulário operacional continua no pacote do nicho.
+Essa decisão vale para qualquer nicho. O comportamento de país, moeda e fuso horário deve nascer no núcleo compartilhado e nas regras transversais, enquanto o vocabulário operacional continua no pacote do nicho.
 
 ## 8. Principal conclusão
 

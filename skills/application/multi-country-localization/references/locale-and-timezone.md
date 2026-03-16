@@ -1,14 +1,27 @@
-﻿# Locale And Timezone
+# Localidade e fuso horário
 
-Localization rules:
+## Regra de localização
 
-- backend persists timestamps in UTC
-- frontend renders dates and times in the local timezone
-- labels may vary by locale, but technical keys remain stable
-- date, number, and money formatting follow the active locale
+- o back-end persiste timestamp em UTC;
+- o front-end renderiza data e hora no fuso horário local;
+- rótulo pode variar por localidade, mas chave técnica permanece estável;
+- formatação de data, número e moeda segue a localidade ativa.
 
-Operational rules:
+## Regra de texto multilíngue
 
-- the business grain remains daily
-- weekly views are reporting options only
-- no special country-specific weekly control is needed
+- o texto exibido ao usuário deve ser resolvido no momento da exibição;
+- a chave técnica do texto permanece estável, independentemente do idioma apresentado;
+- a resolução do texto deve distinguir rótulo de domínio, rótulo de apresentação e mensagem de UX;
+- quando houver variação contextual de texto, o fallback oficial deve seguir esta ordem: país, local, usuário.
+
+## Regra de fallback
+
+1. país: aplica texto padrão do país quando houver necessidade de terminologia nacional, idioma dominante ou convenção regulatória;
+2. local: sobrescreve o texto do país quando a operação local exigir vocabulário próprio;
+3. usuário: sobrescreve país e local apenas para preferência de exibição individual, sem alterar contexto operacional persistido.
+
+## Regra operacional
+
+- o grão de negócio continua diário;
+- visão semanal existe apenas como opção de relatório;
+- não há necessidade de controle semanal específico por país.

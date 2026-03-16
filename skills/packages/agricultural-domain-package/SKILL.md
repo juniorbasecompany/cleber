@@ -1,36 +1,36 @@
 ---
 name: agricultural-domain-package
-description: Use when working with agricultural or soy-specific vocabulary, entities, events, stage-based curves, classifications, KPIs, validations, and business semantics on top of the shared core, including global curves with optional country and local overrides.
+description: Use quando trabalhar com vocabulário, entidade, evento, curva por idade ou estágio, classificação, KPI, validação e semântica de negócio do domínio agrícola sobre o núcleo compartilhado, incluindo curva global com sobrescrita opcional por país e local.
 ---
 
-# Agricultural Domain Package
+# Pacote de domínio agrícola
 
-Use this skill for agricultural semantics. Pair it with one or more core skills when the task affects structure or calculation.
+Use esta skill para a semântica agrícola. Combine-a com uma ou mais skill centrais quando a tarefa afetar estrutura ou cálculo.
 
-Read these references as needed:
-- `references/domain-vocabulary.md`
-- `references/agricultural-entities.md`
-- `references/agricultural-events.md`
-- `references/agricultural-curves.md`
-- `references/agricultural-kpis.md`
-- `references/agricultural-validations.md`
+Leia estas referências conforme necessário:
+- 'references/domain-vocabulary.md'
+- 'references/agricultural-entities.md'
+- 'references/agricultural-events.md'
+- 'references/agricultural-curves.md'
+- 'references/agricultural-kpis.md'
+- 'references/agricultural-validations.md'
 
-## Workflow
+## Fluxo
 
-1. Translate the business term into structural entities and configurable metadata.
-2. Keep agricultural semantics in the package, not in the core schema.
-3. Use age-based or phenological curves and governed event catalogs.
-4. Treat global curves as defaults and allow country or local overrides through fallback.
-5. Validate outputs against the expected daily operational reality.
+1. Traduza o termo de negócio em entidade estrutural e metadado configurável.
+2. Mantenha a semântica agrícola no pacote, e não no esquema do núcleo.
+3. Use curva por idade ou estágio fenológico e catálogo governado de evento.
+4. Trate a curva global como padrão e permita sobrescrita por país ou local por meio de fallback.
+5. Valide a saída contra a realidade operacional diária esperada.
 
-## Guardrails
+## Restrições
 
-- Do not assume every niche has agricultural concepts.
-- Do not turn package vocabulary into structural column names.
-- Keep domain formulas and validations explicit.
+- Não assuma que todo nicho tem conceito agrícola.
+- Não transforme o vocabulário do pacote em nome estrutural de coluna.
+- Mantenha explícitas a fórmula e a validação do domínio.
 
-## Deliverables
+## Entregáveis
 
-- Domain vocabulary mapping.
-- Agricultural event and curve definitions.
-- KPI and validation guidance.
+- Mapeamento de vocabulário do domínio.
+- Definição de evento e curva agrícola.
+- Diretriz de KPI e validação.

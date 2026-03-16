@@ -1,26 +1,26 @@
-# Economic Model
+# Modelo econômico
 
-Economic outputs should be daily first, then aggregated.
+A saída econômica deve nascer primeiro no nível diário e depois ser agregada.
 
-Currency rules:
+## Regra de moeda
 
-- economic facts are stored only in the local currency of the operation
-- local currency is derived from the persisted country or operation context
-- no exchange rate is persisted in the economic fact
-- no converted amount is persisted in the economic fact
-- conversion to another currency happens only in the query or reporting layer, using the record timestamp and the user's requested currency
-- the auditable financial history is the local-currency fact only
-- converted reports are presentational views and do not replace the local audited fact
+- o fato econômico é armazenado apenas na moeda local da operação;
+- a moeda local é resolvida a partir do país persistido ou do contexto persistido da operação;
+- nenhuma taxa de câmbio é persistida no fato econômico;
+- nenhum valor convertido é persistido no fato econômico;
+- a conversão para outra moeda acontece apenas na camada de consulta ou relatório, usando o timestamp do registro e a moeda solicitada pelo usuário;
+- o histórico financeiro auditável é apenas o fato em moeda local;
+- relatório convertido é visão apresentacional e não substitui o fato local auditado.
 
-Core measures:
+## Medida central
 
-- daily price reference
-- daily revenue
-- daily cost
-- cost per item
-- cost per commercial unit
-- cost per saleable output unit
-- gross margin
-- operating profit
+- referência diária de preço;
+- faturamento diário;
+- custo diário;
+- custo por item;
+- custo por unidade comercial;
+- custo por unidade vendável;
+- margem bruta;
+- lucro operacional.
 
-The lack of this layer is one of the main gaps identified in planning.
+A ausência dessa camada é uma das principais lacunas identificadas no planejamento.

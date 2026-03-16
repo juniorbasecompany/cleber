@@ -1,14 +1,14 @@
-# Parity Checks
+# Verificação de paridade
 
-Parity checks should compare:
+A verificação de paridade deve comparar:
 
-- daily outputs where available
-- weekly and monthly aggregates derived from daily logic
-- forecast versus actual behaviors
-- critical panel totals and balances
+- saída diária, quando disponível;
+- agregado semanal e mensal derivado da lógica diária;
+- comportamento de previsão versus realizado;
+- total e saldo crítico de painel.
 
-When parity fails:
+Quando a paridade falhar:
 
-- identify the spreadsheet source
-- isolate whether the mismatch is structural, formula-related, or data-related
-- document the ambiguity explicitly
+- identifique a fonte na planilha;
+- isole se a divergência é estrutural, de fórmula ou de dado;
+- documente explicitamente a ambiguidade.

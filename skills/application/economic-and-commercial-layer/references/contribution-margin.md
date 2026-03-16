@@ -1,8 +1,8 @@
-# Contribution Margin
+# Margem de contribuição
 
-Margin analysis should support:
+A análise de margem deve suportar:
 
-- baseline forecast versus actuals
-- daily and period contribution margin
-- variance by item, location node, location, and period
-- comparison of expected and realized profitability
+- comparação entre previsão base e realizado;
+- margem de contribuição diária e por período;
+- desvio por item, nó de local, local e período;
+- comparação entre rentabilidade esperada e rentabilidade realizada.

@@ -1,18 +1,18 @@
-# Aggregation Rules
+# Regra de agregação
 
-Aggregations are attribute-dependent and must be explicit.
+A agregação depende do atributo e deve ser explícita.
 
-Common patterns:
+Padrão comum:
 
-- sum
-- average
-- weighted average
-- last value
-- min
-- max
+- soma;
+- média;
+- média ponderada;
+- último valor;
+- mínimo;
+- máximo.
 
-Rules:
+## Regra
 
-- totals for month, week, year, company, or item must derive from daily facts.
-- aggregation behavior is metadata, not dashboard-only logic.
-- invalid combinations must be blocked early.
+- total de mês, semana, ano, empresa ou item deve derivar do fato diário;
+- comportamento de agregação é metadado, e não lógica isolada de painel;
+- combinação inválida deve ser bloqueada cedo.

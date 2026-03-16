@@ -1,12 +1,12 @@
-# Scenario Model
+# Modelo de cenário
 
-Simulation should allow independent override of:
+A simulação deve permitir sobrescrita independente de:
 
-- allocation or housing plan
-- transfer timing
-- discard timing
-- mortality assumptions
-- yield or utilization assumptions
-- price assumptions
+- plano de alocação ou alojamento;
+- data de transferência;
+- data de descarte;
+- premissa de mortalidade;
+- premissa de produção ou aproveitamento;
+- premissa de preço.
 
-Scenario results must remain isolated and tagged.
+O resultado do cenário deve permanecer isolado e etiquetado.

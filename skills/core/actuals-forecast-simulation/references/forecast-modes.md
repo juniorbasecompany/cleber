@@ -1,10 +1,10 @@
-# Forecast Modes
+# Modo de previsão
 
-Core analytical layers:
+Camada analítica central:
 
-- baseline forecast: original planned projection
-- actuals: recorded realized daily data
-- corrected forecast: future projection adjusted by realized performance
-- simulation: independent what-if scenario
+- previsão base: projeção original planejada;
+- realizado: dado diário efetivamente registrado;
+- previsão corrigida: projeção futura ajustada pelo desempenho já realizado;
+- simulação: cenário independente de hipótese.
 
-All layers should remain comparable at the daily grain.
+Toda camada deve permanecer comparável no grão diário.

@@ -130,7 +130,7 @@ O sistema passa a suportar com segurança:
 - transferências parciais;
 - diferentes categorias de ave;
 - cenários comparativos;
-- dashboards e alertas.
+- painels e alertas.
 
 ## 5.6 Operação multi-país com fato auditável estável
 
@@ -139,7 +139,7 @@ Como o projeto já assume escopo multi-país, a transição das planilhas para o
 - fato econômico auditável persistido apenas na moeda local da operação;
 - conversão para outra moeda tratada apenas como visualização derivada;
 - país resolvido no contexto persistido quando houver fato econômico;
-- timestamp persistido em UTC com exibição no timezone local da operação ou do usuário.
+- timestamp persistido em UTC com exibição no fuso horário local da operação ou do usuário.
 
 Isso evita que relatório convertido ou contexto momentâneo do usuário passe a substituir o fato operacional auditável.
 

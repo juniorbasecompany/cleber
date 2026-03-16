@@ -1,37 +1,37 @@
-﻿---
+---
 name: analytics-and-panels
-description: Use when designing analytical views, panel contracts, locale-aware formatting, and aggregations over the daily fact base for daily, weekly, monthly, annual, and custom-period analysis, including report-time currency conversion.
+description: Use quando desenhar visão analítica, contrato de painel, formatação por localidade e agregação sobre a base de fato diário para análise diária, semanal, mensal, anual e por período personalizado, incluindo conversão cambial apenas no relatório.
 ---
 
-# Analytics And Panels
+# Camada analítica e painel
 
-Use this skill for reporting and analytical delivery.
+Use esta skill para entrega analítica e de relatório.
 
-Read these references as needed:
-- `references/analytic-grains.md`
-- `references/official-views.md`
-- `references/panel-contracts.md`
-- `references/filters-and-slices.md`
+Leia estas referências conforme necessário:
+- 'references/analytic-grains.md'
+- 'references/official-views.md'
+- 'references/panel-contracts.md'
+- 'references/filters-and-slices.md'
 
-## Workflow
+## Fluxo
 
-1. Start from daily materialized facts.
-2. Define the official analytical grains and allowed aggregations.
-3. Specify panel contracts, locale behavior, and period behavior.
-4. Apply currency conversion only as a derived report-time concern when requested.
-5. Keep calculations consistent across daily and period views.
+1. Parta do fato diário materializado.
+2. Defina o grão analítico oficial e a agregação permitida.
+3. Especifique contrato de painel, comportamento de localidade e comportamento de período.
+4. Aplique conversão cambial apenas como derivação no momento do relatório, quando houver solicitação.
+5. Mantenha cálculo consistente entre visão diária e visão por período.
 
-## Guardrails
+## Restrições
 
-- Do not create dashboard-only numbers disconnected from daily facts.
-- Do not treat weekly panels as the native source of truth.
-- Do define weekly panel semantics explicitly when they are part of the product contract.
-- Keep filters and accumulation rules explicit.
-- Do not persist converted reporting values as if they were source facts.
-- Do not treat converted-currency reports as auditable financial records.
+- Não crie número de painel desconectado do fato diário.
+- Não trate painel semanal como fonte nativa da verdade.
+- Defina explicitamente a semântica semanal quando ela fizer parte do contrato do produto.
+- Mantenha filtro e regra de acumulação explícitos.
+- Não persista valor convertido para relatório como se fosse fato de origem.
+- Não trate relatório em moeda convertida como registro financeiro auditável.
 
-## Deliverables
+## Entregáveis
 
-- Official analytical grains.
-- Panel contracts.
-- Filter and period semantics.
+- Grão analítico oficial.
+- Contrato de painel.
+- Semântica de filtro e período.

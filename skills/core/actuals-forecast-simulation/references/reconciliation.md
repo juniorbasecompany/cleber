@@ -1,8 +1,8 @@
-# Reconciliation
+# Reconciliação
 
-Reconciliation principles:
+Princípio de reconciliação:
 
-- compare layers without losing original history
-- identify daily and period deltas
-- expose deviation by entity, location, classification, and period
-- preserve source and version for every layer
+- comparar camada sem perder o histórico original;
+- identificar desvio diário e por período;
+- expor desvio por entidade, local, classificação e período;
+- preservar origem e versão para cada camada.

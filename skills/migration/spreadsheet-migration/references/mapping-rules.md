@@ -1,11 +1,11 @@
-# Mapping Rules
+# Regra de mapeamento
 
-Translate spreadsheet artifacts into system concepts:
+Traduza artefato de planilha em conceito de sistema:
 
-- tab or sheet may correspond to a view, input area, or output contract
-- named range or column may correspond to an attribute or classification
-- dated row may correspond to an event or daily fact
-- formula chain may correspond to a governed calculation rule
-- standard table may correspond to a curve or reference catalog
+- aba pode corresponder a visão, área de entrada ou contrato de saída;
+- intervalo nomeado ou coluna pode corresponder a atributo ou classificação;
+- linha datada pode corresponder a evento ou fato diário;
+- cadeia de fórmula pode corresponder a regra governada de cálculo;
+- tabela padrão pode corresponder a curva ou catálogo de referência.
 
-Prefer semantic mapping over literal cell mirroring.
+Prefira mapeamento semântico a espelhamento literal de célula.

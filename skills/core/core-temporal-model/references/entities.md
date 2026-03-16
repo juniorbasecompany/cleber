@@ -1,15 +1,15 @@
-# Entities
+# Entidade
 
-Structural entities for the shared core:
+Entidade estrutural do núcleo compartilhado:
 
-- item: the biological or operational unit defined by the active niche package
-- segment: operational subdivision of the item
-- hierarchical location: optional country, company, operational site, area, subdivision
-- dated event: changes quantity, rule, parameter, relationship, or state
-- configurable attribute metadata: defines semantics without altering schema
-- daily materialized fact: persisted output for one date, one entity or segment, one attribute, one version
+- item: unidade biológica ou operacional definida pelo pacote de nicho ativo;
+- segmento: subdivisão operacional do item;
+- local hierárquico: país opcional, empresa, local operacional, área e subdivisão;
+- evento datado: altera quantidade, regra, parâmetro, relacionamento ou estado;
+- metadado configurável de atributo: define semântica sem alterar o esquema;
+- fato diário materializado: saída persistida para uma data, uma entidade ou segmento, um atributo e uma versão.
 
-Boundaries:
+## Limite
 
-- identity, relationships, validity, audit, versioning, and integrity stay in the core.
-- niche terms, indicators, formulas, and panel labels stay outside the core.
+- identidade, relacionamento, vigência, auditoria, versionamento e integridade ficam no núcleo;
+- termo de nicho, indicador, fórmula e rótulo de painel ficam fora do núcleo.

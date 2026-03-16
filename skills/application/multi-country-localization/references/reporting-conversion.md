@@ -1,15 +1,15 @@
-﻿# Reporting Conversion
+# Conversão para relatório
 
-Cross-currency reporting rules:
+Regra de relatório em múltipla moeda:
 
-- conversion exists only in query or report execution
-- the conversion uses the record timestamp
-- the conversion uses the local currency implied by the persisted record country
-- the conversion uses the target currency requested by the user at view time
-- converted reports are presentational views only
-- converted reports do not replace or alter the auditable local-currency fact
+- a conversão existe apenas durante a execução da consulta ou do relatório;
+- a conversão usa o timestamp do registro;
+- a conversão usa a moeda local implícita pelo país persistido do registro;
+- a conversão usa a moeda de destino solicitada pelo usuário no momento da visualização;
+- o relatório convertido é apenas uma visão apresentacional;
+- o relatório convertido não substitui nem altera o fato auditável em moeda local.
 
-Implication:
+## Implicação
 
-- converted reports may vary if the exchange-rate source changes its historical series
-- this does not affect the auditability of the local-currency financial fact
+- o relatório convertido pode variar se a fonte de câmbio alterar sua série histórica;
+- isso não afeta a auditabilidade do fato financeiro em moeda local.

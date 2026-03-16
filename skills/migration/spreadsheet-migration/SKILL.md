@@ -1,32 +1,32 @@
 ---
 name: spreadsheet-migration
-description: Use when translating existing spreadsheets into explicit system contracts, mapping tabs and formulas to entities, events, attributes, rules, curves, and daily facts with parity checks.
+description: Use quando traduzir planilha existente em contrato explícito de sistema, mapeando aba e fórmula para entidade, evento, atributo, regra, curva e fato diário, com verificação de paridade.
 ---
 
-# Spreadsheet Migration
+# Migração de planilha
 
-Use this skill when the source of truth or reference behavior is still in spreadsheets.
+Use esta skill quando a fonte de verdade ou o comportamento de referência ainda estiver em planilha.
 
-Read these references as needed:
-- `references/workbook-inventory.md`
-- `references/mapping-rules.md`
-- `references/parity-checks.md`
+Leia estas referências conforme necessário:
+- 'references/workbook-inventory.md'
+- 'references/mapping-rules.md'
+- 'references/parity-checks.md'
 
-## Workflow
+## Fluxo
 
-1. Inventory the workbook, tabs, and relevant outputs.
-2. Classify each spreadsheet artifact as entity, event, attribute, rule, curve, fact, or panel output.
-3. Convert implicit formulas into governed system logic.
-4. Validate parity against daily and aggregated outputs.
+1. Faça o inventário da pasta de trabalho, da aba e da saída relevante.
+2. Classifique cada artefato da planilha como entidade, evento, atributo, regra, curva, fato ou saída de painel.
+3. Converta fórmula implícita em lógica governada do sistema.
+4. Valide a paridade contra saída diária e agregada.
 
-## Guardrails
+## Restrições
 
-- Do not copy spreadsheet structure directly into the core model.
-- Do not leave key business formulas implicit.
-- Record ambiguity instead of guessing silently.
+- Não copie a estrutura da planilha diretamente para o modelo do núcleo.
+- Não deixe fórmula importante de negócio implícita.
+- Registre ambiguidade em vez de adivinhar silenciosamente.
 
-## Deliverables
+## Entregáveis
 
-- Workbook inventory.
-- Mapping table from spreadsheet logic to system contracts.
-- Parity-check plan.
+- Inventário da pasta de trabalho.
+- Tabela de mapeamento da lógica de planilha para contrato do sistema.
+- Plano de verificação de paridade.

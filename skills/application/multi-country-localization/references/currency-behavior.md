@@ -1,12 +1,12 @@
-﻿# Currency Behavior
+# Comportamento de moeda
 
-Currency rules for this project:
+Regra de moeda para este projeto:
 
-- each country has a local currency
-- economic facts are persisted only in local currency
-- the fact does not store exchange rate
-- the fact does not store converted value
-- the fact does not need to store origin currency separately if the persisted country already resolves it
-- the auditable financial record is always the local-currency fact
+- cada país tem uma moeda local;
+- o fato econômico é persistido apenas na moeda local;
+- o fato não armazena taxa de câmbio;
+- o fato não armazena valor convertido;
+- o fato não precisa armazenar separadamente a moeda de origem se o país persistido já a resolver;
+- o registro financeiro auditável é sempre o fato em moeda local.
 
-This keeps the source fact small and stable.
+Isso mantém o fato de origem pequeno e estável.

@@ -1,26 +1,26 @@
-﻿# Aviary Curves
+# Curva avícola
 
-Curves are governed references of expected daily behavior by age.
+Curva é referência governada de comportamento diário esperado por idade.
 
-Typical dimensions:
+## Dimensão típica
 
-- global standard or origin
-- country when national defaults differ
-- location
-- lineage
-- production type
-- age
-- technical indicator
-- curve version
-- validity or effective period
+- padrão global ou origem;
+- país, quando o padrão nacional diferir;
+- local;
+- linhagem;
+- tipo de produção;
+- idade;
+- indicador técnico;
+- versão da curva;
+- vigência.
 
-Typical uses:
+## Uso típico
 
-- production forecast
-- utilization or incubable rate
-- weight or quality expectations
-- economic projection inputs
+- previsão de produção;
+- taxa de aproveitamento ou de incubável;
+- expectativa de peso ou qualidade;
+- entrada para projeção econômica.
 
-Curve resolution should follow governed fallback, allowing a global default with optional override by country, location, lote, or segment.
+A resolução de curva deve seguir fallback governado, permitindo um padrão global com sobrescrita opcional por país, local, lote ou segmento.
 
-Every curve used in calculation should remain identifiable by origin, version, validity, and effective scope.
+Toda curva usada no cálculo deve permanecer identificável por origem, versão, vigência e escopo efetivo.

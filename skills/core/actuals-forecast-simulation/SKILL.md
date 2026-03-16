@@ -1,32 +1,32 @@
 ---
 name: actuals-forecast-simulation
-description: Use when handling the analytical layers of the system: baseline forecast, realized data, corrected forecast, scenario simulation, and reconciliation between them.
+description: Use quando tratar a camada analítica do sistema: previsão base, realizado, previsão corrigida, simulação de cenário e reconciliação entre essas camadas.
 ---
 
-# Actuals Forecast Simulation
+# Realizado, previsão e simulação
 
-Use this skill when the task touches analytical layers rather than only the structural model.
+Use esta skill quando a tarefa tocar a camada analítica, e não apenas o modelo estrutural.
 
-Read these references as needed:
-- `references/forecast-modes.md`
-- `references/reconciliation.md`
-- `references/scenario-model.md`
+Leia estas referências conforme necessário:
+- 'references/forecast-modes.md'
+- 'references/reconciliation.md'
+- 'references/scenario-model.md'
 
-## Workflow
+## Fluxo
 
-1. Identify which layer the task belongs to.
-2. Keep forecast, actuals, corrected forecast, and simulation separate.
-3. Compare layers through shared daily facts and governed aggregations.
-4. Preserve auditability across recalculations.
+1. Identifique a qual camada a tarefa pertence.
+2. Mantenha previsão, realizado, previsão corrigida e simulação separadas.
+3. Compare as camadas por meio de fato diário compartilhado e agregação governada.
+4. Preserve a auditabilidade em todo recálculo.
 
-## Guardrails
+## Restrições
 
-- Never overwrite baseline forecast with realized data.
-- Simulation must be isolated from production history.
-- Corrected forecast must declare its correction rule.
+- Nunca sobrescreva a previsão base com dado realizado.
+- A simulação deve ficar isolada do histórico de produção.
+- A previsão corrigida deve declarar a regra de correção.
 
-## Deliverables
+## Entregáveis
 
-- Layer definitions.
-- Reconciliation rules.
-- Scenario isolation rules.
+- Definição de camada.
+- Regra de reconciliação.
+- Regra de isolamento de cenário.

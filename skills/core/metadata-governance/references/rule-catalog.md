@@ -1,20 +1,20 @@
-# Rule Catalog
+# Catálogo de regra
 
-Governed rule families include:
+Família de regra governada inclui:
 
-- resolution by scope
-- daily derivation
-- curve lookup
-- economic conversion
-- capacity restriction
-- quality classification
-- scenario override
+- resolução por escopo;
+- derivação diária;
+- busca de curva;
+- conversão econômica;
+- restrição de capacidade;
+- classificação de qualidade;
+- sobrescrita de cenário.
 
-Each rule should define:
+Cada regra deve definir:
 
-- purpose
-- inputs
-- outputs
-- allowed scopes
-- allowed origins
-- explainability requirements
+- propósito;
+- entrada;
+- saída;
+- escopo permitido;
+- origem permitida;
+- requisito de explicabilidade.

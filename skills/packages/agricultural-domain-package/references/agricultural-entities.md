@@ -1,10 +1,10 @@
-# Agricultural Entities
+# Entidade agrícola
 
-Relevant domain entities and dimensions:
+Entidade e dimensão relevante do domínio:
 
-- ciclo as the main agronomic and economic unit
-- segment as the operational calculation unit
-- hierarchical location from company to subdivision, including farm, field, or similar operational area
-- domain classifications such as cultivar, seed technology, water regime, soil type, and production phase
+- ciclo como unidade agronômica e econômica principal;
+- segmento como unidade operacional de cálculo;
+- local hierárquico da empresa até a subdivisão, incluindo fazenda, talhão ou área operacional equivalente;
+- classificação de domínio, como cultivar, tecnologia da semente, regime hídrico, tipo de solo e fase produtiva.
 
-Phenological stage is treated as a daily resolved attribute, not a separate time axis.
+Estágio fenológico é tratado como atributo diário resolvido, e não como eixo temporal separado.

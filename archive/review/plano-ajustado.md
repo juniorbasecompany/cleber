@@ -22,11 +22,11 @@ Em termos práticos, eu classificaria assim:
 
 ### 1. Acompanhamento operacional e BI
 
-Na pasta `C:\jr\GoogleDrive\jr\Cleber\app`, a planilha `Sao Joao - Acomp22 - V1 (1).xlsx` concentra a lógica mais próxima do resultado da imagem.
+Na pasta 'C:\jr\GoogleDrive\jr\Cleber\app', a planilha 'Sao Joao - Acomp22 - V1 (1).xlsx' concentra a lógica mais próxima do resultado da imagem.
 
 Ela já tem uma estrutura importante:
 
-- abas `OvoTotal`, `Aprov`, `Idade`, `Produção`, `Outros`, `Dados`, `DadoEntr` e `BI`;
+- abas 'OvoTotal', 'Aprov', 'Idade', 'Produção', 'Outros', 'Dados', 'DadoEntr' e 'BI';
 - comparação entre previsto e realizado;
 - série de produção prevista;
 - série de incubável ou aproveitável prevista;
@@ -49,9 +49,9 @@ Isso mostra que o objetivo real não é apenas calcular produção. O objetivo �
 
 ### 2. Simulação de alojamento e ajuste de cronograma
 
-As planilhas `Sao Joao - Aloj22 - V1.xlsx`, `Ajuste Cronograma - v2.xlsx` e principalmente `Modelo - Aloj - V75.xlsx` mostram que existe uma lógica forte de planejamento.
+As planilhas 'Sao Joao - Aloj22 - V1.xlsx', 'Ajuste Cronograma - v2.xlsx' e principalmente 'Modelo - Aloj - V75.xlsx' mostram que existe uma lógica forte de planejamento.
 
-O `Modelo - Aloj - V75.xlsx` revela pontos muito relevantes que ainda não ficaram explícitos o suficiente no plano:
+O 'Modelo - Aloj - V75.xlsx' revela pontos muito relevantes que ainda não ficaram explícitos o suficiente no plano:
 
 - cálculo de mortalidade;
 - quantidade por sexo;
@@ -69,7 +69,7 @@ Ou seja, o domínio não é apenas zootécnico. Ele também é:
 
 ### 3. Biblioteca padrão de curvas
 
-A planilha `Standards_Unificado v1.3 Global Eggs.xlsx` mostra que o negócio depende de uma biblioteca padrão de curvas por:
+A planilha 'Standards_Unificado v1.3 Global Eggs.xlsx' mostra que o negócio depende de uma biblioteca padrão de curvas por:
 
 - local;
 - linhagem;
@@ -77,9 +77,9 @@ A planilha `Standards_Unificado v1.3 Global Eggs.xlsx` mostra que o negócio dep
 - idade;
 - indicador.
 
-Aqui, `curva` não significa apenas um gráfico visual.
+Aqui, 'curva' não significa apenas um gráfico visual.
 
-No contexto dessas planilhas, `curva` é uma **tabela padrão de comportamento esperado** de um indicador ao longo da idade da ave. Em outras palavras, é uma referência técnica que diz algo como:
+No contexto dessas planilhas, 'curva' é uma **tabela padrão de comportamento esperado** de um indicador ao longo da idade da ave. Em outras palavras, é uma referência técnica que diz algo como:
 
 - em determinada idade, a taxa de postura esperada é X;
 - em determinada idade, o aproveitamento esperado é Y;
@@ -115,7 +115,7 @@ Isso é o principal ponto de não aderência em relação ao objetivo que você 
 
 ## Revisão dos documentos
 
-### `Considerações de domínio.md`
+### 'Considerações de domínio.md'
 
 Está bom como documento de arquitetura geral. Ele acerta ao separar:
 
@@ -128,7 +128,7 @@ Está bom como documento de arquitetura geral. Ele acerta ao separar:
 
 Para o projeto atual, ele é aderente como base de desenho, mas é abstrato demais para garantir o BI final.
 
-### `Planilhas.md`
+### 'Planilhas.md'
 
 Está bem alinhado com a ideia de transformar a lógica atual em sistema.
 
@@ -142,13 +142,13 @@ O documento acerta ao reconhecer:
 
 O problema é que ele ainda está mais forte em arquitetura do que em contrato funcional de entrega.
 
-### `Plano agrícola.md`
+### 'Plano agrícola.md'
 
 Está coerente como expansão multi-nicho, mas **não adiciona aderência direta ao objetivo principal atual**, que é avícola.
 
 Ele é útil para não engessar o núcleo, mas não ajuda a fechar o painel final da imagem.
 
-### `Plano avícola.md`
+### 'Plano avícola.md'
 
 É o documento mais aderente ao objetivo atual.
 
@@ -167,7 +167,7 @@ Ele cobre bem:
 
 Mesmo assim, ainda faltam elementos importantes para chegar ao resultado final.
 
-### `README.md`
+### 'README.md'
 
 Hoje não ajuda na aderência porque praticamente não documenta nada do produto.
 
@@ -184,7 +184,7 @@ O objetivo do projeto não pode parar em:
 Para decisão real do negócio, o sistema precisa fechar também:
 
 - custo por lote;
-- custo por por período;
+- custo por período;
 - custo por ovo;
 - custo por ovo aproveitável;
 - custo por caixa;
@@ -244,7 +244,7 @@ Portanto, o projeto precisa declarar explicitamente:
 - acumulado por período como agregação derivada;
 - comparação por período previsto x realizado;
 - fotografia gerencial por período selecionado;
-- possibilidade de materialização analítica ou snapshot derivado para performance, sem criar uma segunda fonte primária.
+- possibilidade de materialização analítica ou instantâneo derivado para performance, sem criar uma segunda fonte primária.
 
 Sem essa ponte, o sistema fica tecnicamente certo, mas funcionalmente distante da operação.
 
@@ -258,7 +258,7 @@ As planilhas padrão mostram que a produção depende de curva técnica por:
 - idade;
 - indicador.
 
-Mais uma vez, aqui `curva técnica` significa uma **sequência de valores esperados por idade** para um indicador específico.
+Mais uma vez, aqui 'curva técnica' significa uma **sequência de valores esperados por idade** para um indicador específico.
 
 Exemplos:
 
@@ -352,12 +352,12 @@ Adicionar um módulo específico de economia do lote, com:
 
 ### Fórmulas gerenciais recomendadas
 
-- `plantel_final = plantel_inicial - mortalidade - descarte +/- transferência`
-- `ovo_total = plantel_médio x taxa_de_postura x dia`
-- `ovo_aproveitável = ovo_total x percentual_de_aproveitamento`
-- `faturamento_bruto = soma(volume_faturável x preço_vigente)`
-- `lucro_operacional = faturamento_bruto - custo_total`
-- `margem = lucro_operacional / faturamento_bruto`
+- 'plantel_final = plantel_inicial - mortalidade - descarte +/- transferência'
+- 'ovo_total = plantel_médio x taxa_de_postura x dia'
+- 'ovo_aproveitável = ovo_total x percentual_de_aproveitamento'
+- 'faturamento_bruto = soma(volume_faturável x preço_vigente)'
+- 'lucro_operacional = faturamento_bruto - custo_total'
+- 'margem = lucro_operacional / faturamento_bruto'
 
 ## 3. Criar uma camada comercial e operacional
 
@@ -374,7 +374,7 @@ Isso é necessário porque as planilhas de simulação e acompanhamento já trab
 
 ## 4. Formalizar a biblioteca de padrão técnico
 
-Criar no plano uma camada de `standard_curve`, mesmo que o nome físico final seja outro.
+Criar no plano uma camada de 'standard_curve', mesmo que o nome físico final seja outro.
 
 Essa camada deve representar tabelas padrão de referência por idade, linhagem, local e indicador, usadas pelo motor para calcular o comportamento esperado do lote ao longo do tempo.
 
@@ -407,13 +407,13 @@ Além disso, eu recomendo explicitar também:
 
 - fato diário;
 - visão por período derivada oficialmente do fato diário;
-- snapshot gerencial derivado, quando fizer sentido para performance ou fechamento visual.
+- instantâneo gerencial derivado, quando fizer sentido para performance ou fechamento visual.
 
 ### Motivo
 
 O painel da imagem trabalha com:
 
-- período selecionada;
+- período selecionado;
 - saldo do período;
 - acumulado;
 - linha histórica por período.
@@ -422,7 +422,7 @@ Isso pede uma camada analítica por período bem definida, mas derivada do fato 
 
 ## 6. Definir o contrato do painel principal
 
-Adicionar ao plano uma seção chamada algo como `painel principal de gestão`.
+Adicionar ao plano uma seção chamada algo como 'painel principal de gestão'.
 
 Esse painel deve ter como saída mínima:
 
@@ -439,11 +439,11 @@ Esse painel deve ter como saída mínima:
 - saldo acumulado de faturamento;
 - filtro por lote, núcleo, local e período.
 
-## 7. Formalizar previsto, realizado e forecast corrigido
+## 7. Formalizar previsto, realizado e previsão corrigida
 
 Além de previsto e realizado, o projeto deveria assumir explicitamente uma terceira camada:
 
-- forecast corrigido.
+- previsão corrigida.
 
 Isso é importante porque, na prática, o gestor quer ver:
 
@@ -464,7 +464,7 @@ Para cada ponto do gráfico, o sistema deveria conseguir explicar:
 - qual evento alterou o saldo;
 - qual custo compôs o lucro.
 
-Quando eu digo `qual curva foi usada`, quero dizer exatamente qual tabela de referência alimentou aquele cálculo. Exemplo: qual curva de postura da linhagem X, na idade Y, com a versão Z.
+Quando eu digo 'qual curva foi usada', quero dizer exatamente qual tabela de referência alimentou aquele cálculo. Exemplo: qual curva de postura da linhagem X, na idade Y, com a versão Z.
 
 Isso é essencial para substituir a confiança informal da planilha por confiança formal no sistema.
 
@@ -472,11 +472,11 @@ Isso é essencial para substituir a confiança informal da planilha por confian�
 
 Eu recomendo incluir no plano uma tabela de migração com esta lógica:
 
-- `Standards_Unificado v1.3 Global Eggs.xlsx` -> biblioteca de curva padrão;
-- `Modelo - Aloj - V75.xlsx` -> motor de simulação, saldo e programação;
-- `Sao Joao - Aloj22 - V1.xlsx` -> cenário simplificado de cronograma;
-- `Sao Joao - Acomp22 - V1 (1).xlsx` -> entrada do realizado, consolidação e BI;
-- `Ajuste Cronograma - v2.xlsx` -> ajuste de programação e redistribuição.
+- 'Standards_Unificado v1.3 Global Eggs.xlsx' -> biblioteca de curva padrão;
+- 'Modelo - Aloj - V75.xlsx' -> motor de simulação, saldo e programação;
+- 'Sao Joao - Aloj22 - V1.xlsx' -> cenário simplificado de cronograma;
+- 'Sao Joao - Acomp22 - V1 (1).xlsx' -> entrada do realizado, consolidação e BI;
+- 'Ajuste Cronograma - v2.xlsx' -> ajuste de programação e redistribuição.
 
 Essa tabela ajuda muito a evitar perda de conhecimento na transição.
 
@@ -504,7 +504,7 @@ Definir importação, validação e fechamento do realizado.
 
 ## Parecer final
 
-Os documentos atuais **não estão errados**. Pelo contrário: a base está boa e o `Plano avícola.md` está bem próximo do que precisa.
+Os documentos atuais **não estão errados**. Pelo contrário: a base está boa e o 'Plano avícola.md' está bem próximo do que precisa.
 
 Mas, se o objetivo principal do projeto é realmente chegar ao resultado da imagem, então a aderência atual é:
 

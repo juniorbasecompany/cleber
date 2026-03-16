@@ -1,37 +1,39 @@
 ---
 name: core-temporal-model
-description: Use when modeling or reviewing the fixed structural core of the system: entities, optional country-aware hierarchical scope, event-based validity, UTC persistence, auditability, integrity, and daily materialized facts across the supported niches.
+description: Use quando modelar ou revisar o núcleo estrutural fixo do sistema: entidade, escopo hierárquico com país opcional, vigência por evento, persistência em UTC, auditabilidade, integridade e fato diário materializado em todo nicho suportado.
 ---
 
-# Core Temporal Model
+# Núcleo temporal
 
-Use this skill for structural modeling decisions that must remain stable across niches.
+Use esta skill para decisão estrutural que precisa permanecer estável entre nichos.
 
-Read these references as needed:
-- `references/entities.md` for structural entities and boundaries.
-- `references/temporal-rules.md` for validity, reconstruction, and immutability.
-- `references/scope-hierarchy.md` for scope resolution and fallback.
+Leia estas referências conforme necessário:
+- 'references/entities.md' para entidade estrutural e limite do núcleo.
+- 'references/temporal-rules.md' para vigência e reconstrução.
+- 'references/scope-hierarchy.md' para resolução de escopo e fallback.
 
-## Workflow
+## Fluxo
 
-1. Confirm the proposal keeps the calculation axis daily.
-2. Separate structural entities from niche vocabulary.
-3. Model operational changes as dated, auditable events persisted in UTC.
-4. Include country as an optional scope node and persist the resolved country wherever economic facts depend on local currency.
-5. Preserve immutable history and reconstructability.
-6. Persist relevant outputs as daily materialized facts.
+1. Confirme que a proposta mantém o eixo de cálculo diário.
+2. Separe entidade estrutural de vocabulário de nicho.
+3. Resolva referência temporal de negócio, como idade, estágio fenológico, safra ou janela operacional, como estado do dia, e não como grão nativo separado.
+4. Modele mudança operacional como evento datado, auditável e persistido em UTC.
+5. Inclua país como nó opcional de escopo e persista o país resolvido sempre que o fato econômico depender da moeda local.
+6. Preserve histórico e reconstruibilidade.
+7. Persista saída relevante como fato diário materializado.
 
-## Guardrails
+## Restrições
 
-- Do not hardcode niche vocabulary into the core schema.
-- Do not treat week or month as native calculation grains.
-- Do not replace structural semantics with free-form JSONB.
-- Do not overwrite past values; version and date them.
-- Do not let mutable user context define the persisted country of an economic fact.
+- Não codifique vocabulário de nicho no esquema do núcleo.
+- Não trate semana ou mês como grão nativo de cálculo.
+- Não crie eixo paralelo de cálculo para idade, estágio, safra ou janela operacional.
+- Não substitua semântica estrutural por JSONB livre.
+- Não sobrescreva valor passado; versione e date.
+- Não deixe contexto mutável do usuário definir o país persistido de um fato econômico.
 
-## Deliverables
+## Entregáveis
 
-- Structural entity model.
-- Temporal rules for validity and history.
-- Scope hierarchy and fallback definition.
-- Daily fact contract with provenance and versioning.
+- Modelo de entidade estrutural.
+- Regra temporal de vigência e histórico.
+- Definição de hierarquia de escopo e fallback.
+- Contrato de fato diário com proveniência e versionamento.

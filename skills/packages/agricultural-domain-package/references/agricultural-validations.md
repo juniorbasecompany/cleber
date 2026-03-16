@@ -1,11 +1,11 @@
-# Agricultural Validations
+# Validação agrícola
 
-Typical validation themes:
+Tema típico de validação:
 
-- planted area, replanted area, and harvested area stay physically consistent
-- no active segment exists before planting or after closure
-- stage progression follows the configured rule for the date
-- realized harvest does not exceed the active area or available expected volume without an explicit governed exception
-- quality, cost, and revenue measures use compatible unit-conversion rules
+- área plantada, replantada e colhida deve permanecer fisicamente consistente;
+- nenhum segmento ativo existe antes do plantio ou após o encerramento;
+- a progressão de estágio deve seguir a regra configurada para a data;
+- o realizado de colheita não deve exceder a área ativa ou o volume esperado disponível sem exceção governada explícita;
+- medida de qualidade, custo e faturamento deve usar regra compatível de conversão de unidade.
 
-Validation should protect operational realism without hardcoding the entire niche into the shared core.
+A validação deve proteger o realismo operacional sem codificar todo o nicho agrícola no núcleo compartilhado.

@@ -1,13 +1,13 @@
-# Calc Flow
+# Fluxo de cálculo
 
-Official daily flow:
+Fluxo diário oficial:
 
-1. identify active segments for the date
-2. resolve age and other daily state attributes
-3. resolve valid parameters and curves
-4. apply scope fallback
-5. compute direct and derived metrics
-6. persist daily materialized facts
-7. record provenance and calculation version
+1. identificar o segmento ativo para a data;
+2. resolver a idade e outro estado diário;
+3. resolver o parâmetro e a curva válidos;
+4. aplicar o fallback de escopo;
+5. calcular métrica direta e derivada;
+6. persistir o fato diário materializado;
+7. registrar proveniência e versão de cálculo.
 
-Outputs must support later aggregation by any period.
+A saída deve suportar agregação posterior para qualquer período.

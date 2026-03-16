@@ -1,34 +1,34 @@
 ---
 name: daily-calc-engine
-description: Use when implementing or reviewing the daily calculation flow: scope fallback, validity resolution, derived metrics, provenance, and persistence of daily materialized facts.
+description: Use quando implementar ou revisar o fluxo de cálculo diário: fallback de escopo, resolução de vigência, métrica derivada, proveniência e persistência do fato diário materializado.
 ---
 
-# Daily Calc Engine
+# Motor de cálculo diário
 
-Use this skill for the official daily calculation workflow.
+Use esta skill para o fluxo oficial de cálculo diário.
 
-Read these references as needed:
-- `references/calc-flow.md`
-- `references/provenance.md`
-- `references/materialized-facts.md`
+Leia estas referências conforme necessário:
+- 'references/calc-flow.md'
+- 'references/provenance.md'
+- 'references/materialized-facts.md'
 
-## Workflow
+## Fluxo
 
-1. Select the active entity or segment for the date.
-2. Resolve valid attributes and rules for that date.
-3. Apply governed scope fallback.
-4. Resolve classifications and curve references.
-5. Calculate derived values.
-6. Persist daily facts with provenance and version.
+1. Selecione a entidade ou o segmento ativo para a data.
+2. Resolva o atributo e a regra válidos para aquela data.
+3. Aplique o fallback de escopo governado.
+4. Resolva a classificação e a referência de curva.
+5. Calcule o valor derivado.
+6. Persista o fato diário com proveniência e versão.
 
-## Guardrails
+## Restrições
 
-- Daily is the only native calculation grain.
-- Realized data must not overwrite forecast.
-- Every computed value must be explainable.
+- O diário é o único grão nativo de cálculo.
+- Dado realizado não deve sobrescrever previsão.
+- Todo valor calculado deve ser explicável.
 
-## Deliverables
+## Entregáveis
 
-- Ordered daily calculation flow.
-- Provenance contract.
-- Daily fact persistence contract.
+- Fluxo ordenado de cálculo diário.
+- Contrato de proveniência.
+- Contrato de persistência do fato diário.

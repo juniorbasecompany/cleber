@@ -1,19 +1,19 @@
-# Country In Scope
+# País no escopo
 
-Country behavior for this project:
+Comportamento de país para este projeto:
 
-- country is an optional node in the location hierarchy
-- user context may prefill country in the interface, but must not define persisted economic history by itself
-- for any economic fact, the resolved country must come from stored operational context
-- fallback may resolve values through country when national defaults exist
+- o país é um nó opcional na hierarquia de local;
+- o contexto do usuário pode sugerir país na interface, mas não deve definir sozinho o histórico econômico persistido;
+- para qualquer fato econômico, o país resolvido deve vir do contexto operacional armazenado;
+- o fallback pode resolver valor por país quando existir padrão nacional.
 
-Canonical specificity order:
+## Ordem canônica de especificidade
 
-1. segment
+1. segmento
 2. item
-3. most specific location node
-4. parent location nodes
-5. country
+3. nó de local mais específico
+4. nó pai da hierarquia de local
+5. país
 6. global
 
-Small operations may omit intermediate levels they do not use.
+Operação pequena pode omitir nível intermediário que não utiliza.

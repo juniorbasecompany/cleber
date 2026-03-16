@@ -1,13 +1,13 @@
-# Aviary Events
+# Evento avícola
 
-Common governed event families:
+Família comum de evento governado:
 
-- housing or alojamento
-- transfer
-- logical split or merge
-- partial discard
-- quantity adjustment
-- closing event
-- parameter change for mortality, yield, price, quality, or capacity
+- alojamento;
+- transferência;
+- divisão lógica ou unificação lógica;
+- descarte parcial;
+- ajuste de quantidade;
+- evento de encerramento;
+- alteração de parâmetro para mortalidade, aproveitamento, preço, qualidade ou capacidade.
 
-Events must be dated, versioned, auditable, and reconstructable.
+O evento deve ser datado, versionado, auditável e reconstruível.

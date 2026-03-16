@@ -1,39 +1,43 @@
-﻿---
+---
 name: multi-country-localization
-description: Use when designing or reviewing country-aware behavior: optional country in scope, locale-specific labels and formatting, UTC persistence with local rendering, local-currency economic facts, and query-time currency conversion for reports.
+description: Use quando desenhar ou revisar comportamento compatível com mais de um país: país opcional no escopo, rótulo, mensagem multilíngue e formatação por localidade, persistência em UTC com renderização local, fato econômico em moeda local e conversão cambial apenas no momento do relatório.
 ---
 
-# Multi Country Localization
+# Localização para múltiplos países
 
-Use this skill when the system must behave correctly across more than one country without turning country-specific behavior into core rigidity.
+Use esta skill quando o sistema precisar se comportar corretamente em mais de um país sem transformar comportamento específico de país em rigidez do núcleo.
 
-Read these references as needed:
-- `references/country-in-scope.md`
-- `references/locale-and-timezone.md`
-- `references/currency-behavior.md`
-- `references/reporting-conversion.md`
+Leia estas referências conforme necessário:
+- 'references/country-in-scope.md'
+- 'references/locale-and-timezone.md'
+- 'references/currency-behavior.md'
+- 'references/reporting-conversion.md'
 
-## Workflow
+## Fluxo
 
-1. Decide whether country is required for the specific workflow or only optional in the hierarchy.
-2. Distinguish UI defaults from persisted operational context.
-3. Keep backend persistence in UTC and rendering in local timezone.
-4. Keep economic facts only in local currency.
-5. Resolve translated labels and formatted values by locale at display time.
-6. Treat cross-currency reporting as a derived query concern.
+1. Decida se o país é obrigatório no fluxo específico ou apenas opcional na hierarquia.
+2. Diferencie padrão de interface de contexto operacional persistido.
+3. Mantenha a persistência de back-end em UTC e a renderização no fuso horário local.
+4. Mantenha o fato econômico apenas em moeda local.
+5. Resolva rótulo traduzido, mensagem de UX e valor formatado no momento da exibição.
+6. Aplique a ordem oficial de fallback de texto: país, local, usuário.
+7. Trate relatório em múltipla moeda como derivação de consulta.
 
-## Guardrails
+## Restrições
 
-- Do not require country on every non-economic path if the operation does not need it.
-- Do not let current user context silently become the persisted country of an economic fact.
-- Do not store converted values or exchange rates in source economic facts.
-- Do not turn weekly behavior into a country-specific operational rule.
-- Keep country-specific overrides inside fallback and metadata, not in hardcoded branches.
+- Não exija país em todo caminho não econômico se a operação não precisar disso.
+- Não deixe o contexto atual do usuário virar silenciosamente o país persistido de um fato econômico.
+- Não armazene valor convertido nem taxa de câmbio no fato econômico de origem.
+- Não transforme comportamento semanal em regra operacional específica de país.
+- Mantenha sobrescrita específica de país dentro de fallback e metadado, e não em ramificação fixa de código.
+- Não misture rótulo de domínio com mensagem geral de UX sem chave técnica e origem governada.
+- Não deixe preferência textual do usuário alterar terminologia operacional persistida.
 
-## Deliverables
+## Entregáveis
 
-- Country-aware scope rules.
-- Locale and timezone behavior.
-- Local-currency persistence rule.
-- Query-time conversion contract for reports.
-- Audit boundary for converted financial views.
+- Regra de escopo com consciência de país.
+- Comportamento de localidade, idioma e fuso horário.
+- Regra de fallback de texto multilíngue.
+- Regra de persistência em moeda local.
+- Contrato de conversão no momento da consulta para relatório.
+- Limite de auditoria para visão financeira convertida.

@@ -1,27 +1,27 @@
-# Agricultural Curves
+# Curva agrícola
 
-Curves are governed references of expected daily behavior by age or phenological stage.
+Curva é referência governada de comportamento diário esperado por idade ou estágio fenológico.
 
-Typical dimensions:
+## Dimensão típica
 
-- global standard or origin
-- country when national defaults differ
-- location
-- cultivar
-- production system or category
-- age or phenological stage
-- technical indicator
-- curve version
-- validity or effective period
+- padrão global ou origem;
+- país, quando o padrão nacional diferir;
+- local;
+- cultivar;
+- sistema de produção ou categoria;
+- idade ou estágio fenológico;
+- indicador técnico;
+- versão da curva;
+- vigência.
 
-Typical uses:
+## Uso típico
 
-- stand and emergence forecast
-- development progression
-- expected loss
-- productivity forecast
-- quality and economic projection inputs
+- previsão de estande e emergência;
+- progressão de desenvolvimento;
+- perda esperada;
+- previsão de produtividade;
+- entrada de projeção de qualidade e economia.
 
-Curve resolution should follow governed fallback, allowing a global default with optional override by country, location, item, or segment.
+A resolução de curva deve seguir fallback governado, permitindo um padrão global com sobrescrita opcional por país, local, item ou segmento.
 
-Every curve used in calculation should remain identifiable by origin, version, validity, and effective scope.
+Toda curva usada no cálculo deve permanecer identificável por origem, versão, vigência e escopo efetivo.

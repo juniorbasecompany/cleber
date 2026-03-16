@@ -1,38 +1,38 @@
-﻿---
+---
 name: economic-and-commercial-layer
-description: Use when modeling or reviewing the daily economic and commercial layer: local-currency price, revenue, costs, margin, profit, operational balance, and report-time currency conversion from production to commercial units.
+description: Use quando modelar ou revisar a camada econômica e comercial diária: preço em moeda local, faturamento, custo, margem, lucro, saldo operacional e conversão cambial apenas no relatório, da produção até a unidade comercial.
 ---
 
-# Economic And Commercial Layer
+# Camada econômica e comercial
 
-Use this skill for the business layer that extends beyond technical production.
+Use esta skill para a camada de negócio que vai além da produção técnica.
 
-Read these references as needed:
-- `references/economic-model.md`
-- `references/commercial-flow.md`
-- `references/contribution-margin.md`
+Leia estas referências conforme necessário:
+- 'references/economic-model.md'
+- 'references/commercial-flow.md'
+- 'references/contribution-margin.md'
 
-## Workflow
+## Fluxo
 
-1. Start from daily production facts.
-2. Convert technical outputs into commercial and economic measures in the operation's local currency.
-3. Preserve daily revenue, cost, and margin facts only in local currency.
-4. Treat any other currency as a derived reporting view resolved at query time.
-5. Audit financial history only in local currency.
-6. Aggregate later by week, month, year, or any period.
+1. Parta do fato diário de produção.
+2. Converta saída técnica em medida comercial e econômica na moeda local da operação.
+3. Preserve fato diário de faturamento, custo e margem apenas em moeda local.
+4. Trate qualquer outra moeda como visão derivada resolvida no momento da consulta.
+5. Audite o histórico financeiro apenas na moeda local.
+6. Agregue depois por semana, mês, ano ou qualquer período.
 
-## Guardrails
+## Restrições
 
-- Do not model economics only at weekly level.
-- Do not detach cost and revenue from the same daily analytical base.
-- Keep unit conversion rules explicit.
-- Do not persist exchange rates or converted currency values in the original economic fact.
-- Require a persisted country or equivalent local-currency context for any economic operation.
-- Do not treat converted reports as auditable source financial history.
+- Não modele a economia apenas no nível semanal.
+- Não separe custo e faturamento da mesma base analítica diária.
+- Mantenha explícita a regra de conversão de unidade.
+- Não persista taxa de câmbio nem valor convertido no fato econômico original.
+- Exija país persistido ou contexto equivalente de moeda local em toda operação econômica.
+- Não trate relatório convertido como histórico financeiro auditável de origem.
 
-## Deliverables
+## Entregáveis
 
-- Daily economic model.
-- Commercial flow mapping.
-- Margin and profit contract.
-- Audit boundary between local-currency facts and converted reports.
+- Modelo econômico diário.
+- Mapeamento do fluxo comercial.
+- Contrato de margem e lucro.
+- Limite de auditoria entre fato em moeda local e relatório convertido.

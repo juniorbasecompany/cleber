@@ -1,14 +1,14 @@
-# Agricultural Events
+# Evento agrícola
 
-Typical governed events:
+Família típica de evento governado:
 
-- planting
-- replanting
-- relevant application or management action
-- area adjustment
-- population adjustment
-- expected-loss update
-- partial harvest
-- segment closure or cycle closure
+- plantio;
+- replantio;
+- aplicação ou manejo relevante;
+- ajuste de área;
+- ajuste de população;
+- atualização de perda esperada;
+- colheita parcial;
+- encerramento de segmento ou de ciclo.
 
-Events should remain explicit, dated, auditable, and reconstructable.
+O evento deve permanecer explícito, datado, auditável e reconstruível.

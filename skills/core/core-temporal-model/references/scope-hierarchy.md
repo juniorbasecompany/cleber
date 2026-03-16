@@ -1,17 +1,17 @@
-# Scope Hierarchy
+# Hierarquia de escopo
 
-Canonical resolution rule:
+Regra canônica de resolução:
 
-1. segment-specific value
-2. item-specific value
-3. most specific location node
-4. parent location nodes up the hierarchy
-5. country-specific value
-6. global default
+1. valor específico do segmento;
+2. valor específico do item;
+3. nó de local mais específico;
+4. nó pai na hierarquia de local;
+5. valor específico do país;
+6. padrão global.
 
-Requirements:
+## Requisito
 
-- country is an optional node in the location hierarchy, not a separate parallel mechanism
-- small operations may omit intermediate levels they do not use
-- every resolved value must record which scope supplied it
-- fallback order is always from the most specific resolved scope to the least specific
+- o país é um nó opcional da hierarquia de local, e não um mecanismo paralelo separado;
+- operação pequena pode omitir nível intermediário que não utiliza;
+- todo valor resolvido deve registrar qual escopo o forneceu;
+- a ordem de fallback sempre vai do escopo mais específico resolvido ao menos específico.

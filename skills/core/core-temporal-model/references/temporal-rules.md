@@ -1,24 +1,25 @@
-﻿# Temporal Rules
+# Regra temporal
 
-Core temporal rules:
+Regra temporal central:
 
-- all calculation is daily.
-- any weekly, monthly, annual, or custom-period view is derived from daily facts.
-- parameter validity starts on the event date and lasts until the next event of the same kind or the end of the entity lifecycle.
-- history must be immutable.
-- past results must be reconstructable from the rules and events that were valid at that time.
-- backend persistence uses UTC timestamps.
-- frontend and reports may render dates and times in the user's local timezone or the operation timezone.
+- todo cálculo é diário;
+- qualquer visão semanal, mensal, anual ou por período personalizado deriva do fato diário;
+- idade, estágio fenológico, safra e janela operacional são resolvidos para o dia e não criam grão nativo separado;
+- a vigência de parâmetro começa na data do evento e dura até o próximo evento do mesmo tipo ou até o fim do ciclo de vida da entidade;
+- o resultado passado deve ser reconstruível a partir da regra e do evento válidos naquele momento;
+- a persistência de back-end usa timestamp em UTC;
+- front-end e relatório podem renderizar data e hora no fuso horário local do usuário ou da operação.
 
-Required temporal fields:
+## Campo temporal obrigatório
 
-- effective date
-- event timestamp
-- version
-- source or origin
-- actor or process id when available
+- data de vigência;
+- timestamp do evento;
+- versão;
+- origem;
+- identificador do ator ou do processo, quando disponível.
 
-Notes:
+## Nota
 
-- UTC persistence does not change the rule that the business grain is still the day.
-- weekly logic remains a reporting aggregation, not an operational control layer.
+- persistência em UTC não muda a regra de que o grão de negócio continua sendo o dia;
+- a lógica semanal continua sendo agregação de relatório, e não camada operacional;
+- referência temporal de negócio pode afetar o resultado do dia, mas deve ser modelada como estado governado resolvido naquela data.

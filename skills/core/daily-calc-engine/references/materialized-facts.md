@@ -1,15 +1,15 @@
-# Materialized Facts
+# Fato materializado
 
-Daily materialized facts should include:
+O fato diário materializado deve incluir:
 
-- date
-- entity and segment identifiers
-- attribute identifier
-- classification context when applicable
-- scenario layer
-- numeric or categorical value
-- unit
-- provenance
-- calculation version
+- data;
+- identificador de entidade e segmento;
+- identificador de atributo;
+- contexto de classificação, quando aplicável;
+- camada de cenário;
+- valor numérico ou categórico;
+- unidade;
+- proveniência;
+- versão de cálculo.
 
-These facts are the single analytical base for daily, weekly, monthly, annual, and custom-period views.
+Esse fato é a única base analítica para visão diária, semanal, mensal, anual e por período personalizado.

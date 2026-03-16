@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cronograma e simulação</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div class="brand-block">
+          <div class="brand-mark">AV</div>
+          <div class="brand-text">
+            <h2>Protótipos de painéis avícolas</h2>
+            <p>Cronograma de transferência e descarte com impacto de cenário.</p>
+          </div>
+        </div>
+        <nav class="nav-row">
+          <a class="nav-link" href="index.html">Início</a>
+          <a class="nav-link" href="overview-panel.html">Visão geral</a>
+          <a class="nav-link" href="forecast-vs-actual.html">Previsto x realizado</a>
+          <a class="nav-link active" href="timeline-schedule.html">Cronograma</a>
+          <a class="nav-link" href="age-pyramid.html">Pirâmide etária</a>
+          <a class="nav-link" href="capacity-and-occupancy.html">Capacidade</a>
+          <a class="nav-link" href="price-and-revenue.html">Faturamento</a>
+          <a class="nav-link" href="audit-drawer.html">Auditoria</a>
+        </nav>
+      </header>
+
+      <main class="page">
+        <section class="page-head">
+          <div>
+            <h1 class="page-title">Cronograma e simulação</h1>
+            <p class="page-subtitle">
+              Tela orientada a planejamento para alojamento, transferência e descarte,
+              com leitura lateral do impacto em estabilidade e ocupação.
+            </p>
+          </div>
+          <div class="page-note">Cenário B selecionado</div>
+        </section>
+
+        <div class="filter-bar">
+          <span class="filter-chip">empresa: Cleber Agro</span>
+          <span class="filter-chip">local: Sao Joao / Núcleo B</span>
+          <span class="filter-chip">período: Ago a Nov 2026</span>
+          <span class="filter-chip">cenário: sim-B-capacity-balance</span>
+        </div>
+
+        <div class="toolbar">
+          <span class="tab-pill active">cronograma</span>
+          <span class="tab-pill">efeito na capacidade</span>
+          <span class="tab-pill">estabilidade etária</span>
+          <span class="tab-pill">efeito no faturamento</span>
+        </div>
+
+        <section class="panel panel-pad">
+          <div class="split-layout">
+            <div class="timeline-card">
+              <div class="section-head">
+                <div>
+                  <h3 class="panel-title">Cronograma consolidado</h3>
+                  <p class="panel-subtitle">
+                    Layout estático em estilo Gantt para os principais movimentos operacionais.
+                  </p>
+                </div>
+                <span class="pill purple">editável no produto real</span>
+              </div>
+
+              <div class="timeline-grid header">
+                <div class="timeline-cell timeline-label">Lote / fluxo</div>
+                <div class="timeline-cell timeline-label">Ago</div>
+                <div class="timeline-cell timeline-label">Set</div>
+                <div class="timeline-cell timeline-label">Out</div>
+                <div class="timeline-cell timeline-label">Nov</div>
+                <div class="timeline-cell timeline-label">Dez</div>
+                <div class="timeline-cell timeline-label">Jan</div>
+              </div>
+
+              <div class="timeline-grid">
+                <div class="timeline-cell">
+                  <span class="timeline-label">SJ-24-051</span>
+                  <span class="timeline-sub">Alojamento até produção</span>
+                </div>
+                <div class="timeline-cell timeline-block good"><span>Alojamento</span></div>
+                <div class="timeline-cell timeline-block good"><span>Recria</span></div>
+                <div class="timeline-cell timeline-block"><span>Transferência</span></div>
+                <div class="timeline-cell timeline-block"><span>Rampa</span></div>
+                <div class="timeline-cell timeline-block warn"><span>Pico</span></div>
+                <div class="timeline-cell"><span></span></div>
+
+                <div class="timeline-cell">
+                  <span class="timeline-label">SJ-24-044</span>
+                  <span class="timeline-sub">Linha de produção</span>
+                </div>
+                <div class="timeline-cell"><span></span></div>
+                <div class="timeline-cell timeline-block warn"><span>Carga alta</span></div>
+                <div class="timeline-cell timeline-block bad"><span>Risco de descarte</span></div>
+                <div class="timeline-cell timeline-block"><span>Saída ajustada</span></div>
+                <div class="timeline-cell timeline-block"><span>Alívio de capacidade</span></div>
+                <div class="timeline-cell"><span></span></div>
+
+                <div class="timeline-cell">
+                  <span class="timeline-label">SJ-24-052</span>
+                  <span class="timeline-sub">Simulação alternativa</span>
+                </div>
+                <div class="timeline-cell"><span></span></div>
+                <div class="timeline-cell"><span></span></div>
+                <div class="timeline-cell timeline-block good"><span>Alojamento</span></div>
+                <div class="timeline-cell timeline-block good"><span>Recria</span></div>
+                <div class="timeline-cell timeline-block"><span>Transferência</span></div>
+                <div class="timeline-cell timeline-block warn"><span>Rampa</span></div>
+              </div>
+            </div>
+
+            <div class="summary-card">
+              <h3 class="panel-title">Impacto do cenário</h3>
+              <p class="panel-subtitle">
+                Bloco lateral curto para deixar visíveis as consequências do cenário antes de qualquer análise profunda.
+              </p>
+              <div class="mini-kpi">
+                <div>
+                  <div class="label">Estabilidade mensal</div>
+                  <div class="value">+12%</div>
+                </div>
+                <span class="pill good">melhorou</span>
+              </div>
+              <div class="mini-kpi">
+                <div>
+                  <div class="label">Pico de ocupação</div>
+                  <div class="value">89.6%</div>
+                </div>
+                <span class="pill good">mais seguro</span>
+              </div>
+              <div class="mini-kpi">
+                <div>
+                  <div class="label">Efeito no faturamento</div>
+                  <div class="value">BRL +74k</div>
+                </div>
+                <span class="pill purple">delta do cenário</span>
+              </div>
+              <div class="mini-kpi">
+                <div>
+                  <div class="label">Conflito crítico</div>
+                  <div class="value">1 bloco</div>
+                </div>
+                <span class="pill warn">revisar</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel panel-pad">
+          <div class="grid-side">
+            <div class="detail-card">
+              <div class="section-head">
+                <div>
+                  <h3 class="panel-title">Mock dos controles de simulação</h3>
+                  <p class="panel-subtitle">
+                    Layout estático em estilo formulário para sugerir os controles
+                    que a interface real pode expor.
+                  </p>
+                </div>
+              </div>
+              <div class="grid-2">
+                <div class="metric-card">
+                  <div class="metric-label">Data de transferência</div>
+                  <div class="metric-value">14 Out</div>
+                  <div class="metric-meta">2 semanas antes do plano base</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-label">Quantidade movida</div>
+                  <div class="metric-value">18k aves</div>
+                  <div class="metric-meta">Divisão parcial para Galpão 6</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-label">Curva de mortalidade</div>
+                  <div class="metric-value">Curva B</div>
+                  <div class="metric-meta">Hipótese de menor estresse</div>
+                </div>
+                <div class="metric-card">
+                  <div class="metric-label">Limite de capacidade</div>
+                  <div class="metric-value">92%</div>
+                  <div class="metric-meta">Limite suave de planejamento</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="detail-card">
+              <h3 class="panel-title">O que esta tela deve comunicar</h3>
+              <p class="panel-subtitle">
+                A ênfase visual está no apoio à decisão, e não apenas no relatório.
+              </p>
+              <div class="alert-list">
+                <div class="alert-item">
+                  <strong>A cronologia continua legível</strong>
+                  <p>Os lotes permanecem como âncora enquanto o horizonte de tempo segue da esquerda para a direita.</p>
+                </div>
+                <div class="alert-item">
+                  <strong>O impacto continua visível</strong>
+                  <p>Ocupação, estabilidade e faturamento reagem ao lado do cronograma.</p>
+                </div>
+                <div class="alert-item">
+                  <strong>O cenário não substitui o histórico</strong>
+                  <p>O mock mantém a simulação visualmente separada do planejamento original.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>

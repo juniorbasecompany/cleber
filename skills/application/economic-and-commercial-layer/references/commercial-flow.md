@@ -1,11 +1,11 @@
-# Commercial Flow
+# Fluxo comercial
 
-Commercial-operational flow may include:
+O fluxo comercial e operacional pode incluir:
 
-- saleable or contract-relevant output
-- classification into commercial units
-- packaging or shipment logic
-- service window or demand commitment
-- balance between projected supply and commercial need
+- saída vendável ou relevante para contrato;
+- classificação em unidade comercial;
+- lógica de embalagem ou expedição;
+- janela de atendimento ou compromisso de demanda;
+- saldo entre oferta projetada e necessidade comercial.
 
-This flow should remain connected to daily facts.
+Esse fluxo deve permanecer conectado ao fato diário.
