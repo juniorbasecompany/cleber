@@ -16,7 +16,8 @@ O sistema deve permitir:
 
 ### 2.1 Cálculo diário
 
-Toda apuração deve ser diária. Visões semanais, mensais, anuais ou por intervalo devem ser agregações do cálculo diário.
+Toda apuração deve ser diária.
+Visões diárias, mensais, anuais ou por intervalo devem ser agregações do cálculo diário.
 
 ### 2.2 Vigência por evento
 
@@ -245,7 +246,7 @@ O cálculo diário deve gerar fatos materializados por dia, persistidos de forma
 
 Esses fatos devem:
 
-- ser a base para visões semanais, mensais, anuais e por intervalo;
+- ser a base para visões diárias, mensais, anuais e por intervalo;
 - evitar dependência de colunas fixas de indicador de negócio;
 - permitir reprocessamento sem destruição do histórico anterior;
 - armazenar entidade, data, atributo, valor, origem, versão e classificação aplicável.
@@ -306,7 +307,6 @@ O objetivo da simulação é reduzir concentração operacional, equilibrar a oc
 O sistema deve oferecer visões por:
 
 - dia;
-- semana;
 - mês;
 - ano;
 - intervalo livre;

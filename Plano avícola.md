@@ -2,118 +2,148 @@
 
 ## 1. Objetivo
 
-Transformar o modelo hoje operado em planilhas em um sistema robusto para previsão, acompanhamento do realizado e simulação da produção de ovos, com cálculo diário, rastreabilidade completa e visão consolidada por lote, segmento, local, período e empresa.
+Transformar o modelo hoje operado em planilhas em um sistema robusto para previsÃ£o, acompanhamento do realizado e simulaÃ§Ã£o da produÃ§Ã£o de ovos, com cÃ¡lculo diÃ¡rio, rastreabilidade completa e visÃ£o consolidada por lote, segmento, local, perÃ­odo e empresa.
 
 O sistema deve permitir:
 
-- prever a operação para avicultura fértil e avicultura comercial;
-- prever plantel, produção, qualidade e faturamento;
-- suportar visão por granja, núcleo, aviário, box, gaiola, lote e segmento, conforme o tipo de operação;
-- suportar classificação por macho, fêmea, vermelha, branca, linhagem e sub-linhagem;
-- suportar as fases da ave: cria, recria, produção e muda forçada;
-- prever viabilidade, entendida como mortalidade e eliminação com apuração de aves vivas ao fim da fase;
-- prever produção total de ovos;
-- prever aproveitamento, entendendo aproveitamento como número de ovos viáveis, vendáveis ou incubáveis;
+- prever a operaÃ§Ã£o para avicultura fÃ©rtil e avicultura comercial;
+- prever plantel, produÃ§Ã£o, qualidade e faturamento;
+- suportar visÃ£o por granja, nÃºcleo, aviÃ¡rio, box, gaiola, lote e segmento, conforme o tipo de operaÃ§Ã£o;
+- suportar classificaÃ§Ã£o por macho, fÃªmea, vermelha, branca, linhagem e sub-linhagem;
+- suportar as fases da ave: cria, recria, produÃ§Ã£o e muda forÃ§ada;
+- prever viabilidade, entendida como mortalidade e eliminaÃ§Ã£o com apuraÃ§Ã£o de aves vivas ao fim da fase;
+- prever produÃ§Ã£o total de ovos;
+- prever aproveitamento, entendendo aproveitamento como nÃºmero de ovos viÃ¡veis, vendÃ¡veis ou incubÃ¡veis;
 - quantificar descartes para efeito de faturamento;
-- registrar o realizado sem sobrescrever a previsão;
-- suportar projeção em três camadas: previsto inflexível, previsto ajustado ou corrigido pelo realizado e simulação por variáveis independentes;
+- registrar o realizado sem sobrescrever a previsÃ£o;
+- suportar projeÃ§Ã£o em trÃªs camadas: previsto inflexÃ­vel, previsto ajustado ou corrigido pelo realizado e simulaÃ§Ã£o por variÃ¡veis independentes;
 - comparar previsto x realizado x corrigido;
-- simular cenários de alojamento, transferência, descarte, mortalidade, aproveitamento e preço;
-- consolidar um, vários ou todos os lotes em qualquer recorte temporal.
+- simular cenÃ¡rios de alojamento, transferÃªncia, descarte, mortalidade, aproveitamento e preÃ§o;
+- consolidar um, vÃ¡rios ou todos os lotes em qualquer recorte temporal.
 
-## 2. Princípios do modelo
+## 2. PrincÃ­pios do modelo
 
-### 2.1 Cálculo diário
+### 2.1 CÃ¡lculo diÃ¡rio
 
-Toda apuração deve ser diária. Visões semanais, mensais, anuais ou por intervalo devem ser agregações do cálculo diário.
+Toda apuraÃ§Ã£o deve ser diÃ¡ria. VisÃµes diárias, mensais, anuais ou por intervalo devem ser agregaÃ§Ãµes do cÃ¡lculo diÃ¡rio.
 
-### 2.2 Vigência por evento
+### 2.2 VigÃªncia por evento
 
-Os parâmetros não devem ser modelados como intervalos fechados previamente definidos. Cada valor passa a valer a partir da data do evento e permanece vigente até:
+Os parÃ¢metros nÃ£o devem ser modelados como intervalos fechados previamente definidos. Cada valor passa a valer a partir da data do evento e permanece vigente atÃ©:
 
-- o próximo evento do mesmo tipo; ou
+- o prÃ³ximo evento do mesmo tipo; ou
 - o encerramento do segmento ou lote.
 
 Exemplo:
 
 - mortalidade = 0,10% a partir de 01/01;
 - em 05/01, mortalidade passa a 0,14%;
-- logo, 0,10% vale de 01/01 até 04/01, e 0,14% vale de 05/01 em diante.
+- logo, 0,10% vale de 01/01 atÃ© 04/01, e 0,14% vale de 05/01 em diante.
 
-Esse mesmo raciocínio se aplica a qualquer atributo configurável, técnico ou econômico. Mortalidade, aproveitamento, MI, ME, faixas de peso, preço e capacidade são apenas exemplos possíveis do domínio.
+Esse mesmo raciocÃ­nio se aplica a qualquer atributo configurÃ¡vel, tÃ©cnico ou econÃ´mico. Mortalidade, aproveitamento, MI, ME, faixas de peso, preÃ§o e capacidade sÃ£o apenas exemplos possÃ­veis do domÃ­nio.
 
 ### 2.3 Fallback por escopo
 
-Os parâmetros devem ser resolvidos por hierarquia de escopo.
+Os parÃ¢metros devem ser resolvidos por hierarquia de escopo.
 
 Ordem sugerida:
 
-1. valor específico do segmento;
-2. valor específico do lote;
-3. valor específico do local;
-4. valor padrão geral.
+1. valor especÃ­fico do segmento;
+2. valor especÃ­fico do lote;
+3. valor especÃ­fico do local;
+4. valor padrÃ£o geral.
 
-O motor sempre deve registrar qual origem foi usada no cálculo, para garantir auditoria e depuração.
+O motor sempre deve registrar qual origem foi usada no cÃ¡lculo, para garantir auditoria e depuraÃ§Ã£o.
 
-### 2.4 Previsão e realizado separados
+### 2.4 PrevisÃ£o e realizado separados
 
-O realizado não substitui a previsão. Ele deve ser armazenado em camada própria para permitir:
+O realizado nÃ£o substitui a previsÃ£o. Ele deve ser armazenado em camada prÃ³pria para permitir:
 
-- comparação entre previsto e realizado;
-- análise de desvios;
-- revisão de premissas;
-- construção de histórico de performance.
+- comparaÃ§Ã£o entre previsto e realizado;
+- anÃ¡lise de desvios;
+- revisÃ£o de premissas;
+- construÃ§Ã£o de histÃ³rico de performance.
 
 ### 2.5 Modelo orientado por metadado
 
-O sistema deve ser orientado por metadado. Isso significa que atributos, classificações, curvas, regras e indicadores de negócio não devem nascer como colunas dedicadas por padrão.
+O sistema deve ser orientado por metadado. Isso significa que atributos, classificaÃ§Ãµes, curvas, regras e indicadores de negÃ³cio nÃ£o devem nascer como colunas dedicadas por padrÃ£o.
 
-Deve existir uma distinção clara entre:
+Deve existir uma distinÃ§Ã£o clara entre:
 
-- estrutura fixa do sistema, responsável por identidade, relacionamento, escopo, vigência, auditoria, versionamento e materialização;
-- conteúdo configurável, responsável por definir atributos, classificações, fórmulas, unidades, agregações e rótulos exibidos ao usuário.
+- estrutura fixa do sistema, responsÃ¡vel por identidade, relacionamento, escopo, vigÃªncia, auditoria, versionamento e materializaÃ§Ã£o;
+- conteÃºdo configurÃ¡vel, responsÃ¡vel por definir atributos, classificaÃ§Ãµes, fÃ³rmulas, unidades, agregaÃ§Ãµes e rÃ³tulos exibidos ao usuÃ¡rio.
 
-Assim, itens como mortalidade, aproveitamento, MI, ME, percentual de ovos >60g, peso médio e preço devem ser tratados como exemplos de atributos configuráveis do domínio, e não como nomes obrigatórios de colunas físicas.
+Assim, itens como mortalidade, aproveitamento, MI, ME, percentual de ovos >60g, peso mÃ©dio e preÃ§o devem ser tratados como exemplos de atributos configurÃ¡veis do domÃ­nio, e nÃ£o como nomes obrigatÃ³rios de colunas fÃ­sicas.
 
-No contexto avícola, termos como lote, alojamento, aviário, mortalidade, produção, aproveitamento e classificação de ovo devem ser entendidos como parte do pacote analítico do nicho, e não como imposição estrutural da base física do sistema.
+No contexto avÃ­cola, termos como lote, alojamento, aviÃ¡rio, mortalidade, produÃ§Ã£o, aproveitamento e classificaÃ§Ã£o de ovo devem ser entendidos como parte do pacote analÃ­tico do nicho, e nÃ£o como imposiÃ§Ã£o estrutural da base fÃ­sica do sistema.
 
-Cada atributo configurável deve permitir, no mínimo:
+Cada atributo configurÃ¡vel deve permitir, no mÃ­nimo:
 
-- nome exibido ao usuário;
+- nome exibido ao usuÃ¡rio;
 - tipo do valor;
-- papel no cálculo;
+- papel no cÃ¡lculo;
 - granularidade;
-- regra de agregação;
-- vigência;
+- regra de agregaÃ§Ã£o;
+- vigÃªncia;
 - origem permitida;
-- unidade e precisão;
-- fórmula ou referência de cálculo, quando aplicável.
+- unidade e precisÃ£o;
+- fÃ³rmula ou referÃªncia de cÃ¡lculo, quando aplicÃ¡vel.
 
-As regras disponíveis para o nicho avícola devem ser governadas, para evitar tanto rigidez estrutural quanto liberdade excessiva sem semântica operacional.
+As regras disponÃ­veis para o nicho avÃ­cola devem ser governadas, para evitar tanto rigidez estrutural quanto liberdade excessiva sem semÃ¢ntica operacional.
 
-### 2.6 Temporalidade e histórico imutável
+### 2.6 Temporalidade e histÃ³rico imutÃ¡vel
 
-Toda informação com efeito operacional deve considerar vigência temporal e histórico imutável.
+Toda informaÃ§Ã£o com efeito operacional deve considerar vigÃªncia temporal e histÃ³rico imutÃ¡vel.
 
-O plano deve preservar, no mínimo:
+O plano deve preservar, no mÃ­nimo:
 
 - data em que o valor passa a valer;
-- versão da regra, do evento ou do cálculo;
+- versÃ£o da regra, do evento ou do cÃ¡lculo;
 - origem do dado;
-- possibilidade de reconstruir o cálculo de uma data passada com base nas regras vigentes naquele momento.
+- possibilidade de reconstruir o cÃ¡lculo de uma data passada com base nas regras vigentes naquele momento.
+
+### 2.7 Moeda local e conversão de relatório
+
+Toda informação financeira auditável deve ser persistida apenas na moeda local da operação.
+
+Isso significa, no mínimo:
+
+- valor econômico original em moeda local;
+- auditoria e reconstrução histórica apenas sobre o fato local;
+- possibilidade de exibir relatórios em outra moeda por conversão na consulta;
+- conversão cambial tratada como recurso de visualização, e não como parte do fato financeiro auditável.
+
+Se a taxa histórica usada em relatório convertido mudar posteriormente, isso não altera o fato financeiro original nem a auditoria operacional da moeda local.
+
+### 2.8 UTC no backend e exibição local
+
+O sistema deve persistir timestamps em UTC e exibir datas e horários no timezone local da operação ou do usuário, conforme a necessidade da interface.
+
+Isso não altera o princípio central do modelo:
+
+- o grão operacional continua sendo o dia;
+- relatórios diários, mensais, anuais ou por período continuam sendo agregações da base diária.
+
+### 2.9 País opcional no escopo
+
+O país deve ser suportado como nível opcional da hierarquia de local.
+
+Quando ele não for necessário para a operação, pode ser omitido.
+
+Quando o fato envolver valor econômico, o país precisa estar resolvido no contexto persistido da operação para determinar a moeda local do registro.
 
 ## 3. Estrutura conceitual
 
 ## 3.1 Lote
 
-Lote representa a unidade biológica e econômica principal.
+Lote representa a unidade biolÃ³gica e econÃ´mica principal.
 
-Cada lote deve possuir, no mínimo:
+Cada lote deve possuir, no mÃ­nimo:
 
-- identificação;
-- linhagem ou padrão genético;
+- identificaÃ§Ã£o;
+- linhagem ou padrÃ£o genÃ©tico;
 - data de alojamento inicial;
-- parâmetros técnicos vinculados direta ou indiretamente.
+- parÃ¢metros tÃ©cnicos vinculados direta ou indiretamente.
 
 ## 3.2 Segmento do lote
 
@@ -122,18 +152,19 @@ O lote deve poder ser subdividido em segmentos operacionais.
 Um segmento existe quando parte do lote:
 
 - permanece em um local;
-- é transferida para outro local;
+- Ã© transferida para outro local;
 - sofre descarte parcial;
 - passa a ter comportamento distinto do restante do lote.
 
-Ao alocar um lote, normalmente vindo da cria ou recria, deve-se dar sequência na idade ponderada dos lotes precedentes, usando o standard daquele que estiver em maioria ou mantendo ambos, caso seja possível acompanhar a produção de forma separada.
+Ao alocar um lote, normalmente vindo da cria ou recria, deve-se dar sequÃªncia na idade ponderada dos lotes precedentes, usando o standard daquele que estiver em maioria ou mantendo ambos, caso seja possÃ­vel acompanhar a produÃ§Ã£o de forma separada.
 
-O cálculo diário deve ocorrer no nível do segmento. O lote consolidado é a soma de seus segmentos ativos em cada data.
+O cÃ¡lculo diÃ¡rio deve ocorrer no nÃ­vel do segmento. O lote consolidado Ã© a soma de seus segmentos ativos em cada data.
 
 ## 3.3 Local
 
 O local deve suportar hierarquia operacional, por exemplo:
 
+- país, quando aplicável;
 - empresa;
 - unidade;
 - granja;
@@ -141,194 +172,194 @@ O local deve suportar hierarquia operacional, por exemplo:
 - aviário;
 - subdivisão.
 
+Os níveis intermediários devem ser opcionais, para não engessar operações pequenas.
+
 Isso permite consolidar produção, ocupação e capacidade em diferentes níveis.
+## 3.4 ClassificaÃ§Ãµes e composiÃ§Ãµes
 
-## 3.4 Classificações e composições
+O modelo deve permitir diferenÃ§as dentro do mesmo lote ou segmento, como:
 
-O modelo deve permitir diferenças dentro do mesmo lote ou segmento, como:
-
-- fêmeas e machos;
+- fÃªmeas e machos;
 - aves brancas e vermelhas;
-- outras classificações zootécnicas relevantes, incluindo linhagem e sub-linhagem.
+- outras classificaÃ§Ãµes zootÃ©cnicas relevantes, incluindo linhagem e sub-linhagem.
 
-Essas classificações podem impactar curvas, atributos técnicos, produção, peso, aproveitamento e valor econômico.
+Essas classificaÃ§Ãµes podem impactar curvas, atributos tÃ©cnicos, produÃ§Ã£o, peso, aproveitamento e valor econÃ´mico.
 
-As classificações devem ser configuráveis, podendo ser definidas pelo usuário sem alteração de schema. O sistema deve suportar mais de um eixo de classificação sobre a mesma entidade, inclusive com composição multinível quando necessário.
+As classificaÃ§Ãµes devem ser configurÃ¡veis, podendo ser definidas pelo usuÃ¡rio sem alteraÃ§Ã£o de schema. O sistema deve suportar mais de um eixo de classificaÃ§Ã£o sobre a mesma entidade, inclusive com composiÃ§Ã£o multinÃ­vel quando necessÃ¡rio.
 
 ## 3.5 Atributo
 
-Atributo representa qualquer medida, parâmetro, indicador, restrição ou variável de negócio definida pelo usuário.
+Atributo representa qualquer medida, parÃ¢metro, indicador, restriÃ§Ã£o ou variÃ¡vel de negÃ³cio definida pelo usuÃ¡rio.
 
-O atributo não deve depender de coluna dedicada para existir. Seu comportamento deve ser definido por cadastro, incluindo tipo, escopo, vigência, fórmula, agregação e forma de exibição.
+O atributo nÃ£o deve depender de coluna dedicada para existir. Seu comportamento deve ser definido por cadastro, incluindo tipo, escopo, vigÃªncia, fÃ³rmula, agregaÃ§Ã£o e forma de exibiÃ§Ã£o.
 
-No nicho avícola, isso inclui atributos como mortalidade, produção, aproveitamento, MI, ME, percentual por classe, peso, preço e capacidade, sempre tratados como conteúdo configurável.
+No nicho avÃ­cola, isso inclui atributos como mortalidade, produÃ§Ã£o, aproveitamento, MI, ME, percentual por classe, peso, preÃ§o e capacidade, sempre tratados como conteÃºdo configurÃ¡vel.
 
 ## 3.6 Regra
 
-Regra representa a forma como um atributo é tratado pelo motor.
+Regra representa a forma como um atributo Ã© tratado pelo motor.
 
 Uma regra pode definir, por exemplo:
 
-- como o valor é informado;
-- como ele é resolvido por escopo;
-- como ele é agregado;
-- se ele participa de cálculo derivado;
-- se ele é previsto, realizado, simulado ou calculado.
+- como o valor Ã© informado;
+- como ele Ã© resolvido por escopo;
+- como ele Ã© agregado;
+- se ele participa de cÃ¡lculo derivado;
+- se ele Ã© previsto, realizado, simulado ou calculado.
 
-## 3.7 Medida diária materializada
+## 3.7 Medida diÃ¡ria materializada
 
-Toda saída relevante do motor deve ser persistida como medida diária materializada.
+Toda saÃ­da relevante do motor deve ser persistida como medida diÃ¡ria materializada.
 
-Essa medida deve permitir rastrear, no mínimo:
+Essa medida deve permitir rastrear, no mÃ­nimo:
 
 - entidade calculada;
 - data;
 - atributo;
 - valor;
-- classificação aplicada, quando houver;
+- classificaÃ§Ã£o aplicada, quando houver;
 - origem;
-- versão do cálculo.
+- versÃ£o do cÃ¡lculo.
 
 ## 4. Eventos do sistema
 
 ## 4.1 Eventos operacionais
 
-Eventos operacionais alteram a composição física do sistema.
+Eventos operacionais alteram a composiÃ§Ã£o fÃ­sica do sistema.
 
 Exemplos:
 
 - alojamento;
-- transferência;
-- unificação ou separação lógica;
+- transferÃªncia;
+- unificaÃ§Ã£o ou separaÃ§Ã£o lÃ³gica;
 - descarte parcial;
 - encerramento do lote ou segmento;
 - ajustes de quantidade.
 
 ## 4.2 Eventos de atributo e regra
 
-Eventos de atributo alteram o valor vigente de um atributo configurável a partir de uma data.
+Eventos de atributo alteram o valor vigente de um atributo configurÃ¡vel a partir de uma data.
 
-Eventos de regra alteram a forma de tratamento de um atributo, como fórmula, agregação, fallback, unidade operacional ou comportamento no cálculo.
+Eventos de regra alteram a forma de tratamento de um atributo, como fÃ³rmula, agregaÃ§Ã£o, fallback, unidade operacional ou comportamento no cÃ¡lculo.
 
-Exemplos de atributos que podem ser governados por esses eventos incluem mortalidade, curva de produção, aproveitamento, MI, ME, percentual de ovos >60g, peso médio do ovo, preço por classe, capacidade planejada, meta técnica e meta econômica. Esses exemplos não devem ser interpretados como uma lista fechada.
+Exemplos de atributos que podem ser governados por esses eventos incluem mortalidade, curva de produÃ§Ã£o, aproveitamento, MI, ME, percentual de ovos >60g, peso mÃ©dio do ovo, preÃ§o por classe, capacidade planejada, meta tÃ©cnica e meta econÃ´mica. Esses exemplos nÃ£o devem ser interpretados como uma lista fechada.
 
-A taxonomia de eventos e regras do nicho avícola deve ser configurável e governada, mesmo quando o vocabulário operacional já estiver estabilizado.
+A taxonomia de eventos e regras do nicho avÃ­cola deve ser configurÃ¡vel e governada, mesmo quando o vocabulÃ¡rio operacional jÃ¡ estiver estabilizado.
 
-Todos os eventos devem ser versionados, datados, auditáveis e reconstruíveis historicamente.
+Todos os eventos devem ser versionados, datados, auditÃ¡veis e reconstruÃ­veis historicamente.
 
-## 5. Motor de cálculo
+## 5. Motor de cÃ¡lculo
 
-## 5.1 Resolução diária
+## 5.1 ResoluÃ§Ã£o diÃ¡ria
 
 Para cada dia e para cada segmento ativo, o motor deve:
 
-- identificar os atributos vigentes para a data e para o escopo aplicável;
-- resolver classificações e composições relevantes;
+- identificar os atributos vigentes para a data e para o escopo aplicÃ¡vel;
+- resolver classificaÃ§Ãµes e composiÃ§Ãµes relevantes;
 - aplicar fallback por escopo;
 - calcular atributos derivados;
-- persistir o resultado em medida diária materializada;
-- registrar a proveniência de cada valor calculado.
+- persistir o resultado em medida diÃ¡ria materializada;
+- registrar a proveniÃªncia de cada valor calculado.
 
-Entre os atributos que podem ser resolvidos por esse mecanismo estão, por exemplo, idade, quantidade inicial do dia, perdas previstas, plantel final do dia, produção total, produção aproveitável, distribuição por classe, peso, massa produzida, valor econômico, ocupação e capacidade. Esses itens são exemplos de uso do motor, não uma lista fixa de colunas.
+Entre os atributos que podem ser resolvidos por esse mecanismo estÃ£o, por exemplo, idade, quantidade inicial do dia, perdas previstas, plantel final do dia, produÃ§Ã£o total, produÃ§Ã£o aproveitÃ¡vel, distribuiÃ§Ã£o por classe, peso, massa produzida, valor econÃ´mico, ocupaÃ§Ã£o e capacidade. Esses itens sÃ£o exemplos de uso do motor, nÃ£o uma lista fixa de colunas.
 
 ## 5.2 Curvas por idade resolvida no dia
 
-As curvas padrão por idade devem ser a base do modelo técnico. A idade deve ser resolvida como atributo do dia, e não como eixo temporal separado do cálculo. Sobre ela incidem os eventos vigentes e os ajustes específicos.
+As curvas padrÃ£o por idade devem ser a base do modelo tÃ©cnico. A idade deve ser resolvida como atributo do dia, e nÃ£o como eixo temporal separado do cÃ¡lculo. Sobre ela incidem os eventos vigentes e os ajustes especÃ­ficos.
 
-A idade inicial de cada lote pode ser arbitrária, quando necessário.
+A idade inicial de cada lote pode ser arbitrÃ¡ria, quando necessÃ¡rio.
 
-Na prática, a produção não nasce de um valor fixo por lote, mas da combinação entre:
+Na prÃ¡tica, a produÃ§Ã£o nÃ£o nasce de um valor fixo por lote, mas da combinaÃ§Ã£o entre:
 
 - idade;
-- padrão genético ou categoria;
+- padrÃ£o genÃ©tico ou categoria;
 - premissas vigentes;
 - eventos operacionais;
-- parametrização específica.
+- parametrizaÃ§Ã£o especÃ­fica.
 
-O eixo temporal do cálculo continua sendo sempre o dia. Idade, fase produtiva e demais referências técnicas entram como atributos, classificações ou regras aplicadas ao dia calculado.
+O eixo temporal do cÃ¡lculo continua sendo sempre o dia. Idade, fase produtiva e demais referÃªncias tÃ©cnicas entram como atributos, classificaÃ§Ãµes ou regras aplicadas ao dia calculado.
 
-## 5.3 Rastreabilidade do cálculo
+## 5.3 Rastreabilidade do cÃ¡lculo
 
-Cada valor calculado deve ser explicável. O sistema deve permitir identificar:
+Cada valor calculado deve ser explicÃ¡vel. O sistema deve permitir identificar:
 
 - qual curva foi aplicada;
 - qual atributo foi utilizado;
-- qual escopo forneceu o parâmetro;
+- qual escopo forneceu o parÃ¢metro;
 - quais eventos estavam vigentes na data;
-- qual fórmula gerou o valor final.
+- qual fÃ³rmula gerou o valor final.
 
-Sem isso, o sistema perde confiança operacional.
+Sem isso, o sistema perde confianÃ§a operacional.
 
-## 5.4 Fatos diários materializados
+## 5.4 Fatos diÃ¡rios materializados
 
-O cálculo diário deve gerar fatos materializados por dia, persistidos de forma consultável e versionável.
+O cÃ¡lculo diÃ¡rio deve gerar fatos materializados por dia, persistidos de forma consultÃ¡vel e versionÃ¡vel.
 
 Esses fatos devem:
 
-- ser a base para visões semanais, mensais, anuais e por intervalo;
-- evitar dependência de colunas fixas de indicador de negócio;
-- permitir reprocessamento sem destruição do histórico anterior;
-- armazenar entidade, data, atributo, valor, origem, versão e classificação aplicável.
+- ser a base para visÃµes diárias, mensais, anuais e por intervalo;
+- evitar dependÃªncia de colunas fixas de indicador de negÃ³cio;
+- permitir reprocessamento sem destruiÃ§Ã£o do histÃ³rico anterior;
+- armazenar entidade, data, atributo, valor, origem, versÃ£o e classificaÃ§Ã£o aplicÃ¡vel.
 
-## 6. Realizado e reconciliação
+## 6. Realizado e reconciliaÃ§Ã£o
 
-O sistema deve permitir registrar o realizado diário, por segmento ou por agregação operacional, usando o mesmo catálogo de atributo sempre que fizer sentido.
+O sistema deve permitir registrar o realizado diÃ¡rio, por segmento ou por agregaÃ§Ã£o operacional, usando o mesmo catÃ¡logo de atributo sempre que fizer sentido.
 
 O realizado deve suportar:
 
 - atributo informado manualmente;
 - atributo importado;
 - atributo conciliado com o previsto;
-- ocorrência operacional relevante ligada ao dia, ao segmento, ao lote, ao local ou à classificação.
+- ocorrÃªncia operacional relevante ligada ao dia, ao segmento, ao lote, ao local ou Ã  classificaÃ§Ã£o.
 
-A reconciliação deve mostrar pelo menos:
+A reconciliaÃ§Ã£o deve mostrar pelo menos:
 
 - valor previsto original;
 - valor realizado;
 - desvio absoluto;
 - desvio percentual;
-- previsão corrigida, quando adotada.
+- previsÃ£o corrigida, quando adotada.
 
-A comparação deve ocorrer entre atributos equivalentes por regra, e não entre um conjunto fixo de colunas.
+A comparaÃ§Ã£o deve ocorrer entre atributos equivalentes por regra, e nÃ£o entre um conjunto fixo de colunas.
 
-## 7. Capacidades mínimas de indicador
+## 7. Capacidades mÃ­nimas de indicador
 
-O sistema deve disponibilizar, no mínimo, as seguintes capacidades:
+O sistema deve disponibilizar, no mÃ­nimo, as seguintes capacidades:
 
-- cadastrar atributo de negócio sem mudança de schema;
-- cadastrar indicador derivado por fórmula;
-- consolidar por lote, segmento, local, empresa, classificação e período;
+- cadastrar atributo de negÃ³cio sem mudanÃ§a de schema;
+- cadastrar indicador derivado por fÃ³rmula;
+- consolidar por lote, segmento, local, empresa, classificaÃ§Ã£o e perÃ­odo;
 - comparar previsto, realizado, corrigido e simulado;
-- agregar por soma, média, último valor, média ponderada, máximo ou mínimo, conforme regra do atributo;
-- rastrear origem, vigência, escopo e fórmula aplicada.
+- agregar por soma, mÃ©dia, Ãºltimo valor, mÃ©dia ponderada, mÃ¡ximo ou mÃ­nimo, conforme regra do atributo;
+- rastrear origem, vigÃªncia, escopo e fÃ³rmula aplicada.
 
-Indicadores como plantel inicial e final, mortalidade diária e acumulada, produção total de ovos, produção aproveitável, MI, ME, percentual de ovos >60g, peso médio do ovo, ovos por ave alojada, faturamento, ocupação, capacidade, pirâmide etária, estabilidade mensal e concentração de alojamentos são exemplos iniciais do domínio, e não estrutura fixa obrigatória do banco.
+Indicadores como plantel inicial e final, mortalidade diÃ¡ria e acumulada, produÃ§Ã£o total de ovos, produÃ§Ã£o aproveitÃ¡vel, MI, ME, percentual de ovos >60g, peso mÃ©dio do ovo, ovos por ave alojada, faturamento, ocupaÃ§Ã£o, capacidade, pirÃ¢mide etÃ¡ria, estabilidade mensal e concentraÃ§Ã£o de alojamentos sÃ£o exemplos iniciais do domÃ­nio, e nÃ£o estrutura fixa obrigatÃ³ria do banco.
 
-No nicho avícola, esse conjunto pode compor o pacote analítico inicial, mas deve continuar sendo evolutivo e governado por metadado.
+No nicho avÃ­cola, esse conjunto pode compor o pacote analÃ­tico inicial, mas deve continuar sendo evolutivo e governado por metadado.
 
-## 8. Cronograma e simulação
+## 8. Cronograma e simulaÃ§Ã£o
 
-O cronograma não deve ser apenas um cadastro de datas. Ele deve funcionar como ferramenta de decisão.
+O cronograma nÃ£o deve ser apenas um cadastro de datas. Ele deve funcionar como ferramenta de decisÃ£o.
 
-O sistema deve permitir simular cenários alterando:
+O sistema deve permitir simular cenÃ¡rios alterando:
 
 - datas de alojamento;
-- datas de transferência;
+- datas de transferÃªncia;
 - datas de descarte;
 - quantidades movimentadas;
 - curvas de mortalidade;
 - curvas de aproveitamento;
-- preços;
+- preÃ§os;
 - capacidade dos locais.
 
-O objetivo da simulação é reduzir picos e vales, equilibrar a pirâmide etária, melhorar ocupação e estabilizar produção e faturamento, inclusive para apoio ao PCP.
+O objetivo da simulaÃ§Ã£o Ã© reduzir picos e vales, equilibrar a pirÃ¢mide etÃ¡ria, melhorar ocupaÃ§Ã£o e estabilizar produÃ§Ã£o e faturamento, inclusive para apoio ao PCP.
 
 ## 9. Visões e relatórios
 
 O sistema deve oferecer visões por:
 
 - dia;
-- semana;
 - mês;
 - ano;
 - intervalo livre;
@@ -348,149 +379,152 @@ Relatórios e painéis mínimos:
 - ocupação e capacidade por local;
 - estabilidade mensal;
 - evolução de preço e faturamento;
-- alertas de desvio relevante.
+- alertas de desvio relevante;
+- visão por período formal derivada da base diária, quando exigida pelo painel gerencial.
 
+Relatórios financeiros exibidos em moeda diferente da moeda local devem ser tratados como visões derivadas para análise, e não como substituição do fato financeiro auditável.
 ## 10. Diretrizes de modelagem
 
 ### 10.1 Separar fatos de premissas
 
-Eventos realizados, parâmetros previstos e resultados calculados devem ficar em camadas distintas. Misturar essas naturezas fragiliza auditoria e manutenção.
+Eventos realizados, parÃ¢metros previstos e resultados calculados devem ficar em camadas distintas. Misturar essas naturezas fragiliza auditoria e manutenÃ§Ã£o.
 
-### 10.2 Nunca recalcular sem histórico
+### 10.2 Nunca recalcular sem histÃ³rico
 
-Mudanças em parâmetros precisam gerar nova vigência, não alteração destrutiva do passado.
+MudanÃ§as em parÃ¢metros precisam gerar nova vigÃªncia, nÃ£o alteraÃ§Ã£o destrutiva do passado.
 
-### 10.3 Consolidar por soma, nunca por edição manual
+### 10.3 Consolidar por soma, nunca por ediÃ§Ã£o manual
 
-Totais de lote, local, mês ou empresa devem ser derivados do cálculo diário e não mantidos manualmente em células de consolidação.
+Totais de lote, local, mÃªs ou empresa devem ser derivados do cÃ¡lculo diÃ¡rio e nÃ£o mantidos manualmente em cÃ©lulas de consolidaÃ§Ã£o.
 
-### 10.4 Preparar o modelo para múltiplas granularidades
+### 10.4 Preparar o modelo para mÃºltiplas granularidades
 
-Mesmo que a operação inicial use poucos níveis, o modelo já deve suportar crescimento de complexidade sem refatoração estrutural.
+Mesmo que a operaÃ§Ã£o inicial use poucos nÃ­veis, o modelo jÃ¡ deve suportar crescimento de complexidade sem refatoraÃ§Ã£o estrutural.
 
-### 10.5 Modelagem híbrida em PostgreSQL
+### 10.5 Modelagem hÃ­brida em PostgreSQL
 
-O modelo deve usar PostgreSQL com abordagem híbrida:
+O modelo deve usar PostgreSQL com abordagem hÃ­brida:
 
 - tabelas relacionais para a espinha dorsal do sistema;
-- JSONB para classificação variável, propriedade opcional e configuração flexível;
-- vigência temporal para resolver valor efetivo ao longo do tempo;
-- fatos diários materializados para consulta analítica e consolidação.
+- JSONB para classificaÃ§Ã£o variÃ¡vel, propriedade opcional e configuraÃ§Ã£o flexÃ­vel;
+- vigÃªncia temporal para resolver valor efetivo ao longo do tempo;
+- fatos diÃ¡rios materializados para consulta analÃ­tica e consolidaÃ§Ã£o.
 
 Essa abordagem deve ser orientada por metadado, mas sem cair em EAV puro e indiscriminado.
 
-A camada relacional deve concentrar identidade, relacionamento, escopo, evento, vigência, versão, auditoria e integridade.
+A camada relacional deve concentrar identidade, relacionamento, escopo, evento, vigÃªncia, versÃ£o, auditoria e integridade.
 
-O uso de JSONB deve ser controlado. Ele não deve substituir chave essencial de negócio, integridade referencial nem filtro recorrente sem estratégia clara de indexação e governança.
+O uso de JSONB deve ser controlado. Ele nÃ£o deve substituir chave essencial de negÃ³cio, integridade referencial nem filtro recorrente sem estratÃ©gia clara de indexaÃ§Ã£o e governanÃ§a.
 
-### 10.6 Convenção física do banco
+### 10.6 ConvenÃ§Ã£o fÃ­sica do banco
 
-Os nomes físicos do banco devem seguir as seguintes regras:
+Os nomes fÃ­sicos do banco devem seguir as seguintes regras:
 
-- tabela em inglês;
-- coluna em inglês;
+- tabela em inglÃªs;
+- coluna em inglÃªs;
 - tudo no singular;
-- tudo com uma única palavra;
+- tudo com uma Ãºnica palavra;
 - sem underline;
 - sem camelCase.
 
-Os atributos definidos pelo usuário devem ser apresentados em português e podem usar mais de uma palavra.
+Os atributos definidos pelo usuÃ¡rio devem ser apresentados em portuguÃªs e podem usar mais de uma palavra.
 
-O modelo deve separar nome técnico interno de rótulo exibido ao usuário.
+O modelo deve separar nome tÃ©cnico interno de rÃ³tulo exibido ao usuÃ¡rio.
 
-### 10.7 Pacote analítico avícola
+### 10.7 Pacote analÃ­tico avÃ­cola
 
-O nicho avícola deve ser tratado como um pacote configurável sobre o núcleo comum do sistema.
+O nicho avÃ­cola deve ser tratado como um pacote configurÃ¡vel sobre o nÃºcleo comum do sistema.
 
 Esse pacote pode reunir, por exemplo:
 
-- terminologia exibida ao usuário;
-- catálogo inicial de atributo;
-- classificação zootécnica;
-- catálogo de evento operacional;
-- conjunto de fórmula;
-- validações do domínio;
-- painel e relatório padrão.
+- terminologia exibida ao usuÃ¡rio;
+- catÃ¡logo inicial de atributo;
+- classificaÃ§Ã£o zootÃ©cnica;
+- catÃ¡logo de evento operacional;
+- conjunto de fÃ³rmula;
+- validaÃ§Ãµes do domÃ­nio;
+- painel e relatÃ³rio padrÃ£o.
 
-Isso permite preservar a aderência ao negócio de aves sem transformar o núcleo em uma estrutura exclusiva para avicultura.
+Isso permite preservar a aderÃªncia ao negÃ³cio de aves sem transformar o nÃºcleo em uma estrutura exclusiva para avicultura.
 
 ## 11. Fases de desenvolvimento
 
-### Fase 1 — Cadastro estrutural
+### Fase 1 â€” Cadastro estrutural
 
 Implementar cadastros de:
 
 - lote;
 - segmento;
-- local hierárquico;
-- classificação configurável;
-- atributo configurável;
+- local hierÃ¡rquico;
+- classificaÃ§Ã£o configurÃ¡vel;
+- atributo configurÃ¡vel;
 - regra;
 - tipo de evento.
 
-### Fase 2 — Motor de vigência e fallback
+### Fase 2 â€” Motor de vigÃªncia e fallback
 
 Implementar:
 
 - eventos de atributo e regra;
-- resolução por data;
+- resoluÃ§Ã£o por data;
 - fallback por escopo;
 - trilha de auditoria da origem do valor.
 
-### Fase 3 — Motor diário materializado
+### Fase 3 â€” Motor diÃ¡rio materializado
 
-Implementar cálculo diário materializado para:
+Implementar cÃ¡lculo diÃ¡rio materializado para:
 
 - atributos previstos;
 - atributos derivados;
-- consolidação diária;
-- versionamento do cálculo;
-- persistência dos fatos diários.
+- consolidaÃ§Ã£o diÃ¡ria;
+- versionamento do cÃ¡lculo;
+- persistÃªncia dos fatos diÃ¡rios.
 
-### Fase 4 — Eventos operacionais e segmentação
+### Fase 4 â€” Eventos operacionais e segmentaÃ§Ã£o
 
 Implementar:
 
-- transferências;
+- transferÃªncias;
 - descartes parciais;
-- segmentação do lote;
-- consolidação automática.
+- segmentaÃ§Ã£o do lote;
+- consolidaÃ§Ã£o automÃ¡tica.
 
-### Fase 5 — Realizado e reconciliação
+### Fase 5 â€” Realizado e reconciliaÃ§Ã£o
 
 Implementar:
 
 - entrada do realizado por atributo;
 - previsto x realizado;
 - desvio;
-- revisão de premissa.
+- revisÃ£o de premissa.
 
-### Fase 6 — Simulação e cronograma
+### Fase 6 â€” SimulaÃ§Ã£o e cronograma
 
 Implementar:
 
-- cenários alternativos;
-- redistribuição de alojamentos e descartes;
-- análise de estabilidade e capacidade.
+- cenÃ¡rios alternativos;
+- redistribuiÃ§Ã£o de alojamentos e descartes;
+- anÃ¡lise de estabilidade e capacidade.
 
-### Fase 7 — Painéis e gestão
+### Fase 7 â€” PainÃ©is e gestÃ£o
 
-Implementar dashboards, relatórios gerenciais, alertas e acompanhamento operacional.
+Implementar dashboards, relatÃ³rios gerenciais, alertas e acompanhamento operacional.
 
-## 12. Critérios de sucesso
+## 12. CritÃ©rios de sucesso
 
-O plano será considerado bem implementado quando o sistema:
+O plano serÃ¡ considerado bem implementado quando o sistema:
 
-- reproduzir a lógica operacional hoje observada nas planilhas;
-- calcular diariamente com coerência técnica;
+- reproduzir a lÃ³gica operacional hoje observada nas planilhas;
+- calcular diariamente com coerÃªncia tÃ©cnica;
 - explicar cada valor calculado;
-- permitir criar novo atributo de negócio sem mudança de schema;
-- suportar segmentação, agrupamento, transferências e descartes parciais;
-- separar claramente previsão, realizado e simulação;
-- permitir consolidação confiável por qualquer recorte;
-- eliminar dependência de planilhas paralelas;
-- apoiar decisões de cronograma, ocupação e estabilidade produtiva.
+- permitir criar novo atributo de negÃ³cio sem mudanÃ§a de schema;
+- suportar segmentaÃ§Ã£o, agrupamento, transferÃªncias e descartes parciais;
+- separar claramente previsÃ£o, realizado e simulaÃ§Ã£o;
+- permitir consolidaÃ§Ã£o confiÃ¡vel por qualquer recorte;
+- eliminar dependÃªncia de planilhas paralelas;
+- apoiar decisÃµes de cronograma, ocupaÃ§Ã£o e estabilidade produtiva.
 
 ## 13. Resultado esperado
 
-Ao final, a empresa terá um sistema capaz de transformar conhecimento operacional hoje disperso em planilhas em um modelo único, auditável e escalável, preservando a lógica técnica do negócio e ampliando a capacidade de análise, simulação e decisão.
+Ao final, a empresa terÃ¡ um sistema capaz de transformar conhecimento operacional hoje disperso em planilhas em um modelo Ãºnico, auditÃ¡vel e escalÃ¡vel, preservando a lÃ³gica tÃ©cnica do negÃ³cio e ampliando a capacidade de anÃ¡lise, simulaÃ§Ã£o e decisÃ£o.
+

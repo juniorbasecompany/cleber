@@ -27,7 +27,6 @@ Na pasta `C:\jr\GoogleDrive\jr\Cleber\app`, a planilha `Sao Joao - Acomp22 - V1 
 Ela já tem uma estrutura importante:
 
 - abas `OvoTotal`, `Aprov`, `Idade`, `Produção`, `Outros`, `Dados`, `DadoEntr` e `BI`;
-- visão semanal;
 - comparação entre previsto e realizado;
 - série de produção prevista;
 - série de incubável ou aproveitável prevista;
@@ -35,12 +34,11 @@ Ela já tem uma estrutura importante:
 - faturamento previsto;
 - faturamento realizado;
 - acumulado;
-- saldo semanal;
 - saldo acumulado;
 - filtro por núcleo ou lote;
 - painel visual de gestão.
 
-Isso mostra que o objetivo real não é apenas calcular produção. O objetivo é entregar um **painel gerencial semanal**, com:
+Isso mostra que o objetivo real não é apenas calcular produção. O objetivo é entregar um **painel gerencial por período**, com:
 
 - produção;
 - faturamento;
@@ -108,7 +106,7 @@ Pelas planilhas, o projeto hoje já cobre bem:
 - faturamento;
 - cronograma;
 - saldo;
-- consolidação semanal;
+- consolidação por período;
 - visualização gerencial.
 
 Mas eu **não encontrei uma camada madura e explícita de custo e lucro** no material funcional atual.
@@ -186,7 +184,7 @@ O objetivo do projeto não pode parar em:
 Para decisão real do negócio, o sistema precisa fechar também:
 
 - custo por lote;
-- custo por semana;
+- custo por por período;
 - custo por ovo;
 - custo por ovo aproveitável;
 - custo por caixa;
@@ -223,32 +221,30 @@ Hoje isso está implícito. Deveria estar explícito.
 
 O painel-alvo da imagem depende, no mínimo, de:
 
-- série semanal de ovos previstos;
-- série semanal de incubável ou aproveitável previsto;
-- série semanal de ovos realizados;
-- série semanal de faturamento previsto;
-- série semanal de faturamento realizado;
+- série por período de ovos previstos;
+- série por período de incubável ou aproveitável previsto;
+- série por período de ovos realizados;
+- série por período de faturamento previsto;
+- série por período de faturamento realizado;
 - faturamento acumulado;
-- saldo semanal;
+- saldo por período;
 - saldo acumulado;
 - filtro por indicador;
 - filtro por núcleo ou lote;
 - painel resumido por período selecionado.
 
-### 4. Falta uma ponte formal entre cálculo diário e visão semanal
+### 4. Falta uma ponte formal entre cálculo diário e visão por período
 
 O plano está correto ao insistir em cálculo diário.
-
-Mas as planilhas reais trabalham fortemente com semana.
 
 Portanto, o projeto precisa declarar explicitamente:
 
 - calendário diário como base;
-- calendário semanal como agregação oficial;
-- fechamento por semana comercial;
-- acumulado por semana;
-- comparação semanal previsto x realizado;
-- fotografia gerencial por semana selecionada.
+- visão por período oficial derivada do cálculo diário;
+- acumulado por período como agregação derivada;
+- comparação por período previsto x realizado;
+- fotografia gerencial por período selecionado;
+- possibilidade de materialização analítica ou snapshot derivado para performance, sem criar uma segunda fonte primária.
 
 Sem essa ponte, o sistema fica tecnicamente certo, mas funcionalmente distante da operação.
 
@@ -295,7 +291,8 @@ No negócio de ovos, o modelo precisa suportar pelo menos:
 - preço por canal;
 - preço por destino;
 - preço por vigência;
-- preço por moeda, se aplicável;
+- fato financeiro sempre registrado em moeda local;
+- conversão cambial apenas na consulta ou no relatório, se aplicável;
 - regra de conversão de unidade;
 - diferença entre ovo total, ovo aproveitável, incubável e classe comercial faturável.
 
@@ -314,7 +311,6 @@ O sistema precisa formalizar isso em camadas:
 Também precisa prever:
 
 - validação de consistência;
-- bloqueio de semana fechada;
 - rastreio de alteração;
 - reprocessamento controlado.
 
@@ -324,7 +320,7 @@ Também precisa prever:
 
 Adicionar ao plano uma seção de objetivo funcional com esta ideia:
 
-> O sistema deve reproduzir e superar o painel gerencial semanal hoje montado nas planilhas, entregando produção prevista, produção realizada, incubável ou aproveitável, faturamento previsto, faturamento realizado, saldo semanal, saldo acumulado, consolidado por lote ou núcleo e capacidade de simulação de cronograma.
+> O sistema deve reproduzir e superar o painel gerencial por período, conforme hoje montado nas planilhas, entregando produção prevista, produção realizada, incubável ou aproveitável, faturamento previsto, faturamento realizado, saldo do período, saldo acumulado, consolidado por lote ou núcleo e capacidade de simulação de cronograma.
 
 ## 2. Criar um módulo econômico completo
 
@@ -403,24 +399,26 @@ Indicadores iniciais que deveriam nascer nessa biblioteca:
 - percentual por classe;
 - qualquer outro indicador técnico recorrente.
 
-## 5. Definir fatos materializados em mais de um nível
+## 5. Definir fatos materializados e saídas derivadas
 
-Hoje o plano fala em fato diário materializado. Isso está certo, mas eu recomendo explicitar também:
+Hoje o plano fala em fato diário materializado. Isso está certo, e ele deve continuar sendo a base única e auditável do cálculo.
+
+Além disso, eu recomendo explicitar também:
 
 - fato diário;
-- fato semanal;
-- snapshot gerencial.
+- visão por período derivada oficialmente do fato diário;
+- snapshot gerencial derivado, quando fizer sentido para performance ou fechamento visual.
 
 ### Motivo
 
 O painel da imagem trabalha com:
 
-- semana selecionada;
-- saldo da semana;
+- período selecionada;
+- saldo do período;
 - acumulado;
-- linha histórica semanal.
+- linha histórica por período.
 
-Isso pede uma camada analítica semanal bem definida, e não apenas agregação livre em tempo de consulta.
+Isso pede uma camada analítica por período bem definida, mas derivada do fato diário e não tratada como segunda fonte primária.
 
 ## 6. Definir o contrato do painel principal
 
@@ -428,16 +426,16 @@ Adicionar ao plano uma seção chamada algo como `painel principal de gestão`.
 
 Esse painel deve ter como saída mínima:
 
-- produção prevista por semana;
-- produção realizada por semana;
-- incubável ou aproveitável previsto por semana;
-- faturamento previsto por semana;
-- faturamento realizado por semana;
+- produção prevista por período;
+- produção realizada por período;
+- incubável ou aproveitável previsto por período;
+- faturamento previsto por período;
+- faturamento realizado por período;
 - faturamento acumulado previsto;
 - faturamento acumulado realizado;
-- saldo semanal de produção;
+- saldo por período de produção;
 - saldo acumulado de produção;
-- saldo semanal de faturamento;
+- saldo por período de faturamento;
 - saldo acumulado de faturamento;
 - filtro por lote, núcleo, local e período.
 
@@ -513,9 +511,9 @@ Mas, se o objetivo principal do projeto é realmente chegar ao resultado da imag
 - **boa na espinha dorsal técnica**;
 - **boa na lógica zootécnica e de previsão**;
 - **boa na lógica de previsto x realizado**;
-- **parcial na lógica gerencial semanal do painel**;
+- **parcial na lógica gerencial por período do painel**;
 - **insuficiente na parte de custo, lucro e controle econômico completo**.
 
 Minha conclusão objetiva é:
 
-> o projeto já está no caminho certo, mas ainda precisa incorporar explicitamente a camada econômica, a camada comercial-operacional e o contrato formal do BI semanal para ficar totalmente aderente ao objetivo final.
+> o projeto já está no caminho certo, mas ainda precisa incorporar explicitamente a camada econômica, a camada comercial-operacional e o contrato formal do BI por período para ficar totalmente aderente ao objetivo final.
