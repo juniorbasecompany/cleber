@@ -13,7 +13,7 @@ Use esta skill quando a tarefa exigir desenho estrutural de banco com clareza se
 2. Identifique entidade principal, identidade, ciclo de vida e vigência.
 3. Defina atributos por entidade com tipo, nulabilidade, unidade, precisão e exemplo de valor.
 4. Modele relacionamento com cardinalidade, opcionalidade e regra de integridade.
-5. Defina `primary key`, `foreign key`, `unique key`, `check` e restrição temporal quando necessário.
+5. Defina `primary key`, `foreign key`, `unique key`, `check` e restrição temporal quando necessário. A primary key deve ser a coluna `id` (e apenas essa).
 6. Aplique normalização até o ponto em que a semântica estrutural fique clara sem comprometer a leitura operacional.
 7. Decida índice a partir de acesso, seletividade, volume e padrão de filtro, e não por hábito.
 8. Use coluna relacional para dado que participa de integridade, filtro, `join`, vigência ou auditabilidade.

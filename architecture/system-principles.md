@@ -1,5 +1,9 @@
 # Princípios do sistema
 
+## Convenções de modelo de dados
+
+- A chave primária de cada tabela é a coluna `id` (única coluna de PK).
+
 ## Decisões permanentes
 
 - O grão nativo de cálculo do sistema é diário.

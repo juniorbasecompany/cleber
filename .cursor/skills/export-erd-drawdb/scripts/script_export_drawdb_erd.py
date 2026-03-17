@@ -223,27 +223,60 @@ def parse_ddl(content: str) -> tuple[list[dict], list[dict]]:
     return tables, rel_by_id
 
 
-def build_drawdb_diagram(tables: list[dict], relationships: list[dict]) -> dict:
-    """Monta o objeto completo do diagrama drawDB com posições x,y."""
+def _load_layout_from_json(path: Path) -> dict[str, dict]:
+    """Extrai posição (x, y) e cor por nome de tabela de um JSON drawDB existente."""
+    if not path.exists():
+        return {}
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+    layout = {}
+    for tbl in data.get("tables", []):
+        name = tbl.get("name")
+        if name and isinstance(tbl.get("x"), (int, float)) and isinstance(tbl.get("y"), (int, float)):
+            layout[name] = {
+                "x": float(tbl["x"]),
+                "y": float(tbl["y"]),
+                "color": tbl.get("color") or "#175e7a",
+            }
+    return layout
+
+
+def build_drawdb_diagram(
+    tables: list[dict],
+    relationships: list[dict],
+    layout_by_name: dict[str, dict] | None = None,
+) -> dict:
+    """Monta o objeto completo do diagrama drawDB com posições x,y.
+    Se layout_by_name for passado, preserva x, y e color por nome de tabela.
+    """
     table_width = 220
     table_spacing = 280
     cols_per_row = 4
-    default_color = "#175e7a"
+    default_color = "#1a6b8a"
+    layout_by_name = layout_by_name or {}
 
     drawdb_tables = []
     for i, t in enumerate(tables):
-        row, col = i // cols_per_row, i % cols_per_row
-        x = 80 + col * (table_width + table_spacing)
-        y = 80 + row * 320
+        name = t["name"]
+        saved = layout_by_name.get(name)
+        if saved:
+            x, y, color = saved["x"], saved["y"], saved["color"]
+        else:
+            row, col = i // cols_per_row, i % cols_per_row
+            x = 80 + col * (table_width + table_spacing)
+            y = 80 + row * 320
+            color = default_color
         drawdb_tables.append({
             "id": t["id"],
-            "name": t["name"],
+            "name": name,
             "x": float(x),
             "y": float(y),
             "fields": t["fields"],
             "comment": "",
             "indices": [],
-            "color": default_color,
+            "color": color,
             "locked": False,
         })
 
@@ -289,7 +322,8 @@ def main() -> None:
 
     content = ddl_file.read_text(encoding="utf-8")
     tables, relationships = parse_ddl(content)
-    diagram = build_drawdb_diagram(tables, relationships)
+    layout_by_name = _load_layout_from_json(out_file)
+    diagram = build_drawdb_diagram(tables, relationships, layout_by_name=layout_by_name)
     out_file.parent.mkdir(parents=True, exist_ok=True)
     out_file.write_text(json.dumps(diagram, indent=2, ensure_ascii=False), encoding="utf-8")
     print(f"Escrito: {out_file} ({len(tables)} tabelas, {len(relationships)} relacionamentos)")

@@ -9,7 +9,7 @@ CREATE SCHEMA IF NOT EXISTS meta;
 CREATE SCHEMA IF NOT EXISTS fact;
 
 CREATE TABLE core.package (
-    package_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     technical_name text NOT NULL,
     display_name text NOT NULL,
     status text NOT NULL DEFAULT 'active',
@@ -21,7 +21,7 @@ CREATE TABLE core.package (
 );
 
 CREATE TABLE core.entity_kind (
-    entity_kind_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     package_id bigint NOT NULL,
     technical_name text NOT NULL,
     display_name text NOT NULL,
@@ -29,7 +29,7 @@ CREATE TABLE core.entity_kind (
     created_at_utc timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT entity_kind_package_id_fk
         FOREIGN KEY (package_id)
-        REFERENCES core.package (package_id),
+        REFERENCES core.package (id),
     CONSTRAINT entity_kind_package_technical_name_uq
         UNIQUE (package_id, technical_name),
     CONSTRAINT entity_kind_technical_name_ck CHECK (btrim(technical_name) <> ''),
@@ -37,7 +37,7 @@ CREATE TABLE core.entity_kind (
 );
 
 CREATE TABLE core.location_node (
-    location_node_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     parent_location_node_id bigint NULL,
     location_kind text NOT NULL,
     technical_name text NOT NULL,
@@ -49,7 +49,7 @@ CREATE TABLE core.location_node (
     created_at_utc timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT location_node_parent_location_node_id_fk
         FOREIGN KEY (parent_location_node_id)
-        REFERENCES core.location_node (location_node_id),
+        REFERENCES core.location_node (id),
     CONSTRAINT location_node_technical_name_uq
         UNIQUE (technical_name),
     CONSTRAINT location_node_location_kind_ck CHECK (btrim(location_kind) <> ''),
@@ -62,12 +62,12 @@ CREATE TABLE core.location_node (
     CONSTRAINT location_node_not_self_parent_ck
         CHECK (
             parent_location_node_id IS NULL
-            OR parent_location_node_id <> location_node_id
+            OR parent_location_node_id <> id
         )
 );
 
 CREATE TABLE core.item (
-    item_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     entity_kind_id bigint NOT NULL,
     location_node_id bigint NOT NULL,
     code text NOT NULL,
@@ -77,10 +77,10 @@ CREATE TABLE core.item (
     created_at_utc timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT item_entity_kind_id_fk
         FOREIGN KEY (entity_kind_id)
-        REFERENCES core.entity_kind (entity_kind_id),
+        REFERENCES core.entity_kind (id),
     CONSTRAINT item_location_node_id_fk
         FOREIGN KEY (location_node_id)
-        REFERENCES core.location_node (location_node_id),
+        REFERENCES core.location_node (id),
     CONSTRAINT item_entity_kind_code_uq
         UNIQUE (entity_kind_id, code),
     CONSTRAINT item_code_ck CHECK (btrim(code) <> ''),
@@ -90,7 +90,7 @@ CREATE TABLE core.item (
 );
 
 CREATE TABLE core.segment (
-    segment_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     item_id bigint NOT NULL,
     location_node_id bigint NOT NULL,
     parent_segment_id bigint NULL,
@@ -102,29 +102,29 @@ CREATE TABLE core.segment (
     created_at_utc timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT segment_item_id_fk
         FOREIGN KEY (item_id)
-        REFERENCES core.item (item_id),
+        REFERENCES core.item (id),
     CONSTRAINT segment_location_node_id_fk
         FOREIGN KEY (location_node_id)
-        REFERENCES core.location_node (location_node_id),
+        REFERENCES core.location_node (id),
     CONSTRAINT segment_parent_segment_id_fk
         FOREIGN KEY (parent_segment_id)
-        REFERENCES core.segment (segment_id),
+        REFERENCES core.segment (id),
     CONSTRAINT segment_item_code_uq
         UNIQUE (item_id, code),
     CONSTRAINT segment_id_item_id_uq
-        UNIQUE (segment_id, item_id),
+        UNIQUE (id, item_id),
     CONSTRAINT segment_id_item_id_location_node_id_uq
-        UNIQUE (segment_id, item_id, location_node_id),
+        UNIQUE (id, item_id, location_node_id),
     CONSTRAINT segment_code_ck CHECK (btrim(code) <> ''),
     CONSTRAINT segment_status_ck CHECK (btrim(status) <> ''),
     CONSTRAINT segment_valid_range_ck
         CHECK (end_date IS NULL OR end_date >= start_date),
     CONSTRAINT segment_not_self_parent_ck
-        CHECK (parent_segment_id IS NULL OR parent_segment_id <> segment_id)
+        CHECK (parent_segment_id IS NULL OR parent_segment_id <> id)
 );
 
 CREATE TABLE core.event (
-    event_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     package_id bigint NOT NULL,
     item_id bigint NULL,
     segment_id bigint NULL,
@@ -139,16 +139,16 @@ CREATE TABLE core.event (
     created_at_utc timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT event_package_id_fk
         FOREIGN KEY (package_id)
-        REFERENCES core.package (package_id),
+        REFERENCES core.package (id),
     CONSTRAINT event_item_id_fk
         FOREIGN KEY (item_id)
-        REFERENCES core.item (item_id),
+        REFERENCES core.item (id),
     CONSTRAINT event_location_node_id_fk
         FOREIGN KEY (location_node_id)
-        REFERENCES core.location_node (location_node_id),
+        REFERENCES core.location_node (id),
     CONSTRAINT event_segment_id_item_id_fk
         FOREIGN KEY (segment_id, item_id)
-        REFERENCES core.segment (segment_id, item_id),
+        REFERENCES core.segment (id, item_id),
     CONSTRAINT event_event_type_ck CHECK (btrim(event_type) <> ''),
     CONSTRAINT event_source_system_ck
         CHECK (source_system IS NULL OR btrim(source_system) <> ''),
@@ -165,7 +165,7 @@ CREATE TABLE core.event (
 );
 
 CREATE TABLE core.scenario (
-    scenario_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     technical_name text NOT NULL,
     scenario_kind text NOT NULL,
     parent_scenario_id bigint NULL,
@@ -173,19 +173,19 @@ CREATE TABLE core.scenario (
     created_at_utc timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT scenario_parent_scenario_id_fk
         FOREIGN KEY (parent_scenario_id)
-        REFERENCES core.scenario (scenario_id),
+        REFERENCES core.scenario (id),
     CONSTRAINT scenario_technical_name_uq UNIQUE (technical_name),
     CONSTRAINT scenario_technical_name_ck CHECK (btrim(technical_name) <> ''),
     CONSTRAINT scenario_kind_ck CHECK (btrim(scenario_kind) <> ''),
     CONSTRAINT scenario_not_self_parent_ck
         CHECK (
             parent_scenario_id IS NULL
-            OR parent_scenario_id <> scenario_id
+            OR parent_scenario_id <> id
         )
 );
 
 CREATE TABLE core.calc_version (
-    calc_version_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     engine_version text NOT NULL,
     rule_bundle_version text NOT NULL,
     created_at_utc timestamptz NOT NULL DEFAULT now(),
@@ -198,7 +198,7 @@ CREATE TABLE core.calc_version (
 );
 
 CREATE TABLE meta.attribute (
-    attribute_id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     package_id bigint NOT NULL,
     technical_name text NOT NULL,
     display_name text NOT NULL,
@@ -213,7 +213,7 @@ CREATE TABLE meta.attribute (
     created_at_utc timestamptz NOT NULL DEFAULT now(),
     CONSTRAINT attribute_package_id_fk
         FOREIGN KEY (package_id)
-        REFERENCES core.package (package_id),
+        REFERENCES core.package (id),
     CONSTRAINT attribute_package_technical_name_uq
         UNIQUE (package_id, technical_name),
     CONSTRAINT attribute_technical_name_ck CHECK (btrim(technical_name) <> ''),
@@ -229,8 +229,8 @@ CREATE TABLE meta.attribute (
 );
 
 CREATE TABLE fact.daily_measure_fact (
+    id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     fact_date date NOT NULL,
-    daily_measure_fact_id bigint GENERATED ALWAYS AS IDENTITY,
     item_id bigint NOT NULL,
     segment_id bigint NOT NULL,
     location_node_id bigint NOT NULL,
@@ -240,20 +240,18 @@ CREATE TABLE fact.daily_measure_fact (
     measure_value numeric(18, 6) NOT NULL,
     unit_code text NOT NULL,
     created_at_utc timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT daily_measure_fact_pk
-        PRIMARY KEY (fact_date, daily_measure_fact_id),
     CONSTRAINT daily_measure_fact_segment_scope_fk
         FOREIGN KEY (segment_id, item_id, location_node_id)
-        REFERENCES core.segment (segment_id, item_id, location_node_id),
+        REFERENCES core.segment (id, item_id, location_node_id),
     CONSTRAINT daily_measure_fact_attribute_id_fk
         FOREIGN KEY (attribute_id)
-        REFERENCES meta.attribute (attribute_id),
+        REFERENCES meta.attribute (id),
     CONSTRAINT daily_measure_fact_scenario_id_fk
         FOREIGN KEY (scenario_id)
-        REFERENCES core.scenario (scenario_id),
+        REFERENCES core.scenario (id),
     CONSTRAINT daily_measure_fact_calc_version_id_fk
         FOREIGN KEY (calc_version_id)
-        REFERENCES core.calc_version (calc_version_id),
+        REFERENCES core.calc_version (id),
     CONSTRAINT daily_measure_fact_natural_uq
         UNIQUE (
             fact_date,
