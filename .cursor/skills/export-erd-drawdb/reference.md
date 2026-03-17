@@ -20,7 +20,7 @@ Referência baseada no código-fonte do [drawdb-io/drawdb](https://github.com/dr
 | Campo     | Obrigatório | Tipo   | Descrição |
 |----------|-------------|--------|-----------|
 | `id`     | sim         | string | Identificador único (ex.: nanoid). |
-| `name`   | sim         | string | Nome da tabela (ex.: `core.package` ou `package`). |
+| `name`   | sim         | string | Nome da tabela (ex.: `core.scope` ou `scope`). |
 | `x`      | sim         | number | Posição X no canvas. |
 | `y`      | sim         | number | Posição Y no canvas. |
 | `fields` | sim         | array  | Colunas (ver Field). |

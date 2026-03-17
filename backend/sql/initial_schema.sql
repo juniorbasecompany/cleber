@@ -8,30 +8,30 @@ CREATE SCHEMA IF NOT EXISTS core;
 CREATE SCHEMA IF NOT EXISTS meta;
 CREATE SCHEMA IF NOT EXISTS fact;
 
-CREATE TABLE core.package (
+CREATE TABLE core.scope (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     technical_name text NOT NULL,
     display_name text NOT NULL,
     status text NOT NULL DEFAULT 'active',
     created_at_utc timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT package_technical_name_uq UNIQUE (technical_name),
-    CONSTRAINT package_technical_name_ck CHECK (btrim(technical_name) <> ''),
-    CONSTRAINT package_display_name_ck CHECK (btrim(display_name) <> ''),
-    CONSTRAINT package_status_ck CHECK (btrim(status) <> '')
+    CONSTRAINT scope_technical_name_uq UNIQUE (technical_name),
+    CONSTRAINT scope_technical_name_ck CHECK (btrim(technical_name) <> ''),
+    CONSTRAINT scope_display_name_ck CHECK (btrim(display_name) <> ''),
+    CONSTRAINT scope_status_ck CHECK (btrim(status) <> '')
 );
 
 CREATE TABLE core.entity_kind (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    package_id bigint NOT NULL,
+    scope_id bigint NOT NULL,
     technical_name text NOT NULL,
     display_name text NOT NULL,
     segment_allowed_flag boolean NOT NULL DEFAULT true,
     created_at_utc timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT entity_kind_package_id_fk
-        FOREIGN KEY (package_id)
-        REFERENCES core.package (id),
-    CONSTRAINT entity_kind_package_technical_name_uq
-        UNIQUE (package_id, technical_name),
+    CONSTRAINT entity_kind_scope_id_fk
+        FOREIGN KEY (scope_id)
+        REFERENCES core.scope (id),
+    CONSTRAINT entity_kind_scope_technical_name_uq
+        UNIQUE (scope_id, technical_name),
     CONSTRAINT entity_kind_technical_name_ck CHECK (btrim(technical_name) <> ''),
     CONSTRAINT entity_kind_display_name_ck CHECK (btrim(display_name) <> '')
 );
@@ -125,7 +125,7 @@ CREATE TABLE core.segment (
 
 CREATE TABLE core.event (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    package_id bigint NOT NULL,
+    scope_id bigint NOT NULL,
     item_id bigint NULL,
     segment_id bigint NULL,
     location_node_id bigint NULL,
@@ -137,9 +137,9 @@ CREATE TABLE core.event (
     source_system text NULL,
     payload_jsonb jsonb NULL,
     created_at_utc timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT event_package_id_fk
-        FOREIGN KEY (package_id)
-        REFERENCES core.package (id),
+    CONSTRAINT event_scope_id_fk
+        FOREIGN KEY (scope_id)
+        REFERENCES core.scope (id),
     CONSTRAINT event_item_id_fk
         FOREIGN KEY (item_id)
         REFERENCES core.item (id),
@@ -199,7 +199,7 @@ CREATE TABLE core.calc_version (
 
 CREATE TABLE meta.attribute (
     id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    package_id bigint NOT NULL,
+    scope_id bigint NOT NULL,
     technical_name text NOT NULL,
     display_name text NOT NULL,
     value_type text NOT NULL,
@@ -211,11 +211,11 @@ CREATE TABLE meta.attribute (
     panel_visible_flag boolean NOT NULL DEFAULT true,
     audit_required_flag boolean NOT NULL DEFAULT true,
     created_at_utc timestamptz NOT NULL DEFAULT now(),
-    CONSTRAINT attribute_package_id_fk
-        FOREIGN KEY (package_id)
-        REFERENCES core.package (id),
-    CONSTRAINT attribute_package_technical_name_uq
-        UNIQUE (package_id, technical_name),
+    CONSTRAINT attribute_scope_id_fk
+        FOREIGN KEY (scope_id)
+        REFERENCES core.scope (id),
+    CONSTRAINT attribute_scope_technical_name_uq
+        UNIQUE (scope_id, technical_name),
     CONSTRAINT attribute_technical_name_ck CHECK (btrim(technical_name) <> ''),
     CONSTRAINT attribute_display_name_ck CHECK (btrim(display_name) <> ''),
     CONSTRAINT attribute_value_type_ck CHECK (btrim(value_type) <> ''),
@@ -266,8 +266,8 @@ CREATE TABLE fact.daily_measure_fact (
 CREATE TABLE fact.daily_measure_fact_default
     PARTITION OF fact.daily_measure_fact DEFAULT;
 
-CREATE INDEX entity_kind_package_id_idx
-    ON core.entity_kind (package_id);
+CREATE INDEX entity_kind_scope_id_idx
+    ON core.entity_kind (scope_id);
 
 CREATE INDEX location_node_parent_location_node_id_idx
     ON core.location_node (parent_location_node_id);
@@ -287,8 +287,8 @@ CREATE INDEX segment_location_node_id_idx
 CREATE INDEX segment_parent_segment_id_idx
     ON core.segment (parent_segment_id);
 
-CREATE INDEX event_package_id_idx
-    ON core.event (package_id);
+CREATE INDEX event_scope_id_idx
+    ON core.event (scope_id);
 
 CREATE INDEX event_business_date_idx
     ON core.event (business_date);
@@ -302,8 +302,8 @@ CREATE INDEX event_segment_id_idx
 CREATE INDEX event_location_node_id_idx
     ON core.event (location_node_id);
 
-CREATE INDEX attribute_package_id_idx
-    ON meta.attribute (package_id);
+CREATE INDEX attribute_scope_id_idx
+    ON meta.attribute (scope_id);
 
 CREATE INDEX daily_measure_fact_attribute_scenario_date_idx
     ON fact.daily_measure_fact (attribute_id, scenario_id, fact_date);

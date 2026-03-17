@@ -1,13 +1,13 @@
 {
   "tables": [
     {
-      "id": "2077a3dc4596",
-      "name": "core.package",
+      "id": "2b5da5497ffd",
+      "name": "core.scope",
       "x": -539.9189408459036,
       "y": 48.81843437025739,
       "fields": [
         {
-          "id": "43f96212aca6",
+          "id": "cf751c4e6c41",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -19,7 +19,7 @@
           "comment": ""
         },
         {
-          "id": "bfc469cf32e4",
+          "id": "6cebf197d276",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -31,7 +31,7 @@
           "comment": ""
         },
         {
-          "id": "d7d3771d2c66",
+          "id": "b2bfa5f229db",
           "name": "display_name",
           "type": "TEXT",
           "default": "",
@@ -43,7 +43,7 @@
           "comment": ""
         },
         {
-          "id": "8d6e08b08f09",
+          "id": "ca1877e32098",
           "name": "status",
           "type": "TEXT",
           "default": "'active'",
@@ -55,7 +55,7 @@
           "comment": ""
         },
         {
-          "id": "af436e59ce54",
+          "id": "79a10b1f2e8a",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -73,13 +73,13 @@
       "locked": false
     },
     {
-      "id": "63d49611d493",
+      "id": "d066df5083d4",
       "name": "core.entity_kind",
       "x": 6.4043873966943465,
       "y": 12.048276094954275,
       "fields": [
         {
-          "id": "fcec06e18082",
+          "id": "b0d3c32522ed",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -91,8 +91,8 @@
           "comment": ""
         },
         {
-          "id": "eab8e4558f4c",
-          "name": "package_id",
+          "id": "977e75edccc4",
+          "name": "scope_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -103,7 +103,7 @@
           "comment": ""
         },
         {
-          "id": "bb6ae5e26ad4",
+          "id": "3275722f9f32",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -115,7 +115,7 @@
           "comment": ""
         },
         {
-          "id": "0ca81b7a01b0",
+          "id": "227ad2bbe28b",
           "name": "display_name",
           "type": "TEXT",
           "default": "",
@@ -127,7 +127,7 @@
           "comment": ""
         },
         {
-          "id": "3e565e24f619",
+          "id": "350b0a47864c",
           "name": "segment_allowed_flag",
           "type": "BOOLEAN",
           "default": "true",
@@ -139,7 +139,7 @@
           "comment": ""
         },
         {
-          "id": "87d545eb8669",
+          "id": "401840b89000",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -157,13 +157,13 @@
       "locked": false
     },
     {
-      "id": "125211c0e9d8",
+      "id": "69501d2ba1c7",
       "name": "core.location_node",
-      "x": 842.1913584159051,
-      "y": 656.9638533837804,
+      "x": 590.6410487071294,
+      "y": 653.8454611146635,
       "fields": [
         {
-          "id": "62495d8bd079",
+          "id": "344016251f20",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -175,7 +175,7 @@
           "comment": ""
         },
         {
-          "id": "fafb8f66c070",
+          "id": "ffa3d2541cc4",
           "name": "parent_location_node_id",
           "type": "BIGINT",
           "default": "",
@@ -187,7 +187,7 @@
           "comment": ""
         },
         {
-          "id": "88cf6c1c40cb",
+          "id": "ee72cca39534",
           "name": "location_kind",
           "type": "TEXT",
           "default": "",
@@ -199,7 +199,7 @@
           "comment": ""
         },
         {
-          "id": "e56e4587c5cc",
+          "id": "bede2ea21131",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -211,7 +211,7 @@
           "comment": ""
         },
         {
-          "id": "1f5a3b2914d4",
+          "id": "1aeea77093fd",
           "name": "display_name",
           "type": "TEXT",
           "default": "",
@@ -223,7 +223,7 @@
           "comment": ""
         },
         {
-          "id": "3b255ad6825a",
+          "id": "6a29ef8571c3",
           "name": "country_code",
           "type": "CHAR(2)",
           "default": "",
@@ -235,7 +235,7 @@
           "comment": ""
         },
         {
-          "id": "330b3af906a2",
+          "id": "f8df56461552",
           "name": "timezone_name",
           "type": "TEXT",
           "default": "",
@@ -247,7 +247,7 @@
           "comment": ""
         },
         {
-          "id": "2e624002a990",
+          "id": "128d4fffc218",
           "name": "valid_from",
           "type": "DATE",
           "default": "",
@@ -259,7 +259,7 @@
           "comment": ""
         },
         {
-          "id": "ad394ce117ea",
+          "id": "c3a8d86bdb81",
           "name": "valid_to",
           "type": "DATE",
           "default": "",
@@ -271,7 +271,7 @@
           "comment": ""
         },
         {
-          "id": "5e2d7fd680ba",
+          "id": "fc0a906374b8",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -289,13 +289,13 @@
       "locked": false
     },
     {
-      "id": "0f9b42fb0c13",
+      "id": "0a6e9913df44",
       "name": "core.item",
-      "x": 1302.5832981814058,
-      "y": -23.908695987722126,
+      "x": 1051.03298847263,
+      "y": -27.027088256838965,
       "fields": [
         {
-          "id": "45bf069cf3c1",
+          "id": "8d06874e6261",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -307,7 +307,7 @@
           "comment": ""
         },
         {
-          "id": "24d18c0f8fb3",
+          "id": "9282a073cf4e",
           "name": "entity_kind_id",
           "type": "BIGINT",
           "default": "",
@@ -319,7 +319,7 @@
           "comment": ""
         },
         {
-          "id": "466f744611c9",
+          "id": "52d220d7f510",
           "name": "location_node_id",
           "type": "BIGINT",
           "default": "",
@@ -331,7 +331,7 @@
           "comment": ""
         },
         {
-          "id": "b4ec9ac6bcf0",
+          "id": "7bcb4c3398da",
           "name": "code",
           "type": "TEXT",
           "default": "",
@@ -343,7 +343,7 @@
           "comment": ""
         },
         {
-          "id": "44db3ca675e6",
+          "id": "bff5d999392b",
           "name": "start_date",
           "type": "DATE",
           "default": "",
@@ -355,7 +355,7 @@
           "comment": ""
         },
         {
-          "id": "c5e3099190f8",
+          "id": "e893bf3cb9f5",
           "name": "end_date",
           "type": "DATE",
           "default": "",
@@ -367,7 +367,7 @@
           "comment": ""
         },
         {
-          "id": "ff5a020c1957",
+          "id": "3fd2f41de594",
           "name": "status",
           "type": "TEXT",
           "default": "'active'",
@@ -379,7 +379,7 @@
           "comment": ""
         },
         {
-          "id": "235812fa9f40",
+          "id": "1519282ac18c",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -397,13 +397,13 @@
       "locked": false
     },
     {
-      "id": "ec6e286ec1e3",
+      "id": "d91a9602aba8",
       "name": "core.segment",
-      "x": 1954.6699501920605,
-      "y": 292.24693682336647,
+      "x": 1703.1196404832847,
+      "y": 289.12854455424963,
       "fields": [
         {
-          "id": "ae5314c6a377",
+          "id": "6f6599a6298a",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -415,7 +415,7 @@
           "comment": ""
         },
         {
-          "id": "29ed96142b36",
+          "id": "8f3f8b98f1d0",
           "name": "item_id",
           "type": "BIGINT",
           "default": "",
@@ -427,7 +427,7 @@
           "comment": ""
         },
         {
-          "id": "593d350e8947",
+          "id": "167e0b4ef8aa",
           "name": "location_node_id",
           "type": "BIGINT",
           "default": "",
@@ -439,7 +439,7 @@
           "comment": ""
         },
         {
-          "id": "60924bc6681e",
+          "id": "bc25c80a6510",
           "name": "parent_segment_id",
           "type": "BIGINT",
           "default": "",
@@ -451,7 +451,7 @@
           "comment": ""
         },
         {
-          "id": "d67fa4c0897a",
+          "id": "6e5e3e266c21",
           "name": "code",
           "type": "TEXT",
           "default": "",
@@ -463,7 +463,7 @@
           "comment": ""
         },
         {
-          "id": "75037fdeca62",
+          "id": "102d399ba592",
           "name": "start_date",
           "type": "DATE",
           "default": "",
@@ -475,7 +475,7 @@
           "comment": ""
         },
         {
-          "id": "61f5fa7d1c44",
+          "id": "8633488611ec",
           "name": "end_date",
           "type": "DATE",
           "default": "",
@@ -487,7 +487,7 @@
           "comment": ""
         },
         {
-          "id": "8782ca381cc4",
+          "id": "727f2c0fb4d2",
           "name": "status",
           "type": "TEXT",
           "default": "'active'",
@@ -499,7 +499,7 @@
           "comment": ""
         },
         {
-          "id": "fd8f91899530",
+          "id": "3fdcb5a18781",
           "name": "split_reason",
           "type": "TEXT",
           "default": "",
@@ -511,7 +511,7 @@
           "comment": ""
         },
         {
-          "id": "6eb6b152dd75",
+          "id": "364c2fcf54cc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -529,13 +529,13 @@
       "locked": false
     },
     {
-      "id": "796acc97f2ea",
+      "id": "0612c7f4013e",
       "name": "core.event",
       "x": 85.38008760004766,
       "y": 382.50117595924036,
       "fields": [
         {
-          "id": "a5c40af57d80",
+          "id": "b4077b02c36e",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -547,8 +547,8 @@
           "comment": ""
         },
         {
-          "id": "9410077f84d6",
-          "name": "package_id",
+          "id": "b066a9c47095",
+          "name": "scope_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -559,7 +559,7 @@
           "comment": ""
         },
         {
-          "id": "767369a23cf0",
+          "id": "59c2818df67b",
           "name": "item_id",
           "type": "BIGINT",
           "default": "",
@@ -571,7 +571,7 @@
           "comment": ""
         },
         {
-          "id": "e8c84bb6ba06",
+          "id": "2ef560181252",
           "name": "segment_id",
           "type": "BIGINT",
           "default": "",
@@ -583,7 +583,7 @@
           "comment": ""
         },
         {
-          "id": "84c279d51788",
+          "id": "54a578a3da78",
           "name": "location_node_id",
           "type": "BIGINT",
           "default": "",
@@ -595,7 +595,7 @@
           "comment": ""
         },
         {
-          "id": "60fd5b55e8a7",
+          "id": "b72fbfdfce55",
           "name": "event_type",
           "type": "TEXT",
           "default": "",
@@ -607,7 +607,7 @@
           "comment": ""
         },
         {
-          "id": "6236e693969d",
+          "id": "5194157afe07",
           "name": "business_date",
           "type": "DATE",
           "default": "",
@@ -619,7 +619,7 @@
           "comment": ""
         },
         {
-          "id": "a7d73cabe85e",
+          "id": "9839b88c1f0e",
           "name": "occurred_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "",
@@ -631,7 +631,7 @@
           "comment": ""
         },
         {
-          "id": "f1210f2ad259",
+          "id": "52d968573b36",
           "name": "effective_from",
           "type": "DATE",
           "default": "",
@@ -643,7 +643,7 @@
           "comment": ""
         },
         {
-          "id": "4426f7e4e653",
+          "id": "64eb609b70c5",
           "name": "effective_to",
           "type": "DATE",
           "default": "",
@@ -655,7 +655,7 @@
           "comment": ""
         },
         {
-          "id": "89e86a61466f",
+          "id": "a33500b607d9",
           "name": "source_system",
           "type": "TEXT",
           "default": "",
@@ -667,7 +667,7 @@
           "comment": ""
         },
         {
-          "id": "da3487f2fd58",
+          "id": "8a6d99091d50",
           "name": "payload_jsonb",
           "type": "JSONB",
           "default": "",
@@ -679,7 +679,7 @@
           "comment": ""
         },
         {
-          "id": "f4a619aa897a",
+          "id": "3cc4cc3470c8",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -697,13 +697,13 @@
       "locked": false
     },
     {
-      "id": "afe9774dbb38",
+      "id": "5d137762d000",
       "name": "core.scenario",
-      "x": 1934.253273885268,
-      "y": 1082.338641579658,
+      "x": 1682.7029641764923,
+      "y": 1079.220249310541,
       "fields": [
         {
-          "id": "bbef6c4f9dc3",
+          "id": "cce13c5ee0f8",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -715,7 +715,7 @@
           "comment": ""
         },
         {
-          "id": "a94645f6b762",
+          "id": "0df1a70e0269",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -727,7 +727,7 @@
           "comment": ""
         },
         {
-          "id": "66181a774fb0",
+          "id": "5b8c0b217b42",
           "name": "scenario_kind",
           "type": "TEXT",
           "default": "",
@@ -739,7 +739,7 @@
           "comment": ""
         },
         {
-          "id": "d62f9685dabf",
+          "id": "6ab19393139b",
           "name": "parent_scenario_id",
           "type": "BIGINT",
           "default": "",
@@ -751,7 +751,7 @@
           "comment": ""
         },
         {
-          "id": "ed2867577427",
+          "id": "ac6a830c34d1",
           "name": "is_official_flag",
           "type": "BOOLEAN",
           "default": "false",
@@ -763,7 +763,7 @@
           "comment": ""
         },
         {
-          "id": "f5666fa645d4",
+          "id": "6a7c1d148079",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -781,13 +781,13 @@
       "locked": false
     },
     {
-      "id": "ddf9eb81b96b",
+      "id": "7baedacd9cc7",
       "name": "core.calc_version",
-      "x": 1997.0207360704949,
-      "y": 1450.0166537184107,
+      "x": 1745.470426361719,
+      "y": 1446.8982614492938,
       "fields": [
         {
-          "id": "335702703e9f",
+          "id": "5443ccabbc6b",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -799,7 +799,7 @@
           "comment": ""
         },
         {
-          "id": "468629b7faa4",
+          "id": "3593f5438246",
           "name": "engine_version",
           "type": "TEXT",
           "default": "",
@@ -811,7 +811,7 @@
           "comment": ""
         },
         {
-          "id": "fe238884de0b",
+          "id": "46260e6c88c5",
           "name": "rule_bundle_version",
           "type": "TEXT",
           "default": "",
@@ -823,7 +823,7 @@
           "comment": ""
         },
         {
-          "id": "ad7c897961c4",
+          "id": "b7d80a5ef3db",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -841,13 +841,13 @@
       "locked": false
     },
     {
-      "id": "76898c7db092",
+      "id": "ce62bf450149",
       "name": "meta.attribute",
       "x": -52.93826453378824,
       "y": 1046.2408722361995,
       "fields": [
         {
-          "id": "3181e2ff3c43",
+          "id": "199a83d21ccc",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -859,8 +859,8 @@
           "comment": ""
         },
         {
-          "id": "25aacad20881",
-          "name": "package_id",
+          "id": "82d0bafae248",
+          "name": "scope_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -871,7 +871,7 @@
           "comment": ""
         },
         {
-          "id": "56aba6b91eff",
+          "id": "eae29be782ff",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -883,7 +883,7 @@
           "comment": ""
         },
         {
-          "id": "2cfa1c42298b",
+          "id": "feb1a77e6c3c",
           "name": "display_name",
           "type": "TEXT",
           "default": "",
@@ -895,7 +895,7 @@
           "comment": ""
         },
         {
-          "id": "2340e8ca329b",
+          "id": "789b243a8d0a",
           "name": "value_type",
           "type": "TEXT",
           "default": "",
@@ -907,7 +907,7 @@
           "comment": ""
         },
         {
-          "id": "aadfee57eca4",
+          "id": "1bbee6a7e703",
           "name": "business_role",
           "type": "TEXT",
           "default": "",
@@ -919,7 +919,7 @@
           "comment": ""
         },
         {
-          "id": "7b42ceb1a6a4",
+          "id": "1932533664c9",
           "name": "grain_kind",
           "type": "TEXT",
           "default": "",
@@ -931,7 +931,7 @@
           "comment": ""
         },
         {
-          "id": "93a6b4d85223",
+          "id": "926efc58b9e8",
           "name": "aggregation_rule",
           "type": "TEXT",
           "default": "",
@@ -943,7 +943,7 @@
           "comment": ""
         },
         {
-          "id": "64cc693b93db",
+          "id": "9b3f917f11ba",
           "name": "unit_code",
           "type": "TEXT",
           "default": "",
@@ -955,7 +955,7 @@
           "comment": ""
         },
         {
-          "id": "daaae2ed9d47",
+          "id": "5a09ed44b270",
           "name": "precision_scale",
           "type": "INTEGER",
           "default": "",
@@ -967,7 +967,7 @@
           "comment": ""
         },
         {
-          "id": "a475080318ca",
+          "id": "33e783139a5a",
           "name": "panel_visible_flag",
           "type": "BOOLEAN",
           "default": "true",
@@ -979,7 +979,7 @@
           "comment": ""
         },
         {
-          "id": "3bcae421d5fc",
+          "id": "40d94c29d1f0",
           "name": "audit_required_flag",
           "type": "BOOLEAN",
           "default": "true",
@@ -991,7 +991,7 @@
           "comment": ""
         },
         {
-          "id": "60671fcb604c",
+          "id": "e3e88c15f8c5",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -1009,13 +1009,13 @@
       "locked": false
     },
     {
-      "id": "05ea7bc82a14",
+      "id": "2e0fd9944079",
       "name": "fact.daily_measure_fact",
-      "x": 1403.0481376412465,
-      "y": 865.5815420330656,
+      "x": 1151.4978279324707,
+      "y": 862.4631497639488,
       "fields": [
         {
-          "id": "e8db65ed3130",
+          "id": "6d14edc5701e",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -1027,7 +1027,7 @@
           "comment": ""
         },
         {
-          "id": "b5f655a5f865",
+          "id": "125496e28ab2",
           "name": "fact_date",
           "type": "DATE",
           "default": "",
@@ -1039,7 +1039,7 @@
           "comment": ""
         },
         {
-          "id": "73d25a8d37d2",
+          "id": "6603b19738a1",
           "name": "item_id",
           "type": "BIGINT",
           "default": "",
@@ -1051,7 +1051,7 @@
           "comment": ""
         },
         {
-          "id": "8ed8e57782a2",
+          "id": "8239f9f0cf14",
           "name": "segment_id",
           "type": "BIGINT",
           "default": "",
@@ -1063,7 +1063,7 @@
           "comment": ""
         },
         {
-          "id": "2a0280450d52",
+          "id": "d4ea5792a660",
           "name": "location_node_id",
           "type": "BIGINT",
           "default": "",
@@ -1075,7 +1075,7 @@
           "comment": ""
         },
         {
-          "id": "a8f75c117533",
+          "id": "2cc8c4f66cfe",
           "name": "attribute_id",
           "type": "BIGINT",
           "default": "",
@@ -1087,7 +1087,7 @@
           "comment": ""
         },
         {
-          "id": "fa7c8f774f6a",
+          "id": "6931f898df07",
           "name": "scenario_id",
           "type": "BIGINT",
           "default": "",
@@ -1099,7 +1099,7 @@
           "comment": ""
         },
         {
-          "id": "19cc4a617ba0",
+          "id": "48b7a9de5278",
           "name": "calc_version_id",
           "type": "BIGINT",
           "default": "",
@@ -1111,7 +1111,7 @@
           "comment": ""
         },
         {
-          "id": "42fed9dca89f",
+          "id": "588ad7ab9074",
           "name": "measure_value",
           "type": "NUMERIC(18, 6)",
           "default": "",
@@ -1123,7 +1123,7 @@
           "comment": ""
         },
         {
-          "id": "9815776d3345",
+          "id": "1a34ae3d13e3",
           "name": "unit_code",
           "type": "TEXT",
           "default": "",
@@ -1135,7 +1135,7 @@
           "comment": ""
         },
         {
-          "id": "760a92a644df",
+          "id": "88e7e719acf6",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -1155,221 +1155,221 @@
   ],
   "relationships": [
     {
-      "id": "135dd48cc841",
-      "name": "fk_core.entity_kind_package_id_core.package",
-      "startTableId": "63d49611d493",
-      "startFieldId": "eab8e4558f4c",
-      "endTableId": "2077a3dc4596",
-      "endFieldId": "43f96212aca6",
+      "id": "5799817530ce",
+      "name": "fk_core.entity_kind_scope_id_core.scope",
+      "startTableId": "d066df5083d4",
+      "startFieldId": "977e75edccc4",
+      "endTableId": "2b5da5497ffd",
+      "endFieldId": "cf751c4e6c41",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "9d930d41a339",
+      "id": "9bb7a8a724b4",
       "name": "fk_core.location_node_parent_location_node_id_core.location_node",
-      "startTableId": "125211c0e9d8",
-      "startFieldId": "fafb8f66c070",
-      "endTableId": "125211c0e9d8",
-      "endFieldId": "62495d8bd079",
+      "startTableId": "69501d2ba1c7",
+      "startFieldId": "ffa3d2541cc4",
+      "endTableId": "69501d2ba1c7",
+      "endFieldId": "344016251f20",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "f3078db8fd4d",
+      "id": "c33e72a2280b",
       "name": "fk_core.item_entity_kind_id_core.entity_kind",
-      "startTableId": "0f9b42fb0c13",
-      "startFieldId": "24d18c0f8fb3",
-      "endTableId": "63d49611d493",
-      "endFieldId": "fcec06e18082",
+      "startTableId": "0a6e9913df44",
+      "startFieldId": "9282a073cf4e",
+      "endTableId": "d066df5083d4",
+      "endFieldId": "b0d3c32522ed",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "cd906ad898c6",
+      "id": "29ec9c314546",
       "name": "fk_core.item_location_node_id_core.location_node",
-      "startTableId": "0f9b42fb0c13",
-      "startFieldId": "466f744611c9",
-      "endTableId": "125211c0e9d8",
-      "endFieldId": "62495d8bd079",
+      "startTableId": "0a6e9913df44",
+      "startFieldId": "52d220d7f510",
+      "endTableId": "69501d2ba1c7",
+      "endFieldId": "344016251f20",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "2ba788396a15",
+      "id": "a43c9aa36d3f",
       "name": "fk_core.segment_item_id_core.item",
-      "startTableId": "ec6e286ec1e3",
-      "startFieldId": "29ed96142b36",
-      "endTableId": "0f9b42fb0c13",
-      "endFieldId": "45bf069cf3c1",
+      "startTableId": "d91a9602aba8",
+      "startFieldId": "8f3f8b98f1d0",
+      "endTableId": "0a6e9913df44",
+      "endFieldId": "8d06874e6261",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "1283a35fce62",
+      "id": "28b09cf23bee",
       "name": "fk_core.segment_location_node_id_core.location_node",
-      "startTableId": "ec6e286ec1e3",
-      "startFieldId": "593d350e8947",
-      "endTableId": "125211c0e9d8",
-      "endFieldId": "62495d8bd079",
+      "startTableId": "d91a9602aba8",
+      "startFieldId": "167e0b4ef8aa",
+      "endTableId": "69501d2ba1c7",
+      "endFieldId": "344016251f20",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "20df78670d14",
+      "id": "6f581860676d",
       "name": "fk_core.segment_parent_segment_id_core.segment",
-      "startTableId": "ec6e286ec1e3",
-      "startFieldId": "60924bc6681e",
-      "endTableId": "ec6e286ec1e3",
-      "endFieldId": "ae5314c6a377",
+      "startTableId": "d91a9602aba8",
+      "startFieldId": "bc25c80a6510",
+      "endTableId": "d91a9602aba8",
+      "endFieldId": "6f6599a6298a",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "264976d3720c",
-      "name": "fk_core.event_package_id_core.package",
-      "startTableId": "796acc97f2ea",
-      "startFieldId": "9410077f84d6",
-      "endTableId": "2077a3dc4596",
-      "endFieldId": "43f96212aca6",
+      "id": "1eec624f69b7",
+      "name": "fk_core.event_scope_id_core.scope",
+      "startTableId": "0612c7f4013e",
+      "startFieldId": "b066a9c47095",
+      "endTableId": "2b5da5497ffd",
+      "endFieldId": "cf751c4e6c41",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "5ddb32bd2253",
+      "id": "d43ea94a14ad",
       "name": "fk_core.event_item_id_core.item",
-      "startTableId": "796acc97f2ea",
-      "startFieldId": "767369a23cf0",
-      "endTableId": "0f9b42fb0c13",
-      "endFieldId": "45bf069cf3c1",
+      "startTableId": "0612c7f4013e",
+      "startFieldId": "59c2818df67b",
+      "endTableId": "0a6e9913df44",
+      "endFieldId": "8d06874e6261",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "eea8a519ac07",
+      "id": "bf585a1d256a",
       "name": "fk_core.event_location_node_id_core.location_node",
-      "startTableId": "796acc97f2ea",
-      "startFieldId": "84c279d51788",
-      "endTableId": "125211c0e9d8",
-      "endFieldId": "62495d8bd079",
+      "startTableId": "0612c7f4013e",
+      "startFieldId": "54a578a3da78",
+      "endTableId": "69501d2ba1c7",
+      "endFieldId": "344016251f20",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "48fa3aa56ef6",
+      "id": "1c01d9796e90",
       "name": "fk_core.event_segment_id_core.segment",
-      "startTableId": "796acc97f2ea",
-      "startFieldId": "e8c84bb6ba06",
-      "endTableId": "ec6e286ec1e3",
-      "endFieldId": "ae5314c6a377",
+      "startTableId": "0612c7f4013e",
+      "startFieldId": "2ef560181252",
+      "endTableId": "d91a9602aba8",
+      "endFieldId": "6f6599a6298a",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "a1f4cfeb1678",
+      "id": "5b6b6c4c6b8d",
       "name": "fk_core.event_item_id_core.segment",
-      "startTableId": "796acc97f2ea",
-      "startFieldId": "767369a23cf0",
-      "endTableId": "ec6e286ec1e3",
-      "endFieldId": "29ed96142b36",
+      "startTableId": "0612c7f4013e",
+      "startFieldId": "59c2818df67b",
+      "endTableId": "d91a9602aba8",
+      "endFieldId": "8f3f8b98f1d0",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "a0f8b2c7a296",
+      "id": "81ab1dd89ecd",
       "name": "fk_core.scenario_parent_scenario_id_core.scenario",
-      "startTableId": "afe9774dbb38",
-      "startFieldId": "d62f9685dabf",
-      "endTableId": "afe9774dbb38",
-      "endFieldId": "bbef6c4f9dc3",
+      "startTableId": "5d137762d000",
+      "startFieldId": "6ab19393139b",
+      "endTableId": "5d137762d000",
+      "endFieldId": "cce13c5ee0f8",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "1468519dc0e0",
-      "name": "fk_meta.attribute_package_id_core.package",
-      "startTableId": "76898c7db092",
-      "startFieldId": "25aacad20881",
-      "endTableId": "2077a3dc4596",
-      "endFieldId": "43f96212aca6",
+      "id": "7099c8a7419d",
+      "name": "fk_meta.attribute_scope_id_core.scope",
+      "startTableId": "ce62bf450149",
+      "startFieldId": "82d0bafae248",
+      "endTableId": "2b5da5497ffd",
+      "endFieldId": "cf751c4e6c41",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "3017ef791654",
+      "id": "3ad3095d1cda",
       "name": "fk_fact.daily_measure_fact_segment_id_core.segment",
-      "startTableId": "05ea7bc82a14",
-      "startFieldId": "8ed8e57782a2",
-      "endTableId": "ec6e286ec1e3",
-      "endFieldId": "ae5314c6a377",
+      "startTableId": "2e0fd9944079",
+      "startFieldId": "8239f9f0cf14",
+      "endTableId": "d91a9602aba8",
+      "endFieldId": "6f6599a6298a",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "10709a028226",
+      "id": "ab46f27d44b2",
       "name": "fk_fact.daily_measure_fact_item_id_core.segment",
-      "startTableId": "05ea7bc82a14",
-      "startFieldId": "73d25a8d37d2",
-      "endTableId": "ec6e286ec1e3",
-      "endFieldId": "29ed96142b36",
+      "startTableId": "2e0fd9944079",
+      "startFieldId": "6603b19738a1",
+      "endTableId": "d91a9602aba8",
+      "endFieldId": "8f3f8b98f1d0",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "9921c078911c",
+      "id": "d0896a66f519",
       "name": "fk_fact.daily_measure_fact_location_node_id_core.segment",
-      "startTableId": "05ea7bc82a14",
-      "startFieldId": "2a0280450d52",
-      "endTableId": "ec6e286ec1e3",
-      "endFieldId": "593d350e8947",
+      "startTableId": "2e0fd9944079",
+      "startFieldId": "d4ea5792a660",
+      "endTableId": "d91a9602aba8",
+      "endFieldId": "167e0b4ef8aa",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "98edba1cc812",
+      "id": "5cc69e8c7f9e",
       "name": "fk_fact.daily_measure_fact_attribute_id_meta.attribute",
-      "startTableId": "05ea7bc82a14",
-      "startFieldId": "a8f75c117533",
-      "endTableId": "76898c7db092",
-      "endFieldId": "3181e2ff3c43",
+      "startTableId": "2e0fd9944079",
+      "startFieldId": "2cc8c4f66cfe",
+      "endTableId": "ce62bf450149",
+      "endFieldId": "199a83d21ccc",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "73753f7bbca7",
+      "id": "ea946f0c0b63",
       "name": "fk_fact.daily_measure_fact_scenario_id_core.scenario",
-      "startTableId": "05ea7bc82a14",
-      "startFieldId": "fa7c8f774f6a",
-      "endTableId": "afe9774dbb38",
-      "endFieldId": "bbef6c4f9dc3",
+      "startTableId": "2e0fd9944079",
+      "startFieldId": "6931f898df07",
+      "endTableId": "5d137762d000",
+      "endFieldId": "cce13c5ee0f8",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
-      "id": "a21fe269c2ea",
+      "id": "b9e5ad28f50c",
       "name": "fk_fact.daily_measure_fact_calc_version_id_core.calc_version",
-      "startTableId": "05ea7bc82a14",
-      "startFieldId": "19cc4a617ba0",
-      "endTableId": "ddf9eb81b96b",
-      "endFieldId": "335702703e9f",
+      "startTableId": "2e0fd9944079",
+      "startFieldId": "48b7a9de5278",
+      "endTableId": "7baedacd9cc7",
+      "endFieldId": "5443ccabbc6b",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
@@ -1377,8 +1377,6 @@
   ],
   "notes": [],
   "subjectAreas": [],
-  "database": "postgresql",
-  "types": [],
-  "enums": [],
-  "title": "Cleber ERD"
+  "title": "Cleber ERD",
+  "database": "postgresql"
 }

@@ -137,15 +137,25 @@ def _parse_pk_constraint(line: str) -> list[str]:
     return [c.strip() for c in m.group(1).split(",")]
 
 
-def parse_ddl(content: str) -> tuple[list[dict], list[dict]]:
-    """Retorna (tables, relationships) no formato interno (com name refs)."""
+def parse_ddl(
+    content: str,
+    existing_table_ids: dict[str, str] | None = None,
+    existing_field_ids: dict[tuple[str, str], str] | None = None,
+    existing_rel_ids: dict[tuple[str, str, str, str], str] | None = None,
+) -> tuple[list[dict], list[dict]]:
+    """Retorna (tables, relationships) no formato interno (com name refs).
+    Se existing_* forem passados, reutiliza os ids do JSON existente quando houver correspondência.
+    """
     tables = []
     relationships = []
     table_name_to_id: dict[str, str] = {}
     table_col_to_field_id: dict[tuple[str, str], str] = {}
+    existing_table_ids = existing_table_ids or {}
+    existing_field_ids = existing_field_ids or {}
+    existing_rel_ids = existing_rel_ids or {}
 
     for full_name, body in _parse_table_blocks(content):
-        table_id = _short_id()
+        table_id = existing_table_ids.get(full_name) or _short_id()
         table_name_to_id[full_name] = table_id
         tokens = _tokenize_body(body)
         columns_by_name: dict[str, dict] = {}
@@ -176,7 +186,7 @@ def parse_ddl(content: str) -> tuple[list[dict], list[dict]]:
 
         field_list = []
         for col_name, col in columns_by_name.items():
-            field_id = _short_id()
+            field_id = existing_field_ids.get((full_name, col_name)) or _short_id()
             table_col_to_field_id[(full_name, col_name)] = field_id
             field_list.append({
                 "id": field_id,
@@ -208,9 +218,11 @@ def parse_ddl(content: str) -> tuple[list[dict], list[dict]]:
         end_field_id = table_col_to_field_id.get(end_key)
         if not all([start_table_id, end_table_id, start_field_id, end_field_id]):
             continue
+        rel_key = (start_table_id, start_field_id, end_table_id, end_field_id)
+        rel_id = existing_rel_ids.get(rel_key) or _short_id()
         rel_name = f"fk_{r['start_table']}_{r['start_col']}_{r['end_table']}"
         rel_by_id.append({
-            "id": _short_id(),
+            "id": rel_id,
             "name": rel_name,
             "startTableId": start_table_id,
             "startFieldId": start_field_id,
@@ -241,6 +253,35 @@ def _load_layout_from_json(path: Path) -> dict[str, dict]:
                 "color": tbl.get("color") or "#175e7a",
             }
     return layout
+
+
+def _load_existing_ids(path: Path) -> tuple[dict[str, str], dict[tuple[str, str], str], dict[tuple[str, str, str, str], str]]:
+    """Extrai ids de tabelas, campos e relacionamentos do JSON existente para preservar ao reexportar."""
+    table_id_by_name: dict[str, str] = {}
+    field_id_by_table_and_name: dict[tuple[str, str], str] = {}
+    rel_id_by_key: dict[tuple[str, str, str, str], str] = {}
+    if not path.exists():
+        return table_id_by_name, field_id_by_table_and_name, rel_id_by_key
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return table_id_by_name, field_id_by_table_and_name, rel_id_by_key
+    for tbl in data.get("tables", []):
+        name = tbl.get("name")
+        tid = tbl.get("id")
+        if name and tid:
+            table_id_by_name[name] = tid
+        for f in tbl.get("fields", []):
+            fname = f.get("name")
+            fid = f.get("id")
+            if name and fname and fid:
+                field_id_by_table_and_name[(name, fname)] = fid
+    for r in data.get("relationships", []):
+        key = (r.get("startTableId"), r.get("startFieldId"), r.get("endTableId"), r.get("endFieldId"))
+        rid = r.get("id")
+        if all(key) and rid:
+            rel_id_by_key[key] = rid
+    return table_id_by_name, field_id_by_table_and_name, rel_id_by_key
 
 
 def build_drawdb_diagram(
@@ -321,7 +362,13 @@ def main() -> None:
         out_file = root / "backend" / "sql" / "erd_drawdb.json"
 
     content = ddl_file.read_text(encoding="utf-8")
-    tables, relationships = parse_ddl(content)
+    existing_table_ids, existing_field_ids, existing_rel_ids = _load_existing_ids(out_file)
+    tables, relationships = parse_ddl(
+        content,
+        existing_table_ids=existing_table_ids,
+        existing_field_ids=existing_field_ids,
+        existing_rel_ids=existing_rel_ids,
+    )
     layout_by_name = _load_layout_from_json(out_file)
     diagram = build_drawdb_diagram(tables, relationships, layout_by_name=layout_by_name)
     out_file.parent.mkdir(parents=True, exist_ok=True)
