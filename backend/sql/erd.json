@@ -743,8 +743,8 @@
       ]
     },
     {
-      "id": "calc_version",
-      "name": "calc_version",
+      "id": "version",
+      "name": "version",
       "x": 1710.5859172287396,
       "y": 1446.8982614492938,
       "comment": "Versão do motor e do conjunto de regras de cálculo.",
@@ -753,7 +753,7 @@
       "locked": false,
       "fields": [
         {
-          "id": "calc_version.id",
+          "id": "version.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -765,8 +765,8 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "calc_version.engine_version",
-          "name": "engine_version",
+          "id": "version.engine",
+          "name": "engine",
           "type": "TEXT",
           "default": "",
           "check": "",
@@ -777,8 +777,8 @@
           "comment": "Versão do motor de cálculo."
         },
         {
-          "id": "calc_version.rule_bundle_version",
-          "name": "rule_bundle_version",
+          "id": "version.rule",
+          "name": "rule",
           "type": "TEXT",
           "default": "",
           "check": "",
@@ -789,7 +789,7 @@
           "comment": "Versão do conjunto de regras."
         },
         {
-          "id": "calc_version.created_at_utc",
+          "id": "version.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -1065,8 +1065,8 @@
           "comment": "Cenário do valor (FK)."
         },
         {
-          "id": "fact.calc_version_id",
-          "name": "calc_version_id",
+          "id": "fact.version_id",
+          "name": "version_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -1327,11 +1327,11 @@
     },
     {
       "id": "b9e5ad28f50c",
-      "name": "fk_fact_calc_version_id_calc_version",
+      "name": "fk_fact_version_id_version",
       "startTableId": "fact",
-      "startFieldId": "fact.calc_version_id",
-      "endTableId": "calc_version",
-      "endFieldId": "calc_version.id",
+      "startFieldId": "fact.version_id",
+      "endTableId": "version",
+      "endFieldId": "version.id",
       "cardinality": "many_to_one", 
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
