@@ -3,8 +3,6 @@
     {
       "id": "scope",
       "name": "scope",
-      "x": -539.9189408459036,
-      "y": 48.81843437025739,
       "comment": "Escopo do projeto: Aves, Soja, Leite...",
       "indices": [],
       "color": "#1a6b8a",
@@ -57,13 +55,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": -539.9189408459036,
+      "y": 48.81843437025739
     },
     {
       "id": "kind",
       "name": "kind",
-      "x": 13.946983965987329,
-      "y": -2.094092472469999,
       "comment": "Tipo de entidade dentro de um escopo (ex.: produto, cliente).",
       "indices": [],
       "color": "#1a6b8a",
@@ -140,13 +138,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 13.946983965987329,
+      "y": -2.094092472469999
     },
     {
       "id": "location",
       "name": "location",
-      "x": 590.6410487071294,
-      "y": 653.8454611146635,
       "comment": "Nó da hierarquia de localização (país, região, etc.).",
       "indices": [],
       "color": "#1a6b8a",
@@ -248,13 +246,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 590.6410487071294,
+      "y": 653.8454611146635
     },
     {
       "id": "item",
       "name": "item",
-      "x": 1058.575585041923,
-      "y": -42.112281395424866,
       "comment": "Entidade de negócio: instância de um tipo de entidade em um local.",
       "indices": [],
       "color": "#1a6b8a",
@@ -356,13 +354,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 1058.575585041923,
+      "y": -42.112281395424866
     },
     {
       "id": "segment",
       "name": "segment",
-      "x": 1703.1196404832847,
-      "y": 289.12854455424963,
       "comment": "Segmento de item em um local, com possível hierarquia.",
       "indices": [],
       "color": "#1a6b8a",
@@ -488,13 +486,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 1703.1196404832847,
+      "y": 289.12854455424963
     },
     {
       "id": "event",
       "name": "event",
-      "x": 85.38008760004766,
-      "y": 382.50117595924036,
       "comment": "Evento temporal associado a escopo, item, segmento ou local.",
       "indices": [],
       "color": "#1a6b8a",
@@ -656,13 +654,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 85.38008760004766,
+      "y": 382.50117595924036
     },
     {
       "id": "scenario",
       "name": "scenario",
-      "x": 1682.7029641764923,
-      "y": 1079.220249310541,
       "comment": "Cenário de planejamento ou simulação (hierárquico).",
       "indices": [],
       "color": "#1a6b8a",
@@ -740,13 +738,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 1682.7029641764923,
+      "y": 1079.220249310541
     },
     {
       "id": "version",
       "name": "version",
-      "x": 1710.5859172287396,
-      "y": 1446.8982614492938,
       "comment": "Versão do motor e do conjunto de regras de cálculo.",
       "indices": [],
       "color": "#1a6b8a",
@@ -800,13 +798,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 1710.5859172287396,
+      "y": 1446.8982614492938
     },
     {
       "id": "attribute",
       "name": "attribute",
-      "x": -52.93826453378824,
-      "y": 1046.2408722361995,
       "comment": "Atributo governado: definição de medida ou dimensão.",
       "indices": [],
       "color": "#c4c410",
@@ -968,13 +966,13 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": -52.93826453378824,
+      "y": 1046.2408722361995
     },
     {
       "id": "fact",
       "name": "fact",
-      "x": 1151.4978279324707,
-      "y": 862.4631497639488,
       "comment": "Tabela oficial de fatos numéricos diários. É o resultado do cálculo do dia.",
       "indices": [],
       "color": "#6270f0",
@@ -1112,7 +1110,9 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ]
+      ],
+      "x": 1151.4978279324707,
+      "y": 862.4631497639488
     }
   ],
   "relationships": [
@@ -1332,7 +1332,7 @@
       "startFieldId": "fact.version_id",
       "endTableId": "version",
       "endFieldId": "version.id",
-      "cardinality": "many_to_one", 
+      "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     }
