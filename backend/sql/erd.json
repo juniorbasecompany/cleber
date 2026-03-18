@@ -1,26 +1,29 @@
 {
   "tables": [
     {
-      "id": "2b5da5497ffd",
-      "name": "core.scope",
+      "id": "scope",
+      "name": "scope",
       "x": -539.9189408459036,
       "y": 48.81843437025739,
+      "comment": "Escopo do projeto: Aves, Soja, Leite...",
+      "indices": [],
+      "color": "#1a6b8a",
       "fields": [
         {
-          "id": "cf751c4e6c41",
+          "id": "scope.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
           "check": "",
           "primary": true,
           "unique": true,
-          "notNull": false,
+          "notNull": true,
           "increment": true,
-          "comment": "Identificador único (PK)."
+          "comment": "Identificador do escopo."
         },
         {
-          "id": "6cebf197d276",
-          "name": "technical_name",
+          "id": "scope.name",
+          "name": "name",
           "type": "TEXT",
           "default": "",
           "check": "",
@@ -28,11 +31,11 @@
           "unique": false,
           "notNull": true,
           "increment": false,
-          "comment": "Nome técnico único do escopo."
+          "comment": "Nome do escopo: Aves, Soja, Leite..."
         },
         {
-          "id": "b2bfa5f229db",
-          "name": "display_name",
+          "id": "scope.description",
+          "name": "description",
           "type": "TEXT",
           "default": "",
           "check": "",
@@ -40,22 +43,10 @@
           "unique": false,
           "notNull": true,
           "increment": false,
-          "comment": "Nome de exibição."
+          "comment": "Descrição do escopo: Aves para produção de ovos, Soja em grãos, Leite..."
         },
         {
-          "id": "ca1877e32098",
-          "name": "status",
-          "type": "TEXT",
-          "default": "'active'",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "comment": "Status do escopo (ex.: active)."
-        },
-        {
-          "id": "79a10b1f2e8a",
+          "id": "scope.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -66,20 +57,19 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Âmbito ou escopo de agrupamento de entidades.",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "d066df5083d4",
-      "name": "core.entity_kind",
-      "x": 6.4043873966943465,
-      "y": 12.048276094954275,
+      "id": "kind",
+      "name": "kind",
+      "x": 13.946983965987329,
+      "y": -2.094092472469999,
+      "comment": "Tipo de entidade dentro de um escopo (ex.: produto, cliente).",
+      "indices": [],
+      "color": "#1a6b8a",
       "fields": [
         {
-          "id": "b0d3c32522ed",
+          "id": "kind.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -91,7 +81,7 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "977e75edccc4",
+          "id": "kind.scope_id",
           "name": "scope_id",
           "type": "BIGINT",
           "default": "",
@@ -103,7 +93,7 @@
           "comment": "Escopo ao qual o tipo de entidade pertence (FK)."
         },
         {
-          "id": "3275722f9f32",
+          "id": "kind.technical_name",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -115,7 +105,7 @@
           "comment": "Nome técnico único dentro do escopo."
         },
         {
-          "id": "227ad2bbe28b",
+          "id": "kind.display_name",
           "name": "display_name",
           "type": "TEXT",
           "default": "",
@@ -127,7 +117,7 @@
           "comment": "Nome de exibição."
         },
         {
-          "id": "350b0a47864c",
+          "id": "kind.segment_allowed_flag",
           "name": "segment_allowed_flag",
           "type": "BOOLEAN",
           "default": "true",
@@ -139,7 +129,7 @@
           "comment": "Indica se este tipo permite segmentação."
         },
         {
-          "id": "401840b89000",
+          "id": "kind.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -150,20 +140,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Tipo de entidade dentro de um escopo (ex.: produto, cliente).",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "69501d2ba1c7",
-      "name": "core.location_node",
+      "id": "location",
+      "name": "location",
       "x": 590.6410487071294,
       "y": 653.8454611146635,
+      "comment": "Nó da hierarquia de localização (país, região, etc.).",
+      "indices": [],
+      "color": "#1a6b8a",
+      "locked": false,
       "fields": [
         {
-          "id": "344016251f20",
+          "id": "location.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -175,8 +165,8 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "ffa3d2541cc4",
-          "name": "parent_location_node_id",
+          "id": "location.parent_location_id",
+          "name": "parent_location_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -187,8 +177,8 @@
           "comment": "Nó pai na hierarquia (FK)."
         },
         {
-          "id": "ee72cca39534",
-          "name": "location_kind",
+          "id": "location.kind",
+          "name": "kind",
           "type": "TEXT",
           "default": "",
           "check": "",
@@ -199,7 +189,7 @@
           "comment": "Tipo do nó (ex.: country, region)."
         },
         {
-          "id": "bede2ea21131",
+          "id": "location.technical_name",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -211,7 +201,7 @@
           "comment": "Nome técnico único do nó."
         },
         {
-          "id": "1aeea77093fd",
+          "id": "location.display_name",
           "name": "display_name",
           "type": "TEXT",
           "default": "",
@@ -223,7 +213,7 @@
           "comment": "Nome de exibição."
         },
         {
-          "id": "6a29ef8571c3",
+          "id": "location.country_code",
           "name": "country_code",
           "type": "CHAR(2)",
           "default": "",
@@ -235,7 +225,7 @@
           "comment": "Código ISO do país (2 letras), quando aplicável."
         },
         {
-          "id": "f8df56461552",
+          "id": "location.timezone_name",
           "name": "timezone_name",
           "type": "TEXT",
           "default": "",
@@ -247,31 +237,7 @@
           "comment": "Nome do fuso horário (IANA)."
         },
         {
-          "id": "128d4fffc218",
-          "name": "valid_from",
-          "type": "DATE",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "comment": "Início da vigência do nó."
-        },
-        {
-          "id": "c3a8d86bdb81",
-          "name": "valid_to",
-          "type": "DATE",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": false,
-          "increment": false,
-          "comment": "Fim da vigência do nó (NULL = vigente)."
-        },
-        {
-          "id": "fc0a906374b8",
+          "id": "location.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -282,20 +248,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Nó da hierarquia de localização (país, região, etc.).",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "0a6e9913df44",
-      "name": "core.item",
-      "x": 1051.03298847263,
-      "y": -27.027088256838965,
+      "id": "item",
+      "name": "item",
+      "x": 1058.575585041923,
+      "y": -42.112281395424866,
+      "comment": "Entidade de negócio: instância de um tipo de entidade em um local.",
+      "indices": [],
+      "color": "#1a6b8a",
+      "locked": false,
       "fields": [
         {
-          "id": "8d06874e6261",
+          "id": "item.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -307,8 +273,8 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "9282a073cf4e",
-          "name": "entity_kind_id",
+          "id": "item.kind_id",
+          "name": "kind_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -319,8 +285,8 @@
           "comment": "Tipo de entidade (FK)."
         },
         {
-          "id": "52d220d7f510",
-          "name": "location_node_id",
+          "id": "item.location_id",
+          "name": "location_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -331,7 +297,7 @@
           "comment": "Local ao qual o item está vinculado (FK)."
         },
         {
-          "id": "7bcb4c3398da",
+          "id": "item.code",
           "name": "code",
           "type": "TEXT",
           "default": "",
@@ -343,7 +309,7 @@
           "comment": "Código único do item dentro do tipo e local."
         },
         {
-          "id": "bff5d999392b",
+          "id": "item.start_date",
           "name": "start_date",
           "type": "DATE",
           "default": "",
@@ -355,7 +321,7 @@
           "comment": "Data de início de vigência."
         },
         {
-          "id": "e893bf3cb9f5",
+          "id": "item.end_date",
           "name": "end_date",
           "type": "DATE",
           "default": "",
@@ -367,7 +333,7 @@
           "comment": "Data de fim de vigência (NULL = vigente)."
         },
         {
-          "id": "3fd2f41de594",
+          "id": "item.status",
           "name": "status",
           "type": "TEXT",
           "default": "'active'",
@@ -379,7 +345,7 @@
           "comment": "Status do item (ex.: active)."
         },
         {
-          "id": "1519282ac18c",
+          "id": "item.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -390,20 +356,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Entidade de negócio: instância de um tipo de entidade em um local.",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "d91a9602aba8",
-      "name": "core.segment",
+      "id": "segment",
+      "name": "segment",
       "x": 1703.1196404832847,
       "y": 289.12854455424963,
+      "comment": "Segmento de item em um local, com possível hierarquia.",
+      "indices": [],
+      "color": "#1a6b8a",
+      "locked": false,
       "fields": [
         {
-          "id": "6f6599a6298a",
+          "id": "segment.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -415,7 +381,7 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "8f3f8b98f1d0",
+          "id": "segment.item_id",
           "name": "item_id",
           "type": "BIGINT",
           "default": "",
@@ -427,8 +393,8 @@
           "comment": "Item ao qual o segmento pertence (FK)."
         },
         {
-          "id": "167e0b4ef8aa",
-          "name": "location_node_id",
+          "id": "segment.location_id",
+          "name": "location_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -439,7 +405,7 @@
           "comment": "Local do segmento (FK)."
         },
         {
-          "id": "bc25c80a6510",
+          "id": "segment.parent_segment_id",
           "name": "parent_segment_id",
           "type": "BIGINT",
           "default": "",
@@ -451,7 +417,7 @@
           "comment": "Segmento pai na hierarquia (FK)."
         },
         {
-          "id": "6e5e3e266c21",
+          "id": "segment.code",
           "name": "code",
           "type": "TEXT",
           "default": "",
@@ -463,7 +429,7 @@
           "comment": "Código único do segmento dentro do item."
         },
         {
-          "id": "102d399ba592",
+          "id": "segment.start_date",
           "name": "start_date",
           "type": "DATE",
           "default": "",
@@ -475,7 +441,7 @@
           "comment": "Data de início de vigência."
         },
         {
-          "id": "8633488611ec",
+          "id": "segment.end_date",
           "name": "end_date",
           "type": "DATE",
           "default": "",
@@ -487,7 +453,7 @@
           "comment": "Data de fim de vigência (NULL = vigente)."
         },
         {
-          "id": "727f2c0fb4d2",
+          "id": "segment.status",
           "name": "status",
           "type": "TEXT",
           "default": "'active'",
@@ -499,7 +465,7 @@
           "comment": "Status do segmento (ex.: active)."
         },
         {
-          "id": "3fdcb5a18781",
+          "id": "segment.split_reason",
           "name": "split_reason",
           "type": "TEXT",
           "default": "",
@@ -511,7 +477,7 @@
           "comment": "Motivo do split, quando aplicável."
         },
         {
-          "id": "364c2fcf54cc",
+          "id": "segment.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -522,20 +488,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Segmento de item em um local, com possível hierarquia.",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "0612c7f4013e",
-      "name": "core.event",
+      "id": "event",
+      "name": "event",
       "x": 85.38008760004766,
       "y": 382.50117595924036,
+      "comment": "Evento temporal associado a escopo, item, segmento ou local.",
+      "indices": [],
+      "color": "#1a6b8a",
+      "locked": false,
       "fields": [
         {
-          "id": "b4077b02c36e",
+          "id": "event.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -547,7 +513,7 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "b066a9c47095",
+          "id": "event.scope_id",
           "name": "scope_id",
           "type": "BIGINT",
           "default": "",
@@ -559,7 +525,7 @@
           "comment": "Escopo do evento (FK)."
         },
         {
-          "id": "59c2818df67b",
+          "id": "event.item_id",
           "name": "item_id",
           "type": "BIGINT",
           "default": "",
@@ -571,7 +537,7 @@
           "comment": "Item associado (FK), quando aplicável."
         },
         {
-          "id": "2ef560181252",
+          "id": "event.segment_id",
           "name": "segment_id",
           "type": "BIGINT",
           "default": "",
@@ -583,8 +549,8 @@
           "comment": "Segmento associado (FK), quando aplicável."
         },
         {
-          "id": "54a578a3da78",
-          "name": "location_node_id",
+          "id": "event.location_id",
+          "name": "location_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -595,7 +561,7 @@
           "comment": "Local associado (FK), quando aplicável."
         },
         {
-          "id": "b72fbfdfce55",
+          "id": "event.event_type",
           "name": "event_type",
           "type": "TEXT",
           "default": "",
@@ -607,7 +573,7 @@
           "comment": "Tipo do evento."
         },
         {
-          "id": "5194157afe07",
+          "id": "event.business_date",
           "name": "business_date",
           "type": "DATE",
           "default": "",
@@ -619,7 +585,7 @@
           "comment": "Data de negócio do evento."
         },
         {
-          "id": "9839b88c1f0e",
+          "id": "event.occurred_at_utc",
           "name": "occurred_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "",
@@ -631,7 +597,7 @@
           "comment": "Data e hora de ocorrência (UTC)."
         },
         {
-          "id": "52d968573b36",
+          "id": "event.effective_from",
           "name": "effective_from",
           "type": "DATE",
           "default": "",
@@ -643,7 +609,7 @@
           "comment": "Início da vigência do efeito do evento."
         },
         {
-          "id": "64eb609b70c5",
+          "id": "event.effective_to",
           "name": "effective_to",
           "type": "DATE",
           "default": "",
@@ -655,7 +621,7 @@
           "comment": "Fim da vigência do efeito (NULL = vigente)."
         },
         {
-          "id": "a33500b607d9",
+          "id": "event.source_system",
           "name": "source_system",
           "type": "TEXT",
           "default": "",
@@ -667,7 +633,7 @@
           "comment": "Sistema de origem do evento."
         },
         {
-          "id": "8a6d99091d50",
+          "id": "event.payload_jsonb",
           "name": "payload_jsonb",
           "type": "JSONB",
           "default": "",
@@ -679,7 +645,7 @@
           "comment": "Payload flexível de origem, mantido apenas para detalhe de evento que não substitui colunas estruturais."
         },
         {
-          "id": "3cc4cc3470c8",
+          "id": "event.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -690,20 +656,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Evento temporal associado a escopo, item, segmento ou local.",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "5d137762d000",
-      "name": "core.scenario",
+      "id": "scenario",
+      "name": "scenario",
       "x": 1682.7029641764923,
       "y": 1079.220249310541,
+      "comment": "Cenário de planejamento ou simulação (hierárquico).",
+      "indices": [],
+      "color": "#1a6b8a",
+      "locked": false,
       "fields": [
         {
-          "id": "cce13c5ee0f8",
+          "id": "scenario.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -715,7 +681,7 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "0df1a70e0269",
+          "id": "scenario.technical_name",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -727,7 +693,7 @@
           "comment": "Nome técnico único do cenário."
         },
         {
-          "id": "5b8c0b217b42",
+          "id": "scenario.scenario_kind",
           "name": "scenario_kind",
           "type": "TEXT",
           "default": "",
@@ -739,7 +705,7 @@
           "comment": "Tipo do cenário (ex.: budget, forecast)."
         },
         {
-          "id": "6ab19393139b",
+          "id": "scenario.parent_scenario_id",
           "name": "parent_scenario_id",
           "type": "BIGINT",
           "default": "",
@@ -751,7 +717,7 @@
           "comment": "Cenário pai na hierarquia (FK)."
         },
         {
-          "id": "ac6a830c34d1",
+          "id": "scenario.is_official_flag",
           "name": "is_official_flag",
           "type": "BOOLEAN",
           "default": "false",
@@ -763,7 +729,7 @@
           "comment": "Indica se é o cenário oficial."
         },
         {
-          "id": "6a7c1d148079",
+          "id": "scenario.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -774,20 +740,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Cenário de planejamento ou simulação (hierárquico).",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "7baedacd9cc7",
-      "name": "core.calc_version",
-      "x": 1745.470426361719,
+      "id": "calc_version",
+      "name": "calc_version",
+      "x": 1710.5859172287396,
       "y": 1446.8982614492938,
+      "comment": "Versão do motor e do conjunto de regras de cálculo.",
+      "indices": [],
+      "color": "#1a6b8a",
+      "locked": false,
       "fields": [
         {
-          "id": "5443ccabbc6b",
+          "id": "calc_version.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -799,7 +765,7 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "3593f5438246",
+          "id": "calc_version.engine_version",
           "name": "engine_version",
           "type": "TEXT",
           "default": "",
@@ -811,7 +777,7 @@
           "comment": "Versão do motor de cálculo."
         },
         {
-          "id": "46260e6c88c5",
+          "id": "calc_version.rule_bundle_version",
           "name": "rule_bundle_version",
           "type": "TEXT",
           "default": "",
@@ -823,7 +789,7 @@
           "comment": "Versão do conjunto de regras."
         },
         {
-          "id": "b7d80a5ef3db",
+          "id": "calc_version.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -834,20 +800,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Versão do motor e do conjunto de regras de cálculo.",
-      "indices": [],
-      "color": "#1a6b8a",
-      "locked": false
+      ]
     },
     {
-      "id": "ce62bf450149",
-      "name": "meta.attribute",
+      "id": "attribute",
+      "name": "attribute",
       "x": -52.93826453378824,
       "y": 1046.2408722361995,
+      "comment": "Atributo governado: definição de medida ou dimensão.",
+      "indices": [],
+      "color": "#c4c410",
+      "locked": false,
       "fields": [
         {
-          "id": "199a83d21ccc",
+          "id": "attribute.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -859,7 +825,7 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "82d0bafae248",
+          "id": "attribute.scope_id",
           "name": "scope_id",
           "type": "BIGINT",
           "default": "",
@@ -871,7 +837,7 @@
           "comment": "Escopo do atributo (FK)."
         },
         {
-          "id": "eae29be782ff",
+          "id": "attribute.technical_name",
           "name": "technical_name",
           "type": "TEXT",
           "default": "",
@@ -883,7 +849,7 @@
           "comment": "Nome técnico único dentro do escopo."
         },
         {
-          "id": "feb1a77e6c3c",
+          "id": "attribute.display_name",
           "name": "display_name",
           "type": "TEXT",
           "default": "",
@@ -895,7 +861,7 @@
           "comment": "Nome de exibição."
         },
         {
-          "id": "789b243a8d0a",
+          "id": "attribute.value_type",
           "name": "value_type",
           "type": "TEXT",
           "default": "",
@@ -907,7 +873,7 @@
           "comment": "Tipo do valor (ex.: numeric, text)."
         },
         {
-          "id": "1bbee6a7e703",
+          "id": "attribute.business_role",
           "name": "business_role",
           "type": "TEXT",
           "default": "",
@@ -919,7 +885,7 @@
           "comment": "Papel de negócio do atributo."
         },
         {
-          "id": "1932533664c9",
+          "id": "attribute.grain_kind",
           "name": "grain_kind",
           "type": "TEXT",
           "default": "",
@@ -931,7 +897,7 @@
           "comment": "Grão de agregação (ex.: daily, monthly)."
         },
         {
-          "id": "926efc58b9e8",
+          "id": "attribute.aggregation_rule",
           "name": "aggregation_rule",
           "type": "TEXT",
           "default": "",
@@ -943,7 +909,7 @@
           "comment": "Regra de agregação (ex.: sum, avg)."
         },
         {
-          "id": "9b3f917f11ba",
+          "id": "attribute.unit_code",
           "name": "unit_code",
           "type": "TEXT",
           "default": "",
@@ -955,7 +921,7 @@
           "comment": "Código da unidade de medida."
         },
         {
-          "id": "5a09ed44b270",
+          "id": "attribute.precision_scale",
           "name": "precision_scale",
           "type": "INTEGER",
           "default": "",
@@ -967,7 +933,7 @@
           "comment": "Escala de precisão numérica (0 a 12)."
         },
         {
-          "id": "33e783139a5a",
+          "id": "attribute.panel_visible_flag",
           "name": "panel_visible_flag",
           "type": "BOOLEAN",
           "default": "true",
@@ -979,7 +945,7 @@
           "comment": "Indica se aparece no painel por padrão."
         },
         {
-          "id": "40d94c29d1f0",
+          "id": "attribute.audit_required_flag",
           "name": "audit_required_flag",
           "type": "BOOLEAN",
           "default": "true",
@@ -991,7 +957,7 @@
           "comment": "Indica se exige auditoria."
         },
         {
-          "id": "e3e88c15f8c5",
+          "id": "attribute.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -1002,20 +968,20 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Atributo governado: definição de medida ou dimensão.",
-      "indices": [],
-      "color": "#c4c410",
-      "locked": false
+      ]
     },
     {
-      "id": "2e0fd9944079",
-      "name": "fact.daily_measure_fact",
+      "id": "fact",
+      "name": "fact",
       "x": 1151.4978279324707,
       "y": 862.4631497639488,
+      "comment": "Tabela oficial de fatos numéricos diários. É o resultado do cálculo do dia.",
+      "indices": [],
+      "color": "#6270f0",
+      "locked": false,
       "fields": [
         {
-          "id": "6d14edc5701e",
+          "id": "fact.id",
           "name": "id",
           "type": "BIGINT",
           "default": "",
@@ -1027,7 +993,7 @@
           "comment": "Identificador único (PK)."
         },
         {
-          "id": "125496e28ab2",
+          "id": "fact.fact_date",
           "name": "fact_date",
           "type": "DATE",
           "default": "",
@@ -1039,7 +1005,7 @@
           "comment": "Chave de partição e grão oficial de negócio para derivações analíticas."
         },
         {
-          "id": "6603b19738a1",
+          "id": "fact.item_id",
           "name": "item_id",
           "type": "BIGINT",
           "default": "",
@@ -1051,7 +1017,7 @@
           "comment": "Item da medida (via segmento)."
         },
         {
-          "id": "8239f9f0cf14",
+          "id": "fact.segment_id",
           "name": "segment_id",
           "type": "BIGINT",
           "default": "",
@@ -1063,8 +1029,8 @@
           "comment": "Segmento no grão do fato (FK)."
         },
         {
-          "id": "d4ea5792a660",
-          "name": "location_node_id",
+          "id": "fact.location_id",
+          "name": "location_id",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -1075,7 +1041,7 @@
           "comment": "Local no grão do fato."
         },
         {
-          "id": "2cc8c4f66cfe",
+          "id": "fact.attribute_id",
           "name": "attribute_id",
           "type": "BIGINT",
           "default": "",
@@ -1087,7 +1053,7 @@
           "comment": "Atributo medido (FK)."
         },
         {
-          "id": "6931f898df07",
+          "id": "fact.scenario_id",
           "name": "scenario_id",
           "type": "BIGINT",
           "default": "",
@@ -1099,7 +1065,7 @@
           "comment": "Cenário do valor (FK)."
         },
         {
-          "id": "48b7a9de5278",
+          "id": "fact.calc_version_id",
           "name": "calc_version_id",
           "type": "BIGINT",
           "default": "",
@@ -1111,7 +1077,7 @@
           "comment": "Versão de cálculo que gerou o valor (FK)."
         },
         {
-          "id": "588ad7ab9074",
+          "id": "fact.measure_value",
           "name": "measure_value",
           "type": "NUMERIC(18, 6)",
           "default": "",
@@ -1123,7 +1089,7 @@
           "comment": "Valor numérico da medida."
         },
         {
-          "id": "1a34ae3d13e3",
+          "id": "fact.unit_code",
           "name": "unit_code",
           "type": "TEXT",
           "default": "",
@@ -1135,7 +1101,7 @@
           "comment": "Código da unidade do valor."
         },
         {
-          "id": "88e7e719acf6",
+          "id": "fact.created_at_utc",
           "name": "created_at_utc",
           "type": "TIMESTAMPTZ",
           "default": "now()",
@@ -1146,237 +1112,235 @@
           "increment": false,
           "comment": "Data e hora de criação do registro (UTC)."
         }
-      ],
-      "comment": "Tabela oficial de fatos numéricos diários. O segmento é obrigatório nesta modelagem inicial.",
-      "indices": [],
-      "color": "#6270f0",
-      "locked": false
+      ]
     }
   ],
   "relationships": [
     {
       "id": "5799817530ce",
-      "name": "fk_core.entity_kind_scope_id_core.scope",
-      "startTableId": "d066df5083d4",
-      "startFieldId": "977e75edccc4",
-      "endTableId": "2b5da5497ffd",
-      "endFieldId": "cf751c4e6c41",
+      "name": "fk_kind_scope_id_scope",
+      "startTableId": "kind",
+      "startFieldId": "kind.scope_id",
+      "endTableId": "scope",
+      "endFieldId": "scope.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "9bb7a8a724b4",
-      "name": "fk_core.location_node_parent_location_node_id_core.location_node",
-      "startTableId": "69501d2ba1c7",
-      "startFieldId": "ffa3d2541cc4",
-      "endTableId": "69501d2ba1c7",
-      "endFieldId": "344016251f20",
+      "name": "fk_location_parent_location_id_location",
+      "startTableId": "location",
+      "startFieldId": "location.parent_location_id",
+      "endTableId": "location",
+      "endFieldId": "location.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "c33e72a2280b",
-      "name": "fk_core.item_entity_kind_id_core.entity_kind",
-      "startTableId": "0a6e9913df44",
-      "startFieldId": "9282a073cf4e",
-      "endTableId": "d066df5083d4",
-      "endFieldId": "b0d3c32522ed",
+      "name": "fk_item_kind_id_kind",
+      "startTableId": "item",
+      "startFieldId": "item.kind_id",
+      "endTableId": "kind",
+      "endFieldId": "kind.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "29ec9c314546",
-      "name": "fk_core.item_location_node_id_core.location_node",
-      "startTableId": "0a6e9913df44",
-      "startFieldId": "52d220d7f510",
-      "endTableId": "69501d2ba1c7",
-      "endFieldId": "344016251f20",
+      "name": "fk_item_location_id_location",
+      "startTableId": "item",
+      "startFieldId": "item.location_id",
+      "endTableId": "location",
+      "endFieldId": "location.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "a43c9aa36d3f",
-      "name": "fk_core.segment_item_id_core.item",
-      "startTableId": "d91a9602aba8",
-      "startFieldId": "8f3f8b98f1d0",
-      "endTableId": "0a6e9913df44",
-      "endFieldId": "8d06874e6261",
+      "name": "fk_segment_item_id_item",
+      "startTableId": "segment",
+      "startFieldId": "segment.item_id",
+      "endTableId": "item",
+      "endFieldId": "item.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "28b09cf23bee",
-      "name": "fk_core.segment_location_node_id_core.location_node",
-      "startTableId": "d91a9602aba8",
-      "startFieldId": "167e0b4ef8aa",
-      "endTableId": "69501d2ba1c7",
-      "endFieldId": "344016251f20",
+      "name": "fk_segment_location_id_location",
+      "startTableId": "segment",
+      "startFieldId": "segment.location_id",
+      "endTableId": "location",
+      "endFieldId": "location.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "6f581860676d",
-      "name": "fk_core.segment_parent_segment_id_core.segment",
-      "startTableId": "d91a9602aba8",
-      "startFieldId": "bc25c80a6510",
-      "endTableId": "d91a9602aba8",
-      "endFieldId": "6f6599a6298a",
+      "name": "fk_segment_parent_segment_id_segment",
+      "startTableId": "segment",
+      "startFieldId": "segment.parent_segment_id",
+      "endTableId": "segment",
+      "endFieldId": "segment.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "1eec624f69b7",
-      "name": "fk_core.event_scope_id_core.scope",
-      "startTableId": "0612c7f4013e",
-      "startFieldId": "b066a9c47095",
-      "endTableId": "2b5da5497ffd",
-      "endFieldId": "cf751c4e6c41",
+      "name": "fk_event_scope_id_scope",
+      "startTableId": "event",
+      "startFieldId": "event.scope_id",
+      "endTableId": "scope",
+      "endFieldId": "scope.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "d43ea94a14ad",
-      "name": "fk_core.event_item_id_core.item",
-      "startTableId": "0612c7f4013e",
-      "startFieldId": "59c2818df67b",
-      "endTableId": "0a6e9913df44",
-      "endFieldId": "8d06874e6261",
+      "name": "fk_event_item_id_item",
+      "startTableId": "event",
+      "startFieldId": "event.item_id",
+      "endTableId": "item",
+      "endFieldId": "item.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "bf585a1d256a",
-      "name": "fk_core.event_location_node_id_core.location_node",
-      "startTableId": "0612c7f4013e",
-      "startFieldId": "54a578a3da78",
-      "endTableId": "69501d2ba1c7",
-      "endFieldId": "344016251f20",
+      "name": "fk_event_location_id_location",
+      "startTableId": "event",
+      "startFieldId": "event.location_id",
+      "endTableId": "location",
+      "endFieldId": "location.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "1c01d9796e90",
-      "name": "fk_core.event_segment_id_core.segment",
-      "startTableId": "0612c7f4013e",
-      "startFieldId": "2ef560181252",
-      "endTableId": "d91a9602aba8",
-      "endFieldId": "6f6599a6298a",
+      "name": "fk_event_segment_id_segment",
+      "startTableId": "event",
+      "startFieldId": "event.segment_id",
+      "endTableId": "segment",
+      "endFieldId": "segment.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "5b6b6c4c6b8d",
-      "name": "fk_core.event_item_id_core.segment",
-      "startTableId": "0612c7f4013e",
-      "startFieldId": "59c2818df67b",
-      "endTableId": "d91a9602aba8",
-      "endFieldId": "8f3f8b98f1d0",
+      "name": "fk_event_item_id_segment",
+      "startTableId": "event",
+      "startFieldId": "event.item_id",
+      "endTableId": "segment",
+      "endFieldId": "segment.item_id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "81ab1dd89ecd",
-      "name": "fk_core.scenario_parent_scenario_id_core.scenario",
-      "startTableId": "5d137762d000",
-      "startFieldId": "6ab19393139b",
-      "endTableId": "5d137762d000",
-      "endFieldId": "cce13c5ee0f8",
+      "name": "fk_scenario_parent_scenario_id_scenario",
+      "startTableId": "scenario",
+      "startFieldId": "scenario.parent_scenario_id",
+      "endTableId": "scenario",
+      "endFieldId": "scenario.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "7099c8a7419d",
-      "name": "fk_meta.attribute_scope_id_core.scope",
-      "startTableId": "ce62bf450149",
-      "startFieldId": "82d0bafae248",
-      "endTableId": "2b5da5497ffd",
-      "endFieldId": "cf751c4e6c41",
+      "name": "fk_attribute_scope_id_scope",
+      "startTableId": "attribute",
+      "startFieldId": "attribute.scope_id",
+      "endTableId": "scope",
+      "endFieldId": "scope.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "3ad3095d1cda",
-      "name": "fk_fact.daily_measure_fact_segment_id_core.segment",
-      "startTableId": "2e0fd9944079",
-      "startFieldId": "8239f9f0cf14",
-      "endTableId": "d91a9602aba8",
-      "endFieldId": "6f6599a6298a",
+      "name": "fk_fact_segment_id_segment",
+      "startTableId": "fact",
+      "startFieldId": "fact.segment_id",
+      "endTableId": "segment",
+      "endFieldId": "segment.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "ab46f27d44b2",
-      "name": "fk_fact.daily_measure_fact_item_id_core.segment",
-      "startTableId": "2e0fd9944079",
-      "startFieldId": "6603b19738a1",
-      "endTableId": "d91a9602aba8",
-      "endFieldId": "8f3f8b98f1d0",
+      "name": "fk_fact_item_id_segment",
+      "startTableId": "fact",
+      "startFieldId": "fact.item_id",
+      "endTableId": "segment",
+      "endFieldId": "segment.item_id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "d0896a66f519",
-      "name": "fk_fact.daily_measure_fact_location_node_id_core.segment",
-      "startTableId": "2e0fd9944079",
-      "startFieldId": "d4ea5792a660",
-      "endTableId": "d91a9602aba8",
-      "endFieldId": "167e0b4ef8aa",
+      "name": "fk_fact_location_id_segment",
+      "startTableId": "fact",
+      "startFieldId": "fact.location_id",
+      "endTableId": "segment",
+      "endFieldId": "segment.location_id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "5cc69e8c7f9e",
-      "name": "fk_fact.daily_measure_fact_attribute_id_meta.attribute",
-      "startTableId": "2e0fd9944079",
-      "startFieldId": "2cc8c4f66cfe",
-      "endTableId": "ce62bf450149",
-      "endFieldId": "199a83d21ccc",
+      "name": "fk_fact_attribute_id_attribute",
+      "startTableId": "fact",
+      "startFieldId": "fact.attribute_id",
+      "endTableId": "attribute",
+      "endFieldId": "attribute.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "ea946f0c0b63",
-      "name": "fk_fact.daily_measure_fact_scenario_id_core.scenario",
-      "startTableId": "2e0fd9944079",
-      "startFieldId": "6931f898df07",
-      "endTableId": "5d137762d000",
-      "endFieldId": "cce13c5ee0f8",
+      "name": "fk_fact_scenario_id_scenario",
+      "startTableId": "fact",
+      "startFieldId": "fact.scenario_id",
+      "endTableId": "scenario",
+      "endFieldId": "scenario.id",
       "cardinality": "many_to_one",
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     },
     {
       "id": "b9e5ad28f50c",
-      "name": "fk_fact.daily_measure_fact_calc_version_id_core.calc_version",
-      "startTableId": "2e0fd9944079",
-      "startFieldId": "48b7a9de5278",
-      "endTableId": "7baedacd9cc7",
-      "endFieldId": "5443ccabbc6b",
-      "cardinality": "many_to_one",
+      "name": "fk_fact_calc_version_id_calc_version",
+      "startTableId": "fact",
+      "startFieldId": "fact.calc_version_id",
+      "endTableId": "calc_version",
+      "endFieldId": "calc_version.id",
+      "cardinality": "many_to_one", 
       "updateConstraint": "No action",
       "deleteConstraint": "No action"
     }
   ],
   "notes": [],
   "subjectAreas": [],
-  "title": "Cleber ERD",
-  "database": "postgresql"
+  "database": "postgresql",
+  "types": [],
+  "enums": [],
+  "title": "Cleber ERD"
 }
