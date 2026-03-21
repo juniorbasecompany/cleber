@@ -45,17 +45,46 @@ Ficheiros `.env` estão no `.gitignore` e não devem ser commitados.
 
 **Quem já tinha o Postgres a correr com outra senha:** mantenha no novo `.env` a **mesma** `POSTGRES_PASSWORD` que o volume Docker já usa, ou altere a senha no servidor (`ALTER USER …`) para coincidir com o valor novo no `.env`.
 
-### Migrations (quando configurado)
+### Migrations (Alembic)
 
-Com o Postgres rodando e o banco acessível:
+Com o Postgres acessível e **`POSTGRES_PASSWORD`** definida (`.env` na raiz, lido também pelo Alembic via `Settings`):
 
 ```bash
 cd backend
-alembic upgrade head
+python -m alembic upgrade head
 ```
+
+- Configuração: [`alembic.ini`](alembic.ini) (URL placeholder; a URL real vem de [`alembic/env.py`](alembic/env.py)).
+- Revisões: pasta [`alembic/versions/`](alembic/versions/).
+
+Para gerar uma nova revisão após alterar modelos:
+
+```bash
+cd backend
+python -m alembic revision --autogenerate -m "descrição"
+```
+
+### Validação do schema (fase 1 — E.1)
+
+Com o Postgres acessível e migrations aplicadas, na pasta `backend`:
+
+```bash
+python script_validate_schema_phase1.py
+```
+
+O script confere as tabelas `tenant`, `account`, `member`, PKs, FKs (incl. `ON DELETE` / `UPDATE`), `CHECK`s e o índice único parcial em `member`. Exit code `0` se passar.
+
+### Sessão e API (fase 1 — E.2)
+
+- [`src/valora_backend/db.py`](src/valora_backend/db.py): `engine`, `SessionLocal`, dependency `get_session` e alias `SessionDep`.
+- O endpoint `GET /health/db` usa a sessão para `SELECT 1` e confirma ligação ao banco.
 
 ## Estrutura inicial
 
 - `pyproject.toml`: dependências e configuração do projeto Python.
 - `src/valora_backend/`: pacote da aplicação.
 - `src/valora_backend/config.py`: configuração via `pydantic-settings` (`POSTGRES_PASSWORD` → URL do banco em `database_url`).
+- `src/valora_backend/model/`: modelos SQLAlchemy (fase 1: `tenant`, `account`, `member` em `identity.py`).
+- `src/valora_backend/db.py`: engine, sessão e dependency FastAPI (`get_session`).
+- `alembic/`: migrations; `env.py` usa `Base.metadata` e a mesma URL que o backend.
+- `script_validate_schema_phase1.py`: validação automática do schema da fase 1 (E.1).
