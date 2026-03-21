@@ -12,7 +12,7 @@
 |-------|----------|
 | A — Decisões de modelo (ERD) | Feito no ERD |
 | B — Docker e config | Feito (`docker-compose.yml`, `config.py`, README backend, `.env.example`) |
-| B' — Renomeação cleber → valora | Código e conteúdo no repo feitos; **B'.4** (pasta local) e **B'.5** (GitHub) manuais |
+| B' — Renomeação cleber → valora | Feito (incl. pasta local e GitHub) |
 | C — SQLAlchemy | Pendente |
 | D — Alembic | Pendente |
 | E — Validação | Pendente |
@@ -77,7 +77,7 @@ Marque cada item quando aprovar / concluir.
 
 ### B — Docker, configuração e infraestrutura
 
-**Ideia:** o PostgreSQL de desenvolvimento roda em **container** (Compose). O backend e o Alembic, executados na máquina de desenvolvimento, usam `DATABASE_URL` com host **localhost** (ou `127.0.0.1`) e a **porta mapeada** pelo Compose (ex.: `5432`). Se no futuro o backend também rodar em container na mesma rede do Compose, o host passa a ser o **nome do serviço** do Postgres no `docker-compose.yml`.
+**Ideia:** o PostgreSQL de desenvolvimento roda em **container** (Compose). O backend e o Alembic, executados na máquina de desenvolvimento, usam `DATABASE_URL` com host **localhost** (ou `127.0.0.1`) e a **porta mapeada** pelo Compose (no host: **5434** → 5432 no container). Se no futuro o backend também rodar em container na mesma rede do Compose, o host passa a ser o **nome do serviço** do Postgres no `docker-compose.yml`.
 
 - [x] **B.1** `docker-compose.yml` na raiz do monorepo com serviço PostgreSQL, volume, healthcheck, porta, variáveis `POSTGRES_*`.
 - [x] **B.2** Módulo `backend/src/valora_backend/config.py` com `pydantic-settings` e `DATABASE_URL`.
@@ -88,10 +88,10 @@ Marque cada item quando aprovar / concluir.
 - [x] **B'.1** Backend: pacote `valora_backend`, `pyproject.toml` atualizado.
 - [x] **B'.2** Frontend: `package.json` (`valora-frontend`).
 - [x] **B'.3** Conteúdo: README, ERD title, `main.py`, mockups, `archive/review/plano-ajustado.md`.
-- [ ] **B'.4** Pasta local: commit → fechar workspace → renomear pasta (ex.: `cleber` → `valora`) → reabrir.
-- [ ] **B'.5** GitHub: renomear repositório; `git remote set-url origin …` se necessário.
+- [x] **B'.4** Pasta local: commit → fechar workspace → renomear pasta (ex.: `cleber` → `valora`) → reabrir.
+- [x] **B'.5** GitHub: renomear repositório; `git remote set-url origin …` se necessário.
 
-**Ordem sugerida:** B'.1–B'.3 (feito no repo) → commit → B'.4 → B'.5.
+**Ordem sugerida:** B'.1–B'.3 (feito no repo) → commit → B'.4 → B'.5 (**B'.1–B'.5 concluídos**).
 
 ### C — SQLAlchemy (só as 3 tabelas)
 
