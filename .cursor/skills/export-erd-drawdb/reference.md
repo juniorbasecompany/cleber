@@ -104,6 +104,58 @@ Regras de coerência (JSON / diagrama):
 | `size`    | não         | string/number | Tamanho (ex. precisão). |
 | `values`  | não         | array   | Valores (ex. enum). |
 
+### Extensão do projeto: `fields[].nullIfEmpty`
+
+Não faz parte do esquema oficial do drawDB; tratar `backend/erd/erd.json` no repositório como fonte de verdade para essa convenção.
+
+#### Onde no JSON
+
+- Dentro de um objeto de `tables[].fields[]`.
+- Mesmo nível de chaves como `type`, `default`, `notNull`, `increment`, `comment`, `size` e `values`.
+- Usar apenas quando o valor vazio daquele campo deve ser persistido como `NULL`.
+
+#### Formato e semântica
+
+| Campo         | Obrigatório | Tipo    | Descrição |
+|---------------|-------------|---------|-----------|
+| `nullIfEmpty` | não         | boolean | Indica que a aplicação deve converter o valor vazio do campo para `NULL` antes do `commit`. |
+
+Regras de coerência:
+
+1. `nullIfEmpty` vive no próprio field; não criar esse atributo em `tables[]`, `constraints` ou `relationships[]`.
+2. `nullIfEmpty: true` é uma regra de **camada de aplicação**, não de banco de dados.
+3. A conversão deve respeitar `fields[].type` e a semântica real do campo; o mapeamento de vazio por tipo pode evoluir.
+4. O uso preferencial é em campos nullable (`notNull: false`). Se `notNull: true`, o gerador e a aplicação devem ignorar `nullIfEmpty`.
+5. Se o field participar como coluna de origem de uma FK em `relationships[]`, o gerador e a aplicação devem ignorar `nullIfEmpty`.
+6. Tipos como `0`, `""` e `{}` só devem ser tratados como vazios quando fizer sentido para aquele field específico. O atributo não torna todos os campos do mesmo tipo equivalentes automaticamente.
+
+#### Exemplo mínimo
+
+```json
+{
+  "id": "source_system",
+  "name": "source_system",
+  "comment": "Sistema de origem do evento.",
+  "type": "TEXT",
+  "default": "",
+  "check": "",
+  "primary": false,
+  "unique": false,
+  "notNull": false,
+  "nullIfEmpty": true,
+  "increment": false,
+  "size": "",
+  "values": []
+}
+```
+
+**Importante:**
+- `nullIfEmpty` descreve intenção de persistência na aplicação.
+- Não gerar trigger, `DEFAULT`, `CHECK` ou migration específica no banco só por causa desse atributo.
+- Não gerar metadado de `nullIfEmpty` no código quando `notNull: true`.
+- Não gerar metadado de `nullIfEmpty` no código quando o field for FK.
+- A definição do que é "vazio" por tipo deve ficar centralizada no código da aplicação para revisão e ajuste posteriores.
+
 ## Relacionamento (`relationships[]`)
 
 | Campo              | Obrigatório | Tipo   | Descrição |

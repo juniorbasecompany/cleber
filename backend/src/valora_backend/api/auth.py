@@ -22,6 +22,7 @@ from valora_backend.auth.service import (
 )
 from valora_backend.db import get_session
 from valora_backend.model.identity import Account, Member, Tenant
+from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -153,7 +154,7 @@ def _find_or_create_account(session: Session, identity: GoogleIdentity) -> Accou
     if account:
         if _sync_account_name(account, identity):
             session.add(account)
-            session.commit()
+            commit_session_with_null_if_empty(session)
             session.refresh(account)
         return account
 
@@ -166,7 +167,7 @@ def _find_or_create_account(session: Session, identity: GoogleIdentity) -> Accou
         provider_subject=identity.provider_subject,
     )
     session.add(account)
-    session.commit()
+    commit_session_with_null_if_empty(session)
     session.refresh(account)
     return account
 
@@ -208,7 +209,7 @@ def _link_pending_member_to_account(session: Session, account: Account) -> None:
         session.add(pending_member)
 
     if changed:
-        session.commit()
+        commit_session_with_null_if_empty(session)
 
 
 def _list_active_tenant_option_list(
@@ -327,7 +328,7 @@ def _create_initial_tenant_member(session: Session, account: Account) -> Member:
         display_name=account.display_name,
     )
     session.add(tenant)
-    session.commit()
+    commit_session_with_null_if_empty(session)
     session.refresh(tenant)
 
     member = Member(
@@ -340,7 +341,7 @@ def _create_initial_tenant_member(session: Session, account: Account) -> Member:
         status=ACTIVE_STATUS,
     )
     session.add(member)
-    session.commit()
+    commit_session_with_null_if_empty(session)
     session.refresh(member)
     return member
 
@@ -372,7 +373,7 @@ def _resolve_member_for_access(
 
     if _sync_member_identity(pending_member, account):
         session.add(pending_member)
-        session.commit()
+        commit_session_with_null_if_empty(session)
         session.refresh(pending_member)
 
     return pending_member
@@ -424,7 +425,7 @@ def auth_google(
 
     if _sync_member_identity(member, account):
         session.add(member)
-        session.commit()
+        commit_session_with_null_if_empty(session)
         session.refresh(member)
 
     return AuthResponse(
@@ -572,7 +573,7 @@ def accept_invite(
     _sync_member_identity(member, account)
     member.status = ACTIVE_STATUS
     session.add(member)
-    session.commit()
+    commit_session_with_null_if_empty(session)
 
     return InviteActionResponse(
         member_id=member.id,
@@ -615,7 +616,7 @@ def reject_invite(
     _sync_member_identity(member, account)
     member.status = DISABLED_STATUS
     session.add(member)
-    session.commit()
+    commit_session_with_null_if_empty(session)
 
     return InviteActionResponse(
         member_id=member.id,

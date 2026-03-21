@@ -13,6 +13,7 @@ A fonte de verdade do ERD do projeto é `backend/erd/erd.json` (formato JSON do 
 
 - Usuário pede para consultar ou editar o ERD no drawDB.
 - Usuário pede para **incluir ou alterar** entradas em `tables[].constraints` em `backend/erd/erd.json`.
+- Usuário pede para **incluir ou alterar** metadados por coluna em `tables[].fields[]` (ex.: `nullIfEmpty`).
 - Referência ao formato e à localização do diagrama (fonte de verdade).
 
 ## Constraints no `erd.json` (padrão JSON)
@@ -23,6 +24,18 @@ A fonte de verdade do ERD do projeto é `backend/erd/erd.json` (formato JSON do 
 - **`constraint`:** **apenas** a expressão SQL/DDL (ex.: `CHECK (...)`, `UNIQUE (...)`, `UNIQUE (...) WHERE ...`), **sem** descrições em português, explicações ou comentários. Para **coerência com o diagrama**, os nomes de coluna mencionados devem coincidir com algum `fields[].name` **dessa mesma tabela**.
 - **Relação com `fields[].check`:** anotação por coluna continua no campo `check` do field; regras que envolvem **várias colunas** da mesma tabela ficam em `constraints`. Opcional: em colunas afetadas, deixar em `check` uma frase curta em português que aponte para a entrada em `constraints`.
 - Detalhes e exemplo: [reference.md — Extensão do projeto: constraints](reference.md).
+
+## Extensão do projeto: `fields[].nullIfEmpty`
+
+- **Onde:** dentro do próprio objeto de cada item em `tables[].fields[]`, no mesmo nível de `type`, `default`, `notNull`, `comment`, etc.
+- **Tipo:** `boolean`, opcional.
+- **Significado:** quando `true`, a aplicação pode converter para `NULL` um valor considerado "vazio" para aquele tipo de dado, **antes do `commit`**.
+- **Escopo:** é uma convenção da **camada de aplicação**; não implica trigger, `DEFAULT`, `CHECK` ou qualquer automatismo no banco de dados.
+- **Uso recomendado:** marcar apenas campos nullable (`notNull: false`) e apenas quando a semântica do campo realmente tratar o valor vazio como ausência de valor.
+- **Regra de geração 1:** se `notNull: true`, o gerador deve **ignorar** `nullIfEmpty`, porque a coluna não aceita `NULL`.
+- **Regra de geração 2:** se o field for FK (aparecer como origem em `relationships[]`), o gerador deve **ignorar** `nullIfEmpty`, porque a semântica do valor já é controlada por `notNull` e pela própria FK.
+- **Mapeamento de vazio:** depende do `type` da coluna e deve ser centralizado na aplicação. A primeira implementação do projeto usa essa convenção como ponto de configuração e mantém a revisão do mapeamento por tipo no código.
+- Detalhes e exemplo: [reference.md — Extensão do projeto: fields[].nullIfEmpty](reference.md).
 
 ## Fluxo
 
@@ -38,9 +51,13 @@ O drawDB espera um objeto com:
 - `notes`: array (pode ser `[]`).
 - `subjectAreas`: array (pode ser `[]`).
 
-**Extensão do projeto:** em cada objeto de `tables[]`, campo opcional `constraints` (lista de objetos com `name` e `constraint`). Onde colocar, formato e coerência com as colunas: ver secção *Extensão do projeto: constraints* em [reference.md](reference.md).
+**Extensões do projeto:**
+- em cada objeto de `tables[]`, campo opcional `constraints` (lista de objetos com `name` e `constraint`);
+- em cada objeto de `tables[].fields[]`, campo opcional `nullIfEmpty` (`boolean`).
 
-Cada **field** em `tables[].fields` deve ter: `id`, `name`, `type`, `default`, `check`, `primary`, `unique`, `notNull`, `increment`, `comment`.  
+Onde colocar, formato e coerência: ver secções *Extensão do projeto: constraints* e *Extensão do projeto: fields[].nullIfEmpty* em [reference.md](reference.md).
+
+Cada **field** em `tables[].fields` deve ter: `id`, `name`, `type`, `default`, `check`, `primary`, `unique`, `notNull`, `increment`, `comment`. Pode também ter extensões do projeto como `nullIfEmpty`.  
 Cada **relationship** deve ter: `id`, `name`, `startTableId`, `startFieldId`, `endTableId`, `endFieldId`, `cardinality`, `updateConstraint`, `deleteConstraint`.
 
 Cardinalidade: `"one_to_one"`, `"one_to_many"`, `"many_to_one"`.  

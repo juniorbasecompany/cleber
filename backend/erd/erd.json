@@ -186,6 +186,7 @@
           "primary": false,
           "unique": false,
           "notNull": false,
+          "nullIfEmpty": true,
           "increment": false,
           "size": "",
           "values": []
@@ -200,6 +201,7 @@
           "primary": false,
           "unique": false,
           "notNull": false,
+          "nullIfEmpty": true,
           "increment": false,
           "size": "",
           "values": []

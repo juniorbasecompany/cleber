@@ -127,11 +127,13 @@ class Member(Base):
     name: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+        info={"null_if_empty": True},
         comment="Nome completo do usuário.",
     )
     display_name: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,
+        info={"null_if_empty": True},
         comment="Nome do usuário.",
     )
     email: Mapped[str] = mapped_column(
