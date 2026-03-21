@@ -31,7 +31,7 @@ Este ficheiro é a **fonte canónica** no repositório para a **política estáv
 | [SKILL.md](./SKILL.md) | Checklist do agente em cada alteração com texto ou erro de API. |
 | [multi-country-localization](../../application/multi-country-localization/SKILL.md) | Domínio multi-país e localidade operacional. |
 | [architecture/technology-stack.md](../../../architecture/technology-stack.md) | Stack canónica (Next.js, FastAPI). |
-| [../../../.cursor/plans/plan-i18n.md](../../../.cursor/plans/plan-i18n.md) | Plano de trabalho volátil com fases e checklist de implementação, quando existir. |
+| [../../../.cursor/plans/plan-frontend-valora.md](../../../.cursor/plans/plan-frontend-valora.md) | Roadmap volátil do frontend, incluindo checkpoints de i18n por fase. |
 
 Planos de trabalho temporários em `.cursor/plans/` podem referenciar este ficheiro; **não** são substitutos desta política.
 

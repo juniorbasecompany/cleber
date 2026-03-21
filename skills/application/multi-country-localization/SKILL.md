@@ -5,7 +5,7 @@ description: Use quando desenhar ou revisar comportamento multi-país: contexto 
 
 # Localização para múltiplos países
 
-Esta skill trata de **regra de domínio e contexto operacional** (país, escopo, moeda, fuso). A **implementação técnica de i18n** (chaves de mensagem, `next-intl`, contrato de erro da API, templates no servidor) está em [skills/implementation/i18n/SKILL.md](../../implementation/i18n/SKILL.md); a política estável está em [skills/implementation/i18n/policy.md](../../implementation/i18n/policy.md), e o plano de implementação fica em `.cursor/plans/plan-i18n.md`, quando existir.
+Esta skill trata de **regra de domínio e contexto operacional** (país, escopo, moeda, fuso). A **implementação técnica de i18n** (chaves de mensagem, `next-intl`, contrato de erro da API, templates no servidor) está em [skills/implementation/i18n/SKILL.md](../../implementation/i18n/SKILL.md); a política estável está em [skills/implementation/i18n/policy.md](../../implementation/i18n/policy.md), e o roadmap de implementação fica em `.cursor/plans/plan-frontend-valora.md`, quando existir.
 
 Use esta skill quando o sistema precisar se comportar corretamente em mais de um país, sem transformar regra específica de país em rigidez do núcleo.
 
