@@ -7,4 +7,5 @@ alwaysApply: true
 
 - Criar e manter **planos de implementação**, **roadmaps** e **checklists** em **`.cursor/plans/`** (Markdown, commit no Git).
 - Não usar como fonte oficial apenas `%USERPROFILE%\.cursor\plans\` (pasta global do Cursor).
+- **Skills** em `skills/` **não** devem usar `.cursor/plans/` como fonte canónica: essa pasta é para planos de trabalho **voláteis** (o utilizador pode apagar ficheiros); políticas estáveis ficam em `skills/` ou `architecture/`.
 - Detalhes e convenções: skill **project-plans** em `.cursor/skills/project-plans/SKILL.md`.

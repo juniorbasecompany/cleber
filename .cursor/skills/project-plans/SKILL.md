@@ -21,6 +21,7 @@ Garantir que **planos de implementação**, **roadmaps** e **listas de etapas** 
 2. **Atualizar** planos existentes no mesmo sítio; se o utilizador referir um plano, preferir editar o ficheiro em `.cursor/plans/` correspondente.
 3. **Não** tratar `%USERPROFILE%\.cursor\plans\` como fonte de verdade para este projeto; pode mencionar-se que o utilizador pode ter atalhos lá, mas o **Git** deve refletir `.cursor/plans/`.
 4. **Conteúdo textual** nos `.md`: português do Brasil; **identificadores técnicos** (caminhos, nomes de ficheiro, comandos) em inglês quando forem código ou convenção do projeto.
+5. **Skills e `.cursor/plans/`:** ficheiros em `.cursor/plans/` são **planos de trabalho** (roadmaps, checklists) que o utilizador pode criar, editar ou **eliminar** ao longo do tempo — tratá-los como **voláteis** no fluxo de uso. **Nenhuma skill** em `skills/` (nem futuras) deve depender de `.cursor/plans/` como **fonte canónica** de política, convenção ou procedimento estável. Esse conteúdo deve viver em `skills/` ou `architecture/`. Planos em `.cursor/plans/` podem **referenciar** documentação estável (ex.: `skills/implementation/i18n/policy.md`), mas não o contrário como única âncora.
 
 ## Quando usar esta skill
 
@@ -30,3 +31,4 @@ Garantir que **planos de implementação**, **roadmaps** e **listas de etapas** 
 ## Referência
 
 - Plano exemplo: [plan-fase1-banco-dados.md](../../plans/plan-fase1-banco-dados.md) (relativo a este `SKILL.md`: `.cursor/plans/`).
+- Políticas transversais estáveis (não voláteis) vivem em `skills/` — por exemplo i18n: [skills/implementation/i18n/policy.md](../../../skills/implementation/i18n/policy.md).

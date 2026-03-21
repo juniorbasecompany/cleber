@@ -22,6 +22,10 @@ Aplicar o stack acordado em [architecture/technology-stack.md](../../../architec
 - **Next.js**, **React**, **TypeScript**, **Tailwind CSS**.
 - Quando existir `eslint` / `eslint-config-next` no `package.json`, seguir a configuração do projeto.
 
+### Internacionalização
+
+- Texto de interface e mensagens de erro visíveis ao utilizador: seguir [skills/implementation/i18n/SKILL.md](../i18n/SKILL.md) e [skills/implementation/i18n/policy.md](../i18n/policy.md) — evitar literals soltos; erros de API como `code` estável para o cliente traduzir.
+
 ### Backend
 
 - **FastAPI**, **SQLAlchemy**, **Alembic**, **PostgreSQL**, **Pydantic**, **Uvicorn** (e o que já estiver declarado em `backend/pyproject.toml`).

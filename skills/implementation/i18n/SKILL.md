@@ -1,0 +1,37 @@
+---
+name: i18n
+description: User-visible strings, API errors shown in the UI, server-rendered email/PDF copy, and PR review for new literals. Use with Next.js frontend, FastAPI backend, and multi-country domain rules. Always follow skills/implementation/i18n/policy.md and the stack skill.
+---
+
+# Internacionalização (implementação)
+
+## Objetivo
+
+Garantir que **texto de produto e mensagens de erro** não fiquem espalhados como literals sem governo, alinhado à [política de i18n](./policy.md) e à [stack](../stack/SKILL.md).
+
+## Quando usar
+
+- Alterar ou adicionar texto **visível** no `frontend/` (rótulos, botões, empty states, erros de formulário).
+- Definir ou consumir **respostas de erro** da API que o utilizador vê no browser.
+- Implementar **e-mail, PDF ou notificação** gerados no `backend/` com copy humana.
+- Rever diff que introduza **strings novas** de produto.
+
+## Regras obrigatórias
+
+- Usar **chaves estáveis em inglês** com **namespaces** (`common`, `auth`, `error`, `domain.*`); uma chave, um significado.
+- **Não** usar frase de UI ou de produto em português (ou outro idioma) como **única** fonte de verdade em JSX ou em Python — mensagens vivem em ficheiros de tradução ou camada equivalente.
+- **API:** expor **`code` estável** e detalhes estruturados; no cliente, mapear `code` → chave i18n (com interpolação a partir dos detalhes). Evitar depender só de `message` livre para a UI.
+- **Formatação:** datas, números e moeda de exibição com **`Intl`** (ou API do next-intl), segundo o locale efectivo — não formatar “na mão” por cópia de símbolos.
+- **Idioma da UI** e **contexto operacional multi-país** (tenant, regra fiscal, moeda funcional) são conceitos distintos; regra de negócio e sobrescrita por país seguem [multi-country-localization](../../application/multi-country-localization/SKILL.md), não ramificações só para trocar texto.
+
+## Stack
+
+- **Frontend:** **next-intl**, mensagens em `messages/` (ou estrutura documentada no projeto), segmento **`[locale]`** no App Router quando aplicável. Alternativa **react-i18next** só se [policy.md](./policy.md) e esta skill forem actualizados explicitamente.
+- **Backend:** códigos de erro estáveis; ficheiros ou templates de tradução **só** onde o servidor envia texto final ao utilizador (e-mail, PDF, etc.).
+
+## Referências
+
+- Política estável: [policy.md](./policy.md)
+- Stack canónica: [skills/implementation/stack/SKILL.md](../stack/SKILL.md)
+- Multi-país (domínio): [skills/application/multi-country-localization/SKILL.md](../../application/multi-country-localization/SKILL.md)
+- Arquitectura: [architecture/technology-stack.md](../../../architecture/technology-stack.md)

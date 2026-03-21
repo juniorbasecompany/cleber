@@ -8,4 +8,5 @@ alwaysApply: true
 - Use inglês para identificadores técnicos e elementos de código, como variável, função, método, classe, tabela, coluna, atributo, parâmetro, constante, `constraint`, `index` e `view`.
 - Use português do Brasil para comentário e explicação escrita dentro do código.
 - Use português do Brasil no conteúdo textual dos arquivos Markdown do projeto.
+- No português do Brasil, prefira vocabulário e convenções brasileiros; evite formas típicas de Portugal (por exemplo: "arquivo", não "ficheiro"; "celular", não "telemóvel").
 - Em Markdown, preserve em inglês todo termo que representar elemento de código, identificador, estrutura técnica, comando ou exemplo de código.

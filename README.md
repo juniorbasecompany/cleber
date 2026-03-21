@@ -12,7 +12,7 @@ Repositório de documentação canônica para a construção gradual de um siste
 - `vision/`: explicação humana. Mostra o que a solução faz e como ela evolui.
 - `reference/`: material de consulta. Reúne apoio, plano anterior, nota conceitual e planilha-fonte.
 - `archive/`: histórico superado. Guarda material que não deve mais orientar o desenho atual.
-- `.cursor/plans/`: planos e decisões de implementação versionados no Git (ex.: [plano fase 1 — banco de dados](.cursor/plans/plan-fase1-banco-dados.md)). A skill `project-plans` em `.cursor/skills/project-plans/` orienta o agente a criar planos nesta pasta.
+- `.cursor/plans/`: planos de implementação, roadmaps e checklists versionados no Git (ex.: [plano fase 1 — banco de dados](.cursor/plans/plan-fase1-banco-dados.md)). A skill `project-plans` em `.cursor/skills/project-plans/` orienta o agente a criar planos nesta pasta.
 
 ## Ordem de autoridade
 

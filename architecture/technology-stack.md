@@ -5,6 +5,7 @@ Decisão canónica de runtime para o front e o back. **Versões concretas** vive
 ## Frontend
 
 - **Next.js**, **React**, **TypeScript**, **Tailwind CSS**.
+- **Internacionalização:** ver [skills/implementation/i18n/policy.md](../skills/implementation/i18n/policy.md) e a skill [skills/implementation/i18n/SKILL.md](../skills/implementation/i18n/SKILL.md).
 
 ## Backend
 
