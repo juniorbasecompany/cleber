@@ -161,7 +161,8 @@
       "helper": "Se houver apenas um vínculo ativo, a entrada acontece direto no aplicativo. Quando existirem múltiplos vínculos ou convites, o Valora pedirá a escolha do licenciado.",
       "accessPolicy": "No primeiro acesso sem vínculo nem convite, o Valora cria automaticamente um contexto inicial para você concluir a configuração administrativa.",
       "googleUnavailable": "A entrada com Google não está disponível porque o identificador público do cliente Google ainda não foi configurado no ambiente.",
-      "error": "Não foi possível concluir a entrada com Google. Tente novamente."
+      "error": "Não foi possível concluir a entrada com Google. Tente novamente.",
+      "rememberMeLabel": "Permanecer logado neste dispositivo (a sessão deixa de ser só do navegador e dura até 30 dias após o último login, ou até você sair)."
     }
   },
   "SelectTenantPage": {

@@ -161,7 +161,8 @@
       "helper": "Si solo existe una relación activa, el acceso entra directamente en la aplicación. Cuando existan varias relaciones o invitaciones, Valora te pedirá que elijas el licenciatario.",
       "accessPolicy": "En el primer acceso sin relación ni invitación, Valora crea automáticamente un contexto inicial para que completes la configuración administrativa.",
       "googleUnavailable": "El acceso con Google no está disponible porque el identificador público del cliente de Google aún no se ha configurado en el entorno.",
-      "error": "No se pudo completar el acceso con Google. Inténtalo de nuevo."
+      "error": "No se pudo completar el acceso con Google. Inténtalo de nuevo.",
+      "rememberMeLabel": "Permanecer conectado en este dispositivo (la sesión deja de ser solo del navegador y dura hasta 30 días tras el último acceso, o hasta que cierres sesión)."
     }
   },
   "SelectTenantPage": {

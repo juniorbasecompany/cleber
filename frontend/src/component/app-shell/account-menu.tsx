@@ -5,6 +5,11 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 
 import { LocaleFlagMenu } from "@/component/i18n/locale-flag-menu";
+import {
+  googleIdTokenStorageKey,
+  rememberMeChoiceStorageKey,
+  tenantSelectionStorageKey
+} from "@/lib/auth/session";
 import type {
   TenantListResponse,
   TenantOption
@@ -190,6 +195,9 @@ export function AccountMenu({
         method: "POST"
       });
     } finally {
+      sessionStorage.removeItem(googleIdTokenStorageKey);
+      sessionStorage.removeItem(tenantSelectionStorageKey);
+      sessionStorage.removeItem(rememberMeChoiceStorageKey);
       router.replace(`/${currentLocale}/login?reason=signed_out`);
     }
   }

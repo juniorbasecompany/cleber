@@ -6,6 +6,7 @@ import {
   requireToken,
   successWithCookie
 } from "@/lib/backend-fetch";
+import { authPersistCookieName, isPersistentAuthFromCookieValue } from "@/lib/auth/session";
 
 type TokenResponse = {
   access_token: string;
@@ -23,14 +24,18 @@ export async function POST(request: NextRequest) {
     return errorResponse("tenant_id é obrigatório", 400);
   }
 
+  const rememberMe = isPersistentAuthFromCookieValue(
+    request.cookies.get(authPersistCookieName)?.value
+  );
+
   const result = await backendFetch<TokenResponse>("/auth/switch-tenant", {
     method: "POST",
-    body,
+    body: { tenant_id: body.tenant_id, remember_me: rememberMe },
     token: authResult.token
   });
   if (!result.ok) {
     return result.error;
   }
 
-  return successWithCookie(result.data, result.data.access_token);
+  return successWithCookie(result.data, result.data.access_token, { rememberMe });
 }

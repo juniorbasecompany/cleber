@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import {
   googleIdTokenStorageKey,
+  rememberMeChoiceStorageKey,
   tenantSelectionStorageKey
 } from "@/lib/auth/session";
 import type {
@@ -40,6 +41,10 @@ type TenantSelectionPanelProps = {
 const emptyTenantList: TenantOption[] = [];
 const emptyInviteList: InviteOption[] = [];
 
+function getRememberMeForApi() {
+  return sessionStorage.getItem(rememberMeChoiceStorageKey) === "1";
+}
+
 function getRoleLabel(role: number) {
   if (role === 1) {
     return "master";
@@ -74,6 +79,7 @@ export function TenantSelectionPanel({
   const readSnapshot = useCallback(() => {
     const snapshotValue = sessionStorage.getItem(tenantSelectionStorageKey);
     if (!snapshotValue) {
+      sessionStorage.removeItem(rememberMeChoiceStorageKey);
       router.replace(`/${locale}/login?reason=auth_required`);
       return null;
     }
@@ -83,6 +89,7 @@ export function TenantSelectionPanel({
     } catch {
       sessionStorage.removeItem(tenantSelectionStorageKey);
       sessionStorage.removeItem(googleIdTokenStorageKey);
+      sessionStorage.removeItem(rememberMeChoiceStorageKey);
       router.replace(`/${locale}/login?reason=auth_required`);
       return null;
     }
@@ -99,11 +106,13 @@ export function TenantSelectionPanel({
   const clearSelectionState = useCallback(() => {
     sessionStorage.removeItem(tenantSelectionStorageKey);
     sessionStorage.removeItem(googleIdTokenStorageKey);
+    sessionStorage.removeItem(rememberMeChoiceStorageKey);
   }, []);
 
   const getGoogleIdToken = useCallback(() => {
     const token = sessionStorage.getItem(googleIdTokenStorageKey);
     if (!token) {
+      sessionStorage.removeItem(rememberMeChoiceStorageKey);
       router.replace(`/${locale}/login?reason=auth_required`);
       return null;
     }
@@ -126,7 +135,10 @@ export function TenantSelectionPanel({
         headers: {
           "Content-Type": "application/json"
         },
-        body: JSON.stringify({ id_token: googleIdToken })
+        body: JSON.stringify({
+          id_token: googleIdToken,
+          remember_me: getRememberMeForApi()
+        })
       });
       const data = (await response.json()) as { detail?: string };
       if (!response.ok) {
@@ -161,7 +173,8 @@ export function TenantSelectionPanel({
           },
           body: JSON.stringify({
             id_token: googleIdToken,
-            tenant_id: tenantId
+            tenant_id: tenantId,
+            remember_me: getRememberMeForApi()
           })
         });
         const data = (await response.json()) as { detail?: string };
@@ -199,7 +212,8 @@ export function TenantSelectionPanel({
           },
           body: JSON.stringify({
             id_token: googleIdToken,
-            tenant_id: invite.tenant_id
+            tenant_id: invite.tenant_id,
+            remember_me: getRememberMeForApi()
           })
         });
         const tokenData = (await tokenResponse.json()) as { detail?: string };
@@ -229,7 +243,8 @@ export function TenantSelectionPanel({
           },
           body: JSON.stringify({
             id_token: googleIdToken,
-            tenant_id: invite.tenant_id
+            tenant_id: invite.tenant_id,
+            remember_me: getRememberMeForApi()
           })
         });
         const finalData = (await finalResponse.json()) as { detail?: string };
@@ -267,7 +282,8 @@ export function TenantSelectionPanel({
           },
           body: JSON.stringify({
             id_token: googleIdToken,
-            tenant_id: invite.tenant_id
+            tenant_id: invite.tenant_id,
+            remember_me: getRememberMeForApi()
           })
         });
         const tokenData = (await tokenResponse.json()) as { detail?: string };

@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 
 import {
   googleIdTokenStorageKey,
+  rememberMeChoiceStorageKey,
   tenantSelectionStorageKey
 } from "@/lib/auth/session";
 import type {
@@ -46,6 +47,7 @@ type GoogleSignInPanelProps = {
   helperText: string;
   unavailableText: string;
   genericErrorText: string;
+  rememberMeLabel: string;
 };
 
 export function GoogleSignInPanel({
@@ -55,13 +57,15 @@ export function GoogleSignInPanel({
   buttonPendingLabel,
   helperText,
   unavailableText,
-  genericErrorText
+  genericErrorText,
+  rememberMeLabel
 }: GoogleSignInPanelProps) {
   const router = useRouter();
   const buttonContainerRef = useRef<HTMLDivElement | null>(null);
   const [isReady, setIsReady] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const isUnavailable = useMemo(() => !clientId, [clientId]);
 
@@ -71,12 +75,20 @@ export function GoogleSignInPanel({
       setErrorMessage(null);
 
       try {
+        sessionStorage.setItem(
+          rememberMeChoiceStorageKey,
+          rememberMe ? "1" : "0"
+        );
+
         const response = await fetch("/api/auth/google/login", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({ id_token: credential })
+          body: JSON.stringify({
+            id_token: credential,
+            remember_me: rememberMe
+          })
         });
         const data = (await response.json()) as AuthResponse & { detail?: string };
 
@@ -103,13 +115,14 @@ export function GoogleSignInPanel({
 
         sessionStorage.removeItem(googleIdTokenStorageKey);
         sessionStorage.removeItem(tenantSelectionStorageKey);
+        sessionStorage.removeItem(rememberMeChoiceStorageKey);
         router.push(`/${locale}/app`);
       } catch {
         setErrorMessage(genericErrorText);
         setIsPending(false);
       }
     },
-    [genericErrorText, locale, router]
+    [genericErrorText, locale, rememberMe, router]
   );
 
   useEffect(() => {
@@ -176,6 +189,16 @@ export function GoogleSignInPanel({
       </div>
 
       <div className="flex flex-col gap-3">
+        <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[var(--color-text-muted)]">
+          <input
+            type="checkbox"
+            checked={rememberMe}
+            onChange={(event) => setRememberMe(event.target.checked)}
+            disabled={isUnavailable || isPending}
+            className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)] disabled:opacity-50"
+          />
+          <span>{rememberMeLabel}</span>
+        </label>
         <div
           ref={buttonContainerRef}
           className={`min-h-11 ${isPending ? "pointer-events-none opacity-60" : ""}`}

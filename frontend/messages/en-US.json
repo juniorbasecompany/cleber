@@ -161,7 +161,8 @@
       "helper": "If there is only one active relationship, access goes directly into the application. When multiple relationships or invites exist, Valora will ask you to choose the tenant.",
       "accessPolicy": "On the first access without a relationship or invite, Valora automatically creates an initial context so you can complete the administrative setup.",
       "googleUnavailable": "Google sign-in is unavailable because the public Google client identifier has not been configured in the environment yet.",
-      "error": "Could not complete the Google sign-in. Try again."
+      "error": "Could not complete the Google sign-in. Try again.",
+      "rememberMeLabel": "Stay signed in on this device (the session is no longer browser-only and lasts up to 30 days after your last sign-in, or until you sign out)."
     }
   },
   "SelectTenantPage": {

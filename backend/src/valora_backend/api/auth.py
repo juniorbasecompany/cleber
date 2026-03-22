@@ -34,10 +34,12 @@ GOOGLE_PROVIDER = "google"
 
 class GoogleTokenRequest(BaseModel):
     id_token: str
+    remember_me: bool = False
 
 
 class SelectTenantRequest(BaseModel):
     tenant_id: int
+    remember_me: bool = False
 
 
 class GoogleSelectTenantRequest(SelectTenantRequest):
@@ -318,8 +320,14 @@ def _get_pending_member(
     )
 
 
-def _issue_token_for_member(member: Member, *, account_id: int) -> str:
-    return create_access_token(account_id=account_id, tenant_id=member.tenant_id)
+def _issue_token_for_member(
+    member: Member, *, account_id: int, remember_me: bool = False
+) -> str:
+    return create_access_token(
+        account_id=account_id,
+        tenant_id=member.tenant_id,
+        remember_me=remember_me,
+    )
 
 
 def _create_initial_tenant_member(session: Session, account: Account) -> Member:
@@ -429,7 +437,9 @@ def auth_google(
         session.refresh(member)
 
     return AuthResponse(
-        access_token=_issue_token_for_member(member, account_id=account.id),
+        access_token=_issue_token_for_member(
+            member, account_id=account.id, remember_me=body.remember_me
+        ),
         next_action=decision.action.value,
     )
 
@@ -449,7 +459,9 @@ def auth_google_select_tenant(
         tenant_id=body.tenant_id,
     )
     return TokenResponse(
-        access_token=_issue_token_for_member(member, account_id=account.id)
+        access_token=_issue_token_for_member(
+            member, account_id=account.id, remember_me=body.remember_me
+        )
     )
 
 
@@ -474,7 +486,9 @@ def auth_google_create_tenant(
 
     member = _create_initial_tenant_member(session, account)
     return TokenResponse(
-        access_token=_issue_token_for_member(member, account_id=account.id)
+        access_token=_issue_token_for_member(
+            member, account_id=account.id, remember_me=body.remember_me
+        )
     )
 
 
@@ -490,7 +504,9 @@ def switch_tenant(
         tenant_id=body.tenant_id,
     )
     return TokenResponse(
-        access_token=_issue_token_for_member(member, account_id=account.id)
+        access_token=_issue_token_for_member(
+            member, account_id=account.id, remember_me=body.remember_me
+        )
     )
 
 

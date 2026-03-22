@@ -42,6 +42,14 @@ class Settings(BaseSettings):
             "jwt_expiration_hours",
         ),
     )
+    jwt_remember_me_expiration_days: int = Field(
+        default=30,
+        validation_alias=AliasChoices(
+            "APP_JWT_REMEMBER_ME_EXPIRATION_DAYS",
+            "JWT_REMEMBER_ME_EXPIRATION_DAYS",
+            "jwt_remember_me_expiration_days",
+        ),
+    )
 
     @computed_field
     @property

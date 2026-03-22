@@ -106,6 +106,7 @@ export default async function LoginPage({
               helperText={t("form.helper")}
               unavailableText={t("form.googleUnavailable")}
               genericErrorText={t("form.error")}
+              rememberMeLabel={t("form.rememberMeLabel")}
             />
           </div>
 
