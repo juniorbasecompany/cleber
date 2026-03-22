@@ -171,9 +171,9 @@ export function GoogleSignInPanel({
   }, [clientId, genericErrorText, handleCredential, isUnavailable]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       <div className="space-y-2">
-        <div className="text-sm leading-6 text-[var(--color-text-subtle)]">
+        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white/75 px-4 py-3 text-sm leading-6 text-[var(--color-text-muted)] shadow-[var(--shadow-xs)]">
           {helperText}
         </div>
         {errorMessage ? (
@@ -213,7 +213,7 @@ export function GoogleSignInPanel({
             {buttonPendingLabel}
           </div>
         ) : null}
-        <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[var(--color-text-muted)]">
+        <label className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-background-muted)]/70 px-4 py-3 text-sm leading-6 text-[var(--color-text-muted)]">
           <input
             type="checkbox"
             checked={rememberMe}

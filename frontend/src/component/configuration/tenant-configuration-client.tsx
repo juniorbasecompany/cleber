@@ -7,6 +7,7 @@ import type { MouseEvent } from "react";
 
 import { PageHeader } from "@/component/app-shell/page-header";
 import { StatusPanel } from "@/component/app-shell/status-panel";
+import { BuildingIcon, HistoryIcon, PreviewIcon } from "@/component/ui/ui-icons";
 import type { TenantCurrentResponse } from "@/lib/auth/types";
 
 export type TenantConfigurationCopy = {
@@ -188,6 +189,8 @@ export function TenantConfigurationClient({
   );
 
   const pageTitle = tenant.display_name.trim() || copy.title;
+  const previewDisplayName = displayName.trim() || pageTitle;
+  const previewLegalName = legalName.trim() || tenant.name;
 
   return (
     <section className="flex flex-col gap-6">
@@ -205,7 +208,7 @@ export function TenantConfigurationClient({
       />
 
       <div
-        className="ui-panel flex flex-wrap gap-1 p-1"
+        className="ui-panel flex flex-wrap gap-1 p-1.5"
         role="tablist"
         aria-label={copy.tabListAriaLabel}
       >
@@ -215,10 +218,10 @@ export function TenantConfigurationClient({
           id="tenant-tab-general"
           aria-selected={tab === "general"}
           aria-controls="tenant-panel-general"
-          className={`rounded-[var(--radius-control)] px-4 py-2 text-sm font-medium transition-colors ${
+          className={`ui-tab px-4 py-2.5 text-sm font-semibold ${
             tab === "general"
-              ? "bg-[var(--color-surface-muted)] text-[var(--color-text)] shadow-[var(--shadow-xs)]"
-              : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]/60"
+              ? "ui-tab-active"
+              : ""
           }`}
           onClick={() => setTab("general")}
         >
@@ -230,10 +233,10 @@ export function TenantConfigurationClient({
           id="tenant-tab-history"
           aria-selected={tab === "history"}
           aria-controls="tenant-panel-history"
-          className={`rounded-[var(--radius-control)] px-4 py-2 text-sm font-medium transition-colors ${
+          className={`ui-tab px-4 py-2.5 text-sm font-semibold ${
             tab === "history"
-              ? "bg-[var(--color-surface-muted)] text-[var(--color-text)] shadow-[var(--shadow-xs)]"
-              : "text-[var(--color-text-muted)] hover:bg-[var(--color-surface-muted)]/60"
+              ? "ui-tab-active"
+              : ""
           }`}
           onClick={() => setTab("history")}
         >
@@ -246,7 +249,7 @@ export function TenantConfigurationClient({
           id="tenant-panel-general"
           role="tabpanel"
           aria-labelledby="tenant-tab-general"
-          className="flex flex-col gap-6"
+          className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(19rem,0.85fr)]"
         >
           <div className="ui-panel flex flex-col gap-6 px-6 py-6">
             {!tenant.can_edit ? (
@@ -265,25 +268,30 @@ export function TenantConfigurationClient({
               <div className="ui-notice-danger px-4 py-3 text-sm">{formError}</div>
             ) : null}
 
-            <section className="space-y-4">
-              <div>
-                <h2 className="text-sm font-medium text-[var(--color-text)]">
-                  {copy.sectionDisplayTitle}
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">
-                  {copy.sectionDisplayDescription}
-                </p>
+            <section className="ui-card border-[rgba(37,117,216,0.12)] px-5 py-5">
+              <div className="flex items-start gap-4">
+                <span className="ui-icon-badge">
+                  <PreviewIcon className="h-[1.05rem] w-[1.05rem]" />
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                    {copy.sectionDisplayTitle}
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">
+                    {copy.sectionDisplayDescription}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
+              <div className="mt-5 space-y-2">
                 <label
-                  className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]"
+                  className="text-sm font-semibold text-[var(--color-text-muted)]"
                   htmlFor="tenant-display-name"
                 >
                   {copy.displayNameLabel}
                 </label>
                 <input
                   id="tenant-display-name"
-                  className="ui-input w-full max-w-xl"
+                  className="ui-input w-full"
                   value={displayName}
                   onChange={(event) => {
                     setDisplayName(event.target.value);
@@ -300,7 +308,7 @@ export function TenantConfigurationClient({
                 />
                 <p
                   id="tenant-display-name-hint"
-                  className="text-xs text-[var(--color-text-subtle)]"
+                  className="text-xs leading-5 text-[var(--color-text-subtle)]"
                 >
                   {copy.displayNameHint}
                 </p>
@@ -312,25 +320,30 @@ export function TenantConfigurationClient({
               </div>
             </section>
 
-            <section className="space-y-4 border-t border-[var(--color-border)] pt-6">
-              <div>
-                <h2 className="text-sm font-medium text-[var(--color-text)]">
-                  {copy.sectionLegalTitle}
-                </h2>
-                <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">
-                  {copy.sectionLegalDescription}
-                </p>
+            <section className="ui-card border-[rgba(37,117,216,0.12)] px-5 py-5">
+              <div className="flex items-start gap-4">
+                <span className="ui-icon-badge">
+                  <BuildingIcon className="h-[1.05rem] w-[1.05rem]" />
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                    {copy.sectionLegalTitle}
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">
+                    {copy.sectionLegalDescription}
+                  </p>
+                </div>
               </div>
-              <div className="space-y-2">
+              <div className="mt-5 space-y-2">
                 <label
-                  className="text-xs font-medium uppercase tracking-wide text-[var(--color-text-muted)]"
+                  className="text-sm font-semibold text-[var(--color-text-muted)]"
                   htmlFor="tenant-legal-name"
                 >
                   {copy.legalNameLabel}
                 </label>
                 <input
                   id="tenant-legal-name"
-                  className="ui-input w-full max-w-xl"
+                  className="ui-input w-full"
                   value={legalName}
                   onChange={(event) => {
                     setLegalName(event.target.value);
@@ -347,7 +360,7 @@ export function TenantConfigurationClient({
                 />
                 <p
                   id="tenant-legal-name-hint"
-                  className="text-xs text-[var(--color-text-subtle)]"
+                  className="text-xs leading-5 text-[var(--color-text-subtle)]"
                 >
                   {copy.legalNameHint}
                 </p>
@@ -359,11 +372,11 @@ export function TenantConfigurationClient({
               </div>
             </section>
 
-            <section className="border-t border-[var(--color-border)] pt-6">
-              <p className="text-xs text-[var(--color-text-subtle)]">
-                <span className="font-medium text-[var(--color-text-muted)]">
-                  {copy.metadataIdLabel}
-                </span>{" "}
+            <section className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white/70 px-5 py-4 shadow-[var(--shadow-xs)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                {copy.metadataIdLabel}
+              </p>
+              <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
                 {tenant.id}
               </p>
             </section>
@@ -386,20 +399,102 @@ export function TenantConfigurationClient({
               </Link>
             </div>
           </div>
+
+          <aside className="flex flex-col gap-4">
+            <div className="ui-panel p-5">
+              <div className="flex items-start gap-4">
+                <span className="ui-icon-badge">
+                  <PreviewIcon className="h-[1.05rem] w-[1.05rem]" />
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                    {copy.displayNameLabel}
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">
+                    {copy.displayNameHint}
+                  </p>
+                </div>
+              </div>
+
+              <div className="mt-5 space-y-3">
+                <div className="rounded-[var(--radius-card)] border border-[rgba(37,117,216,0.14)] bg-[var(--color-accent-soft)]/55 px-4 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                    {copy.displayNameLabel}
+                  </p>
+                  <p className="ui-header-title mt-2 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--color-text)]">
+                    {previewDisplayName}
+                  </p>
+                </div>
+
+                <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white/75 px-4 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                    {copy.legalNameLabel}
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                    {previewLegalName}
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="ui-card ui-card-coming-soon p-5">
+              <div className="flex items-start gap-4">
+                <span className="ui-icon-badge ui-icon-badge-construction">
+                  <HistoryIcon className="h-[1.05rem] w-[1.05rem]" />
+                </span>
+                <div>
+                  <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                    {copy.historyTitle}
+                  </h2>
+                  <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">
+                    {copy.historyDescription}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
         </div>
       ) : (
         <div
           id="tenant-panel-history"
           role="tabpanel"
           aria-labelledby="tenant-tab-history"
-          className="ui-panel px-6 py-6"
+          className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(18rem,0.8fr)]"
         >
-          <h2 className="text-sm font-medium text-[var(--color-text)]">
-            {copy.historyTitle}
-          </h2>
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-text-subtle)]">
-            {copy.historyDescription}
-          </p>
+          <div className="ui-panel px-6 py-6">
+            <div className="flex items-start gap-4">
+              <span className="ui-icon-badge ui-icon-badge-construction">
+                <HistoryIcon className="h-[1.05rem] w-[1.05rem]" />
+              </span>
+              <div>
+                <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                  {copy.historyTitle}
+                </h2>
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-[var(--color-text-subtle)]">
+                  {copy.historyDescription}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 grid gap-3">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="ui-card ui-card-coming-soon px-4 py-4"
+                >
+                  <div className="ui-skeleton h-4 w-28 animate-pulse rounded" />
+                  <div className="ui-skeleton mt-3 h-4 w-full max-w-xl animate-pulse rounded" />
+                  <div className="ui-skeleton mt-2 h-4 w-5/6 animate-pulse rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <StatusPanel
+            title={copy.statusTitle}
+            description={copy.statusDescription}
+            tone="neutral"
+          />
         </div>
       )}
     </section>

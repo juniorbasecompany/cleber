@@ -64,6 +64,17 @@ function getTenantDisplayName(tenant: TenantOption) {
   return tenant.display_name || tenant.name;
 }
 
+function getInitials(accountName: string) {
+  const value = accountName
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part.charAt(0))
+    .join("");
+
+  return value || accountName.slice(0, 2);
+}
+
 export function AccountMenu({
   accountName,
   currentLocale,
@@ -249,9 +260,14 @@ export function AccountMenu({
               currentValue === "account" ? null : "account"
             )
           }
-          className="ui-menu-trigger inline-flex max-w-[min(100%,16rem)] items-center gap-2 rounded-[var(--radius-control)] pl-3.5 pr-2.5 text-sm font-medium text-[var(--color-text)]"
+          className="ui-menu-trigger inline-flex max-w-[min(100%,18rem)] items-center gap-3 rounded-[var(--radius-control)] pl-2.5 pr-3 text-sm font-medium text-[var(--color-text)]"
         >
-          <span className="min-w-0 truncate">{accountName}</span>
+          <span className="ui-avatar shrink-0">{getInitials(accountName)}</span>
+          <span className="min-w-0 text-left">
+            <span className="block truncate text-sm font-semibold text-[var(--color-text)]">
+              {accountName}
+            </span>
+          </span>
           <ChevronDownIcon
             className={`shrink-0 text-[var(--color-text-subtle)] transition-transform duration-200 ${
               isAccountMenuOpen ? "rotate-180" : ""
@@ -270,6 +286,10 @@ export function AccountMenu({
                 className="px-3 pb-2"
                 aria-label={copy.tenantSectionLabel}
               >
+                <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
+                  {copy.tenantSectionLabel}
+                </p>
+
                 {isLoadingTenantList || switchingTenantId !== null ? (
                   <div className="mb-2 flex justify-end">
                     {isLoadingTenantList ? (

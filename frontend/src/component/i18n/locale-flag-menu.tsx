@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   usePathname,
   useRouter,
@@ -51,12 +51,12 @@ export function LocaleFlagMenu({
   const isOpen = isControlled ? openProp : internalOpen;
   const [switchingLocale, setSwitchingLocale] = useState<string | null>(null);
 
-  function setOpen(next: boolean) {
+  const setOpen = useCallback((next: boolean) => {
     if (!isControlled) {
       setInternalOpen(next);
     }
     onOpenChange?.(next);
-  }
+  }, [isControlled, onOpenChange]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -82,7 +82,7 @@ export function LocaleFlagMenu({
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isOpen]);
+  }, [isOpen, setOpen]);
 
   function handleLocaleSelect(locale: string) {
     if (switchingLocale) {

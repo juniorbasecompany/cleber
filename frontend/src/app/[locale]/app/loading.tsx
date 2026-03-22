@@ -6,15 +6,16 @@ export default function AppLoadingPage() {
   return (
     <section className="flex flex-col gap-6">
       <div className="ui-panel p-6">
-        <div className="ui-skeleton h-6 w-48 animate-pulse rounded" />
-        <div className="ui-skeleton mt-4 h-4 w-full max-w-2xl animate-pulse rounded" />
+        <div className="ui-skeleton h-7 w-56 animate-pulse rounded-[0.85rem]" />
+        <div className="ui-skeleton mt-5 h-4 w-full max-w-2xl animate-pulse rounded" />
         <div className="ui-skeleton mt-2 h-4 w-full max-w-xl animate-pulse rounded" />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-3">
         {Array.from({ length: 3 }).map((_, index) => (
           <div key={index} className="ui-card p-5">
-            <div className="ui-skeleton h-4 w-32 animate-pulse rounded" />
+            <div className="ui-skeleton h-10 w-10 animate-pulse rounded-[1rem]" />
+            <div className="ui-skeleton mt-4 h-4 w-32 animate-pulse rounded" />
             <div className="ui-skeleton mt-4 h-4 w-full animate-pulse rounded" />
             <div className="ui-skeleton mt-2 h-4 w-5/6 animate-pulse rounded" />
           </div>

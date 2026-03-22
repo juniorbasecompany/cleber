@@ -13,6 +13,12 @@ import type {
   TenantOption,
   TenantSelectionSnapshot
 } from "@/lib/auth/types";
+import {
+  BuildingIcon,
+  ClockIcon,
+  SparkIcon,
+  ValoraMark
+} from "@/component/ui/ui-icons";
 
 type TenantSelectionCopy = {
   loading: string;
@@ -56,6 +62,16 @@ function getRoleLabel(role: number) {
     return "member";
   }
   return "unknown";
+}
+
+function getRoleToneClass(role: number) {
+  if (role === 1) {
+    return "ui-tone-positive";
+  }
+  if (role === 2) {
+    return "ui-tone-neutral";
+  }
+  return "ui-tone-construction";
 }
 
 function getTenantDisplayName(option: TenantOption | InviteOption) {
@@ -388,14 +404,19 @@ export function TenantSelectionPanel({
 
   return (
     <section className="flex flex-col gap-6">
-      <header className="ui-panel px-6 py-6">
-        <div className="space-y-3">
-          <h1 className="text-3xl font-semibold tracking-tight text-[var(--color-text)]">
-            {copy.title}
-          </h1>
-          <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-muted)]">
-            {copy.description}
-          </p>
+      <header className="ui-panel px-6 py-6 lg:px-7 lg:py-7">
+        <div className="flex items-start gap-4">
+          <div className="rounded-[1.25rem] border border-[rgba(37,117,216,0.12)] bg-white/85 p-1.5 shadow-[var(--shadow-xs)]">
+            <ValoraMark />
+          </div>
+          <div className="space-y-3">
+            <h1 className="ui-header-title text-3xl font-semibold tracking-[-0.04em] text-[var(--color-text)]">
+              {copy.title}
+            </h1>
+            <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-muted)]">
+              {copy.description}
+            </p>
+          </div>
         </div>
       </header>
 
@@ -404,14 +425,19 @@ export function TenantSelectionPanel({
       ) : null}
 
       {isCreateFlow ? (
-        <article className="ui-card flex flex-col gap-4 p-5">
-          <div className="space-y-2">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              {copy.createTitle}
-            </h2>
-            <p className="text-sm leading-6 text-[var(--color-text-subtle)]">
-              {copy.createDescription}
-            </p>
+        <article className="ui-panel flex flex-col gap-4 p-6">
+          <div className="flex items-start gap-4">
+            <span className="ui-icon-badge">
+              <SparkIcon className="h-[1.05rem] w-[1.05rem]" />
+            </span>
+            <div className="space-y-2">
+              <h2 className="text-lg font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                {copy.createTitle}
+              </h2>
+              <p className="text-sm leading-6 text-[var(--color-text-subtle)]">
+                {copy.createDescription}
+              </p>
+            </div>
           </div>
           <div>
             <button
@@ -427,21 +453,31 @@ export function TenantSelectionPanel({
       ) : null}
 
       {tenantList.length > 0 ? (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold tracking-tight text-[var(--color-text)]">
-            {copy.activeListTitle}
-          </h2>
+        <section className="ui-panel flex flex-col gap-4 p-6">
+          <div className="flex items-center gap-3">
+            <span className="ui-icon-badge">
+              <BuildingIcon className="h-[1.05rem] w-[1.05rem]" />
+            </span>
+            <h2 className="ui-header-title text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
+              {copy.activeListTitle}
+            </h2>
+          </div>
           <div className="grid gap-4">
             {tenantList.map((tenant) => (
-              <article key={tenant.tenant_id} className="ui-card p-5">
+              <article
+                key={tenant.tenant_id}
+                className="ui-card border-[rgba(37,117,216,0.14)] p-5"
+              >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="space-y-2">
-                    <h3 className="text-base font-semibold text-[var(--color-text)]">
+                  <div className="space-y-3">
+                    <h3 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
                       {getTenantDisplayName(tenant)}
                     </h3>
-                    <p className="text-sm text-[var(--color-text-subtle)]">
+                    <span
+                      className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getRoleToneClass(tenant.role)}`}
+                    >
                       {getRoleLabel(tenant.role)}
-                    </p>
+                    </span>
                   </div>
                   <div>
                     <button
@@ -461,21 +497,33 @@ export function TenantSelectionPanel({
       ) : null}
 
       {inviteList.length > 0 ? (
-        <section className="flex flex-col gap-4">
-          <h2 className="text-lg font-semibold tracking-tight text-[var(--color-text)]">
-            {copy.inviteListTitle}
-          </h2>
+        <section className="ui-panel flex flex-col gap-4 p-6">
+          <div className="flex items-center gap-3">
+            <span className="ui-icon-badge ui-icon-badge-attention">
+              <ClockIcon className="h-[1.05rem] w-[1.05rem]" />
+            </span>
+            <h2 className="ui-header-title text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
+              {copy.inviteListTitle}
+            </h2>
+          </div>
           <div className="grid gap-4">
             {inviteList.map((invite) => (
               <article key={invite.member_id} className="ui-card p-5">
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="space-y-2">
-                    <h3 className="text-base font-semibold text-[var(--color-text)]">
+                  <div className="space-y-3">
+                    <h3 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
                       {getTenantDisplayName(invite)}
                     </h3>
-                    <p className="text-sm text-[var(--color-text-subtle)]">
-                      {getRoleLabel(invite.role)} • {invite.status}
-                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      <span
+                        className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getRoleToneClass(invite.role)}`}
+                      >
+                        {getRoleLabel(invite.role)}
+                      </span>
+                      <span className="ui-pill ui-pill-construction px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]">
+                        {invite.status}
+                      </span>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-3">
                     <button
@@ -515,7 +563,7 @@ export function TenantSelectionPanel({
             clearSelectionState();
             router.replace(`/${locale}/login`);
           }}
-          className="ui-link text-sm underline underline-offset-4"
+          className="ui-link text-sm"
         >
           {copy.backToLogin}
         </button>

@@ -11,14 +11,16 @@ export default function AppErrorPage({ error, reset }: AppErrorPageProps) {
   const t = useTranslations("State");
 
   return (
-    <section className="ui-notice-danger p-6">
+    <section className="ui-notice-danger rounded-[var(--radius-panel)] p-6 shadow-[var(--shadow-sm)]">
       <div className="flex flex-col gap-3">
-        <h2 className="text-xl font-semibold">{t("errorTitle")}</h2>
+        <h2 className="ui-header-title text-xl font-semibold tracking-[-0.03em]">
+          {t("errorTitle")}
+        </h2>
         <p className="max-w-2xl text-sm leading-6 opacity-90">
           {t("errorDescription")}
         </p>
         {error.message ? (
-          <p className="ui-card ui-tone-danger px-4 py-3 text-sm">
+          <p className="ui-card ui-tone-danger px-4 py-3 text-sm leading-6">
             {error.message}
           </p>
         ) : null}

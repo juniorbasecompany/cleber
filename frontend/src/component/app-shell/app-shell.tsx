@@ -34,7 +34,7 @@ export function AppShell({
   topbarActionSlot
 }: AppShellProps) {
   return (
-    <div className="ui-shell flex min-h-screen">
+    <div className="ui-shell flex h-screen overflow-hidden">
       <AppSidebar
         productName={productName}
         productStage={productStage}
@@ -42,7 +42,7 @@ export function AppShell({
         navigationItemList={navigationItemList}
       />
 
-      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
         <AppTopbar
           tenantLabel={tenantLabel}
           tenantValue={tenantValue}
@@ -50,8 +50,8 @@ export function AppShell({
           actionSlot={topbarActionSlot}
         />
 
-        <main className="flex-1 overflow-auto">
-          <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-6 py-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden">
+          <div className="mx-auto flex w-full max-w-[88rem] flex-col gap-7 px-6 py-8 lg:px-8">
             {children}
           </div>
         </main>
