@@ -3,8 +3,9 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { AppShell } from "@/component/app-shell/app-shell";
-import { LogoutButton } from "@/component/auth/logout-button";
+import { AccountMenu } from "@/component/app-shell/account-menu";
 import { getAuthSession } from "@/lib/auth/server-session";
+import { routing } from "@/i18n/routing";
 
 type AppLayoutProps = {
   children: ReactNode;
@@ -54,11 +55,6 @@ export default async function AppLayout({
       label: t("navigation.audit"),
       statusLabel: t("navigation.comingSoon")
     },
-    {
-      key: "configuration",
-      label: t("navigation.configuration"),
-      href: `/${locale}/app/configuration`
-    }
   ];
 
   return (
@@ -69,15 +65,30 @@ export default async function AppLayout({
       navigationItemList={navigationItemList}
       tenantLabel={t("topbar.tenantLabel")}
       tenantValue={authSession.tenant.display_name}
-      localeLabel={t("topbar.localeLabel")}
-      localeValue={locale}
-      accountLabel={t("topbar.accountLabel")}
-      accountValue={authSession.account.email}
-      topbarActionSlot={
-        <LogoutButton
-          locale={locale}
-          label={t("topbar.signOut")}
-          pendingLabel={t("topbar.signOutPending")}
+      accountSlot={
+        <AccountMenu
+          currentLocale={locale}
+          localeList={[...routing.locales]}
+          accountName={
+            authSession.account.display_name ||
+            authSession.account.name ||
+            authSession.account.email
+          }
+          currentTenantId={authSession.tenant.id}
+          configurationHref={`/${locale}/app/configuration`}
+          copy={{
+            tenantSectionLabel: t("menu.tenantSectionLabel"),
+            localeSectionLabel: t("menu.localeSectionLabel"),
+            configurationLabel: t("menu.configurationLabel"),
+            loadingTenantList: t("menu.loadingTenantList"),
+            tenantListError: t("menu.tenantListError"),
+            emptyTenantList: t("menu.emptyTenantList"),
+            switchingTenant: t("menu.switchingTenant"),
+            switchingLocale: t("menu.switchingLocale"),
+            activeLabel: t("menu.activeLabel"),
+            signOutLabel: t("topbar.signOut"),
+            signOutPendingLabel: t("topbar.signOutPending")
+          }}
         />
       }
     >

@@ -18,10 +18,7 @@ type AppShellProps = {
   navigationItemList: NavigationItem[];
   tenantLabel: string;
   tenantValue: string;
-  localeLabel: string;
-  localeValue: string;
-  accountLabel?: string;
-  accountValue?: string;
+  accountSlot?: ReactNode;
   topbarActionSlot?: ReactNode;
 };
 
@@ -33,10 +30,7 @@ export function AppShell({
   navigationItemList,
   tenantLabel,
   tenantValue,
-  localeLabel,
-  localeValue,
-  accountLabel,
-  accountValue,
+  accountSlot,
   topbarActionSlot
 }: AppShellProps) {
   return (
@@ -52,10 +46,7 @@ export function AppShell({
         <AppTopbar
           tenantLabel={tenantLabel}
           tenantValue={tenantValue}
-          localeLabel={localeLabel}
-          localeValue={localeValue}
-          accountLabel={accountLabel}
-          accountValue={accountValue}
+          accountSlot={accountSlot}
           actionSlot={topbarActionSlot}
         />
 
