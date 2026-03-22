@@ -24,6 +24,9 @@ type LocaleFlagMenuProps = {
   currentLocale: string;
   localeList: string[];
   copy: LocaleFlagMenuCopy;
+  /** Quando definido com `onOpenChange`, o menu fica controlado pelo pai (ex.: exclusão mútua com outro dropdown). */
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 };
 
 const localeLabelMap: Record<string, string> = {
@@ -35,14 +38,25 @@ const localeLabelMap: Record<string, string> = {
 export function LocaleFlagMenu({
   currentLocale,
   localeList,
-  copy
+  copy,
+  open: openProp,
+  onOpenChange
 }: LocaleFlagMenuProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = openProp !== undefined;
+  const isOpen = isControlled ? openProp : internalOpen;
   const [switchingLocale, setSwitchingLocale] = useState<string | null>(null);
+
+  function setOpen(next: boolean) {
+    if (!isControlled) {
+      setInternalOpen(next);
+    }
+    onOpenChange?.(next);
+  }
 
   useEffect(() => {
     if (!isOpen) {
@@ -51,13 +65,13 @@ export function LocaleFlagMenu({
 
     function handlePointerDown(event: MouseEvent) {
       if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
+        setOpen(false);
       }
     }
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setIsOpen(false);
+        setOpen(false);
       }
     }
 
@@ -76,13 +90,13 @@ export function LocaleFlagMenu({
     }
 
     if (locale === currentLocale) {
-      setIsOpen(false);
+      setOpen(false);
       return;
     }
 
     writeStoredLocale(locale);
     setSwitchingLocale(locale);
-    setIsOpen(false);
+    setOpen(false);
     router.push(getLocaleHref(pathname, searchParams, locale));
   }
 
@@ -99,7 +113,7 @@ export function LocaleFlagMenu({
         aria-haspopup="menu"
         aria-label={copy.triggerAriaLabel}
         data-state={isOpen ? "open" : "closed"}
-        onClick={() => setIsOpen((currentValue) => !currentValue)}
+        onClick={() => setOpen(!isOpen)}
         className="ui-menu-trigger inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[var(--radius-control)]"
       >
         <LocaleFlagSvg locale={currentLocale} size="trigger" />

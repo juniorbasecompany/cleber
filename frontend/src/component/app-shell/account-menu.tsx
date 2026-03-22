@@ -74,7 +74,10 @@ export function AccountMenu({
 }: AccountMenuProps) {
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [isOpen, setIsOpen] = useState(false);
+  const [activeMenu, setActiveMenu] = useState<"account" | "locale" | null>(
+    null
+  );
+  const isAccountMenuOpen = activeMenu === "account";
   const [tenantList, setTenantList] = useState<TenantOption[]>([]);
   const [hasLoadedTenantList, setHasLoadedTenantList] = useState(false);
   const [isLoadingTenantList, setIsLoadingTenantList] = useState(false);
@@ -110,27 +113,32 @@ export function AccountMenu({
   }, [copy.tenantListError]);
 
   useEffect(() => {
-    if (!isOpen || hasLoadedTenantList || isLoadingTenantList) {
+    if (!isAccountMenuOpen || hasLoadedTenantList || isLoadingTenantList) {
       return;
     }
 
     void loadTenantList();
-  }, [hasLoadedTenantList, isLoadingTenantList, isOpen, loadTenantList]);
+  }, [
+    hasLoadedTenantList,
+    isLoadingTenantList,
+    isAccountMenuOpen,
+    loadTenantList
+  ]);
 
   useEffect(() => {
-    if (!isOpen) {
+    if (!activeMenu) {
       return;
     }
 
     function handlePointerDown(event: MouseEvent) {
       if (!containerRef.current?.contains(event.target as Node)) {
-        setIsOpen(false);
+        setActiveMenu(null);
       }
     }
 
     function handleEscape(event: KeyboardEvent) {
       if (event.key === "Escape") {
-        setIsOpen(false);
+        setActiveMenu(null);
       }
     }
 
@@ -141,7 +149,7 @@ export function AccountMenu({
       document.removeEventListener("mousedown", handlePointerDown);
       document.removeEventListener("keydown", handleEscape);
     };
-  }, [isOpen]);
+  }, [activeMenu]);
 
   useEffect(() => {
     setSwitchingTenantId(null);
@@ -149,7 +157,7 @@ export function AccountMenu({
 
   async function handleTenantSelect(tenantId: number) {
     if (tenantId === currentTenantId || switchingTenantId !== null) {
-      setIsOpen(false);
+      setActiveMenu(null);
       return;
     }
 
@@ -175,7 +183,7 @@ export function AccountMenu({
       }
 
       setSwitchingTenantId(null);
-      setIsOpen(false);
+      setActiveMenu(null);
       router.refresh();
     } catch {
       setTenantListError(copy.tenantListError);
@@ -213,6 +221,15 @@ export function AccountMenu({
         key={currentLocale}
         currentLocale={currentLocale}
         localeList={localeList}
+        open={activeMenu === "locale"}
+        onOpenChange={(open) =>
+          setActiveMenu((current) => {
+            if (open) {
+              return "locale";
+            }
+            return current === "locale" ? null : current;
+          })
+        }
         copy={{
           triggerAriaLabel: copy.localeFlagTriggerAriaLabel,
           menuAriaLabel: copy.localeFlagMenuAriaLabel,
@@ -224,21 +241,25 @@ export function AccountMenu({
       <div className="relative">
         <button
           type="button"
-          aria-expanded={isOpen}
+          aria-expanded={isAccountMenuOpen}
           aria-haspopup="menu"
-          data-state={isOpen ? "open" : "closed"}
-          onClick={() => setIsOpen((currentValue) => !currentValue)}
+          data-state={isAccountMenuOpen ? "open" : "closed"}
+          onClick={() =>
+            setActiveMenu((currentValue) =>
+              currentValue === "account" ? null : "account"
+            )
+          }
           className="ui-menu-trigger inline-flex max-w-[min(100%,16rem)] items-center gap-2 rounded-[var(--radius-control)] pl-3.5 pr-2.5 text-sm font-medium text-[var(--color-text)]"
         >
           <span className="min-w-0 truncate">{accountName}</span>
           <ChevronDownIcon
             className={`shrink-0 text-[var(--color-text-subtle)] transition-transform duration-200 ${
-              isOpen ? "rotate-180" : ""
+              isAccountMenuOpen ? "rotate-180" : ""
             }`}
           />
         </button>
 
-        {isOpen ? (
+        {isAccountMenuOpen ? (
           <div
             role="menu"
             aria-label={accountName}
@@ -312,7 +333,7 @@ export function AccountMenu({
               <Link
                 href={configurationHref}
                 role="menuitem"
-                onClick={() => setIsOpen(false)}
+                onClick={() => setActiveMenu(null)}
                 className="ui-menu-item flex min-h-[2.75rem] w-full items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-[var(--color-text)]"
               >
                 {copy.configurationLabel}
