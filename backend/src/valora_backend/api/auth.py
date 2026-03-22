@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
@@ -13,6 +13,7 @@ from valora_backend.auth.dependencies import (
 from valora_backend.auth.google import GoogleIdentity, verify_google_token
 from valora_backend.auth.jwt import create_access_token
 from valora_backend.auth.service import (
+    ADMIN_ROLE,
     LoginAction,
     MASTER_ROLE,
     build_account_name,
@@ -108,6 +109,28 @@ class SessionTenant(BaseModel):
     id: int
     name: str
     display_name: str
+
+
+class TenantCurrentResponse(BaseModel):
+    id: int
+    name: str
+    display_name: str
+    can_edit: bool
+
+
+class TenantUpdateRequest(BaseModel):
+    name: str
+    display_name: str
+
+    @field_validator("name", "display_name")
+    @classmethod
+    def strip_and_limit(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("must not be empty")
+        if len(cleaned) > 2000:
+            raise ValueError("must be at most 2000 characters")
+        return cleaned
 
 
 class AuthSessionResponse(BaseModel):
@@ -522,6 +545,50 @@ def list_my_tenant(
     return TenantListResponse(
         tenant_list=tenant_option_list,
         invite_list=invite_option_list,
+    )
+
+
+def _member_can_edit_tenant(member: Member) -> bool:
+    return member.role in (MASTER_ROLE, ADMIN_ROLE)
+
+
+@router.get("/tenant/current", response_model=TenantCurrentResponse)
+def get_current_tenant_detail(
+    member: Member = Depends(get_current_member),
+    tenant: Tenant = Depends(get_current_tenant),
+):
+    return TenantCurrentResponse(
+        id=tenant.id,
+        name=tenant.name,
+        display_name=tenant.display_name,
+        can_edit=_member_can_edit_tenant(member),
+    )
+
+
+@router.patch("/tenant/current", response_model=TenantCurrentResponse)
+def patch_current_tenant(
+    body: TenantUpdateRequest,
+    member: Member = Depends(get_current_member),
+    tenant: Tenant = Depends(get_current_tenant),
+    session: Session = Depends(get_session),
+):
+    if not _member_can_edit_tenant(member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to update tenant",
+        )
+
+    tenant.name = body.name
+    tenant.display_name = body.display_name
+    session.add(tenant)
+    commit_session_with_null_if_empty(session)
+    session.refresh(tenant)
+
+    return TenantCurrentResponse(
+        id=tenant.id,
+        name=tenant.name,
+        display_name=tenant.display_name,
+        can_edit=_member_can_edit_tenant(member),
     )
 
 

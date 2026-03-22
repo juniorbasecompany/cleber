@@ -1,12 +1,21 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 type InfoCardProps = {
   title: string;
   description: string;
   iconSlot?: ReactNode;
+  actionHref?: string;
+  actionLabel?: string;
 };
 
-export function InfoCard({ title, description, iconSlot }: InfoCardProps) {
+export function InfoCard({
+  title,
+  description,
+  iconSlot,
+  actionHref,
+  actionLabel
+}: InfoCardProps) {
   return (
     <article className="ui-card p-5">
       <div className="flex items-start justify-between gap-3">
@@ -18,6 +27,13 @@ export function InfoCard({ title, description, iconSlot }: InfoCardProps) {
         </div>
         {iconSlot ? <div className="shrink-0">{iconSlot}</div> : null}
       </div>
+      {actionHref && actionLabel ? (
+        <div className="mt-4">
+          <Link className="ui-link text-sm font-medium" href={actionHref}>
+            {actionLabel}
+          </Link>
+        </div>
+      ) : null}
     </article>
   );
 }

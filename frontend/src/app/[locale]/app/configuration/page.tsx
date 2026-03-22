@@ -5,8 +5,14 @@ import { PageHeader } from "@/component/app-shell/page-header";
 import { StatusPanel } from "@/component/app-shell/status-panel";
 import { SetupStepCard } from "@/component/home/setup-step-card";
 
-export default async function ConfigurationPage() {
+type ConfigurationPageProps = {
+  params: Promise<{ locale: string }>;
+};
+
+export default async function ConfigurationPage({ params }: ConfigurationPageProps) {
+  const { locale } = await params;
   const t = await getTranslations("ConfigurationPage");
+  const tenantEditorHref = `/${locale}/app/configuration/tenant`;
 
   return (
     <section className="flex flex-col gap-6">
@@ -44,6 +50,8 @@ export default async function ConfigurationPage() {
           description={t("queue.organization.description")}
           statusLabel={t("queue.organization.status")}
           tone="attention"
+          actionHref={tenantEditorHref}
+          actionLabel={t("openTenantEditor")}
         />
         <SetupStepCard
           title={t("queue.member.title")}

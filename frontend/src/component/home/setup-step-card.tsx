@@ -1,8 +1,12 @@
+import Link from "next/link";
+
 type SetupStepCardProps = {
   title: string;
   description: string;
   statusLabel: string;
   tone?: "neutral" | "attention" | "positive";
+  actionHref?: string;
+  actionLabel?: string;
 };
 
 const toneClassNameByTone = {
@@ -15,7 +19,9 @@ export function SetupStepCard({
   title,
   description,
   statusLabel,
-  tone = "neutral"
+  tone = "neutral",
+  actionHref,
+  actionLabel
 }: SetupStepCardProps) {
   return (
     <article className="ui-card p-5">
@@ -32,6 +38,13 @@ export function SetupStepCard({
           {statusLabel}
         </span>
       </div>
+      {actionHref && actionLabel ? (
+        <div className="mt-4">
+          <Link className="ui-link text-sm font-medium" href={actionHref}>
+            {actionLabel}
+          </Link>
+        </div>
+      ) : null}
     </article>
   );
 }

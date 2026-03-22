@@ -95,6 +95,7 @@
     "eyebrow": "Administrative configuration",
     "title": "This area will be the first useful data foundation of the system.",
     "description": "This is where the initial manual records will live before guided assistants, automations, or complete operational modules exist.",
+    "openTenantEditor": "Edit tenant",
     "status": {
       "title": "Next phase",
       "description": "Implement the real registration screens for tenant, member, and scope."
@@ -131,6 +132,53 @@
       }
     }
   },
+  "TenantConfigurationPage": {
+    "eyebrow": "Configuration",
+    "title": "Tenant",
+    "description": "These fields identify the contracting organization in the workspace, top bar, and lists. Changes apply to the active tenant of your session.",
+    "status": {
+      "title": "Editing tenant",
+      "description": "Updates are saved for the active tenant. Switch tenant from the account menu if you need another context."
+    },
+    "tab": {
+      "general": "General",
+      "history": "History",
+      "listAriaLabel": "Tenant settings sections"
+    },
+    "history": {
+      "title": "Change history",
+      "description": "A timeline of who changed what will appear here when the audit API is available. Until then, use this tab as the reserved space for traceability next to the form."
+    },
+    "section": {
+      "display": {
+        "title": "Interface name",
+        "description": "Short label shown across the application for the active tenant.",
+        "nameLabel": "Display name",
+        "nameHint": "Used in the top bar, tenant switcher, and other navigation surfaces."
+      },
+      "legal": {
+        "title": "Full legal name",
+        "description": "Official or complete name of the contracting organization.",
+        "nameLabel": "Full name",
+        "nameHint": "Use the formal name; it can match the display name when no shorter label is needed."
+      }
+    },
+    "metadata": {
+      "idLabel": "Internal identifier"
+    },
+    "action": {
+      "save": "Save",
+      "saving": "Saving...",
+      "back": "Back to Configuration"
+    },
+    "readOnlyNotice": "You can view tenant data, but only master or admin members can edit it.",
+    "savedNotice": "Tenant updated successfully.",
+    "error": {
+      "save": "Could not save changes. Try again.",
+      "validation": "This field cannot be empty."
+    },
+    "discardConfirm": "Discard unsaved changes?"
+  },
   "LoginPage": {
     "eyebrow": "System access",
     "title": "Authenticate to enter Valora's operational workspace.",
@@ -162,7 +210,7 @@
       "accessPolicy": "On the first access without a relationship or invite, Valora automatically creates an initial context so you can complete the administrative setup.",
       "googleUnavailable": "Google sign-in is unavailable because the public Google client identifier has not been configured in the environment yet.",
       "error": "Could not complete the Google sign-in. Try again.",
-      "rememberMeLabel": "Stay signed in on this device (the session is no longer browser-only and lasts up to 30 days after your last sign-in, or until you sign out)."
+      "rememberMeLabel": "Stay authenticated on this device"
     }
   },
   "SelectTenantPage": {

@@ -189,6 +189,30 @@ export function GoogleSignInPanel({
       </div>
 
       <div className="flex flex-col gap-3">
+        {!isUnavailable ? (
+          <div className="relative h-10 w-[340px] max-w-full" aria-busy={!isReady}>
+            {!isReady ? (
+              <>
+                <div
+                  className="pointer-events-none absolute inset-0 z-0 rounded-full bg-[var(--color-border)]/25 motion-safe:animate-pulse"
+                  aria-hidden
+                />
+                <span className="sr-only">{buttonLabel}</span>
+              </>
+            ) : null}
+            <div
+              ref={buttonContainerRef}
+              className={`relative z-10 flex h-full w-full items-center ${
+                isPending ? "pointer-events-none opacity-60" : ""
+              }`}
+            />
+          </div>
+        ) : null}
+        {isPending ? (
+          <div className="text-sm font-medium text-[var(--color-text)]">
+            {buttonPendingLabel}
+          </div>
+        ) : null}
         <label className="flex cursor-pointer items-start gap-3 text-sm leading-6 text-[var(--color-text-muted)]">
           <input
             type="checkbox"
@@ -199,18 +223,6 @@ export function GoogleSignInPanel({
           />
           <span>{rememberMeLabel}</span>
         </label>
-        <div
-          ref={buttonContainerRef}
-          className={`min-h-11 ${isPending ? "pointer-events-none opacity-60" : ""}`}
-        />
-        {!isReady && !isUnavailable ? (
-          <div className="text-sm text-[var(--color-text-subtle)]">{buttonLabel}</div>
-        ) : null}
-        {isPending ? (
-          <div className="text-sm font-medium text-[var(--color-text)]">
-            {buttonPendingLabel}
-          </div>
-        ) : null}
       </div>
     </div>
   );

@@ -95,6 +95,7 @@
     "eyebrow": "Configuração administrativa",
     "title": "Esta área será a primeira base útil de cadastro do sistema.",
     "description": "Aqui ficarão os cadastros iniciais feitos manualmente antes de existirem assistentes guiados, automações ou módulos operacionais completos.",
+    "openTenantEditor": "Editar licenciado",
     "status": {
       "title": "Fase seguinte",
       "description": "Implementar as telas reais de cadastro para licenciado, membro e escopo."
@@ -131,6 +132,53 @@
       }
     }
   },
+  "TenantConfigurationPage": {
+    "eyebrow": "Configuração",
+    "title": "Licenciado",
+    "description": "Estes campos identificam a organização contratante no ambiente, na barra superior e nas listas. As alterações valem para o licenciado ativo da sua sessão.",
+    "status": {
+      "title": "Edição do licenciado",
+      "description": "As atualizações são salvas para o licenciado ativo. Troque de licenciado pelo menu da conta se precisar de outro contexto."
+    },
+    "tab": {
+      "general": "Geral",
+      "history": "Histórico",
+      "listAriaLabel": "Seções das configurações do licenciado"
+    },
+    "history": {
+      "title": "Histórico de alterações",
+      "description": "Uma linha do tempo de quem alterou o quê aparecerá aqui quando a API de auditoria estiver disponível. Até lá, use esta aba como espaço reservado para rastreabilidade ao lado do formulário."
+    },
+    "section": {
+      "display": {
+        "title": "Nome na interface",
+        "description": "Rótulo curto exibido na aplicação para o licenciado ativo.",
+        "nameLabel": "Nome de exibição",
+        "nameHint": "Usado na barra superior, na troca de licenciado e em outras áreas de navegação."
+      },
+      "legal": {
+        "title": "Nome completo oficial",
+        "description": "Nome oficial ou completo da organização contratante.",
+        "nameLabel": "Nome completo",
+        "nameHint": "Use a denominação formal; pode coincidir com o nome de exibição quando não houver um rótulo mais curto."
+      }
+    },
+    "metadata": {
+      "idLabel": "Identificador interno"
+    },
+    "action": {
+      "save": "Salvar",
+      "saving": "Salvando...",
+      "back": "Voltar para Configuração"
+    },
+    "readOnlyNotice": "Você pode ver os dados do licenciado, mas só membros master ou administrador podem editar.",
+    "savedNotice": "Licenciado atualizado com sucesso.",
+    "error": {
+      "save": "Não foi possível salvar. Tente novamente.",
+      "validation": "Este campo não pode ficar vazio."
+    },
+    "discardConfirm": "Descartar alterações não salvas?"
+  },
   "LoginPage": {
     "eyebrow": "Entrada do sistema",
     "title": "Autentique-se para entrar no ambiente operacional do Valora.",
@@ -162,7 +210,7 @@
       "accessPolicy": "No primeiro acesso sem vínculo nem convite, o Valora cria automaticamente um contexto inicial para você concluir a configuração administrativa.",
       "googleUnavailable": "A entrada com Google não está disponível porque o identificador público do cliente Google ainda não foi configurado no ambiente.",
       "error": "Não foi possível concluir a entrada com Google. Tente novamente.",
-      "rememberMeLabel": "Permanecer logado neste dispositivo (a sessão deixa de ser só do navegador e dura até 30 dias após o último login, ou até você sair)."
+      "rememberMeLabel": "Permanecer autenticado neste dispositivo"
     }
   },
   "SelectTenantPage": {
