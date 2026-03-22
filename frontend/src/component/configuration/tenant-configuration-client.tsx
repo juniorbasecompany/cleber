@@ -40,7 +40,6 @@ export type TenantConfigurationCopy = {
   readOnlyNotice: string;
   savedNotice: string;
   saveError: string;
-  deletePendingNotice: string;
   deleteError: string;
   validationError: string;
   discardConfirm: string;
@@ -298,12 +297,6 @@ export function TenantConfigurationClient({
             {!tenant.can_edit ? (
               <div className="ui-notice-attention px-4 py-3 text-sm">
                 {copy.readOnlyNotice}
-              </div>
-            ) : null}
-
-            {isDeletePending ? (
-              <div className="ui-tone-danger rounded-[var(--radius-card)] border px-4 py-3 text-sm">
-                {copy.deletePendingNotice}
               </div>
             ) : null}
 

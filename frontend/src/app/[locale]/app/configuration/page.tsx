@@ -19,6 +19,7 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
   const t = await getTranslations("ConfigurationPage");
   const tenantEditorHref = `/${locale}/app/configuration/tenant`;
   const memberEditorHref = `/${locale}/app/configuration/member`;
+  const scopeEditorHref = `/${locale}/app/configuration/scope`;
 
   return (
     <section className="flex flex-col gap-6">
@@ -52,6 +53,8 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
           title={t("cards.scope.title")}
           description={t("cards.scope.description")}
           iconSlot={<ScopeIcon className="h-[1.05rem] w-[1.05rem]" />}
+          actionHref={scopeEditorHref}
+          actionLabel={t("openScopeEditor")}
         />
       </section>
 
@@ -78,7 +81,9 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
           title={t("queue.scope.title")}
           description={t("queue.scope.description")}
           statusLabel={t("queue.scope.status")}
-          tone="neutral"
+          tone="attention"
+          actionHref={scopeEditorHref}
+          actionLabel={t("openScopeEditor")}
           iconSlot={<ScopeIcon className="h-[1.05rem] w-[1.05rem]" />}
         />
       </section>

@@ -12,12 +12,12 @@ from valora_backend.auth.dependencies import get_current_member, get_current_ten
 from valora_backend.db import get_session
 from valora_backend.main import create_app
 from valora_backend.model.base import Base
-from valora_backend.model.identity import Account, Member, Tenant
+from valora_backend.model.identity import Account, Member, Scope, Tenant
 
 
 @contextmanager
 def build_test_client(
-    *, current_member_key: str
+    *, current_member_key: str, with_scopes: bool = True
 ) -> Generator[tuple[TestClient, Session, dict[str, int]], None, None]:
     engine = create_engine(
         "sqlite://",
@@ -98,6 +98,18 @@ def build_test_client(
         status=2,
     )
     session.add_all([master_member, admin_member, active_member, pending_member])
+    if with_scopes:
+        layer_scope = Scope(
+            name="Aves",
+            display_name="Aves para producao de ovos",
+            tenant_id=tenant.id,
+        )
+        grain_scope = Scope(
+            name="Soja",
+            display_name="Soja em graos",
+            tenant_id=tenant.id,
+        )
+        session.add_all([layer_scope, grain_scope])
     session.commit()
 
     member_id_by_key = {
@@ -240,7 +252,11 @@ def test_master_cannot_delete_self_member_record() -> None:
 
 
 def test_master_can_delete_current_tenant_tree() -> None:
-    with build_test_client(current_member_key="master") as (client, session, _):
+    with build_test_client(current_member_key="master", with_scopes=False) as (
+        client,
+        session,
+        _,
+    ):
         tenant_id = session.scalar(select(Tenant.id))
         response = client.delete("/auth/tenant/current")
         session.expire_all()
@@ -251,3 +267,64 @@ def test_master_can_delete_current_tenant_tree() -> None:
     assert response.json() == {"deleted_tenant_id": tenant_id}
     assert remaining_tenant is None
     assert remaining_member_count == 0
+
+
+def test_admin_can_list_create_update_and_delete_scope_directory() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        directory_response = client.get("/auth/tenant/current/scopes")
+        create_response = client.post(
+            "/auth/tenant/current/scopes",
+            json={
+                "name": "Leite",
+                "display_name": "Leite para operacao primaria",
+            },
+        )
+        session.expire_all()
+        created_scope = session.scalar(select(Scope).where(Scope.name == "Leite"))
+        assert created_scope is not None
+        update_response = client.patch(
+            f"/auth/tenant/current/scopes/{created_scope.id}",
+            json={
+                "name": "Leite",
+                "display_name": "Leite e derivados",
+            },
+        )
+        delete_response = client.delete(
+            f"/auth/tenant/current/scopes/{created_scope.id}"
+        )
+        session.expire_all()
+        deleted_scope = session.get(Scope, created_scope.id)
+
+    assert directory_response.status_code == 200
+    directory_payload = directory_response.json()
+    assert directory_payload["can_edit"] is True
+    assert directory_payload["can_create"] is True
+    assert len(directory_payload["item_list"]) == 2
+
+    assert create_response.status_code == 200
+    create_payload = create_response.json()
+    assert any(item["name"] == "Leite" for item in create_payload["item_list"])
+
+    assert update_response.status_code == 200
+    update_payload = update_response.json()
+    assert any(
+        item["display_name"] == "Leite e derivados"
+        for item in update_payload["item_list"]
+    )
+
+    assert delete_response.status_code == 200
+    assert deleted_scope is None
+
+
+def test_member_cannot_create_scope() -> None:
+    with build_test_client(current_member_key="member") as (client, _, _):
+        response = client.post(
+            "/auth/tenant/current/scopes",
+            json={
+                "name": "Cafe",
+                "display_name": "Cafe em graos",
+            },
+        )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Insufficient permissions to create scope"

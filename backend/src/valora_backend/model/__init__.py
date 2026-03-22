@@ -1,6 +1,6 @@
 # Pacote de modelos ORM; importar submódulos regista tabelas no metadata.
 
 from valora_backend.model.base import Base
-from valora_backend.model.identity import Account, Member, Tenant
+from valora_backend.model.identity import Account, Member, Scope, Tenant
 
-__all__ = ["Base", "Account", "Member", "Tenant"]
+__all__ = ["Base", "Account", "Member", "Scope", "Tenant"]

@@ -26,6 +26,8 @@ Convenções persistentes de escrita, nomenclatura e comportamento do agente no 
 
 Use esta camada para orientar implementação e revisão com segurança.
 
+- Regras operacionais para painéis de configuração ficam em `skills/implementation/stack/SKILL.md`, junto com o stack e as referências obrigatórias.
+
 ### `architecture/`
 
 Use esta camada para registrar decisões estruturais que valem para todo o sistema.

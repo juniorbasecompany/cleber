@@ -25,9 +25,10 @@ Este documento define o padrão canónico para painéis de configuração e edi�
 - Hover de botão só reforça levemente a cor; não desloca nem anima posição.
 - `Apagar` não executa exclusão imediata.
 - Ao clicar em `Apagar`, o painel entra em estado de exclusão pendente.
-- Em exclusão pendente, o painel recebe tom de vermelho suave e mostra aviso explícito.
+- Em exclusão pendente, o painel recebe tom de vermelho suave.
 - A exclusão só acontece ao clicar em `Salvar`.
 - O botão de perigo alterna entre `Apagar` e `Desmarcar exclusão`.
+- O estado de exclusão pendente não mostra banner textual dedicado; a indicação visual padrão é a tonalidade do painel e o estado da ação de perigo.
 
 ## Permissões e estado
 

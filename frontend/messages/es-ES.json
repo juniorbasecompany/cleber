@@ -99,9 +99,10 @@
     "description": "Aquí estarán los registros manuales iniciales antes de que existan asistentes guiados, automatizaciones o módulos operativos completos.",
     "openTenantEditor": "Editar licenciatario",
     "openMemberEditor": "Editar miembros",
+    "openScopeEditor": "Editar alcances",
     "status": {
       "title": "Siguiente fase",
-      "description": "Licenciatario y miembros ya pueden mantenerse aquí. El siguiente registro estructural es alcance."
+      "description": "Licenciatario, miembros y alcances ya pueden mantenerse en esta área inicial."
     },
     "cards": {
       "organization": {
@@ -131,7 +132,7 @@
       "scope": {
         "title": "Registro de alcance",
         "description": "Cierra la base estructural mínima antes de avanzar hacia los módulos operativos.",
-        "status": "después"
+        "status": "disponible"
       }
     }
   },
@@ -193,7 +194,6 @@
     "protectedRecordNotice": "Este registro está protegido por los permisos actuales. Selecciona otro miembro para editar.",
     "savedNotice": "Miembro actualizado correctamente.",
     "deletedNotice": "Miembro eliminado correctamente.",
-    "deletePendingNotice": "Este miembro se eliminará al guardar. Desmarca la eliminación para volver al modo normal de edición.",
     "selectPrompt": "Selecciona un miembro de la lista para editar el registro.",
     "role": {
       "master": "Master",
@@ -208,6 +208,62 @@
     "error": {
       "save": "No se pudo guardar el miembro. Inténtalo de nuevo.",
       "delete": "No se pudo eliminar el miembro. Inténtalo de nuevo.",
+      "validation": "Este campo no puede quedar vacío."
+    },
+    "discardConfirm": "¿Descartar los cambios no guardados?"
+  },
+  "ScopeConfigurationPage": {
+    "eyebrow": "Configuración",
+    "title": "Alcances",
+    "description": "Edita la base estructural mínima del licenciatario activo. Cada alcance define un recorte inicial que sostendrá los registros y módulos posteriores.",
+    "status": {
+      "title": "Edición de alcances",
+      "description": "Los cambios solo afectan al licenciatario activo de tu sesión. Usa este directorio para crear, revisar y mantener los alcances estructurales."
+    },
+    "tab": {
+      "general": "General",
+      "history": "Historial",
+      "listAriaLabel": "Secciones de la configuración de alcances"
+    },
+    "list": {
+      "title": "Directorio de alcances",
+      "description": "Selecciona un alcance para revisar o actualizar el registro estructural.",
+      "empty": "No se encontraron alcances para el licenciatario activo."
+    },
+    "history": {
+      "title": "Historial de cambios",
+      "description": "Una línea de tiempo de los cambios de alcance aparecerá aquí cuando la auditoría estructural esté disponible. Hasta entonces, esta pestaña queda como referencia de layout y trazabilidad."
+    },
+    "section": {
+      "identity": {
+        "title": "Identidad",
+        "description": "Nombre corto y descripción del alcance usados como base para los próximos registros estructurales.",
+        "nameLabel": "Nombre del alcance",
+        "nameHint": "Usa una etiqueta corta para identificar el alcance, como Aves, Soja o Leche.",
+        "displayNameLabel": "Descripción del alcance",
+        "displayNameHint": "Explica el recorte del alcance con más contexto, como Aves para producción de huevos."
+      }
+    },
+    "metadata": {
+      "idLabel": "Identificador del alcance"
+    },
+    "action": {
+      "cancel": "Cancelar",
+      "new": "Nuevo alcance",
+      "delete": "Eliminar",
+      "undoDelete": "Desmarcar eliminación",
+      "save": "Guardar",
+      "saving": "Guardando..."
+    },
+    "readOnlyNotice": "Puedes revisar el directorio de alcances, pero solo los miembros master o administrador pueden crear o editar registros estructurales.",
+    "savedNotice": "Alcance actualizado correctamente.",
+    "createdNotice": "Alcance creado correctamente.",
+    "deletedNotice": "Alcance eliminado correctamente.",
+    "selectPrompt": "Selecciona un alcance de la lista para editar el registro estructural.",
+    "error": {
+      "save": "No se pudo guardar el alcance. Inténtalo de nuevo.",
+      "create": "No se pudo crear el alcance. Inténtalo de nuevo.",
+      "delete": "No se pudo eliminar el alcance. Inténtalo de nuevo.",
       "validation": "Este campo no puede quedar vacío."
     },
     "discardConfirm": "¿Descartar los cambios no guardados?"
@@ -256,7 +312,6 @@
     },
     "readOnlyNotice": "Puedes ver los datos del licenciatario, pero solo los miembros master o administrador pueden editarlos.",
     "savedNotice": "Licenciatario actualizado correctamente.",
-    "deletePendingNotice": "Este licenciatario se eliminará al guardar. Desmarca la eliminación para continuar editando normalmente.",
     "error": {
       "save": "No se pudieron guardar los cambios. Inténtalo de nuevo.",
       "delete": "No se pudo eliminar el licenciatario. Inténtalo de nuevo.",

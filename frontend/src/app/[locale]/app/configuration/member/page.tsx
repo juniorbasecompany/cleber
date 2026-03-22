@@ -62,7 +62,6 @@ export default async function MemberConfigurationPage({
     protectedRecordNotice: t("protectedRecordNotice"),
     savedNotice: t("savedNotice"),
     deletedNotice: t("deletedNotice"),
-    deletePendingNotice: t("deletePendingNotice"),
     saveError: t("error.save"),
     deleteError: t("error.delete"),
     validationError: t("error.validation"),

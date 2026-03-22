@@ -58,7 +58,6 @@ export type MemberConfigurationCopy = {
   deletedNotice: string;
   saveError: string;
   deleteError: string;
-  deletePendingNotice: string;
   validationError: string;
   discardConfirm: string;
   selectPrompt: string;
@@ -622,12 +621,6 @@ export function MemberConfigurationClient({
                 isDeletePending ? "ui-delete-pending" : ""
               }`}
             >
-              {isDeletePending ? (
-                <div className="ui-tone-danger rounded-[var(--radius-card)] border px-4 py-3 text-sm">
-                  {copy.deletePendingNotice}
-                </div>
-              ) : null}
-
               {successMessage ? (
                 <div className="ui-tone-positive rounded-[var(--radius-card)] border px-4 py-3 text-sm">
                   {successMessage}

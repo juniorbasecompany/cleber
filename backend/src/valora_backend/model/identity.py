@@ -1,4 +1,4 @@
-# Modelos de identidade: tenant, account, member (fase 1 do ERD).
+# Modelos estruturais iniciais: tenant, account, member e scope.
 
 from __future__ import annotations
 
@@ -41,6 +41,39 @@ class Tenant(Base):
     )
 
 
+class Scope(Base):
+    """Escopo estrutural configurado dentro do licenciado."""
+
+    __tablename__ = "scope"
+    __table_args__ = {"comment": "Escopo do projeto: Aves, Soja, Leite..."}
+
+    id: Mapped[int] = mapped_column(
+        BigInteger,
+        primary_key=True,
+        autoincrement=True,
+        comment="Identificador do escopo.",
+    )
+    name: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        comment="Nome do escopo: Aves, Soja, Leite...",
+    )
+    display_name: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        comment=(
+            "Descrição do escopo: Aves para produção de ovos, "
+            "Soja em grãos, Leite..."
+        ),
+    )
+    tenant_id: Mapped[int] = mapped_column(
+        BigInteger,
+        ForeignKey("tenant.id", onupdate="CASCADE", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Ligação do escopo ao licenciado.",
+    )
+
+
 class Account(Base):
     """Conta de utilizador do sistema (provedor de autenticação)."""
 
@@ -52,7 +85,7 @@ class Account(Base):
             "provider_subject",
             name="account_unique_provider_subject",
         ),
-        {"comment": "Esté a conta do usuário do sistema."},
+        {"comment": "Esta é a conta do usuário do sistema."},
     )
 
     id: Mapped[int] = mapped_column(
@@ -115,7 +148,7 @@ class Member(Base):
             unique=True,
             postgresql_where=text("account_id IS NOT NULL"),
         ),
-        {"comment": "Esté o usuário do sistema em um determinado licenciado."},
+        {"comment": "Este é o usuário do sistema em um determinado licenciado."},
     )
 
     id: Mapped[int] = mapped_column(

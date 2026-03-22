@@ -99,9 +99,10 @@
     "description": "This is where the initial manual records will live before guided assistants, automations, or complete operational modules exist.",
     "openTenantEditor": "Edit tenant",
     "openMemberEditor": "Edit members",
+    "openScopeEditor": "Edit scopes",
     "status": {
       "title": "Next phase",
-      "description": "Tenant and member records can already be maintained here. Scope is the next structural registration."
+      "description": "Tenant, member, and scope records can already be maintained in this initial area."
     },
     "cards": {
       "organization": {
@@ -131,7 +132,7 @@
       "scope": {
         "title": "Scope registration",
         "description": "Closes the minimum structural foundation before advancing to operational modules.",
-        "status": "later"
+        "status": "available"
       }
     }
   },
@@ -193,7 +194,6 @@
     "protectedRecordNotice": "This record is protected by the current permissions. Select another member to edit.",
     "savedNotice": "Member updated successfully.",
     "deletedNotice": "Member deleted successfully.",
-    "deletePendingNotice": "This member will be deleted when you save. Undo the delete mark to return to normal editing.",
     "selectPrompt": "Select a member from the list to edit the record.",
     "role": {
       "master": "Master",
@@ -208,6 +208,62 @@
     "error": {
       "save": "Could not save the member. Try again.",
       "delete": "Could not delete the member. Try again.",
+      "validation": "This field cannot be empty."
+    },
+    "discardConfirm": "Discard unsaved changes?"
+  },
+  "ScopeConfigurationPage": {
+    "eyebrow": "Configuration",
+    "title": "Scopes",
+    "description": "Edit the minimum structural foundation of the active tenant. Each scope defines an initial slice that will support later records and modules.",
+    "status": {
+      "title": "Editing scopes",
+      "description": "Changes only affect the active tenant in your session. Use this directory to create, review, and maintain structural scopes."
+    },
+    "tab": {
+      "general": "General",
+      "history": "History",
+      "listAriaLabel": "Scope settings sections"
+    },
+    "list": {
+      "title": "Scope directory",
+      "description": "Select a scope to review or update the structural record.",
+      "empty": "No scopes were found for the active tenant."
+    },
+    "history": {
+      "title": "Change history",
+      "description": "A timeline of scope changes will appear here when structural auditing is available. Until then, this tab stays as a layout and traceability placeholder."
+    },
+    "section": {
+      "identity": {
+        "title": "Identity",
+        "description": "Short name and description of the scope used as the base for the next structural records.",
+        "nameLabel": "Scope name",
+        "nameHint": "Use a short label to identify the scope, such as Poultry, Soy, or Milk.",
+        "displayNameLabel": "Scope description",
+        "displayNameHint": "Explain the scope slice with more context, such as Poultry for egg production."
+      }
+    },
+    "metadata": {
+      "idLabel": "Scope identifier"
+    },
+    "action": {
+      "cancel": "Cancel",
+      "new": "New scope",
+      "delete": "Delete",
+      "undoDelete": "Undo delete",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "readOnlyNotice": "You can review the scope directory, but only master or admin members can create or edit structural records.",
+    "savedNotice": "Scope updated successfully.",
+    "createdNotice": "Scope created successfully.",
+    "deletedNotice": "Scope deleted successfully.",
+    "selectPrompt": "Select a scope from the list to edit the structural record.",
+    "error": {
+      "save": "Could not save the scope. Try again.",
+      "create": "Could not create the scope. Try again.",
+      "delete": "Could not delete the scope. Try again.",
       "validation": "This field cannot be empty."
     },
     "discardConfirm": "Discard unsaved changes?"
@@ -256,7 +312,6 @@
     },
     "readOnlyNotice": "You can view tenant data, but only master or admin members can edit it.",
     "savedNotice": "Tenant updated successfully.",
-    "deletePendingNotice": "This tenant will be deleted when you save. Undo the delete mark to continue editing normally.",
     "error": {
       "save": "Could not save changes. Try again.",
       "delete": "Could not delete the tenant. Try again.",

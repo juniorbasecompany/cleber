@@ -26,6 +26,12 @@ Aplicar o stack acordado em [architecture/technology-stack.md](../../../architec
 
 - Texto de interface e mensagens de erro visíveis ao utilizador: seguir [skills/implementation/i18n/SKILL.md](../i18n/SKILL.md) e [skills/implementation/i18n/policy.md](../i18n/policy.md) — evitar literals soltos; erros de API como `code` estável para o cliente traduzir.
 
+### Painéis de configuração
+
+- Ao implementar ou revisar painéis de configuração, seguir [architecture/configuration-panels.md](../../../architecture/configuration-panels.md) como padrão estrutural e visual.
+- Em exclusão pendente, a sinalização padrão é visual: tonalidade suave de vermelho no painel e ação de perigo em estado de desfazer marcação.
+- Não introduzir banner, alerta ou aviso textual dedicado apenas para informar que o registro está marcado para exclusão.
+
 ### Backend
 
 - **FastAPI**, **SQLAlchemy**, **Alembic**, **PostgreSQL**, **Pydantic**, **Uvicorn** (e o que já estiver declarado em `backend/pyproject.toml`).
@@ -39,5 +45,6 @@ Aplicar o stack acordado em [architecture/technology-stack.md](../../../architec
 ## Referências
 
 - [architecture/technology-stack.md](../../../architecture/technology-stack.md)
+- [architecture/configuration-panels.md](../../../architecture/configuration-panels.md)
 - [frontend/package.json](../../../frontend/package.json)
 - [backend/pyproject.toml](../../../backend/pyproject.toml)

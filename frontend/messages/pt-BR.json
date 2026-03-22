@@ -99,9 +99,10 @@
     "description": "Aqui ficarão os cadastros iniciais feitos manualmente antes de existirem assistentes guiados, automações ou módulos operacionais completos.",
     "openTenantEditor": "Editar licenciado",
     "openMemberEditor": "Editar membros",
+    "openScopeEditor": "Editar escopos",
     "status": {
       "title": "Fase seguinte",
-      "description": "Licenciado e membros já podem ser mantidos nesta área. O próximo cadastro estrutural é escopo."
+      "description": "Licenciado, membros e escopos já podem ser mantidos nesta área inicial."
     },
     "cards": {
       "organization": {
@@ -131,7 +132,7 @@
       "scope": {
         "title": "Cadastro de escopo",
         "description": "Fecha a base estrutural mínima antes do avanço para módulos operacionais.",
-        "status": "depois"
+        "status": "disponível"
       }
     }
   },
@@ -193,7 +194,6 @@
     "protectedRecordNotice": "Este registro está protegido pelas permissões atuais. Selecione outro membro para editar.",
     "savedNotice": "Membro atualizado com sucesso.",
     "deletedNotice": "Membro apagado com sucesso.",
-    "deletePendingNotice": "Este membro será apagado ao salvar. Desmarque a exclusão para voltar ao modo normal de edição.",
     "selectPrompt": "Selecione um membro na lista para editar o cadastro.",
     "role": {
       "master": "Master",
@@ -208,6 +208,62 @@
     "error": {
       "save": "Não foi possível salvar o membro. Tente novamente.",
       "delete": "Não foi possível apagar o membro. Tente novamente.",
+      "validation": "Este campo não pode ficar vazio."
+    },
+    "discardConfirm": "Descartar alterações não salvas?"
+  },
+  "ScopeConfigurationPage": {
+    "eyebrow": "Configuração",
+    "title": "Escopos",
+    "description": "Edite a base estrutural mínima do licenciado ativo. Cada escopo define um recorte inicial que sustentará os cadastros e módulos posteriores.",
+    "status": {
+      "title": "Edição de escopos",
+      "description": "As alterações afetam apenas o licenciado ativo da sua sessão. Use este diretório para criar, revisar e manter os escopos estruturais."
+    },
+    "tab": {
+      "general": "Geral",
+      "history": "Histórico",
+      "listAriaLabel": "Seções das configurações de escopo"
+    },
+    "list": {
+      "title": "Diretório de escopos",
+      "description": "Selecione um escopo para revisar ou atualizar o cadastro estrutural.",
+      "empty": "Nenhum escopo foi encontrado para o licenciado ativo."
+    },
+    "history": {
+      "title": "Histórico de alterações",
+      "description": "Uma linha do tempo das alterações de escopo aparecerá aqui quando a auditoria estrutural estiver disponível. Até lá, esta aba permanece como referência de layout e rastreabilidade."
+    },
+    "section": {
+      "identity": {
+        "title": "Identificação",
+        "description": "Nome curto e descrição do escopo usados como base para os próximos cadastros estruturais.",
+        "nameLabel": "Nome do escopo",
+        "nameHint": "Use um rótulo curto para identificar o escopo, como Aves, Soja ou Leite.",
+        "displayNameLabel": "Descrição do escopo",
+        "displayNameHint": "Explique o recorte do escopo com mais contexto, como Aves para produção de ovos."
+      }
+    },
+    "metadata": {
+      "idLabel": "Identificador do escopo"
+    },
+    "action": {
+      "cancel": "Cancelar",
+      "new": "Novo escopo",
+      "delete": "Apagar",
+      "undoDelete": "Desmarcar exclusão",
+      "save": "Salvar",
+      "saving": "Salvando..."
+    },
+    "readOnlyNotice": "Você pode consultar o diretório de escopos, mas só membros master ou administrador podem criar ou editar cadastros estruturais.",
+    "savedNotice": "Escopo atualizado com sucesso.",
+    "createdNotice": "Escopo criado com sucesso.",
+    "deletedNotice": "Escopo apagado com sucesso.",
+    "selectPrompt": "Selecione um escopo na lista para editar o cadastro estrutural.",
+    "error": {
+      "save": "Não foi possível salvar o escopo. Tente novamente.",
+      "create": "Não foi possível criar o escopo. Tente novamente.",
+      "delete": "Não foi possível apagar o escopo. Tente novamente.",
       "validation": "Este campo não pode ficar vazio."
     },
     "discardConfirm": "Descartar alterações não salvas?"
@@ -256,7 +312,6 @@
     },
     "readOnlyNotice": "Você pode ver os dados do licenciado, mas só membros master ou administrador podem editar.",
     "savedNotice": "Licenciado atualizado com sucesso.",
-    "deletePendingNotice": "Este licenciado será apagado ao salvar. Desmarque a exclusão para continuar editando normalmente.",
     "error": {
       "save": "Não foi possível salvar. Tente novamente.",
       "delete": "Não foi possível apagar o licenciado. Tente novamente.",

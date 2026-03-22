@@ -25,7 +25,7 @@ from valora_backend.auth.service import (
     tenant_display_name,
 )
 from valora_backend.db import get_session
-from valora_backend.model.identity import Account, Member, Tenant
+from valora_backend.model.identity import Account, Member, Scope, Tenant
 from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -132,12 +132,10 @@ class TenantUpdateRequest(BaseModel):
 
     @field_validator("name", "display_name")
     @classmethod
-    def strip_and_limit(cls, value: str) -> str:
+    def strip_non_empty(cls, value: str) -> str:
         cleaned = value.strip()
         if not cleaned:
             raise ValueError("must not be empty")
-        if len(cleaned) > 2000:
-            raise ValueError("must be at most 2000 characters")
         return cleaned
 
 
@@ -168,12 +166,10 @@ class TenantMemberUpdateRequest(BaseModel):
 
     @field_validator("name", "display_name")
     @classmethod
-    def strip_and_limit_member_name(cls, value: str) -> str:
+    def strip_non_empty_member_name(cls, value: str) -> str:
         cleaned = value.strip()
         if not cleaned:
             raise ValueError("must not be empty")
-        if len(cleaned) > 2000:
-            raise ValueError("must be at most 2000 characters")
         return cleaned
 
     @field_validator("role")
@@ -189,6 +185,33 @@ class TenantMemberUpdateRequest(BaseModel):
         if value not in (ACTIVE_STATUS, PENDING_STATUS, DISABLED_STATUS):
             raise ValueError("invalid member status")
         return value
+
+
+class TenantScopeRecord(BaseModel):
+    id: int
+    name: str
+    display_name: str
+    can_edit: bool
+    can_delete: bool
+
+
+class TenantScopeDirectoryResponse(BaseModel):
+    can_edit: bool
+    can_create: bool
+    item_list: list[TenantScopeRecord] = Field(default_factory=list)
+
+
+class TenantScopeUpsertRequest(BaseModel):
+    name: str
+    display_name: str
+
+    @field_validator("name", "display_name")
+    @classmethod
+    def strip_non_empty_scope_value(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("must not be empty")
+        return cleaned
 
 
 class AuthSessionResponse(BaseModel):
@@ -632,6 +655,14 @@ def _member_can_delete_member(actor: Member, target: Member) -> bool:
     return actor.role == MASTER_ROLE and actor.id != target.id
 
 
+def _member_can_edit_scope(member: Member) -> bool:
+    return member.role in (MASTER_ROLE, ADMIN_ROLE)
+
+
+def _member_can_delete_scope(member: Member) -> bool:
+    return member.role in (MASTER_ROLE, ADMIN_ROLE)
+
+
 def _serialize_tenant_member(actor: Member, target: Member) -> TenantMemberRecord:
     return TenantMemberRecord(
         id=target.id,
@@ -645,6 +676,17 @@ def _serialize_tenant_member(actor: Member, target: Member) -> TenantMemberRecor
         can_edit=_member_can_edit_member_profile(actor, target),
         can_edit_access=_member_can_edit_member_access(actor, target),
         can_delete=_member_can_delete_member(actor, target),
+    )
+
+
+def _serialize_tenant_scope(actor: Member, target: Scope) -> TenantScopeRecord:
+    can_edit_scope = _member_can_edit_scope(actor)
+    return TenantScopeRecord(
+        id=target.id,
+        name=target.name,
+        display_name=target.display_name,
+        can_edit=can_edit_scope,
+        can_delete=_member_can_delete_scope(actor),
     )
 
 
@@ -666,6 +708,22 @@ def _build_tenant_member_directory(
     return TenantMemberDirectoryResponse(
         can_edit=_member_can_edit_tenant(actor),
         item_list=[_serialize_tenant_member(actor, item) for item in member_list],
+    )
+
+
+def _build_tenant_scope_directory(
+    session: Session, *, actor: Member
+) -> TenantScopeDirectoryResponse:
+    scope_list = list(
+        session.scalars(select(Scope).where(Scope.tenant_id == actor.tenant_id))
+    )
+    scope_list.sort(
+        key=lambda item: (item.name.lower(), item.display_name.lower(), item.id)
+    )
+    return TenantScopeDirectoryResponse(
+        can_edit=_member_can_edit_scope(actor),
+        can_create=_member_can_edit_scope(actor),
+        item_list=[_serialize_tenant_scope(actor, item) for item in scope_list],
     )
 
 
@@ -703,6 +761,14 @@ def get_current_tenant_member_directory(
     session: Session = Depends(get_session),
 ):
     return _build_tenant_member_directory(session, actor=member)
+
+
+@router.get("/tenant/current/scopes", response_model=TenantScopeDirectoryResponse)
+def get_current_tenant_scope_directory(
+    member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    return _build_tenant_scope_directory(session, actor=member)
 
 
 @router.patch("/tenant/current", response_model=TenantCurrentResponse)
@@ -801,6 +867,64 @@ def patch_current_tenant_member(
     return _build_tenant_member_directory(session, actor=current_member)
 
 
+@router.post(
+    "/tenant/current/scopes",
+    response_model=TenantScopeDirectoryResponse,
+)
+def create_current_tenant_scope(
+    body: TenantScopeUpsertRequest,
+    current_member: Member = Depends(get_current_member),
+    tenant: Tenant = Depends(get_current_tenant),
+    session: Session = Depends(get_session),
+):
+    if not _member_can_edit_scope(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to create scope",
+        )
+
+    scope = Scope(
+        name=body.name,
+        display_name=body.display_name,
+        tenant_id=tenant.id,
+    )
+    session.add(scope)
+    commit_session_with_null_if_empty(session)
+
+    return _build_tenant_scope_directory(session, actor=current_member)
+
+
+@router.patch(
+    "/tenant/current/scopes/{scope_id}",
+    response_model=TenantScopeDirectoryResponse,
+)
+def patch_current_tenant_scope(
+    scope_id: int,
+    body: TenantScopeUpsertRequest,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = session.get(Scope, scope_id)
+    if not target_scope or target_scope.tenant_id != current_member.tenant_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Scope not found for current tenant",
+        )
+
+    if not _member_can_edit_scope(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to update scope",
+        )
+
+    target_scope.name = body.name
+    target_scope.display_name = body.display_name
+    session.add(target_scope)
+    commit_session_with_null_if_empty(session)
+
+    return _build_tenant_scope_directory(session, actor=current_member)
+
+
 @router.delete(
     "/tenant/current/members/{member_id}",
     response_model=TenantMemberDirectoryResponse,
@@ -827,6 +951,34 @@ def delete_current_tenant_member(
     session.commit()
 
     return _build_tenant_member_directory(session, actor=current_member)
+
+
+@router.delete(
+    "/tenant/current/scopes/{scope_id}",
+    response_model=TenantScopeDirectoryResponse,
+)
+def delete_current_tenant_scope(
+    scope_id: int,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = session.get(Scope, scope_id)
+    if not target_scope or target_scope.tenant_id != current_member.tenant_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Scope not found for current tenant",
+        )
+
+    if not _member_can_delete_scope(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to delete scope",
+        )
+
+    session.delete(target_scope)
+    session.commit()
+
+    return _build_tenant_scope_directory(session, actor=current_member)
 
 
 @router.get("/me", response_model=AuthSessionResponse)
