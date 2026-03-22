@@ -22,7 +22,8 @@
     },
     "menu": {
       "tenantSectionLabel": "Licenciado",
-      "localeSectionLabel": "Idioma e região",
+      "localeFlagTriggerAriaLabel": "Escolher idioma e região",
+      "localeFlagMenuAriaLabel": "Idiomas disponíveis",
       "configurationLabel": "Configuração",
       "loadingTenantList": "Carregando...",
       "tenantListError": "Não foi possível carregar a lista de licenciados.",

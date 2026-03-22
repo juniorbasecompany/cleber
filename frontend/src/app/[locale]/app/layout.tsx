@@ -78,7 +78,8 @@ export default async function AppLayout({
           configurationHref={`/${locale}/app/configuration`}
           copy={{
             tenantSectionLabel: t("menu.tenantSectionLabel"),
-            localeSectionLabel: t("menu.localeSectionLabel"),
+            localeFlagTriggerAriaLabel: t("menu.localeFlagTriggerAriaLabel"),
+            localeFlagMenuAriaLabel: t("menu.localeFlagMenuAriaLabel"),
             configurationLabel: t("menu.configurationLabel"),
             loadingTenantList: t("menu.loadingTenantList"),
             tenantListError: t("menu.tenantListError"),

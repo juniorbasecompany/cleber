@@ -1,0 +1,191 @@
+{
+  "AppShell": {
+    "productName": "Valora",
+    "productStage": "Fase 1 en curso",
+    "workspaceLabel": "Espacio operativo y auditable",
+    "navigation": {
+      "home": "Inicio",
+      "operation": "Operaciones",
+      "record": "Registros",
+      "import": "Importaciones",
+      "process": "Procesamiento",
+      "audit": "Auditoría",
+      "configuration": "Configuración",
+      "comingSoon": "próximamente"
+    },
+    "topbar": {
+      "tenantLabel": "Licenciatario activo",
+      "accountLabel": "Cuenta",
+      "localeLabel": "Idioma y región",
+      "signOut": "Cerrar sesión",
+      "signOutPending": "Cerrando sesión..."
+    },
+    "menu": {
+      "tenantSectionLabel": "Licenciatario",
+      "localeFlagTriggerAriaLabel": "Elegir idioma y región",
+      "localeFlagMenuAriaLabel": "Idiomas disponibles",
+      "configurationLabel": "Configuración",
+      "loadingTenantList": "Cargando...",
+      "tenantListError": "No se pudo cargar la lista de licenciatarios.",
+      "emptyTenantList": "No hay ningún licenciatario disponible.",
+      "switchingTenant": "Cambiando licenciatario...",
+      "switchingLocale": "Cambiando idioma...",
+      "activeLabel": "activo"
+    }
+  },
+  "HomePage": {
+    "eyebrow": "Página principal",
+    "title": "La base del sistema ya está lista para iniciar la configuración estructural de Valora.",
+    "description": "Esta página principal funciona como punto de entrada de la aplicación después de la autenticación. Muestra el contexto actual, el estado de la configuración inicial y el camino más corto hacia la configuración administrativa.",
+    "status": {
+      "title": "Configuración inicial pendiente",
+      "description": "El siguiente paso recomendado es abrir Configuración y registrar el licenciatario, los miembros y el alcance."
+    },
+    "context": {
+      "workspace": {
+        "title": "Espacio actual",
+        "description": "Ya estás dentro del área autenticada de la aplicación, con un licenciatario activo y una interfaz lista para crecer en módulos."
+      },
+      "locale": {
+        "title": "Idioma y región",
+        "description": "La base ya usa mensajes por clave y una estructura lista para ampliar la internacionalización a varios locales."
+      },
+      "entryFlow": {
+        "title": "Flujo actual",
+        "description": "El acceso con Google ya define la cuenta, el licenciatario activo y el siguiente flujo útil de la aplicación."
+      }
+    },
+    "setup": {
+      "title": "Estado de la configuración inicial",
+      "description": "Estos son los primeros pasos para sacar la aplicación de su estado base y prepararla para la operación real.",
+      "steps": {
+        "organization": {
+          "title": "Registrar el licenciatario",
+          "description": "Crear el licenciatario base que representará al contratante del sistema.",
+          "status": "prioritario"
+        },
+        "member": {
+          "title": "Registrar los miembros",
+          "description": "Definir quién operará el sistema dentro del contexto del licenciatario.",
+          "status": "pendiente"
+        },
+        "scope": {
+          "title": "Configurar el alcance inicial",
+          "description": "Preparar la estructura mínima que servirá de base para los futuros registros y módulos del licenciatario.",
+          "status": "pendiente"
+        }
+      }
+    },
+    "quickAction": {
+      "title": "Qué hacer ahora",
+      "description": "Usa estos accesos directos para seguir el camino más corto hacia la primera entrega útil.",
+      "configuration": {
+        "title": "Abrir Configuración",
+        "description": "Entra al área que concentrará los registros iniciales de licenciatario, miembros y alcance.",
+        "action": "Ir a Configuración"
+      },
+      "plan": {
+        "title": "Ver la cola de configuración inicial",
+        "description": "Revisa el orden recomendado de registros antes de comenzar la implementación de las pantallas de administración.",
+        "action": "Ver próximos pasos"
+      }
+    }
+  },
+  "ConfigurationPage": {
+    "eyebrow": "Configuración administrativa",
+    "title": "Esta área será la primera base útil de datos del sistema.",
+    "description": "Aquí estarán los registros manuales iniciales antes de que existan asistentes guiados, automatizaciones o módulos operativos completos.",
+    "status": {
+      "title": "Siguiente fase",
+      "description": "Implementar las pantallas reales de registro para licenciatario, miembro y alcance."
+    },
+    "cards": {
+      "organization": {
+        "title": "Licenciatario",
+        "description": "Representa al licenciatario contratante y será el primer registro estructural de la aplicación."
+      },
+      "member": {
+        "title": "Miembro",
+        "description": "Representa quién actúa en el sistema dentro del contexto del licenciatario."
+      },
+      "scope": {
+        "title": "Alcance",
+        "description": "Concentra la estructura mínima que servirá de base para los módulos y registros posteriores."
+      }
+    },
+    "queue": {
+      "organization": {
+        "title": "Registro de licenciatario",
+        "description": "Primera pantalla real que se entregará dentro del área de configuración.",
+        "status": "primero"
+      },
+      "member": {
+        "title": "Registro de miembros",
+        "description": "Viene justo después para conectar a los usuarios con el contexto organizativo inicial.",
+        "status": "después"
+      },
+      "scope": {
+        "title": "Registro de alcance",
+        "description": "Cierra la base estructural mínima antes de avanzar hacia los módulos operativos.",
+        "status": "después"
+      }
+    }
+  },
+  "LoginPage": {
+    "eyebrow": "Acceso al sistema",
+    "title": "Autentícate para entrar en el espacio operativo de Valora.",
+    "description": "Usa tu cuenta de Google para iniciar sesión en Valora. La autenticación ya conecta la cuenta con la relación entre cuenta, licenciatario y miembro.",
+    "notice": {
+      "authRequired": "Inicia sesión para acceder al área protegida de la aplicación.",
+      "signedOut": "Sesión finalizada. Inicia sesión de nuevo para continuar."
+    },
+    "cards": {
+      "workspace": {
+        "title": "Un espacio serio desde el principio",
+        "description": "La navegación ya está preparada para crecer en módulos sin parecer una plantilla genérica de administración."
+      },
+      "traceability": {
+        "title": "Base orientada a la trazabilidad",
+        "description": "La interfaz nace lista para recibir historial, auditoría y explicaciones contextuales en las próximas fases."
+      },
+      "nextStep": {
+        "title": "Próxima entrega útil",
+        "description": "Después de la autenticación, el usuario llegará a la página principal y seguirá hacia la configuración administrativa inicial."
+      }
+    },
+    "form": {
+      "title": "Iniciar sesión",
+      "description": "En esta fase, el acceso inicial al producto ocurre mediante autenticación con Google y contexto organizativo real.",
+      "submitIdle": "Cargando autenticación de Google...",
+      "submitPending": "Entrando con Google...",
+      "helper": "Si solo existe una relación activa, el acceso entra directamente en la aplicación. Cuando existan varias relaciones o invitaciones, Valora te pedirá que elijas el licenciatario.",
+      "accessPolicy": "En el primer acceso sin relación ni invitación, Valora crea automáticamente un contexto inicial para que completes la configuración administrativa.",
+      "googleUnavailable": "El acceso con Google no está disponible porque el identificador público del cliente de Google aún no se ha configurado en el entorno.",
+      "error": "No se pudo completar el acceso con Google. Inténtalo de nuevo."
+    }
+  },
+  "SelectTenantPage": {
+    "loading": "Cargando opciones de acceso...",
+    "title": "Elige cómo quieres entrar en Valora.",
+    "description": "Tu cuenta de Google ha sido validada. Ahora solo falta definir el licenciatario activo que gobernará el contexto operativo de la sesión.",
+    "activeListTitle": "Organizaciones activas",
+    "inviteListTitle": "Invitaciones pendientes",
+    "createTitle": "Preparando tu contexto inicial",
+    "createDescription": "No encontramos ningún licenciatario activo ni invitación pendiente. Valora puede crear el primer contexto para que sigas directamente hacia la configuración administrativa inicial.",
+    "createAction": "Crear licenciatario inicial",
+    "createPending": "Creando licenciatario inicial...",
+    "acceptAction": "Aceptar invitación",
+    "rejectAction": "Rechazar invitación",
+    "selectAction": "Entrar en este licenciatario",
+    "processing": "Procesando...",
+    "empty": "No se encontró ninguna opción de acceso para esta cuenta.",
+    "backToLogin": "Volver al acceso",
+    "genericError": "No se pudo completar esta acción ahora mismo. Inténtalo de nuevo."
+  },
+  "State": {
+    "loadingDescription": "Cargando la base de la aplicación.",
+    "errorTitle": "No se pudo cargar esta área.",
+    "errorDescription": "Se produjo un problema al renderizar la interfaz. Puedes intentarlo de nuevo sin salir del flujo actual.",
+    "retry": "Intentar de nuevo"
+  }
+}

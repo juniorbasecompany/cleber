@@ -1,8 +1,10 @@
 import type { ReactNode } from "react";
+import { Suspense } from "react";
 import { hasLocale, NextIntlClientProvider } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
+import { LocalePreferenceSync } from "@/component/i18n/locale-preference-sync";
 import { routing } from "@/i18n/routing";
 
 type LocaleLayoutProps = {
@@ -28,6 +30,9 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider>
+      <Suspense fallback={null}>
+        <LocalePreferenceSync locale={locale} />
+      </Suspense>
       {children}
     </NextIntlClientProvider>
   );

@@ -1,0 +1,191 @@
+{
+  "AppShell": {
+    "productName": "Valora",
+    "productStage": "Phase 1 in progress",
+    "workspaceLabel": "Operational and auditable workspace",
+    "navigation": {
+      "home": "Home",
+      "operation": "Operations",
+      "record": "Records",
+      "import": "Imports",
+      "process": "Processing",
+      "audit": "Audit",
+      "configuration": "Configuration",
+      "comingSoon": "coming soon"
+    },
+    "topbar": {
+      "tenantLabel": "Active tenant",
+      "accountLabel": "Account",
+      "localeLabel": "Language and region",
+      "signOut": "Sign out",
+      "signOutPending": "Signing out..."
+    },
+    "menu": {
+      "tenantSectionLabel": "Tenant",
+      "localeFlagTriggerAriaLabel": "Choose language and region",
+      "localeFlagMenuAriaLabel": "Available languages",
+      "configurationLabel": "Configuration",
+      "loadingTenantList": "Loading...",
+      "tenantListError": "Could not load the tenant list.",
+      "emptyTenantList": "No tenant available.",
+      "switchingTenant": "Switching tenant...",
+      "switchingLocale": "Switching language...",
+      "activeLabel": "active"
+    }
+  },
+  "HomePage": {
+    "eyebrow": "Home page",
+    "title": "The system foundation is already ready to start Valora's structural setup.",
+    "description": "This home page acts as the application entry point after authentication. It shows the current context, the initial setup status, and the shortest path to administrative configuration.",
+    "status": {
+      "title": "Initial setup pending",
+      "description": "The recommended next step is to open Configuration and register the tenant, members, and scope."
+    },
+    "context": {
+      "workspace": {
+        "title": "Current workspace",
+        "description": "You are already inside the authenticated area of the application, with an active tenant and an interface ready to grow into modules."
+      },
+      "locale": {
+        "title": "Language and region",
+        "description": "The foundation already uses keyed messages and a structure ready to expand internationalization across multiple locales."
+      },
+      "entryFlow": {
+        "title": "Current flow",
+        "description": "Google sign-in already defines the account, the active tenant, and the next useful application flow."
+      }
+    },
+    "setup": {
+      "title": "Initial setup status",
+      "description": "These are the first steps to move the application out of its base state and prepare it for real operation.",
+      "steps": {
+        "organization": {
+          "title": "Register the tenant",
+          "description": "Create the base tenant that will represent the system contractor.",
+          "status": "priority"
+        },
+        "member": {
+          "title": "Register the members",
+          "description": "Define who will operate the system within the tenant context.",
+          "status": "pending"
+        },
+        "scope": {
+          "title": "Configure the initial scope",
+          "description": "Prepare the minimum structure that will serve as the foundation for the tenant's future records and modules.",
+          "status": "pending"
+        }
+      }
+    },
+    "quickAction": {
+      "title": "What to do now",
+      "description": "Use these shortcuts to follow the shortest path toward the first useful delivery.",
+      "configuration": {
+        "title": "Open Configuration",
+        "description": "Go to the area that will concentrate the initial tenant, member, and scope records.",
+        "action": "Go to Configuration"
+      },
+      "plan": {
+        "title": "View the initial setup queue",
+        "description": "Review the recommended order of records before starting the implementation of the administration screens.",
+        "action": "View next steps"
+      }
+    }
+  },
+  "ConfigurationPage": {
+    "eyebrow": "Administrative configuration",
+    "title": "This area will be the first useful data foundation of the system.",
+    "description": "This is where the initial manual records will live before guided assistants, automations, or complete operational modules exist.",
+    "status": {
+      "title": "Next phase",
+      "description": "Implement the real registration screens for tenant, member, and scope."
+    },
+    "cards": {
+      "organization": {
+        "title": "Tenant",
+        "description": "Represents the contracting tenant and will be the first structural record in the application."
+      },
+      "member": {
+        "title": "Member",
+        "description": "Represents who operates the system within the tenant context."
+      },
+      "scope": {
+        "title": "Scope",
+        "description": "Concentrates the minimum structure that will support later modules and records."
+      }
+    },
+    "queue": {
+      "organization": {
+        "title": "Tenant registration",
+        "description": "First real screen to be delivered inside the configuration area.",
+        "status": "first"
+      },
+      "member": {
+        "title": "Member registration",
+        "description": "Comes right after to connect users to the initial organizational context.",
+        "status": "later"
+      },
+      "scope": {
+        "title": "Scope registration",
+        "description": "Closes the minimum structural foundation before advancing to operational modules.",
+        "status": "later"
+      }
+    }
+  },
+  "LoginPage": {
+    "eyebrow": "System access",
+    "title": "Authenticate to enter Valora's operational workspace.",
+    "description": "Use your Google account to sign in to Valora. Authentication already connects the account to the relationship between account, tenant, and member.",
+    "notice": {
+      "authRequired": "Sign in to access the protected area of the application.",
+      "signedOut": "Session ended. Sign in again to continue."
+    },
+    "cards": {
+      "workspace": {
+        "title": "A serious workspace from the start",
+        "description": "Navigation is already prepared to grow into modules without looking like a generic admin template."
+      },
+      "traceability": {
+        "title": "Foundation oriented toward traceability",
+        "description": "The interface starts ready to receive history, audit, and contextual explanations in the next phases."
+      },
+      "nextStep": {
+        "title": "Next useful delivery",
+        "description": "After authentication, the user lands on the home page and proceeds to the initial administrative configuration."
+      }
+    },
+    "form": {
+      "title": "Sign in",
+      "description": "At this stage, the initial product access happens through Google authentication and real organizational context.",
+      "submitIdle": "Loading Google authentication...",
+      "submitPending": "Signing in with Google...",
+      "helper": "If there is only one active relationship, access goes directly into the application. When multiple relationships or invites exist, Valora will ask you to choose the tenant.",
+      "accessPolicy": "On the first access without a relationship or invite, Valora automatically creates an initial context so you can complete the administrative setup.",
+      "googleUnavailable": "Google sign-in is unavailable because the public Google client identifier has not been configured in the environment yet.",
+      "error": "Could not complete the Google sign-in. Try again."
+    }
+  },
+  "SelectTenantPage": {
+    "loading": "Loading access options...",
+    "title": "Choose how you want to enter Valora.",
+    "description": "Your Google account has been validated. Now you only need to define the active tenant that will govern the session's operational context.",
+    "activeListTitle": "Active organizations",
+    "inviteListTitle": "Pending invites",
+    "createTitle": "Preparing your initial context",
+    "createDescription": "We did not find an active tenant or pending invite. Valora can create the first context for you so you can go straight to the initial administrative configuration.",
+    "createAction": "Create initial tenant",
+    "createPending": "Creating initial tenant...",
+    "acceptAction": "Accept invite",
+    "rejectAction": "Reject invite",
+    "selectAction": "Enter this tenant",
+    "processing": "Processing...",
+    "empty": "No access option was found for this account.",
+    "backToLogin": "Back to sign in",
+    "genericError": "Could not complete this action right now. Try again."
+  },
+  "State": {
+    "loadingDescription": "Loading the application foundation.",
+    "errorTitle": "Could not load this area.",
+    "errorDescription": "There was a problem rendering the interface. You can try again without leaving the current flow.",
+    "retry": "Try again"
+  }
+}

@@ -3,6 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { redirect } from "next/navigation";
 
 import { GoogleSignInPanel } from "@/component/auth/google-sign-in-panel";
+import { LoginLocaleBar } from "@/component/i18n/login-locale-bar";
 import { getAuthSession } from "@/lib/auth/server-session";
 
 type LoginPageProps = {
@@ -32,7 +33,8 @@ export default async function LoginPage({
         : null;
 
   return (
-    <main className="ui-shell min-h-screen">
+    <main className="ui-shell relative min-h-screen">
+      <LoginLocaleBar currentLocale={locale} />
       <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
       <section className="mx-auto grid min-h-screen max-w-6xl gap-8 px-6 py-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center">
         <div className="flex flex-col gap-6">
