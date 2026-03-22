@@ -98,9 +98,10 @@
     "title": "Esta área será a primeira base útil de cadastro do sistema.",
     "description": "Aqui ficarão os cadastros iniciais feitos manualmente antes de existirem assistentes guiados, automações ou módulos operacionais completos.",
     "openTenantEditor": "Editar licenciado",
+    "openMemberEditor": "Editar membros",
     "status": {
       "title": "Fase seguinte",
-      "description": "Implementar as telas reais de cadastro para licenciado, membro e escopo."
+      "description": "Licenciado e membros já podem ser mantidos nesta área. O próximo cadastro estrutural é escopo."
     },
     "cards": {
       "organization": {
@@ -120,12 +121,12 @@
       "organization": {
         "title": "Cadastro de licenciado",
         "description": "Primeira tela real a ser entregue dentro da área de configuração.",
-        "status": "primeiro"
+        "status": "disponível"
       },
       "member": {
         "title": "Cadastro de membros",
         "description": "Entra logo depois para ligar usuários ao contexto organizacional inicial.",
-        "status": "depois"
+        "status": "disponível"
       },
       "scope": {
         "title": "Cadastro de escopo",
@@ -133,6 +134,68 @@
         "status": "depois"
       }
     }
+  },
+  "MemberConfigurationPage": {
+    "eyebrow": "Configuração",
+    "title": "Membros",
+    "description": "Edite o cadastro dos membros vinculados ao licenciado ativo. Nome, papel e situação ficam centralizados neste diretório.",
+    "status": {
+      "title": "Edição de membros",
+      "description": "As alterações afetam apenas o licenciado ativo da sua sessão. O email segue como referência de acesso do vínculo."
+    },
+    "list": {
+      "title": "Diretório do licenciado",
+      "description": "Selecione um membro para revisar ou atualizar o cadastro.",
+      "empty": "Nenhum membro foi encontrado para o licenciado ativo."
+    },
+    "section": {
+      "profile": {
+        "title": "Identificação",
+        "description": "Nome curto e nome completo exibidos no contexto do licenciado.",
+        "displayNameLabel": "Nome de exibição",
+        "displayNameHint": "Usado nas áreas internas do licenciado.",
+        "nameLabel": "Nome completo",
+        "nameHint": "Use o nome mais completo para referência administrativa."
+      },
+      "access": {
+        "title": "Acesso",
+        "description": "Papel e situação controlam o alcance do membro neste licenciado.",
+        "emailLabel": "Email",
+        "emailHint": "O email deste vínculo continua governado pela conta autenticada ou pelo convite original.",
+        "roleLabel": "Papel",
+        "statusLabel": "Situação",
+        "accountLinked": "Conta vinculada",
+        "accountPending": "Aguardando vínculo da conta",
+        "accessManagedNotice": "Papel e situação deste registro são protegidos pelas permissões atuais. Atualize somente os campos liberados."
+      }
+    },
+    "metadata": {
+      "memberIdLabel": "Identificador do membro",
+      "accountIdLabel": "Identificador da conta"
+    },
+    "action": {
+      "cancel": "Cancelar",
+      "save": "Salvar",
+      "saving": "Salvando..."
+    },
+    "readOnlyNotice": "Você pode consultar o diretório de membros, mas só membros master ou administrador podem editar cadastros.",
+    "savedNotice": "Membro atualizado com sucesso.",
+    "selectPrompt": "Selecione um membro na lista para editar o cadastro.",
+    "role": {
+      "master": "Master",
+      "admin": "Administrador",
+      "member": "Membro"
+    },
+    "statusValue": {
+      "ACTIVE": "Ativo",
+      "PENDING": "Pendente",
+      "DISABLED": "Desativado"
+    },
+    "error": {
+      "save": "Não foi possível salvar o membro. Tente novamente.",
+      "validation": "Este campo não pode ficar vazio."
+    },
+    "discardConfirm": "Descartar alterações não salvas?"
   },
   "TenantConfigurationPage": {
     "eyebrow": "Configuração",

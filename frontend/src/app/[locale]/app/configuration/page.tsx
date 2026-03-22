@@ -18,6 +18,7 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
   const { locale } = await params;
   const t = await getTranslations("ConfigurationPage");
   const tenantEditorHref = `/${locale}/app/configuration/tenant`;
+  const memberEditorHref = `/${locale}/app/configuration/member`;
 
   return (
     <section className="flex flex-col gap-6">
@@ -44,6 +45,8 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
           title={t("cards.member.title")}
           description={t("cards.member.description")}
           iconSlot={<UsersIcon className="h-[1.05rem] w-[1.05rem]" />}
+          actionHref={memberEditorHref}
+          actionLabel={t("openMemberEditor")}
         />
         <InfoCard
           title={t("cards.scope.title")}
@@ -66,7 +69,9 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
           title={t("queue.member.title")}
           description={t("queue.member.description")}
           statusLabel={t("queue.member.status")}
-          tone="neutral"
+          tone="attention"
+          actionHref={memberEditorHref}
+          actionLabel={t("openMemberEditor")}
           iconSlot={<UsersIcon className="h-[1.05rem] w-[1.05rem]" />}
         />
         <SetupStepCard

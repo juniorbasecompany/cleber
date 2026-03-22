@@ -98,9 +98,10 @@
     "title": "This area will be the first useful data foundation of the system.",
     "description": "This is where the initial manual records will live before guided assistants, automations, or complete operational modules exist.",
     "openTenantEditor": "Edit tenant",
+    "openMemberEditor": "Edit members",
     "status": {
       "title": "Next phase",
-      "description": "Implement the real registration screens for tenant, member, and scope."
+      "description": "Tenant and member records can already be maintained here. Scope is the next structural registration."
     },
     "cards": {
       "organization": {
@@ -120,12 +121,12 @@
       "organization": {
         "title": "Tenant registration",
         "description": "First real screen to be delivered inside the configuration area.",
-        "status": "first"
+        "status": "available"
       },
       "member": {
         "title": "Member registration",
         "description": "Comes right after to connect users to the initial organizational context.",
-        "status": "later"
+        "status": "available"
       },
       "scope": {
         "title": "Scope registration",
@@ -133,6 +134,68 @@
         "status": "later"
       }
     }
+  },
+  "MemberConfigurationPage": {
+    "eyebrow": "Configuration",
+    "title": "Members",
+    "description": "Edit the records of the members linked to the active tenant. Name, role, and status stay centralized in this directory.",
+    "status": {
+      "title": "Editing members",
+      "description": "Changes only affect the active tenant in your session. Email remains the access reference for the relationship."
+    },
+    "list": {
+      "title": "Tenant directory",
+      "description": "Select a member to review or update the record.",
+      "empty": "No members were found for the active tenant."
+    },
+    "section": {
+      "profile": {
+        "title": "Identity",
+        "description": "Short name and full name displayed inside the tenant context.",
+        "displayNameLabel": "Display name",
+        "displayNameHint": "Used across the tenant's internal surfaces.",
+        "nameLabel": "Full name",
+        "nameHint": "Use the most complete name for administrative reference."
+      },
+      "access": {
+        "title": "Access",
+        "description": "Role and status control the member's reach inside this tenant.",
+        "emailLabel": "Email",
+        "emailHint": "The email for this relationship remains governed by the authenticated account or the original invite.",
+        "roleLabel": "Role",
+        "statusLabel": "Status",
+        "accountLinked": "Linked account",
+        "accountPending": "Waiting for account link",
+        "accessManagedNotice": "Role and status for this record are protected by the current permissions. Update only the fields that are enabled."
+      }
+    },
+    "metadata": {
+      "memberIdLabel": "Member identifier",
+      "accountIdLabel": "Account identifier"
+    },
+    "action": {
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "readOnlyNotice": "You can review the member directory, but only master or admin members can edit records.",
+    "savedNotice": "Member updated successfully.",
+    "selectPrompt": "Select a member from the list to edit the record.",
+    "role": {
+      "master": "Master",
+      "admin": "Administrator",
+      "member": "Member"
+    },
+    "statusValue": {
+      "ACTIVE": "Active",
+      "PENDING": "Pending",
+      "DISABLED": "Disabled"
+    },
+    "error": {
+      "save": "Could not save the member. Try again.",
+      "validation": "This field cannot be empty."
+    },
+    "discardConfirm": "Discard unsaved changes?"
   },
   "TenantConfigurationPage": {
     "eyebrow": "Configuration",

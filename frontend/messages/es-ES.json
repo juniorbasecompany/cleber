@@ -98,9 +98,10 @@
     "title": "Esta área será la primera base útil de datos del sistema.",
     "description": "Aquí estarán los registros manuales iniciales antes de que existan asistentes guiados, automatizaciones o módulos operativos completos.",
     "openTenantEditor": "Editar licenciatario",
+    "openMemberEditor": "Editar miembros",
     "status": {
       "title": "Siguiente fase",
-      "description": "Implementar las pantallas reales de registro para licenciatario, miembro y alcance."
+      "description": "Licenciatario y miembros ya pueden mantenerse aquí. El siguiente registro estructural es alcance."
     },
     "cards": {
       "organization": {
@@ -120,12 +121,12 @@
       "organization": {
         "title": "Registro de licenciatario",
         "description": "Primera pantalla real que se entregará dentro del área de configuración.",
-        "status": "primero"
+        "status": "disponible"
       },
       "member": {
         "title": "Registro de miembros",
         "description": "Viene justo después para conectar a los usuarios con el contexto organizativo inicial.",
-        "status": "después"
+        "status": "disponible"
       },
       "scope": {
         "title": "Registro de alcance",
@@ -133,6 +134,68 @@
         "status": "después"
       }
     }
+  },
+  "MemberConfigurationPage": {
+    "eyebrow": "Configuración",
+    "title": "Miembros",
+    "description": "Edita el registro de los miembros vinculados al licenciatario activo. Nombre, rol y estado quedan centralizados en este directorio.",
+    "status": {
+      "title": "Edición de miembros",
+      "description": "Los cambios solo afectan al licenciatario activo de tu sesión. El correo sigue siendo la referencia de acceso del vínculo."
+    },
+    "list": {
+      "title": "Directorio del licenciatario",
+      "description": "Selecciona un miembro para revisar o actualizar el registro.",
+      "empty": "No se encontraron miembros para el licenciatario activo."
+    },
+    "section": {
+      "profile": {
+        "title": "Identidad",
+        "description": "Nombre corto y nombre completo mostrados dentro del contexto del licenciatario.",
+        "displayNameLabel": "Nombre para mostrar",
+        "displayNameHint": "Se usa en las superficies internas del licenciatario.",
+        "nameLabel": "Nombre completo",
+        "nameHint": "Usa el nombre más completo para la referencia administrativa."
+      },
+      "access": {
+        "title": "Acceso",
+        "description": "El rol y el estado controlan el alcance del miembro dentro de este licenciatario.",
+        "emailLabel": "Correo electrónico",
+        "emailHint": "El correo de este vínculo sigue gobernado por la cuenta autenticada o por la invitación original.",
+        "roleLabel": "Rol",
+        "statusLabel": "Estado",
+        "accountLinked": "Cuenta vinculada",
+        "accountPending": "Esperando vínculo de la cuenta",
+        "accessManagedNotice": "El rol y el estado de este registro están protegidos por los permisos actuales. Actualiza solo los campos habilitados."
+      }
+    },
+    "metadata": {
+      "memberIdLabel": "Identificador del miembro",
+      "accountIdLabel": "Identificador de la cuenta"
+    },
+    "action": {
+      "cancel": "Cancelar",
+      "save": "Guardar",
+      "saving": "Guardando..."
+    },
+    "readOnlyNotice": "Puedes revisar el directorio de miembros, pero solo los miembros master o administrador pueden editar registros.",
+    "savedNotice": "Miembro actualizado correctamente.",
+    "selectPrompt": "Selecciona un miembro de la lista para editar el registro.",
+    "role": {
+      "master": "Master",
+      "admin": "Administrador",
+      "member": "Miembro"
+    },
+    "statusValue": {
+      "ACTIVE": "Activo",
+      "PENDING": "Pendiente",
+      "DISABLED": "Desactivado"
+    },
+    "error": {
+      "save": "No se pudo guardar el miembro. Inténtalo de nuevo.",
+      "validation": "Este campo no puede quedar vacío."
+    },
+    "discardConfirm": "¿Descartar los cambios no guardados?"
   },
   "TenantConfigurationPage": {
     "eyebrow": "Configuración",

@@ -16,8 +16,11 @@ from valora_backend.auth.service import (
     ADMIN_ROLE,
     LoginAction,
     MASTER_ROLE,
+    MEMBER_ROLE,
     build_account_name,
     decide_login_action,
+    member_display_name,
+    member_role_name,
     member_status_name,
     tenant_display_name,
 )
@@ -131,6 +134,55 @@ class TenantUpdateRequest(BaseModel):
         if len(cleaned) > 2000:
             raise ValueError("must be at most 2000 characters")
         return cleaned
+
+
+class TenantMemberRecord(BaseModel):
+    id: int
+    name: str | None
+    display_name: str | None
+    email: str
+    role: int
+    role_name: str
+    status: str
+    account_id: int | None
+    can_edit: bool
+    can_edit_access: bool
+
+
+class TenantMemberDirectoryResponse(BaseModel):
+    can_edit: bool
+    item_list: list[TenantMemberRecord] = Field(default_factory=list)
+
+
+class TenantMemberUpdateRequest(BaseModel):
+    name: str
+    display_name: str
+    role: int
+    status: int
+
+    @field_validator("name", "display_name")
+    @classmethod
+    def strip_and_limit_member_name(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("must not be empty")
+        if len(cleaned) > 2000:
+            raise ValueError("must be at most 2000 characters")
+        return cleaned
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: int) -> int:
+        if value not in (MASTER_ROLE, ADMIN_ROLE, MEMBER_ROLE):
+            raise ValueError("invalid member role")
+        return value
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: int) -> int:
+        if value not in (ACTIVE_STATUS, PENDING_STATUS, DISABLED_STATUS):
+            raise ValueError("invalid member status")
+        return value
 
 
 class AuthSessionResponse(BaseModel):
@@ -552,6 +604,70 @@ def _member_can_edit_tenant(member: Member) -> bool:
     return member.role in (MASTER_ROLE, ADMIN_ROLE)
 
 
+def _member_can_edit_member_profile(actor: Member, target: Member) -> bool:
+    if actor.role == MASTER_ROLE:
+        return True
+
+    if actor.role == ADMIN_ROLE:
+        return target.role != MASTER_ROLE
+
+    return False
+
+
+def _member_can_edit_member_access(actor: Member, target: Member) -> bool:
+    return actor.role == MASTER_ROLE and actor.id != target.id
+
+
+def _serialize_tenant_member(actor: Member, target: Member) -> TenantMemberRecord:
+    return TenantMemberRecord(
+        id=target.id,
+        name=target.name,
+        display_name=target.display_name,
+        email=target.email,
+        role=target.role,
+        role_name=member_role_name(target.role),
+        status=member_status_name(target.status),
+        account_id=target.account_id,
+        can_edit=_member_can_edit_member_profile(actor, target),
+        can_edit_access=_member_can_edit_member_access(actor, target),
+    )
+
+
+def _build_tenant_member_directory(
+    session: Session, *, actor: Member
+) -> TenantMemberDirectoryResponse:
+    member_list = list(
+        session.scalars(select(Member).where(Member.tenant_id == actor.tenant_id))
+    )
+    member_list.sort(
+        key=lambda item: (
+            item.role,
+            item.status,
+            member_display_name(item).lower(),
+            item.email.lower(),
+            item.id,
+        )
+    )
+    return TenantMemberDirectoryResponse(
+        can_edit=_member_can_edit_tenant(actor),
+        item_list=[_serialize_tenant_member(actor, item) for item in member_list],
+    )
+
+
+def _validate_member_status_transition(target: Member, next_status: int) -> None:
+    if target.account_id is None and next_status == ACTIVE_STATUS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Pending members without a linked account cannot become active",
+        )
+
+    if target.account_id is not None and next_status == PENDING_STATUS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Linked members cannot return to pending status",
+        )
+
+
 @router.get("/tenant/current", response_model=TenantCurrentResponse)
 def get_current_tenant_detail(
     member: Member = Depends(get_current_member),
@@ -563,6 +679,14 @@ def get_current_tenant_detail(
         display_name=tenant.display_name,
         can_edit=_member_can_edit_tenant(member),
     )
+
+
+@router.get("/tenant/current/members", response_model=TenantMemberDirectoryResponse)
+def get_current_tenant_member_directory(
+    member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    return _build_tenant_member_directory(session, actor=member)
 
 
 @router.patch("/tenant/current", response_model=TenantCurrentResponse)
@@ -590,6 +714,52 @@ def patch_current_tenant(
         display_name=tenant.display_name,
         can_edit=_member_can_edit_tenant(member),
     )
+
+
+@router.patch(
+    "/tenant/current/members/{member_id}",
+    response_model=TenantMemberDirectoryResponse,
+)
+def patch_current_tenant_member(
+    member_id: int,
+    body: TenantMemberUpdateRequest,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_member = session.get(Member, member_id)
+    if not target_member or target_member.tenant_id != current_member.tenant_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Member not found for current tenant",
+        )
+
+    if not _member_can_edit_member_profile(current_member, target_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to update member",
+        )
+
+    access_changed = (
+        body.role != target_member.role or body.status != target_member.status
+    )
+    can_edit_access = _member_can_edit_member_access(current_member, target_member)
+    if access_changed and not can_edit_access:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only master members can change role or status for this record",
+        )
+
+    if access_changed:
+        _validate_member_status_transition(target_member, body.status)
+        target_member.role = body.role
+        target_member.status = body.status
+
+    target_member.name = body.name
+    target_member.display_name = body.display_name
+    session.add(target_member)
+    commit_session_with_null_if_empty(session)
+
+    return _build_tenant_member_directory(session, actor=current_member)
 
 
 @router.get("/me", response_model=AuthSessionResponse)
