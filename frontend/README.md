@@ -60,7 +60,7 @@ npm run typecheck
 
 ```bash
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=
-NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_URL=http://localhost:8001
 ```
 
 - A tela de login pode levar o usuário direto para `/${locale}/app` ou para `/${locale}/select-tenant`, conforme os vínculos disponíveis entre `account`, `tenant` e `member`.

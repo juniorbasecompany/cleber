@@ -46,14 +46,14 @@ uv sync
 Para subir a API localmente (com dependências instaladas):
 
 ```bash
-uv run uvicorn valora_backend.main:app --reload
+uv run uvicorn valora_backend.main:app --reload --port 8001
 ```
 
 ## Banco de dados (desenvolvimento)
 
 O PostgreSQL de desenvolvimento roda em **Docker Compose**. Na raiz do repositório:
 
-1. Copie [`.env.example`](../.env.example) para `.env` na raiz e defina **`POSTGRES_PASSWORD`** (valor local, não commitado).
+1. Copie [`.env.example`](../.env.example) para `.env` na raiz e defina **`POSTGRES_PASSWORD`**, **`GOOGLE_CLIENT_ID`** e **`APP_JWT_SECRET`**.
 2. Suba o serviço:
 
 ```bash
@@ -64,10 +64,11 @@ Isso sobe o Postgres com o banco **valora**, utilizador `valora` e porta **5434*
 
 ### Variáveis de ambiente
 
-- **`POSTGRES_PASSWORD`** (obrigatória para o backend e para o Compose): defina-a no ficheiro **`.env` na raiz do monorepo** (copiado de `.env.example`). O mesmo ficheiro é lido pelo Docker Compose e por [config.py](src/valora_backend/config.py), que monta a URL do PostgreSQL (`database_url`) com host `localhost`, porta `5434`, utilizador `valora` e base `valora`.
-- Opcionalmente pode existir um **`backend/.env`** com a mesma variável; a ordem de leitura em `Settings` é `../.env` e depois `.env` na pasta `backend`.
+- **`POSTGRES_PASSWORD`** (obrigatória para o backend e para o Compose): defina-a no arquivo **`.env` na raiz do monorepo** (copiado de `.env.example`). O mesmo arquivo é lido pelo Docker Compose e por [config.py](src/valora_backend/config.py), que monta a URL do PostgreSQL (`database_url`) com host `localhost`, porta `5434`, utilizador `valora` e base `valora`.
+- **`GOOGLE_CLIENT_ID`** (obrigatória para login Google): usada pelo backend para validar o `id_token` enviado pelo frontend.
+- **`APP_JWT_SECRET`** (obrigatória para sessão da aplicação): usada pelo backend para assinar o JWT próprio da aplicação. Não deixe o ambiente cair no valor padrão de desenvolvimento.
 
-Ficheiros `.env` estão no `.gitignore` e não devem ser commitados.
+Arquivos `.env` estão no `.gitignore` e não devem ser commitados.
 
 **Quem já tinha o Postgres a correr com outra senha:** mantenha no novo `.env` a **mesma** `POSTGRES_PASSWORD` que o volume Docker já usa, ou altere a senha no servidor (`ALTER USER …`) para coincidir com o valor novo no `.env`.
 
