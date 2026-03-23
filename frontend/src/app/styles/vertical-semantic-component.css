@@ -1,4 +1,3 @@
-
 /* Vertical semantic components */
 
 .ui-shell-content {
@@ -1552,9 +1551,6 @@
     width: 2.7rem;
     align-items: center;
     justify-content: center;
-    border: var(--border-width-default) solid var(--color-accent-border-default);
-    border-radius: var(--radius-card);
-    background: var(--gradient-surface-icon-badge);
     color: var(--color-accent-strong);
     box-shadow: var(--shadow-xs);
 }
