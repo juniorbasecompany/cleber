@@ -24,6 +24,10 @@
     },
     "menu": {
       "tenantSectionLabel": "Tenant",
+      "tenantTriggerAriaLabel": "Choose tenant",
+      "tenantMenuAriaLabel": "Available tenants",
+      "scopeTriggerAriaLabel": "Choose scope",
+      "scopeMenuAriaLabel": "Available scopes",
       "localeFlagTriggerAriaLabel": "Choose language and region",
       "localeFlagMenuAriaLabel": "Available languages",
       "configurationLabel": "Configuration",
@@ -31,8 +35,13 @@
       "tenantListError": "Could not load the tenant list.",
       "emptyTenantList": "No tenant available.",
       "switchingTenant": "Switching tenant...",
+      "loadingScopeList": "Loading scopes...",
+      "scopeListError": "Could not load the scope list.",
+      "emptyScopeList": "No scope available.",
+      "switchingScope": "Saving scope...",
       "switchingLocale": "Switching language...",
-      "activeLabel": "active"
+      "activeLabel": "active",
+      "noScopeLabel": "No scope"
     }
   },
   "HomePage": {
@@ -356,7 +365,7 @@
     "description": "These fields identify the contracting organization in the workspace, top bar, and lists. Changes apply to the active tenant of your session.",
     "status": {
       "title": "Editing tenant",
-      "description": "Updates are saved for the active tenant. Switch tenant from the account menu if you need another context."
+      "description": "Updates are saved for the active tenant. Switch tenant from the header selector if you need another context."
     },
     "tab": {
       "general": "General",

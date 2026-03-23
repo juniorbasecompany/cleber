@@ -104,14 +104,14 @@ export function LocaleFlagMenu({
   }
 
   const optionClass = (isActive: boolean) =>
-    `ui-menu-item flex w-full min-h-[2.75rem] items-center justify-between gap-3 px-3 py-2 text-left text-sm ${
+    `ui-menu-item inline-flex max-w-full self-start items-center gap-3 px-3 py-2 text-left text-sm ${
       isActive ? "ui-menu-item-active" : ""
     }`;
 
   const panelClassName =
     placement === "sidebar"
-      ? "ui-menu-panel absolute left-0 top-[calc(100%+0.625rem)] z-[70] flex w-[min(calc(100vw-4rem),17rem)] max-w-[17rem] flex-col gap-0 overflow-hidden p-2"
-      : "ui-menu-panel absolute right-0 top-[calc(100%+0.375rem)] z-40 flex w-[min(calc(100vw-2rem),22rem)] flex-col gap-0 overflow-hidden p-2 sm:min-w-[19rem] sm:max-w-[min(calc(100vw-2rem),22rem)] sm:w-auto";
+      ? "ui-menu-panel absolute left-0 top-[calc(100%+0.625rem)] z-[70] flex w-max max-w-[min(calc(100vw-4rem),17rem)] flex-col gap-0 overflow-hidden p-2"
+      : "ui-menu-panel absolute right-0 top-[calc(100%+0.375rem)] z-40 flex w-max max-w-[min(calc(100vw-2rem),22rem)] flex-col gap-0 overflow-hidden p-2";
 
   return (
     <div
@@ -148,7 +148,7 @@ export function LocaleFlagMenu({
             </div>
           ) : null}
 
-          <div className="flex flex-col gap-0.5">
+          <div className="flex flex-col items-start gap-0.5">
             {localeList.map((locale) => {
               const isActive = locale === currentLocale;
               const localeLabel = localeLabelMap[locale] || locale;

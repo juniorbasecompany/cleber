@@ -4,13 +4,22 @@ import { redirect } from "next/navigation";
 
 import { AppShell } from "@/component/app-shell/app-shell";
 import { AccountMenu } from "@/component/app-shell/account-menu";
-import { getAuthSession } from "@/lib/auth/server-session";
+import { WorkspaceContextMenu } from "@/component/app-shell/workspace-context-menu";
+import { getAuthSession, getTenantScopeDirectory } from "@/lib/auth/server-session";
 import { routing } from "@/i18n/routing";
 
 type AppLayoutProps = {
   children: ReactNode;
   params: Promise<{ locale: string }>;
 };
+
+function getScopeDisplayName(scope: {
+  id: number;
+  name: string;
+  display_name: string;
+}) {
+  return scope.name.trim() || scope.display_name.trim() || `#${scope.id}`;
+}
 
 export default async function AppLayout({
   children,
@@ -23,6 +32,19 @@ export default async function AppLayout({
   if (!authSession) {
     redirect(`/${locale}/login?reason=auth_required`);
   }
+
+  const scopeDirectory = await getTenantScopeDirectory();
+  const currentScope =
+    scopeDirectory?.item_list.find(
+      (scope) =>
+        scope.id ===
+        (scopeDirectory.current_scope_id ?? authSession.member.current_scope_id ?? null)
+    ) ??
+    scopeDirectory?.item_list[0] ??
+    null;
+  const mobileWorkspaceLabel = currentScope
+    ? `${authSession.tenant.display_name} - ${getScopeDisplayName(currentScope)}`
+    : authSession.tenant.display_name;
 
   const navigationItemList = [
     {
@@ -61,6 +83,35 @@ export default async function AppLayout({
     <AppShell
       productName={t("productName")}
       workspaceLabel={authSession.tenant.display_name}
+      mobileWorkspaceLabel={mobileWorkspaceLabel}
+      workspaceSlot={
+        <WorkspaceContextMenu
+          currentTenantId={authSession.tenant.id}
+          currentTenantName={authSession.tenant.display_name}
+          initialScopeList={scopeDirectory?.item_list ?? []}
+          initialCurrentScopeId={
+            scopeDirectory?.current_scope_id ??
+            authSession.member.current_scope_id ??
+            null
+          }
+          copy={{
+            tenantTriggerAriaLabel: t("menu.tenantTriggerAriaLabel"),
+            tenantMenuAriaLabel: t("menu.tenantMenuAriaLabel"),
+            scopeTriggerAriaLabel: t("menu.scopeTriggerAriaLabel"),
+            scopeMenuAriaLabel: t("menu.scopeMenuAriaLabel"),
+            loadingTenantList: t("menu.loadingTenantList"),
+            tenantListError: t("menu.tenantListError"),
+            emptyTenantList: t("menu.emptyTenantList"),
+            switchingTenant: t("menu.switchingTenant"),
+            loadingScopeList: t("menu.loadingScopeList"),
+            scopeListError: t("menu.scopeListError"),
+            emptyScopeList: t("menu.emptyScopeList"),
+            switchingScope: t("menu.switchingScope"),
+            activeLabel: t("menu.activeLabel"),
+            noScopeLabel: t("menu.noScopeLabel")
+          }}
+        />
+      }
       navigationItemList={navigationItemList}
       mobileNavigationOpenLabel={t("topbar.openNavigation")}
       mobileNavigationCloseLabel={t("topbar.closeNavigation")}
@@ -76,17 +127,11 @@ export default async function AppLayout({
             authSession.account.name ||
             authSession.account.email
           }
-          currentTenantId={authSession.tenant.id}
           configurationHref={`/${locale}/app/configuration`}
           copy={{
-            tenantSectionLabel: t("menu.tenantSectionLabel"),
             localeFlagTriggerAriaLabel: t("menu.localeFlagTriggerAriaLabel"),
             localeFlagMenuAriaLabel: t("menu.localeFlagMenuAriaLabel"),
             configurationLabel: t("menu.configurationLabel"),
-            loadingTenantList: t("menu.loadingTenantList"),
-            tenantListError: t("menu.tenantListError"),
-            emptyTenantList: t("menu.emptyTenantList"),
-            switchingTenant: t("menu.switchingTenant"),
             switchingLocale: t("menu.switchingLocale"),
             activeLabel: t("menu.activeLabel"),
             signOutLabel: t("topbar.signOut"),

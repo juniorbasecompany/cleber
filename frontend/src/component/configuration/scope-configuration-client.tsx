@@ -151,7 +151,10 @@ export function ScopeConfigurationClient({
   const router = useRouter();
   const searchParams = useSearchParams();
   const tab = normalizeTab(searchParams.get("tab"));
-  const initialSearchScopeKey = parseSelectedScopeKey(searchParams.get("scope"));
+  const initialSearchScopeKey =
+    parseSelectedScopeKey(searchParams.get("scope")) ??
+    initialDirectory.current_scope_id ??
+    null;
   const initialSelectedScopeKey = resolveSelectedScopeKey(
     initialDirectory.item_list,
     initialSearchScopeKey,

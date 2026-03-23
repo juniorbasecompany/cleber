@@ -24,6 +24,10 @@
     },
     "menu": {
       "tenantSectionLabel": "Licenciado",
+      "tenantTriggerAriaLabel": "Escolher licenciado",
+      "tenantMenuAriaLabel": "Licenciados disponíveis",
+      "scopeTriggerAriaLabel": "Escolher escopo",
+      "scopeMenuAriaLabel": "Escopos disponíveis",
       "localeFlagTriggerAriaLabel": "Escolher idioma e região",
       "localeFlagMenuAriaLabel": "Idiomas disponíveis",
       "configurationLabel": "Configuração",
@@ -31,8 +35,13 @@
       "tenantListError": "Não foi possível carregar a lista de licenciados.",
       "emptyTenantList": "Nenhum licenciado disponível.",
       "switchingTenant": "Trocando licenciado...",
+      "loadingScopeList": "Carregando escopos...",
+      "scopeListError": "Não foi possível carregar a lista de escopos.",
+      "emptyScopeList": "Nenhum escopo disponível.",
+      "switchingScope": "Salvando escopo...",
       "switchingLocale": "Trocando idioma...",
-      "activeLabel": "ativo"
+      "activeLabel": "ativo",
+      "noScopeLabel": "Sem escopo"
     }
   },
   "HomePage": {
@@ -356,7 +365,7 @@
     "description": "Estes campos identificam a organização contratante no ambiente, na barra superior e nas listas. As alterações valem para o licenciado ativo da sua sessão.",
     "status": {
       "title": "Edição do licenciado",
-      "description": "As atualizações são salvas para o licenciado ativo. Troque de licenciado pelo menu da conta se precisar de outro contexto."
+      "description": "As atualizações são salvas para o licenciado ativo. Troque de licenciado pelo seletor do cabeçalho se precisar de outro contexto."
     },
     "tab": {
       "general": "Geral",

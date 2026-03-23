@@ -275,6 +275,20 @@
           "increment": false,
           "size": "",
           "values": []
+        },
+        {
+          "id": "current_scope_id",
+          "name": "current_scope_id",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         }
       ],
       "constraints": [
@@ -441,8 +455,8 @@
           "values": []
         }
       ],
-      "x": -198.68443080041436,
-      "y": 245.71874357533204
+      "x": -152.50526813127374,
+      "y": 205.52576865959884
     }
   ],
   "relationships": [
@@ -500,6 +514,17 @@
       "cardinality": "one_to_many",
       "updateConstraint": "Cascade",
       "deleteConstraint": "Restrict"
+    },
+    {
+      "id": "member.current_scope_id",
+      "name": "member.current_scope_id",
+      "startTableId": "scope",
+      "startFieldId": "id",
+      "endTableId": "member",
+      "endFieldId": "current_scope_id",
+      "cardinality": "one_to_many",
+      "updateConstraint": "Cascade",
+      "deleteConstraint": "Set null"
     }
   ],
   "notes": [],

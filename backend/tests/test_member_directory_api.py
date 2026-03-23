@@ -8,7 +8,11 @@ from sqlalchemy import create_engine, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
-from valora_backend.auth.dependencies import get_current_member, get_current_tenant
+from valora_backend.auth.dependencies import (
+    get_current_account,
+    get_current_member,
+    get_current_tenant,
+)
 from valora_backend.db import get_session
 from valora_backend.main import create_app
 from valora_backend.model.base import Base
@@ -118,6 +122,12 @@ def build_test_client(
         "member": active_member.id,
         "pending": pending_member.id,
     }
+    account_id_by_key = {
+        "master": master_account.id,
+        "admin": admin_account.id,
+        "member": member_account.id,
+        "pending": None,
+    }
 
     app = create_app()
 
@@ -130,7 +140,14 @@ def build_test_client(
     def override_get_current_tenant():
         return session.get(Tenant, tenant.id)
 
+    def override_get_current_account():
+        account_id = account_id_by_key[current_member_key]
+        if account_id is None:
+            return None
+        return session.get(Account, account_id)
+
     app.dependency_overrides[get_session] = override_get_session
+    app.dependency_overrides[get_current_account] = override_get_current_account
     app.dependency_overrides[get_current_member] = override_get_current_member
     app.dependency_overrides[get_current_tenant] = override_get_current_tenant
 
@@ -532,3 +549,50 @@ def test_member_cannot_create_location() -> None:
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Insufficient permissions to create location"
+
+
+def test_member_can_select_current_scope_and_auth_me_exposes_it() -> None:
+    with build_test_client(current_member_key="member") as (
+        client,
+        session,
+        member_id_by_key,
+    ):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        patch_response = client.patch("/auth/me/current-scope", json={"scope_id": scope_id})
+        session.expire_all()
+        current_member = session.get(Member, member_id_by_key["member"])
+        directory_response = client.get("/auth/tenant/current/scopes")
+        session_response = client.get("/auth/me")
+
+    assert patch_response.status_code == 200
+    assert patch_response.json() == {"current_scope_id": scope_id}
+    assert current_member is not None
+    assert current_member.current_scope_id == scope_id
+    assert directory_response.status_code == 200
+    assert directory_response.json()["current_scope_id"] == scope_id
+    assert session_response.status_code == 200
+    assert session_response.json()["member"]["current_scope_id"] == scope_id
+
+
+def test_member_cannot_select_scope_from_another_tenant() -> None:
+    with build_test_client(current_member_key="member") as (client, session, _):
+        other_tenant = Tenant(name="Other Tenant", display_name="Other Tenant")
+        session.add(other_tenant)
+        session.flush()
+        other_scope = Scope(
+            name="Leite",
+            display_name="Leite e derivados",
+            tenant_id=other_tenant.id,
+        )
+        session.add(other_scope)
+        session.commit()
+
+        response = client.patch(
+            "/auth/me/current-scope",
+            json={"scope_id": other_scope.id},
+        )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Scope not found for current tenant"

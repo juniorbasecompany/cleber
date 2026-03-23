@@ -24,6 +24,7 @@ type NavigationIconKind =
 type AppSidebarProps = {
   productName: string;
   workspaceLabel: string;
+  workspaceSlot?: ReactNode;
   navigationItemList: NavigationItem[];
   accountSlot?: ReactNode;
   mode?: "desktop" | "drawer";
@@ -33,6 +34,7 @@ type AppSidebarProps = {
 export function AppSidebar({
   productName,
   workspaceLabel,
+  workspaceSlot,
   navigationItemList,
   accountSlot,
   mode = "desktop",
@@ -50,24 +52,35 @@ export function AppSidebar({
       }`}
     >
       <div className="relative z-20 overflow-visible border-b border-[var(--color-border)] px-5 py-6">
-        <div className="relative flex items-start justify-between gap-4">
-          <div className="min-w-0">
-            <h1 className="ui-header-title text-[2.15rem] font-semibold tracking-[-0.04em] leading-none text-[var(--color-text)]">
-              {productName}
-            </h1>
-            <p className="mt-3 max-w-[14rem] text-[1.04rem] font-medium leading-6 text-[var(--color-text)]">
-              {workspaceLabel}
-            </p>
+        <div className="relative">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <h1 className="ui-header-title text-[2.15rem] font-semibold tracking-[-0.04em] leading-none text-[var(--color-text)]">
+                {productName}
+              </h1>
+            </div>
+
+            <div className="shrink-0 self-start">
+              <ValoraMark />
+            </div>
+          </div>
+
+          <div className="mt-3 min-w-0">
+            {workspaceSlot ? (
+              <div className="max-w-full">
+                {workspaceSlot}
+              </div>
+            ) : (
+              <p className="max-w-[14rem] text-[1.04rem] font-medium leading-6 text-[var(--color-text)]">
+                {workspaceLabel}
+              </p>
+            )}
 
             {accountSlot ? (
               <div className="mt-3.5 max-w-full">
                 {accountSlot}
               </div>
             ) : null}
-          </div>
-
-          <div className="shrink-0">
-            <ValoraMark />
           </div>
         </div>
       </div>

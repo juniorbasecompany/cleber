@@ -108,6 +108,7 @@ class SessionMember(BaseModel):
     name: str | None
     display_name: str | None
     email: str
+    current_scope_id: int | None
 
 
 class SessionTenant(BaseModel):
@@ -200,6 +201,7 @@ class TenantScopeRecord(BaseModel):
 class TenantScopeDirectoryResponse(BaseModel):
     can_edit: bool
     can_create: bool
+    current_scope_id: int | None = None
     item_list: list[TenantScopeRecord] = Field(default_factory=list)
 
 
@@ -214,6 +216,21 @@ class TenantScopeUpsertRequest(BaseModel):
         if not cleaned:
             raise ValueError("must not be empty")
         return cleaned
+
+
+class CurrentScopeSelectionRequest(BaseModel):
+    scope_id: int
+
+    @field_validator("scope_id")
+    @classmethod
+    def validate_scope_id(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("invalid scope id")
+        return value
+
+
+class CurrentScopeSelectionResponse(BaseModel):
+    current_scope_id: int | None
 
 
 class TenantLocationRecord(BaseModel):
@@ -765,6 +782,21 @@ def _serialize_tenant_scope(actor: Member, target: Scope) -> TenantScopeRecord:
     )
 
 
+def _resolve_member_current_scope_id(
+    session: Session,
+    *,
+    actor: Member,
+) -> int | None:
+    if actor.current_scope_id is None:
+        return None
+
+    selected_scope = session.get(Scope, actor.current_scope_id)
+    if not selected_scope or selected_scope.tenant_id != actor.tenant_id:
+        return None
+
+    return selected_scope.id
+
+
 def _build_tenant_member_directory(
     session: Session, *, actor: Member
 ) -> TenantMemberDirectoryResponse:
@@ -798,6 +830,7 @@ def _build_tenant_scope_directory(
     return TenantScopeDirectoryResponse(
         can_edit=_member_can_edit_scope(actor),
         can_create=_member_can_edit_scope(actor),
+        current_scope_id=_resolve_member_current_scope_id(session, actor=actor),
         item_list=[_serialize_tenant_scope(actor, item) for item in scope_list],
     )
 
@@ -1069,6 +1102,27 @@ def get_current_tenant_scope_directory(
     session: Session = Depends(get_session),
 ):
     return _build_tenant_scope_directory(session, actor=member)
+
+
+@router.patch("/me/current-scope", response_model=CurrentScopeSelectionResponse)
+def patch_current_member_scope(
+    body: CurrentScopeSelectionRequest,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=body.scope_id,
+    )
+    current_member.current_scope_id = target_scope.id
+    session.add(current_member)
+    commit_session_with_null_if_empty(session)
+    session.refresh(current_member)
+
+    return CurrentScopeSelectionResponse(
+        current_scope_id=_resolve_member_current_scope_id(session, actor=current_member)
+    )
 
 
 @router.patch("/tenant/current", response_model=TenantCurrentResponse)
@@ -1504,6 +1558,7 @@ def auth_me(
     account: Account = Depends(get_current_account),
     member: Member = Depends(get_current_member),
     tenant: Tenant = Depends(get_current_tenant),
+    session: Session = Depends(get_session),
 ):
     return AuthSessionResponse(
         account=SessionAccount(
@@ -1520,6 +1575,7 @@ def auth_me(
             name=member.name,
             display_name=member.display_name,
             email=member.email,
+            current_scope_id=_resolve_member_current_scope_id(session, actor=member),
         ),
         tenant=SessionTenant(
             id=tenant.id,

@@ -187,6 +187,12 @@ class Member(Base):
         nullable=True,
         comment="Ligação do usuário à conta do usuário.",
     )
+    current_scope_id: Mapped[int | None] = mapped_column(
+        BigInteger,
+        ForeignKey("scope.id", onupdate="CASCADE", ondelete="SET NULL"),
+        nullable=True,
+        comment="Escopo atualmente selecionado pelo usuário dentro do licenciado.",
+    )
     role: Mapped[int] = mapped_column(
         Integer,
         CheckConstraint("role IN (1, 2, 3)"),

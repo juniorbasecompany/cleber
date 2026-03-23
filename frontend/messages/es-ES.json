@@ -24,6 +24,10 @@
     },
     "menu": {
       "tenantSectionLabel": "Licenciatario",
+      "tenantTriggerAriaLabel": "Elegir licenciatario",
+      "tenantMenuAriaLabel": "Licenciatarios disponibles",
+      "scopeTriggerAriaLabel": "Elegir alcance",
+      "scopeMenuAriaLabel": "Alcances disponibles",
       "localeFlagTriggerAriaLabel": "Elegir idioma y región",
       "localeFlagMenuAriaLabel": "Idiomas disponibles",
       "configurationLabel": "Configuración",
@@ -31,8 +35,13 @@
       "tenantListError": "No se pudo cargar la lista de licenciatarios.",
       "emptyTenantList": "No hay ningún licenciatario disponible.",
       "switchingTenant": "Cambiando licenciatario...",
+      "loadingScopeList": "Cargando alcances...",
+      "scopeListError": "No se pudo cargar la lista de alcances.",
+      "emptyScopeList": "No hay ningún alcance disponible.",
+      "switchingScope": "Guardando alcance...",
       "switchingLocale": "Cambiando idioma...",
-      "activeLabel": "activo"
+      "activeLabel": "activo",
+      "noScopeLabel": "Sin alcance"
     }
   },
   "HomePage": {
@@ -356,7 +365,7 @@
     "description": "Estos campos identifican a la organización contratante en el espacio de trabajo, la barra superior y las listas. Los cambios aplican al licenciatario activo de tu sesión.",
     "status": {
       "title": "Edición del licenciatario",
-      "description": "Las actualizaciones se guardan para el licenciatario activo. Cambia de licenciatario desde el menú de la cuenta si necesitas otro contexto."
+      "description": "Las actualizaciones se guardan para el licenciatario activo. Cambia de licenciatario desde el selector del encabezado si necesitas otro contexto."
     },
     "tab": {
       "general": "General",

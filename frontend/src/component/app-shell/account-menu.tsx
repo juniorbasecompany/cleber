@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
@@ -10,20 +10,11 @@ import {
   rememberMeChoiceStorageKey,
   tenantSelectionStorageKey
 } from "@/lib/auth/session";
-import type {
-  TenantListResponse,
-  TenantOption
-} from "@/lib/auth/types";
 
 type AccountMenuCopy = {
-  tenantSectionLabel: string;
   localeFlagTriggerAriaLabel: string;
   localeFlagMenuAriaLabel: string;
   configurationLabel: string;
-  loadingTenantList: string;
-  tenantListError: string;
-  emptyTenantList: string;
-  switchingTenant: string;
   switchingLocale: string;
   activeLabel: string;
   signOutLabel: string;
@@ -34,7 +25,6 @@ type AccountMenuProps = {
   accountName: string;
   currentLocale: string;
   localeList: string[];
-  currentTenantId: number;
   configurationHref: string;
   copy: AccountMenuCopy;
   placement?: "default" | "sidebar";
@@ -61,10 +51,6 @@ function ChevronDownIcon({ className }: { className?: string }) {
   );
 }
 
-function getTenantDisplayName(tenant: TenantOption) {
-  return tenant.display_name || tenant.name;
-}
-
 function getInitials(accountName: string) {
   const value = accountName
     .trim()
@@ -80,7 +66,6 @@ export function AccountMenu({
   accountName,
   currentLocale,
   localeList,
-  currentTenantId,
   configurationHref,
   copy,
   placement = "default"
@@ -92,52 +77,7 @@ export function AccountMenu({
     null
   );
   const isAccountMenuOpen = activeMenu === "account";
-  const [tenantList, setTenantList] = useState<TenantOption[]>([]);
-  const [hasLoadedTenantList, setHasLoadedTenantList] = useState(false);
-  const [isLoadingTenantList, setIsLoadingTenantList] = useState(false);
-  const [tenantListError, setTenantListError] = useState<string | null>(null);
-  const [switchingTenantId, setSwitchingTenantId] = useState<number | null>(null);
   const [isSigningOut, setIsSigningOut] = useState(false);
-
-  const loadTenantList = useCallback(async () => {
-    setIsLoadingTenantList(true);
-    setTenantListError(null);
-
-    try {
-      const response = await fetch("/api/auth/tenant/list", {
-        method: "GET"
-      });
-      const data = (await response.json()) as Partial<TenantListResponse> & {
-        detail?: string;
-      };
-
-      if (!response.ok) {
-        setTenantListError(data.detail || copy.tenantListError);
-        setIsLoadingTenantList(false);
-        return;
-      }
-
-      setTenantList(data.tenant_list ?? []);
-      setHasLoadedTenantList(true);
-    } catch {
-      setTenantListError(copy.tenantListError);
-    } finally {
-      setIsLoadingTenantList(false);
-    }
-  }, [copy.tenantListError]);
-
-  useEffect(() => {
-    if (!isAccountMenuOpen || hasLoadedTenantList || isLoadingTenantList) {
-      return;
-    }
-
-    void loadTenantList();
-  }, [
-    hasLoadedTenantList,
-    isLoadingTenantList,
-    isAccountMenuOpen,
-    loadTenantList
-  ]);
 
   useEffect(() => {
     if (!activeMenu) {
@@ -165,46 +105,6 @@ export function AccountMenu({
     };
   }, [activeMenu]);
 
-  useEffect(() => {
-    setSwitchingTenantId(null);
-  }, [currentLocale, currentTenantId]);
-
-  async function handleTenantSelect(tenantId: number) {
-    if (tenantId === currentTenantId || switchingTenantId !== null) {
-      setActiveMenu(null);
-      return;
-    }
-
-    setSwitchingTenantId(tenantId);
-    setTenantListError(null);
-
-    try {
-      const response = await fetch("/api/auth/switch-tenant", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          tenant_id: tenantId
-        })
-      });
-      const data = (await response.json()) as { detail?: string };
-
-      if (!response.ok) {
-        setTenantListError(data.detail || copy.tenantListError);
-        setSwitchingTenantId(null);
-        return;
-      }
-
-      setSwitchingTenantId(null);
-      setActiveMenu(null);
-      router.refresh();
-    } catch {
-      setTenantListError(copy.tenantListError);
-      setSwitchingTenantId(null);
-    }
-  }
-
   async function handleSignOut() {
     if (isSigningOut) {
       return;
@@ -224,23 +124,17 @@ export function AccountMenu({
     }
   }
 
-  const optionClass = (isActive: boolean) =>
-    `ui-menu-item flex w-full min-h-[2.75rem] items-center justify-between gap-3 px-3 py-2 text-left text-sm ${
-      isActive ? "ui-menu-item-active" : ""
-    }`;
-
   const panelClassName =
     placement === "sidebar"
-      ? "ui-menu-panel absolute left-0 top-[calc(100%+0.375rem)] z-40 flex min-w-[18rem] w-max max-w-[min(calc(100vw-3rem),22rem)] flex-col gap-0 overflow-hidden p-0"
-      : "ui-menu-panel absolute left-0 top-[calc(100%+0.375rem)] flex max-h-[min(70vh,28rem)] w-[min(calc(100vw-3rem),22rem)] flex-col gap-0 overflow-hidden p-0 sm:min-w-[19rem] sm:max-w-[min(calc(100vw-3rem),22rem)]";
+      ? "ui-menu-panel absolute left-0 top-[calc(100%+0.375rem)] z-40 flex w-max max-w-[min(calc(100vw-3rem),18rem)] flex-col gap-0 overflow-hidden p-2"
+      : "ui-menu-panel absolute left-0 top-[calc(100%+0.375rem)] flex w-max max-w-[min(calc(100vw-3rem),18rem)] flex-col gap-0 overflow-hidden p-2";
 
   return (
-    <div
-      ref={containerRef}
-      className="relative isolate w-full max-w-full"
-    >
+    <div ref={containerRef} className="relative isolate w-full max-w-full">
       <div className="flex w-full max-w-full items-center gap-2">
-        <div className={`${isSidebar ? "order-2 relative min-w-0 flex-1" : "order-1 relative min-w-0 flex-1"}`}>
+        <div
+          className={`${isSidebar ? "order-2 relative max-w-full shrink-0" : "order-1 relative min-w-0 flex-1"}`}
+        >
           <button
             type="button"
             aria-expanded={isAccountMenuOpen}
@@ -251,10 +145,10 @@ export function AccountMenu({
                 currentValue === "account" ? null : "account"
               )
             }
-            className={`inline-flex w-full min-w-0 items-center text-sm font-medium text-[var(--color-text)] ${
+            className={`inline-flex min-w-0 items-center text-sm font-medium text-[var(--color-text)] ${
               isSidebar
-                ? "gap-2 rounded-none border-0 bg-transparent px-0 py-0 shadow-none leading-none"
-                : "ui-menu-trigger gap-3 rounded-[var(--radius-control)] pl-2 pr-2.5 sm:pl-2.5 sm:pr-3"
+                ? "w-auto max-w-full gap-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none leading-none transition-colors duration-150 hover:text-[var(--color-primary)] focus-visible:text-[var(--color-primary)]"
+                : "w-full ui-menu-trigger gap-3 rounded-[var(--radius-control)] pl-2 pr-2.5 sm:pl-2.5 sm:pr-3"
             }`}
           >
             {!isSidebar ? (
@@ -262,123 +156,55 @@ export function AccountMenu({
                 {getInitials(accountName)}
               </span>
             ) : null}
-            <span className="min-w-0 flex-1 text-left">
-              <span className={`block truncate text-[var(--color-text)] ${
-                isSidebar
-                  ? "relative -top-px text-[0.8rem] font-medium leading-none tracking-[-0.01em]"
-                  : "text-sm font-semibold"
-              }`}>
+            <span className={`${isSidebar ? "text-left" : "min-w-0 flex-1 text-left"}`}>
+              <span
+                className={`block truncate text-[var(--color-text)] ${
+                  isSidebar
+                    ? "max-w-[10rem] text-[0.8rem] font-medium leading-none tracking-[-0.01em]"
+                    : "text-sm font-semibold"
+                }`}
+              >
                 {accountName}
               </span>
             </span>
             <ChevronDownIcon
-              className={`shrink-0 ${isSidebar ? "text-[var(--color-text)]" : "text-[var(--color-text-subtle)]"} transition-transform duration-200 ${
+              className={`mt-px shrink-0 ${isSidebar ? "text-[var(--color-text)]" : "text-[var(--color-text-subtle)]"} transition-transform duration-200 ${
                 isAccountMenuOpen ? "rotate-180" : ""
               }`}
             />
           </button>
 
           {isAccountMenuOpen ? (
-            <div
-              role="menu"
-              aria-label={accountName}
-              className={panelClassName}
-            >
-                <div className="max-h-[min(52vh,20rem)] overflow-y-auto overscroll-contain px-1 py-2">
-                  <section
-                    className="px-3 pb-2"
-                    aria-label={copy.tenantSectionLabel}
-                  >
-                    <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--color-text-subtle)]">
-                      {copy.tenantSectionLabel}
-                    </p>
+            <div role="menu" aria-label={accountName} className={panelClassName}>
+              <div className="flex flex-col items-start gap-0.5">
+                <Link
+                  href={configurationHref}
+                  role="menuitem"
+                  onClick={() => setActiveMenu(null)}
+                  className="ui-menu-item inline-flex max-w-full self-start items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-[var(--color-text)]"
+                >
+                  {copy.configurationLabel}
+                </Link>
 
-                    {isLoadingTenantList || switchingTenantId !== null ? (
-                      <div className="mb-2 flex justify-end">
-                        {isLoadingTenantList ? (
-                          <span className="text-xs text-[var(--color-text-subtle)]">
-                            {copy.loadingTenantList}
-                          </span>
-                        ) : null}
-                        {switchingTenantId !== null ? (
-                          <span className="text-xs text-[var(--color-text-subtle)]">
-                            {copy.switchingTenant}
-                          </span>
-                        ) : null}
-                      </div>
-                    ) : null}
-
-                    {tenantListError ? (
-                      <p className="m-0 rounded-[var(--radius-control)] border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] px-3 py-2 text-sm text-[var(--color-danger-text)]">
-                        {tenantListError}
-                      </p>
-                    ) : null}
-
-                    {!isLoadingTenantList && !tenantListError ? (
-                      <div className="flex flex-col gap-0.5">
-                        {tenantList.map((tenant) => {
-                          const isActive = tenant.tenant_id === currentTenantId;
-
-                          return (
-                            <button
-                              key={tenant.tenant_id}
-                              type="button"
-                              role="menuitem"
-                              onClick={() =>
-                                void handleTenantSelect(tenant.tenant_id)
-                              }
-                              disabled={switchingTenantId !== null}
-                              className={optionClass(isActive)}
-                            >
-                              <span className="min-w-0 truncate">
-                                {getTenantDisplayName(tenant)}
-                              </span>
-                              {isActive ? (
-                                <span className="ui-menu-badge">
-                                  {copy.activeLabel}
-                                </span>
-                              ) : null}
-                            </button>
-                          );
-                        })}
-
-                        {tenantList.length === 0 ? (
-                          <p className="m-0 px-3 py-2 text-sm text-[var(--color-text-subtle)]">
-                            {copy.emptyTenantList}
-                          </p>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </section>
-                </div>
-
-                <div className="ui-menu-footer flex shrink-0 flex-col gap-0.5 px-2 pb-2">
-                  <Link
-                    href={configurationHref}
-                    role="menuitem"
-                    onClick={() => setActiveMenu(null)}
-                    className="ui-menu-item flex min-h-[2.75rem] w-full items-center rounded-[var(--radius-control)] px-3 py-2 text-sm font-medium text-[var(--color-text)]"
-                  >
-                    {copy.configurationLabel}
-                  </Link>
-
-                  <button
-                    type="button"
-                    role="menuitem"
-                    onClick={() => void handleSignOut()}
-                    disabled={isSigningOut}
-                    className="ui-menu-item ui-menu-sign-out flex min-h-[2.75rem] w-full items-center rounded-[var(--radius-control)] px-3 py-2 text-left text-sm font-medium disabled:opacity-60"
-                  >
-                    {isSigningOut
-                      ? copy.signOutPendingLabel
-                      : copy.signOutLabel}
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  role="menuitem"
+                  onClick={() => void handleSignOut()}
+                  disabled={isSigningOut}
+                  className="ui-menu-item ui-menu-sign-out inline-flex max-w-full self-start items-center rounded-[var(--radius-control)] px-3 py-2 text-left text-sm font-medium disabled:opacity-60"
+                >
+                  {isSigningOut
+                    ? copy.signOutPendingLabel
+                    : copy.signOutLabel}
+                </button>
+              </div>
             </div>
           ) : null}
         </div>
 
-        <div className={`${isSidebar ? "order-1 shrink-0 self-center" : "order-2 shrink-0"}`}>
+        <div
+          className={`${isSidebar ? "order-1 shrink-0 self-center" : "order-2 shrink-0"}`}
+        >
           <LocaleFlagMenu
             key={currentLocale}
             currentLocale={currentLocale}
@@ -402,7 +228,6 @@ export function AccountMenu({
           />
         </div>
       </div>
-
     </div>
   );
 }

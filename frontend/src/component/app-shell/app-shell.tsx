@@ -14,6 +14,8 @@ type AppShellProps = {
   children: ReactNode;
   productName: string;
   workspaceLabel: string;
+  mobileWorkspaceLabel?: string;
+  workspaceSlot?: ReactNode;
   navigationItemList: NavigationItem[];
   mobileNavigationOpenLabel: string;
   mobileNavigationCloseLabel: string;
@@ -24,6 +26,8 @@ export function AppShell({
   children,
   productName,
   workspaceLabel,
+  mobileWorkspaceLabel,
+  workspaceSlot,
   navigationItemList,
   mobileNavigationOpenLabel,
   mobileNavigationCloseLabel,
@@ -35,6 +39,7 @@ export function AppShell({
         <AppSidebar
           productName={productName}
           workspaceLabel={workspaceLabel}
+          workspaceSlot={workspaceSlot}
           navigationItemList={navigationItemList}
           accountSlot={accountSlot}
         />
@@ -44,7 +49,8 @@ export function AppShell({
         <div className="fixed left-4 right-4 top-4 z-50 lg:hidden">
           <MobileShellNav
             productName={productName}
-            workspaceLabel={workspaceLabel}
+            workspaceLabel={mobileWorkspaceLabel ?? workspaceLabel}
+            workspaceSlot={workspaceSlot}
             navigationItemList={navigationItemList}
             accountSlot={accountSlot}
             openLabel={mobileNavigationOpenLabel}

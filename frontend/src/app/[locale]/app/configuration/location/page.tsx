@@ -28,6 +28,9 @@ export default async function LocationConfigurationPage({
   const requestedScopeId = Number(resolvedSearchParams.scope);
   const selectedScopeId =
     scopeDirectory.item_list.find((item) => item.id === requestedScopeId)?.id ??
+    scopeDirectory.item_list.find(
+      (item) => item.id === scopeDirectory.current_scope_id
+    )?.id ??
     scopeDirectory.item_list[0]?.id ??
     null;
   const locationDirectory =

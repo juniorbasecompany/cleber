@@ -211,6 +211,9 @@ export function LocationConfigurationClient({
     initialScopeDirectory.item_list.find(
       (item) => item.id === parseScopeId(searchParams.get("scope"))
     )?.id ??
+    initialScopeDirectory.item_list.find(
+      (item) => item.id === initialScopeDirectory.current_scope_id
+    )?.id ??
     initialScopeDirectory.item_list[0]?.id ??
     null;
   const initialLocationKey =

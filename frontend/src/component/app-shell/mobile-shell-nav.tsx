@@ -16,6 +16,7 @@ type NavigationItem = {
 type MobileShellNavProps = {
   productName: string;
   workspaceLabel: string;
+  workspaceSlot?: ReactNode;
   navigationItemList: NavigationItem[];
   accountSlot?: ReactNode;
   openLabel: string;
@@ -38,6 +39,7 @@ function MenuIcon() {
 export function MobileShellNav({
   productName,
   workspaceLabel,
+  workspaceSlot,
   navigationItemList,
   accountSlot,
   openLabel,
@@ -115,6 +117,7 @@ export function MobileShellNav({
                 <AppSidebar
                   productName={productName}
                   workspaceLabel={workspaceLabel}
+                  workspaceSlot={workspaceSlot}
                   navigationItemList={navigationItemList}
                   accountSlot={accountSlot}
                   mode="drawer"
