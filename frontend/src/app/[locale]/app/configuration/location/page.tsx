@@ -4,37 +4,35 @@ import { Suspense } from "react";
 
 import { LocationConfigurationClient } from "@/component/configuration/location-configuration-client";
 import {
+  getAuthSession,
   getTenantLocationDirectory,
   getTenantScopeDirectory
 } from "@/lib/auth/server-session";
 
 type LocationConfigurationPageProps = {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ scope?: string }>;
 };
 
 export default async function LocationConfigurationPage({
-  params,
-  searchParams
+  params
 }: LocationConfigurationPageProps) {
   const { locale } = await params;
-  const scopeDirectory = await getTenantScopeDirectory();
+  const [authSession, scopeDirectory] = await Promise.all([
+    getAuthSession(),
+    getTenantScopeDirectory()
+  ]);
 
-  if (!scopeDirectory) {
+  if (!authSession || !scopeDirectory) {
     redirect(`/${locale}/login?reason=auth_required`);
   }
 
-  const resolvedSearchParams = await searchParams;
-  const requestedScopeId = Number(resolvedSearchParams.scope);
-  const selectedScopeId =
-    scopeDirectory.item_list.find((item) => item.id === requestedScopeId)?.id ??
+  const currentScope =
     scopeDirectory.item_list.find(
-      (item) => item.id === scopeDirectory.current_scope_id
-    )?.id ??
-    scopeDirectory.item_list[0]?.id ??
+      (item) => item.id === authSession.member.current_scope_id
+    ) ??
     null;
   const locationDirectory =
-    selectedScopeId != null ? await getTenantLocationDirectory(selectedScopeId) : null;
+    currentScope != null ? await getTenantLocationDirectory(currentScope.id) : null;
 
   const t = await getTranslations("LocationConfigurationPage");
   const tState = await getTranslations("State");
@@ -49,7 +47,8 @@ export default async function LocationConfigurationPage({
     >
       <LocationConfigurationClient
         locale={locale}
-        initialScopeDirectory={scopeDirectory}
+        currentScope={currentScope}
+        hasAnyScope={scopeDirectory.item_list.length > 0}
         initialLocationDirectory={locationDirectory}
         copy={{
           eyebrow: t("eyebrow"),
@@ -57,15 +56,9 @@ export default async function LocationConfigurationPage({
           description: t("description"),
           statusTitle: t("status.title"),
           statusDescription: t("status.description"),
-          tabGeneral: t("tab.general"),
-          tabHistory: t("tab.history"),
-          tabListAriaLabel: t("tab.listAriaLabel"),
-          listTitle: t("list.title"),
-          listDescription: t("list.description"),
           empty: t("list.empty"),
           emptyScope: t("list.emptyScope"),
-          treeSearchPlaceholder: t("tree.searchPlaceholder"),
-          treeNoMatches: t("tree.noMatches"),
+          missingCurrentScope: t("list.missingCurrentScope"),
           historyTitle: t("history.title"),
           historyDescription: t("history.description"),
           sectionIdentityTitle: t("section.identity.title"),

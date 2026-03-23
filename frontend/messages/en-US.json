@@ -295,20 +295,10 @@
       "title": "Editing locations",
       "description": "Changes only affect the active tenant in your session. Use drag and drop to reorder siblings or move a location under a different parent."
     },
-    "tab": {
-      "general": "General",
-      "history": "History",
-      "listAriaLabel": "Location settings sections"
-    },
     "list": {
-      "title": "Location directory",
-      "description": "Select a scope, browse the tree, and choose a location to review or update.",
       "empty": "No locations were found for the selected scope.",
-      "emptyScope": "Create a scope first before editing the location hierarchy."
-    },
-    "tree": {
-      "searchPlaceholder": "Search by name or path",
-      "noMatches": "No locations matched this search."
+      "emptyScope": "Create a scope first before editing the location hierarchy.",
+      "missingCurrentScope": "Set an active scope from the header selector before editing the location hierarchy."
     },
     "history": {
       "title": "Change history",

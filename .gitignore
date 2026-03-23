@@ -205,6 +205,7 @@ cython_debug/
 # Frontend
 node_modules/
 dist/
+frontend/tsconfig.tsbuildinfo
 
 # Marimo
 marimo/_static/

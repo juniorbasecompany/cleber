@@ -295,20 +295,10 @@
       "title": "Edição de locais",
       "description": "As alterações afetam apenas o licenciado ativo da sua sessão. Use arrastar e soltar para reordenar irmãos ou mover um local para outro pai."
     },
-    "tab": {
-      "general": "Geral",
-      "history": "Histórico",
-      "listAriaLabel": "Seções das configurações de locais"
-    },
     "list": {
-      "title": "Diretório de locais",
-      "description": "Selecione um escopo, navegue pela árvore e escolha um local para revisar ou atualizar.",
       "empty": "Nenhum local foi encontrado para o escopo selecionado.",
-      "emptyScope": "Crie um escopo antes de editar a hierarquia de locais."
-    },
-    "tree": {
-      "searchPlaceholder": "Buscar por nome ou caminho",
-      "noMatches": "Nenhum local correspondeu a esta busca."
+      "emptyScope": "Crie um escopo antes de editar a hierarquia de locais.",
+      "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar a hierarquia de locais."
     },
     "history": {
       "title": "Histórico de alterações",

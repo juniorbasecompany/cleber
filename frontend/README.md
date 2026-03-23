@@ -60,8 +60,10 @@ npm run typecheck
 
 ```bash
 NEXT_PUBLIC_GOOGLE_CLIENT_ID=
-NEXT_PUBLIC_API_URL=http://localhost:8001
+NEXT_PUBLIC_API_URL=http://localhost:8003
 ```
+
+- No Windows, se `localhost` falhar para o browser ou para o servidor Next ao chamar o backend, use `http://127.0.0.1:8003` em `NEXT_PUBLIC_API_URL`.
 
 - A tela de login pode levar o usuário direto para `/${locale}/app` ou para `/${locale}/select-tenant`, conforme os vínculos disponíveis entre `account`, `tenant` e `member`.
 - Em desenvolvimento, a estratégia preferencial é apontar `NEXT_PUBLIC_API_URL` para o backend local levantado pelo ambiente do repositório.

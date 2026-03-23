@@ -295,20 +295,10 @@
       "title": "Edición de ubicaciones",
       "description": "Los cambios solo afectan al licenciatario activo de tu sesión. Usa arrastrar y soltar para reordenar hermanos o mover una ubicación a otro padre."
     },
-    "tab": {
-      "general": "General",
-      "history": "Historial",
-      "listAriaLabel": "Secciones de la configuración de ubicaciones"
-    },
     "list": {
-      "title": "Directorio de ubicaciones",
-      "description": "Selecciona un alcance, navega por el árbol y elige una ubicación para revisar o actualizar.",
       "empty": "No se encontraron ubicaciones para el alcance seleccionado.",
-      "emptyScope": "Crea un alcance antes de editar la jerarquía de ubicaciones."
-    },
-    "tree": {
-      "searchPlaceholder": "Buscar por nombre o ruta",
-      "noMatches": "Ninguna ubicación coincide con esta búsqueda."
+      "emptyScope": "Crea un alcance antes de editar la jerarquía de ubicaciones.",
+      "missingCurrentScope": "Define un alcance activo en el selector del encabezado antes de editar la jerarquía de ubicaciones."
     },
     "history": {
       "title": "Historial de cambios",

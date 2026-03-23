@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   useCallback,
-  useDeferredValue,
   useEffect,
   useMemo,
   useRef,
@@ -17,33 +16,23 @@ import { PageHeader } from "@/component/app-shell/page-header";
 import { StatusPanel } from "@/component/app-shell/status-panel";
 import {
   HistoryIcon,
-  PreviewIcon,
-  WorkflowIcon
+  PreviewIcon
 } from "@/component/ui/ui-icons";
 import type {
   TenantLocationDirectoryResponse,
   TenantLocationRecord,
-  TenantScopeDirectoryResponse
+  TenantScopeRecord
 } from "@/lib/auth/types";
 
 type Props = {
   locale: string;
-  initialScopeDirectory: TenantScopeDirectoryResponse;
+  currentScope: TenantScopeRecord | null;
+  hasAnyScope: boolean;
   initialLocationDirectory: TenantLocationDirectoryResponse | null;
   copy: Record<string, string>;
 };
 
-type TabKey = "general" | "history";
 type SelectedLocationKey = number | "new" | null;
-
-function normalizeTab(raw: string | null): TabKey {
-  return raw === "history" ? "history" : "general";
-}
-
-function parseScopeId(raw: string | null): number | null {
-  const parsed = Number(raw);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
-}
 
 function parseLocationKey(raw: string | null): SelectedLocationKey {
   if (raw === "new") {
@@ -56,17 +45,9 @@ function parseLocationKey(raw: string | null): SelectedLocationKey {
 
 function buildPath(
   basePath: string,
-  tab: TabKey,
-  scopeId: number | null,
   locationKey: SelectedLocationKey
 ) {
   const params = new URLSearchParams();
-  if (tab === "history") {
-    params.set("tab", "history");
-  }
-  if (scopeId != null) {
-    params.set("scope", String(scopeId));
-  }
   if (locationKey === "new") {
     params.set("location", "new");
   } else if (typeof locationKey === "number") {
@@ -98,6 +79,14 @@ function parseErrorDetail(payload: unknown, fallback: string) {
 
 function resolveLocationLabel(item: TenantLocationRecord) {
   return item.name.trim() || item.display_name.trim() || `#${item.id}`;
+}
+
+function buildExpandedIdSet(directory: TenantLocationDirectoryResponse | null) {
+  return new Set(
+    (directory?.item_list ?? [])
+      .filter((item) => item.children_count > 0)
+      .map((item) => item.id)
+  );
 }
 
 type InlineIconProps = {
@@ -200,26 +189,27 @@ function NewSiblingIcon({ className }: InlineIconProps) {
 
 export function LocationConfigurationClient({
   locale,
-  initialScopeDirectory,
+  currentScope,
+  hasAnyScope,
   initialLocationDirectory,
   copy
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tab = normalizeTab(searchParams.get("tab"));
-  const initialScopeId =
-    initialScopeDirectory.item_list.find(
-      (item) => item.id === parseScopeId(searchParams.get("scope"))
-    )?.id ??
-    initialScopeDirectory.item_list.find(
-      (item) => item.id === initialScopeDirectory.current_scope_id
-    )?.id ??
-    initialScopeDirectory.item_list[0]?.id ??
-    null;
+  const initialScopeId = currentScope?.id ?? initialLocationDirectory?.scope_id ?? null;
   const initialLocationKey =
     initialLocationDirectory && initialLocationDirectory.scope_id === initialScopeId
       ? parseLocationKey(searchParams.get("location"))
       : null;
+  const initialItemList = initialLocationDirectory?.item_list ?? [];
+  const initialSelectedLocation =
+    initialLocationKey === "new"
+      ? null
+      : typeof initialLocationKey === "number"
+        ? initialItemList.find((item) => item.id === initialLocationKey) ??
+          initialItemList[0] ??
+          null
+        : initialItemList[0] ?? null;
 
   const locationPath = `/${locale}/app/configuration/location`;
   const configurationPath = `/${locale}/app/configuration`;
@@ -231,21 +221,35 @@ export function LocationConfigurationClient({
     [router]
   );
 
-  const [scopeId, setScopeId] = useState<number | null>(initialScopeId);
   const [directory, setDirectory] = useState<TenantLocationDirectoryResponse | null>(
     initialLocationDirectory
   );
+  const scopeId = directory?.scope_id ?? initialScopeId;
   const [selectedLocationId, setSelectedLocationId] = useState<number | null>(
-    typeof initialLocationKey === "number" ? initialLocationKey : null
+    initialLocationKey === "new" ? null : (initialSelectedLocation?.id ?? null)
   );
   const [isCreateMode, setIsCreateMode] = useState(initialLocationKey === "new");
-  const [name, setName] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [parentLocationId, setParentLocationId] = useState<number | null>(null);
+  const [name, setName] = useState(
+    initialLocationKey === "new" ? "" : (initialSelectedLocation?.name ?? "")
+  );
+  const [displayName, setDisplayName] = useState(
+    initialLocationKey === "new" ? "" : (initialSelectedLocation?.display_name ?? "")
+  );
+  const [parentLocationId, setParentLocationId] = useState<number | null>(
+    initialLocationKey === "new"
+      ? null
+      : (initialSelectedLocation?.parent_location_id ?? null)
+  );
   const [baseline, setBaseline] = useState({
-    name: "",
-    displayName: "",
-    parentLocationId: null as number | null
+    name: initialLocationKey === "new" ? "" : (initialSelectedLocation?.name ?? ""),
+    displayName:
+      initialLocationKey === "new"
+        ? ""
+        : (initialSelectedLocation?.display_name ?? ""),
+    parentLocationId:
+      initialLocationKey === "new"
+        ? null
+        : (initialSelectedLocation?.parent_location_id ?? null)
   });
   const [fieldError, setFieldError] = useState<{
     name?: string;
@@ -256,24 +260,21 @@ export function LocationConfigurationClient({
   const [isSaving, setIsSaving] = useState(false);
   const [isMoving, setIsMoving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
-  const [treeSearch, setTreeSearch] = useState("");
-  const [expandedIdSet, setExpandedIdSet] = useState<Set<number>>(new Set());
-  const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [expandedIdSet, setExpandedIdSet] = useState<Set<number>>(
+    () => buildExpandedIdSet(initialLocationDirectory)
+  );
   const [draggedLocationId, setDraggedLocationId] = useState<number | null>(null);
   const [dropKey, setDropKey] = useState<string | null>(null);
   const [editorScrollToken, setEditorScrollToken] = useState(0);
   const [isEditorFlashActive, setIsEditorFlashActive] = useState(false);
-  const didInitRef = useRef(false);
   const editorPanelRef = useRef<HTMLDivElement | null>(null);
   const editorFlashStartTimeoutRef = useRef<number | null>(null);
   const editorFlashHideTimeoutRef = useRef<number | null>(null);
-
-  useEffect(() => {
-    setPortalTarget(document.getElementById("app-shell-footer-slot"));
-  }, []);
-
-  const itemList = directory?.item_list ?? [];
-  const itemMap = useMemo(() => new Map(itemList.map((item) => [item.id, item])), [itemList]);
+  const portalTarget =
+    typeof document === "undefined"
+      ? null
+      : document.getElementById("app-shell-footer-slot");
+  const itemList = useMemo(() => directory?.item_list ?? [], [directory]);
   const childrenByParent = useMemo(() => {
     const next = new Map<number | null, TenantLocationRecord[]>();
     for (const item of itemList) {
@@ -297,30 +298,13 @@ export function LocationConfigurationClient({
     : (selectedLocation?.id ?? null);
 
   useEffect(() => {
-    const currentPath = buildPath(
-      locationPath,
-      tab,
-      parseScopeId(searchParams.get("scope")),
-      parseLocationKey(searchParams.get("location"))
-    );
-    const nextPath = buildPath(locationPath, tab, scopeId, selectedLocationKey);
+    const currentQuery = searchParams.toString();
+    const currentPath = currentQuery ? `${locationPath}?${currentQuery}` : locationPath;
+    const nextPath = buildPath(locationPath, selectedLocationKey);
     if (currentPath !== nextPath) {
       replacePath(nextPath);
     }
-  }, [locationPath, replacePath, scopeId, searchParams, selectedLocationKey, tab]);
-
-  useEffect(() => {
-    if (!directory) {
-      return;
-    }
-    setExpandedIdSet(
-      new Set(
-        directory.item_list
-          .filter((item) => item.children_count > 0)
-          .map((item) => item.id)
-      )
-    );
-  }, [directory]);
+  }, [locationPath, replacePath, searchParams, selectedLocationKey]);
 
   const syncEditor = useCallback(
     (
@@ -350,76 +334,13 @@ export function LocationConfigurationClient({
     []
   );
 
-  useEffect(() => {
-    if (didInitRef.current || !directory) {
-      return;
-    }
-    didInitRef.current = true;
-    if (initialLocationKey === "new") {
-      syncEditor(null, true, null);
-      return;
-    }
-    const nextSelected =
-      typeof initialLocationKey === "number"
-        ? itemList.find((item) => item.id === initialLocationKey) ?? itemList[0] ?? null
-        : itemList[0] ?? null;
-    syncEditor(nextSelected, false, null);
-  }, [directory, initialLocationKey, itemList, syncEditor]);
-
-  const loadDirectory = useCallback(
-    async (nextScopeId: number, preferredLocationId: SelectedLocationKey = null) => {
-      const response = await fetch(`/api/auth/tenant/current/scopes/${nextScopeId}/locations`);
-      const data: unknown = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setFormError(parseErrorDetail(data, copy.loadError));
-        return;
-      }
-      const nextDirectory = data as TenantLocationDirectoryResponse;
-      setDirectory(nextDirectory);
-      if (preferredLocationId === "new") {
-        syncEditor(null, true, null);
-        return;
-      }
-      const nextSelected =
-        typeof preferredLocationId === "number"
-          ? nextDirectory.item_list.find((item) => item.id === preferredLocationId) ??
-            nextDirectory.item_list[0] ??
-            null
-          : nextDirectory.item_list[0] ?? null;
-      syncEditor(nextSelected, false, null);
-    },
-    [copy.loadError, syncEditor]
-  );
-
-  const deferredTreeSearch = useDeferredValue(treeSearch);
   const visibleItemList = useMemo(() => {
-    const query = deferredTreeSearch.trim().toLowerCase();
-    const includeIdSet = new Set<number>();
     const result: TenantLocationRecord[] = [];
-
-    if (query) {
-      for (const item of itemList) {
-        const haystack =
-          `${item.name} ${item.display_name} ${item.path_labels.join(" / ")}`.toLowerCase();
-        if (!haystack.includes(query)) {
-          continue;
-        }
-        includeIdSet.add(item.id);
-        let parentId = item.parent_location_id ?? null;
-        while (parentId != null) {
-          includeIdSet.add(parentId);
-          parentId = itemMap.get(parentId)?.parent_location_id ?? null;
-        }
-      }
-    }
 
     const visit = (parentId: number | null) => {
       for (const item of childrenByParent.get(parentId) ?? []) {
-        if (query && !includeIdSet.has(item.id)) {
-          continue;
-        }
         result.push(item);
-        if ((query || expandedIdSet.has(item.id)) && item.children_count > 0) {
+        if (expandedIdSet.has(item.id) && item.children_count > 0) {
           visit(item.id);
         }
       }
@@ -427,7 +348,7 @@ export function LocationConfigurationClient({
 
     visit(null);
     return result;
-  }, [childrenByParent, deferredTreeSearch, expandedIdSet, itemList, itemMap]);
+  }, [childrenByParent, expandedIdSet]);
 
   const isDirty =
     name.trim() !== baseline.name.trim() ||
@@ -485,6 +406,7 @@ export function LocationConfigurationClient({
       }
       const nextDirectory = data as TenantLocationDirectoryResponse;
       setDirectory(nextDirectory);
+      setExpandedIdSet(buildExpandedIdSet(nextDirectory));
       const nextSelected =
         nextDirectory.item_list.find((item) => item.id === locationId) ?? null;
       syncEditor(nextSelected, false, null);
@@ -681,6 +603,7 @@ export function LocationConfigurationClient({
 
     const nextDirectory = data as TenantLocationDirectoryResponse;
     setDirectory(nextDirectory);
+    setExpandedIdSet(buildExpandedIdSet(nextDirectory));
 
     if (isDeletePending) {
       syncEditor(
@@ -730,7 +653,7 @@ export function LocationConfigurationClient({
     : selectedLocation?.name ?? copy.title;
 
   return (
-    <section className={`flex flex-col gap-6 ${tab === "general" ? "pb-56 lg:pb-0" : ""}`}>
+    <section className="flex flex-col gap-6 pb-56 lg:pb-0">
       <PageHeader
         eyebrow={copy.eyebrow}
         title={pageTitle}
@@ -744,37 +667,17 @@ export function LocationConfigurationClient({
         }
       />
 
-      <div className="ui-panel flex flex-wrap gap-1 p-1.5" role="tablist" aria-label={copy.tabListAriaLabel}>
-        <button type="button" className={`ui-tab px-4 py-2.5 text-sm font-semibold ${tab === "general" ? "ui-tab-active" : ""}`} onClick={() => replacePath(buildPath(locationPath, "general", scopeId, selectedLocationKey))}>{copy.tabGeneral}</button>
-        <button type="button" className={`ui-tab px-4 py-2.5 text-sm font-semibold ${tab === "history" ? "ui-tab-active" : ""}`} onClick={() => replacePath(buildPath(locationPath, "history", scopeId, selectedLocationKey))}>{copy.tabHistory}</button>
-      </div>
-
-      {tab === "general" ? (
-        <div className="grid gap-6 2xl:grid-cols-[minmax(18rem,0.84fr)_minmax(0,1.16fr)_minmax(18rem,0.84fr)]">
-          <aside className="ui-panel flex flex-col gap-4 px-5 py-5">
-            <div className="flex items-start gap-4">
-              <span className="ui-icon-badge"><WorkflowIcon className="h-[1.05rem] w-[1.05rem]" /></span>
-              <div>
-                <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">{copy.listTitle}</h2>
-                <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">{copy.listDescription}</p>
-              </div>
+      <div className="grid gap-6 2xl:grid-cols-[minmax(18rem,0.84fr)_minmax(0,1.16fr)_minmax(18rem,0.84fr)]">
+        <aside className="ui-panel flex flex-col gap-4 px-5 py-5">
+          {!directory ? (
+            <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">
+              {hasAnyScope ? copy.missingCurrentScope : copy.emptyScope}
             </div>
+          ) : null}
 
-            <div className="grid gap-2">
-              {initialScopeDirectory.item_list.map((scope) => (
-                <button key={scope.id} type="button" className={`rounded-[var(--radius-card)] border px-4 py-3 text-left ${scope.id === scopeId ? "border-[rgba(37,117,216,0.24)] bg-[var(--color-accent-soft)]/65" : "border-[var(--color-border)] bg-white/75"}`} onClick={() => { if (scope.id === scopeId) { return; } if (isDirty && !window.confirm(copy.discardConfirm)) { return; } setScopeId(scope.id); void loadDirectory(scope.id); }}>
-                  <p className="text-sm font-semibold text-[var(--color-text)]">{scope.name}</p>
-                  <p className="mt-1 text-xs text-[var(--color-text-subtle)]">{scope.display_name}</p>
-                </button>
-              ))}
-            </div>
+          {directory && !directory.can_edit ? <div className="ui-notice-attention px-4 py-3 text-sm">{copy.readOnlyNotice}</div> : null}
 
-            {scopeId == null ? <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">{copy.emptyScope}</div> : null}
-            {directory && !directory.can_edit ? <div className="ui-notice-attention px-4 py-3 text-sm">{copy.readOnlyNotice}</div> : null}
-
-            <input className="ui-input w-full" value={treeSearch} onChange={(event) => setTreeSearch(event.target.value)} placeholder={copy.treeSearchPlaceholder} disabled={!directory} />
-
-            <div className="grid gap-1">
+          <div className="grid gap-1">
               {visibleItemList.map((item) => {
                 const siblings = childrenByParent.get(item.parent_location_id ?? null) ?? [];
                 const siblingIndex = siblings.findIndex((sibling) => sibling.id === item.id);
@@ -821,11 +724,11 @@ export function LocationConfigurationClient({
                 );
               })}
 
-              {directory && visibleItemList.length === 0 ? <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">{itemList.length === 0 ? copy.empty : copy.treeNoMatches}</div> : null}
-            </div>
+            {directory && itemList.length === 0 ? <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">{copy.empty}</div> : null}
+          </div>
 
-            <button type="button" className="ui-button-secondary mt-2" onClick={() => handleStartCreate(null, true)} disabled={!directory?.can_create}>{copy.newLabel}</button>
-          </aside>
+          <button type="button" className="ui-button-secondary mt-2" onClick={() => handleStartCreate(null, true)} disabled={!directory?.can_create}>{copy.newLabel}</button>
+        </aside>
           <div
             ref={editorPanelRef}
             className={`ui-panel relative isolate flex flex-col gap-6 px-6 py-6 scroll-mt-24 sm:scroll-mt-28 lg:scroll-mt-0 ${
@@ -926,11 +829,8 @@ export function LocationConfigurationClient({
             </div>
           </aside>
         </div>
-      ) : (
-        <div className="ui-panel px-6 py-6 text-sm text-[var(--color-text-muted)]">{copy.historyDescription}</div>
-      )}
 
-      {tab === "general" && portalTarget
+      {portalTarget
         ? createPortal(
             <div className="mx-auto flex w-full max-w-[112rem] flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-5 lg:px-8">
               <Link href={configurationPath} className="ui-button-secondary inline-flex items-center justify-center" onClick={(event: MouseEvent<HTMLAnchorElement>) => { if (isDirty && !window.confirm(copy.discardConfirm)) { event.preventDefault(); } }}>{copy.cancel}</Link>

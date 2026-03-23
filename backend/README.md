@@ -46,13 +46,13 @@ uv sync
 Para subir a API localmente (com dependências instaladas):
 
 ```bash
-uv run uvicorn valora_backend.main:app --reload --port 8001
+uv run uvicorn valora_backend.main:app --reload --port 8003
 ```
 
 Se o comando `uv` não for reconhecido no PowerShell (CLI do `uv` ausente ou fora do `PATH`), use o interpretador do ambiente virtual do próprio `backend` — ele já inclui o `uvicorn` após `uv sync` ou `pip install -e .`:
 
 ```powershell
-.\.venv\Scripts\python.exe -m uvicorn valora_backend.main:app --reload --port 8001
+.\.venv\Scripts\python.exe -m uvicorn valora_backend.main:app --reload --port 8003
 ```
 
 ## Banco de dados (desenvolvimento)

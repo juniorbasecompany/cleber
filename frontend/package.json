@@ -4,9 +4,9 @@
   "private": true,
   "description": "Frontend web app for the Valora system.",
   "scripts": {
-    "dev": "next dev -p 3002",
+    "dev": "next dev -p 3003",
     "build": "next build",
-    "start": "next start -p 3002",
+    "start": "next start -p 3003",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },
