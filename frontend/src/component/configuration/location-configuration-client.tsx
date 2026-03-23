@@ -544,26 +544,35 @@ export function LocationConfigurationClient({
       }
 
       const scrollContainer = editorPanel.closest(".ui-scroll-stable");
+      const isMobileViewport = window.matchMedia("(max-width: 1024px)").matches;
+      const mobileOffset = isMobileViewport
+        ? window.matchMedia("(min-width: 640px)").matches
+          ? 112
+          : 96
+        : 0;
+
       if (scrollContainer instanceof HTMLElement) {
         const containerRect = scrollContainer.getBoundingClientRect();
         const panelRect = editorPanel.getBoundingClientRect();
         const startTop = scrollContainer.scrollTop;
         const targetTop =
-          startTop + (panelRect.top - containerRect.top);
+          startTop + (panelRect.top - containerRect.top - mobileOffset);
 
-        scrollContainer.scrollTo({
-          top: Math.max(0, targetTop),
-          behavior: "smooth"
+        editorPanel.scrollIntoView({
+          behavior: "smooth",
+          block: "start",
+          inline: "nearest"
         });
         scheduleEditorFlashAfterScroll(startTop, Math.max(0, targetTop));
         return;
       }
 
       const startTop = window.scrollY;
-      const targetTop = startTop + editorPanel.getBoundingClientRect().top;
-      window.scrollTo({
-        top: Math.max(0, targetTop),
-        behavior: "smooth"
+      const targetTop = startTop + editorPanel.getBoundingClientRect().top - mobileOffset;
+      editorPanel.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+        inline: "nearest"
       });
       scheduleEditorFlashAfterScroll(startTop, Math.max(0, targetTop));
     }, 80);
@@ -816,7 +825,7 @@ export function LocationConfigurationClient({
           </aside>
           <div
             ref={editorPanelRef}
-            className={`ui-panel relative isolate flex flex-col gap-6 px-6 py-6 ${
+            className={`ui-panel relative isolate flex flex-col gap-6 px-6 py-6 scroll-mt-24 sm:scroll-mt-28 lg:scroll-mt-0 ${
               isDeletePending ? "ui-delete-pending" : ""
             }`}
           >
