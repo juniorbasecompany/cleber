@@ -18,7 +18,6 @@ import { StatusPanel } from "@/component/app-shell/status-panel";
 import {
   HistoryIcon,
   PreviewIcon,
-  ScopeIcon,
   WorkflowIcon
 } from "@/component/ui/ui-icons";
 import type {
@@ -101,6 +100,104 @@ function resolveLocationLabel(item: TenantLocationRecord) {
   return item.name.trim() || item.display_name.trim() || `#${item.id}`;
 }
 
+type InlineIconProps = {
+  className?: string;
+};
+
+function iconClassName(className?: string) {
+  return ["h-[1.2rem] w-[1.2rem]", className].filter(Boolean).join(" ");
+}
+
+function GripDotsIcon({ className }: InlineIconProps) {
+  return (
+    <svg className={iconClassName(className)} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+      <circle cx="9" cy="6.5" r="1.35" />
+      <circle cx="15" cy="6.5" r="1.35" />
+      <circle cx="9" cy="12" r="1.35" />
+      <circle cx="15" cy="12" r="1.35" />
+      <circle cx="9" cy="17.5" r="1.35" />
+      <circle cx="15" cy="17.5" r="1.35" />
+    </svg>
+  );
+}
+
+function MoveUpIcon({ className }: InlineIconProps) {
+  return (
+    <svg
+      className={iconClassName(className)}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 18V6.5" />
+      <path d="m7.5 11 4.5-4.5 4.5 4.5" />
+    </svg>
+  );
+}
+
+function MoveDownIcon({ className }: InlineIconProps) {
+  return (
+    <svg
+      className={iconClassName(className)}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 6v11.5" />
+      <path d="m7.5 13 4.5 4.5 4.5-4.5" />
+    </svg>
+  );
+}
+
+function NewChildIcon({ className }: InlineIconProps) {
+  return (
+    <svg
+      className={iconClassName(className)}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M15.5 5h4" />
+      <path d="M17.5 3v4" />
+      <path d="M8 7.5v7.5" strokeDasharray="1.8 2.4" />
+      <path d="M8 15h10.5" />
+      <path d="m14.5 11 4 4-4 4" />
+    </svg>
+  );
+}
+
+function NewSiblingIcon({ className }: InlineIconProps) {
+  return (
+    <svg
+      className={iconClassName(className)}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.8"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M15.5 5h4" />
+      <path d="M17.5 3v4" />
+      <path d="M12 8.5v9.5" strokeDasharray="1.8 2.4" />
+      <path d="m7.5 13.5 4.5 4.5 4.5-4.5" />
+    </svg>
+  );
+}
+
 export function LocationConfigurationClient({
   locale,
   initialScopeDirectory,
@@ -123,6 +220,13 @@ export function LocationConfigurationClient({
 
   const locationPath = `/${locale}/app/configuration/location`;
   const configurationPath = `/${locale}/app/configuration`;
+
+  const replacePath = useCallback(
+    (nextPath: string) => {
+      router.replace(nextPath, { scroll: false });
+    },
+    [router]
+  );
 
   const [scopeId, setScopeId] = useState<number | null>(initialScopeId);
   const [directory, setDirectory] = useState<TenantLocationDirectoryResponse | null>(
@@ -150,12 +254,16 @@ export function LocationConfigurationClient({
   const [isMoving, setIsMoving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [treeSearch, setTreeSearch] = useState("");
-  const [parentSearch, setParentSearch] = useState("");
   const [expandedIdSet, setExpandedIdSet] = useState<Set<number>>(new Set());
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const [draggedLocationId, setDraggedLocationId] = useState<number | null>(null);
   const [dropKey, setDropKey] = useState<string | null>(null);
+  const [editorScrollToken, setEditorScrollToken] = useState(0);
+  const [isEditorFlashActive, setIsEditorFlashActive] = useState(false);
   const didInitRef = useRef(false);
+  const editorPanelRef = useRef<HTMLDivElement | null>(null);
+  const editorFlashStartTimeoutRef = useRef<number | null>(null);
+  const editorFlashHideTimeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-shell-footer-slot"));
@@ -194,9 +302,9 @@ export function LocationConfigurationClient({
     );
     const nextPath = buildPath(locationPath, tab, scopeId, selectedLocationKey);
     if (currentPath !== nextPath) {
-      router.replace(nextPath);
+      replacePath(nextPath);
     }
-  }, [locationPath, router, scopeId, searchParams, selectedLocationKey, tab]);
+  }, [locationPath, replacePath, scopeId, searchParams, selectedLocationKey, tab]);
 
   useEffect(() => {
     if (!directory) {
@@ -318,34 +426,6 @@ export function LocationConfigurationClient({
     return result;
   }, [childrenByParent, deferredTreeSearch, expandedIdSet, itemList, itemMap]);
 
-  const deferredParentSearch = useDeferredValue(parentSearch);
-  const parentCandidateList = useMemo(() => {
-    const query = deferredParentSearch.trim().toLowerCase();
-    const blockedIdSet = new Set<number>();
-
-    if (selectedLocation && !isCreateMode) {
-      const visit = (locationId: number) => {
-        blockedIdSet.add(locationId);
-        for (const child of childrenByParent.get(locationId) ?? []) {
-          visit(child.id);
-        }
-      };
-      visit(selectedLocation.id);
-    }
-
-    return itemList.filter((item) => {
-      if (blockedIdSet.has(item.id)) {
-        return false;
-      }
-      if (!query) {
-        return true;
-      }
-      return `${item.name} ${item.display_name} ${item.path_labels.join(" / ")}`
-        .toLowerCase()
-        .includes(query);
-    });
-  }, [childrenByParent, deferredParentSearch, isCreateMode, itemList, selectedLocation]);
-
   const isDirty =
     name.trim() !== baseline.name.trim() ||
     displayName.trim() !== baseline.displayName.trim() ||
@@ -410,8 +490,100 @@ export function LocationConfigurationClient({
     [copy.moveError, copy.movedNotice, scopeId, syncEditor]
   );
 
+  const scrollEditorIntoView = useCallback(() => {
+    setEditorScrollToken((previous) => previous + 1);
+  }, []);
+
+  const triggerEditorFlash = useCallback(() => {
+    if (editorFlashStartTimeoutRef.current != null) {
+      window.clearTimeout(editorFlashStartTimeoutRef.current);
+      editorFlashStartTimeoutRef.current = null;
+    }
+    if (editorFlashHideTimeoutRef.current != null) {
+      window.clearTimeout(editorFlashHideTimeoutRef.current);
+      editorFlashHideTimeoutRef.current = null;
+    }
+
+    setIsEditorFlashActive(false);
+    editorFlashStartTimeoutRef.current = window.setTimeout(() => {
+      setIsEditorFlashActive(true);
+      editorFlashStartTimeoutRef.current = null;
+      editorFlashHideTimeoutRef.current = window.setTimeout(() => {
+        setIsEditorFlashActive(false);
+        editorFlashHideTimeoutRef.current = null;
+      }, 960);
+    }, 24);
+  }, []);
+
+  const scheduleEditorFlashAfterScroll = useCallback(
+    (startTop: number, targetTop: number) => {
+      if (editorFlashStartTimeoutRef.current != null) {
+        window.clearTimeout(editorFlashStartTimeoutRef.current);
+        editorFlashStartTimeoutRef.current = null;
+      }
+
+      const distance = Math.abs(targetTop - startTop);
+      const delay = Math.max(260, Math.min(720, 180 + distance * 0.42));
+      editorFlashStartTimeoutRef.current = window.setTimeout(() => {
+        editorFlashStartTimeoutRef.current = null;
+        triggerEditorFlash();
+      }, delay);
+    },
+    [triggerEditorFlash]
+  );
+
+  useEffect(() => {
+    if (editorScrollToken === 0) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      const editorPanel = editorPanelRef.current;
+      if (!editorPanel) {
+        return;
+      }
+
+      const scrollContainer = editorPanel.closest(".ui-scroll-stable");
+      if (scrollContainer instanceof HTMLElement) {
+        const containerRect = scrollContainer.getBoundingClientRect();
+        const panelRect = editorPanel.getBoundingClientRect();
+        const startTop = scrollContainer.scrollTop;
+        const targetTop =
+          startTop + (panelRect.top - containerRect.top);
+
+        scrollContainer.scrollTo({
+          top: Math.max(0, targetTop),
+          behavior: "smooth"
+        });
+        scheduleEditorFlashAfterScroll(startTop, Math.max(0, targetTop));
+        return;
+      }
+
+      const startTop = window.scrollY;
+      const targetTop = startTop + editorPanel.getBoundingClientRect().top;
+      window.scrollTo({
+        top: Math.max(0, targetTop),
+        behavior: "smooth"
+      });
+      scheduleEditorFlashAfterScroll(startTop, Math.max(0, targetTop));
+    }, 80);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [editorScrollToken, scheduleEditorFlashAfterScroll]);
+
+  useEffect(() => {
+    return () => {
+      if (editorFlashStartTimeoutRef.current != null) {
+        window.clearTimeout(editorFlashStartTimeoutRef.current);
+      }
+      if (editorFlashHideTimeoutRef.current != null) {
+        window.clearTimeout(editorFlashHideTimeoutRef.current);
+      }
+    };
+  }, []);
+
   const handleStartCreate = useCallback(
-    (draftParentId: number | null) => {
+    (draftParentId: number | null, shouldScroll = false) => {
       if (!(directory?.can_create ?? false)) {
         return;
       }
@@ -419,8 +591,17 @@ export function LocationConfigurationClient({
         return;
       }
       syncEditor(null, true, draftParentId);
+      if (shouldScroll) {
+        scrollEditorIntoView();
+      }
     },
-    [copy.discardConfirm, directory?.can_create, isDirty, syncEditor]
+    [
+      copy.discardConfirm,
+      directory?.can_create,
+      isDirty,
+      scrollEditorIntoView,
+      syncEditor
+    ]
   );
 
   const handleSelectLocation = useCallback(
@@ -432,8 +613,16 @@ export function LocationConfigurationClient({
         return;
       }
       syncEditor(location, false, null);
+      scrollEditorIntoView();
     },
-    [copy.discardConfirm, isCreateMode, isDirty, selectedLocation?.id, syncEditor]
+    [
+      copy.discardConfirm,
+      isCreateMode,
+      isDirty,
+      scrollEditorIntoView,
+      selectedLocation?.id,
+      syncEditor
+    ]
   );
 
   const handleSave = useCallback(async () => {
@@ -524,12 +713,6 @@ export function LocationConfigurationClient({
     validate
   ]);
 
-  const currentSiblingList = selectedLocation
-    ? (childrenByParent.get(selectedLocation.parent_location_id ?? null) ?? [])
-    : [];
-  const currentSiblingIndex = selectedLocation
-    ? currentSiblingList.findIndex((item) => item.id === selectedLocation.id)
-    : -1;
   const pageTitle = isCreateMode
     ? copy.newLocationTitle
     : selectedLocation?.name ?? copy.title;
@@ -550,8 +733,8 @@ export function LocationConfigurationClient({
       />
 
       <div className="ui-panel flex flex-wrap gap-1 p-1.5" role="tablist" aria-label={copy.tabListAriaLabel}>
-        <button type="button" className={`ui-tab px-4 py-2.5 text-sm font-semibold ${tab === "general" ? "ui-tab-active" : ""}`} onClick={() => router.replace(buildPath(locationPath, "general", scopeId, selectedLocationKey))}>{copy.tabGeneral}</button>
-        <button type="button" className={`ui-tab px-4 py-2.5 text-sm font-semibold ${tab === "history" ? "ui-tab-active" : ""}`} onClick={() => router.replace(buildPath(locationPath, "history", scopeId, selectedLocationKey))}>{copy.tabHistory}</button>
+        <button type="button" className={`ui-tab px-4 py-2.5 text-sm font-semibold ${tab === "general" ? "ui-tab-active" : ""}`} onClick={() => replacePath(buildPath(locationPath, "general", scopeId, selectedLocationKey))}>{copy.tabGeneral}</button>
+        <button type="button" className={`ui-tab px-4 py-2.5 text-sm font-semibold ${tab === "history" ? "ui-tab-active" : ""}`} onClick={() => replacePath(buildPath(locationPath, "history", scopeId, selectedLocationKey))}>{copy.tabHistory}</button>
       </div>
 
       {tab === "general" ? (
@@ -578,7 +761,6 @@ export function LocationConfigurationClient({
             {directory && !directory.can_edit ? <div className="ui-notice-attention px-4 py-3 text-sm">{copy.readOnlyNotice}</div> : null}
 
             <input className="ui-input w-full" value={treeSearch} onChange={(event) => setTreeSearch(event.target.value)} placeholder={copy.treeSearchPlaceholder} disabled={!directory} />
-            <button type="button" className="ui-button-secondary" onClick={() => handleStartCreate(null)} disabled={!directory?.can_create}>{copy.newRoot}</button>
 
             <div className="grid gap-1">
               {visibleItemList.map((item) => {
@@ -593,6 +775,9 @@ export function LocationConfigurationClient({
                   <div key={item.id} className="grid gap-1">
                     <div className={`h-2 rounded-full ${dropKey === topKey ? "bg-[var(--color-accent)]/70" : "bg-transparent"}`} onDragOver={(event) => { if (!draggedLocationId || draggedLocationId === item.id) { return; } event.preventDefault(); setDropKey(topKey); }} onDrop={(event) => { event.preventDefault(); if (!draggedLocationId || draggedLocationId === item.id) { return; } void moveLocation(draggedLocationId, item.parent_location_id ?? null, siblingIndex); }} />
                     <div className="flex items-stretch gap-2">
+                      <button type="button" className="flex w-12 shrink-0 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-background-muted)] disabled:cursor-not-allowed disabled:opacity-45" draggable={item.can_move && !isSaving && !isMoving} onDragStart={(event: DragEvent<HTMLButtonElement>) => { setDraggedLocationId(item.id); event.dataTransfer.effectAllowed = "move"; }} onDragEnd={() => { setDraggedLocationId(null); setDropKey(null); }} disabled={!item.can_move || isSaving || isMoving} aria-label={copy.dragDropHint} title={copy.dragDropHint}>
+                        <GripDotsIcon />
+                      </button>
                       <div className={`flex flex-1 items-stretch gap-3 rounded-[var(--radius-card)] border px-4 py-3 ${dropKey === insideKey ? "border-[rgba(37,117,216,0.38)] bg-[var(--color-accent-soft)]/75" : isSelected ? "border-[rgba(37,117,216,0.24)] bg-[var(--color-accent-soft)]/65" : "border-[var(--color-border)] bg-white/75"}`} onDragOver={(event) => { if (!draggedLocationId || draggedLocationId === item.id) { return; } event.preventDefault(); setDropKey(insideKey); }} onDrop={(event) => { event.preventDefault(); if (!draggedLocationId || draggedLocationId === item.id) { return; } void moveLocation(draggedLocationId, item.id, item.children_count); }}>
                         {item.children_count > 0 ? (
                           <button type="button" className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-[11px]" onClick={() => setExpandedIdSet((previous) => { const next = new Set(previous); if (next.has(item.id)) { next.delete(item.id); } else { next.add(item.id); } return next; })}>
@@ -604,93 +789,95 @@ export function LocationConfigurationClient({
                           <p className="mt-1 text-xs text-[var(--color-text-subtle)]">{item.display_name}</p>
                         </button>
                       </div>
-                      <button type="button" className="rounded-[var(--radius-card)] border px-3 text-sm font-semibold" draggable={item.can_move && !isSaving && !isMoving} onDragStart={(event: DragEvent<HTMLButtonElement>) => { setDraggedLocationId(item.id); event.dataTransfer.effectAllowed = "move"; }} onDragEnd={() => { setDraggedLocationId(null); setDropKey(null); }} disabled={!item.can_move || isSaving || isMoving}>:::</button>
+                      <div className="grid w-[7rem] shrink-0 grid-cols-2 gap-2">
+                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => siblingIndex > 0 ? void moveLocation(item.id, item.parent_location_id ?? null, siblingIndex - 1) : undefined} disabled={!item.can_move || siblingIndex < 1 || isSaving || isMoving} aria-label={copy.moveUp} title={copy.moveUp}>
+                          <MoveUpIcon />
+                        </button>
+                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => handleStartCreate(item.id, true)} disabled={!directory?.can_create || isSaving || isMoving} aria-label={copy.newChild} title={copy.newChild}>
+                          <NewChildIcon />
+                        </button>
+                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => siblingIndex >= 0 ? void moveLocation(item.id, item.parent_location_id ?? null, siblingIndex + 1) : undefined} disabled={!item.can_move || siblingIndex < 0 || siblingIndex >= siblings.length - 1 || isSaving || isMoving} aria-label={copy.moveDown} title={copy.moveDown}>
+                          <MoveDownIcon />
+                        </button>
+                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => handleStartCreate(item.parent_location_id ?? null, true)} disabled={!directory?.can_create || isSaving || isMoving} aria-label={copy.newSibling} title={copy.newSibling}>
+                          <NewSiblingIcon />
+                        </button>
+                      </div>
                     </div>
                     <div className={`h-2 rounded-full ${dropKey === bottomKey ? "bg-[var(--color-accent)]/70" : "bg-transparent"}`} onDragOver={(event) => { if (!draggedLocationId || draggedLocationId === item.id) { return; } event.preventDefault(); setDropKey(bottomKey); }} onDrop={(event) => { event.preventDefault(); if (!draggedLocationId || draggedLocationId === item.id) { return; } void moveLocation(draggedLocationId, item.parent_location_id ?? null, siblingIndex + 1); }} />
                   </div>
                 );
               })}
 
-              {directory && visibleItemList.length === 0 ? <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">{itemList.length === 0 ? copy.empty : copy.noParentCandidates}</div> : null}
+              {directory && visibleItemList.length === 0 ? <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">{itemList.length === 0 ? copy.empty : copy.treeNoMatches}</div> : null}
             </div>
+
+            <button type="button" className="ui-button-secondary mt-2" onClick={() => handleStartCreate(null, true)} disabled={!directory?.can_create}>{copy.newLabel}</button>
           </aside>
-          <div className={`ui-panel flex flex-col gap-6 px-6 py-6 ${isDeletePending ? "ui-delete-pending" : ""}`}>
-            {successMessage ? <div className="ui-tone-positive rounded-[var(--radius-card)] border px-4 py-3 text-sm">{successMessage}</div> : null}
-            {formError ? <div className="ui-notice-danger px-4 py-3 text-sm">{formError}</div> : null}
+          <div
+            ref={editorPanelRef}
+            className={`ui-panel relative isolate flex flex-col gap-6 px-6 py-6 ${
+              isDeletePending ? "ui-delete-pending" : ""
+            }`}
+          >
+            <div className="flex flex-col gap-6">
+              {successMessage ? <div className="ui-tone-positive rounded-[var(--radius-card)] border px-4 py-3 text-sm">{successMessage}</div> : null}
+              {formError ? <div className="ui-notice-danger px-4 py-3 text-sm">{formError}</div> : null}
 
-            <section className="ui-card px-5 py-5">
-              <div className="flex items-start gap-4">
-                <span className="ui-icon-badge"><PreviewIcon className="h-[1.05rem] w-[1.05rem]" /></span>
-                <div>
-                  <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">{copy.sectionIdentityTitle}</h2>
-                  <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">{copy.sectionIdentityDescription}</p>
+              <section className="ui-card relative isolate px-5 py-5">
+                {isEditorFlashActive ? (
+                  <>
+                    <span
+                      aria-hidden
+                      className="location-editor-flash-ring pointer-events-none absolute inset-0 rounded-[inherit]"
+                      style={{
+                        border: "2px solid rgba(37, 117, 216, 0.46)",
+                        boxShadow:
+                          "0 0 0 6px rgba(37, 117, 216, 0.18), 0 22px 48px rgba(15, 23, 42, 0.12)"
+                      }}
+                    />
+                    <span
+                      aria-hidden
+                      className="location-editor-flash-fill pointer-events-none absolute inset-x-0 top-0 h-28 rounded-t-[inherit]"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, rgba(37, 117, 216, 0.18), rgba(37, 117, 216, 0.07) 45%, rgba(37, 117, 216, 0.01) 100%)"
+                      }}
+                    />
+                  </>
+                ) : null}
+
+                <div className="relative z-10">
+                  <div className="flex items-start gap-4">
+                    <span className="ui-icon-badge"><PreviewIcon className="h-[1.05rem] w-[1.05rem]" /></span>
+                    <div>
+                      <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">{copy.sectionIdentityTitle}</h2>
+                      <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">{copy.sectionIdentityDescription}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-5">
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-[var(--color-text-muted)]" htmlFor="location-name">{copy.nameLabel}</label>
+                      <input id="location-name" className="ui-input w-full" value={name} onChange={(event) => { setName(event.target.value); setFieldError((previous) => ({ ...previous, name: undefined })); setSuccessMessage(null); }} disabled={isDeletePending || !canEditForm} aria-invalid={Boolean(fieldError.name)} />
+                      <p className="text-xs leading-5 text-[var(--color-text-subtle)]">{copy.nameHint}</p>
+                      {fieldError.name ? <p className="text-sm text-[var(--color-danger-text)]">{fieldError.name}</p> : null}
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-sm font-semibold text-[var(--color-text-muted)]" htmlFor="location-display-name">{copy.displayNameLabel}</label>
+                      <textarea id="location-display-name" className="ui-input min-h-28 w-full resize-y" value={displayName} onChange={(event) => { setDisplayName(event.target.value); setFieldError((previous) => ({ ...previous, displayName: undefined })); setSuccessMessage(null); }} disabled={isDeletePending || !canEditForm} aria-invalid={Boolean(fieldError.displayName)} />
+                      <p className="text-xs leading-5 text-[var(--color-text-subtle)]">{copy.displayNameHint}</p>
+                      {fieldError.displayName ? <p className="text-sm text-[var(--color-danger-text)]">{fieldError.displayName}</p> : null}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </section>
+            </div>
 
-              <div className="mt-5 grid gap-5">
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-[var(--color-text-muted)]" htmlFor="location-name">{copy.nameLabel}</label>
-                  <input id="location-name" className="ui-input w-full" value={name} onChange={(event) => { setName(event.target.value); setFieldError((previous) => ({ ...previous, name: undefined })); setSuccessMessage(null); }} disabled={isDeletePending || !canEditForm} aria-invalid={Boolean(fieldError.name)} />
-                  <p className="text-xs leading-5 text-[var(--color-text-subtle)]">{copy.nameHint}</p>
-                  {fieldError.name ? <p className="text-sm text-[var(--color-danger-text)]">{fieldError.name}</p> : null}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-[var(--color-text-muted)]" htmlFor="location-display-name">{copy.displayNameLabel}</label>
-                  <textarea id="location-display-name" className="ui-input min-h-28 w-full resize-y" value={displayName} onChange={(event) => { setDisplayName(event.target.value); setFieldError((previous) => ({ ...previous, displayName: undefined })); setSuccessMessage(null); }} disabled={isDeletePending || !canEditForm} aria-invalid={Boolean(fieldError.displayName)} />
-                  <p className="text-xs leading-5 text-[var(--color-text-subtle)]">{copy.displayNameHint}</p>
-                  {fieldError.displayName ? <p className="text-sm text-[var(--color-danger-text)]">{fieldError.displayName}</p> : null}
-                </div>
-              </div>
-            </section>
-
-            <section className="ui-card px-5 py-5">
-              <div className="flex items-start gap-4">
-                <span className="ui-icon-badge"><ScopeIcon className="h-[1.05rem] w-[1.05rem]" /></span>
-                <div>
-                  <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">{copy.sectionStructureTitle}</h2>
-                  <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">{copy.sectionStructureDescription}</p>
-                </div>
-              </div>
-
-              <div className="mt-5 space-y-2">
-                <label className="text-sm font-semibold text-[var(--color-text-muted)]" htmlFor="location-parent-search">{copy.parentSearchLabel}</label>
-                <input id="location-parent-search" className="ui-input w-full" value={parentSearch} onChange={(event) => setParentSearch(event.target.value)} placeholder={copy.parentSearchPlaceholder} disabled={!canEditForm || isDeletePending} />
-                <p className="text-xs leading-5 text-[var(--color-text-subtle)]">{copy.parentHint}</p>
-              </div>
-
-              <div className="mt-4 max-h-72 overflow-auto rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-background-muted)]/55 p-2">
-                <button type="button" className={`mb-2 flex w-full rounded-[var(--radius-card)] border px-3 py-3 text-left ${parentLocationId == null ? "border-[rgba(37,117,216,0.24)] bg-[var(--color-accent-soft)]/65" : "border-[var(--color-border)] bg-white/78"}`} onClick={() => setParentLocationId(null)} disabled={!canEditForm || isDeletePending}>{copy.rootOptionLabel}</button>
-                {parentCandidateList.map((candidate) => (
-                  <button key={candidate.id} type="button" className={`mb-2 flex w-full flex-col rounded-[var(--radius-card)] border px-3 py-3 text-left ${parentLocationId === candidate.id ? "border-[rgba(37,117,216,0.24)] bg-[var(--color-accent-soft)]/65" : "border-[var(--color-border)] bg-white/78"}`} onClick={() => setParentLocationId(candidate.id)} disabled={!canEditForm || isDeletePending}>
-                    <span className="text-sm font-semibold text-[var(--color-text)]">{resolveLocationLabel(candidate)}</span>
-                    <span className="mt-1 text-xs leading-5 text-[var(--color-text-subtle)]">{candidate.path_labels.join(" / ")}</span>
-                  </button>
-                ))}
-                {parentCandidateList.length === 0 ? <div className="rounded-[var(--radius-card)] border border-dashed border-[var(--color-border)] px-3 py-3 text-sm text-[var(--color-text-muted)]">{copy.noParentCandidates}</div> : null}
-              </div>
-            </section>
           </div>
 
           <aside className="flex flex-col gap-4">
-            <div className="ui-panel p-5">
-              <div className="flex items-start gap-4">
-                <span className="ui-icon-badge"><PreviewIcon className="h-[1.05rem] w-[1.05rem]" /></span>
-                <div>
-                  <h2 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">{copy.reorderTitle}</h2>
-                  <p className="mt-1 text-sm leading-6 text-[var(--color-text-subtle)]">{copy.reorderDescription}</p>
-                </div>
-              </div>
-              <div className="mt-5 flex flex-wrap gap-2">
-                <button type="button" className="ui-button-secondary" onClick={() => selectedLocation && currentSiblingIndex > 0 ? void moveLocation(selectedLocation.id, selectedLocation.parent_location_id ?? null, currentSiblingIndex - 1) : undefined} disabled={!selectedLocation || currentSiblingIndex < 1 || isMoving}>{copy.moveUp}</button>
-                <button type="button" className="ui-button-secondary" onClick={() => selectedLocation && currentSiblingIndex >= 0 ? void moveLocation(selectedLocation.id, selectedLocation.parent_location_id ?? null, currentSiblingIndex + 1) : undefined} disabled={!selectedLocation || currentSiblingIndex < 0 || currentSiblingIndex >= currentSiblingList.length - 1 || isMoving}>{copy.moveDown}</button>
-                <button type="button" className="ui-button-secondary" onClick={() => selectedLocation ? handleStartCreate(selectedLocation.id) : undefined} disabled={!selectedLocation || !directory?.can_create}>{copy.newChild}</button>
-                <button type="button" className="ui-button-secondary" onClick={() => handleStartCreate(selectedLocation?.parent_location_id ?? null)} disabled={!selectedLocation || !directory?.can_create}>{copy.newSibling}</button>
-              </div>
-              <p className="mt-4 text-xs leading-5 text-[var(--color-text-subtle)]">{copy.dragDropHint}</p>
-              {selectedLocation && selectedLocation.children_count > 0 ? <p className="mt-3 text-sm text-[var(--color-text-muted)]">{copy.childDeleteBlocked}</p> : null}
-            </div>
-
             {selectedLocation && !isCreateMode ? (
               <div className="ui-panel p-5">
                 <div className="grid gap-3">

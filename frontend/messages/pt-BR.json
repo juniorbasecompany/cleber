@@ -291,10 +291,6 @@
       "history": "Histórico",
       "listAriaLabel": "Seções das configurações de locais"
     },
-    "scope": {
-      "label": "Escopo",
-      "hint": "Escolha o escopo estrutural cuja árvore de locais você quer editar."
-    },
     "list": {
       "title": "Diretório de locais",
       "description": "Selecione um escopo, navegue pela árvore e escolha um local para revisar ou atualizar.",
@@ -302,8 +298,8 @@
       "emptyScope": "Crie um escopo antes de editar a hierarquia de locais."
     },
     "tree": {
-      "searchLabel": "Buscar na árvore",
-      "searchPlaceholder": "Buscar por nome ou caminho"
+      "searchPlaceholder": "Buscar por nome ou caminho",
+      "noMatches": "Nenhum local correspondeu a esta busca."
     },
     "history": {
       "title": "Histórico de alterações",
@@ -317,16 +313,6 @@
         "nameHint": "Use um rótulo curto, como Fazenda Norte, Aviário B ou Talhão 12.",
         "displayNameLabel": "Descrição do local",
         "displayNameHint": "Adicione contexto para o usuário reconhecer o local com rapidez."
-      },
-      "structure": {
-        "title": "Estrutura",
-        "description": "Defina a posição deste local dentro da árvore do escopo selecionado.",
-        "parentLabel": "Local pai",
-        "parentHint": "Escolha o local pai ou mantenha este cadastro no nível raiz.",
-        "rootOptionLabel": "Sem pai (local raiz)",
-        "parentSearchLabel": "Buscar pai",
-        "parentSearchPlaceholder": "Buscar pais possíveis",
-        "noParentCandidates": "Nenhum local correspondeu a esta busca."
       }
     },
     "metadata": {
@@ -335,14 +321,10 @@
       "childrenLabel": "Filhos diretos",
       "descendantsLabel": "Descendentes totais"
     },
-    "reorder": {
-      "title": "Reordenar e criar",
-      "description": "Reordene irmãos com arrastar e soltar ou crie novos locais a partir da seleção atual."
-    },
     "dragDropHint": "Arraste a alça para reordenar antes ou depois de um irmão, ou solte sobre uma linha para mover para baixo desse local.",
     "action": {
       "cancel": "Cancelar",
-      "newRoot": "Novo raiz",
+      "newLabel": "Novo",
       "newChild": "Novo filho",
       "newSibling": "Novo irmão",
       "delete": "Apagar",
@@ -350,18 +332,13 @@
       "save": "Salvar",
       "saving": "Salvando...",
       "moveUp": "Mover para cima",
-      "moveDown": "Mover para baixo",
-      "moving": "Movendo...",
-      "moveToRoot": "Mover para raiz"
+      "moveDown": "Mover para baixo"
     },
-    "selectPrompt": "Selecione um local na árvore para editar o cadastro.",
     "readOnlyNotice": "Você pode consultar o diretório de locais, mas só membros master ou administrador podem criar ou editar cadastros hierárquicos.",
     "savedNotice": "Local atualizado com sucesso.",
     "createdNotice": "Local criado com sucesso.",
     "deletedNotice": "Local apagado com sucesso.",
     "movedNotice": "Local movido com sucesso.",
-    "childDeleteBlocked": "Locais com filhos não podem ser apagados até que o ramo seja reorganizado.",
-    "moveBlocked": "Este local não pode ser movido com as permissões atuais.",
     "newLocationTitle": "Novo local",
     "error": {
       "load": "Não foi possível carregar o diretório de locais. Tente novamente.",
@@ -371,12 +348,7 @@
       "move": "Não foi possível mover o local. Tente novamente.",
       "validation": "Este campo não pode ficar vazio."
     },
-    "discardConfirm": "Descartar alterações não salvas?",
-    "drop": {
-      "before": "Soltar antes",
-      "inside": "Soltar dentro",
-      "after": "Soltar depois"
-    }
+    "discardConfirm": "Descartar alterações não salvas?"
   },
   "TenantConfigurationPage": {
     "eyebrow": "Configuração",

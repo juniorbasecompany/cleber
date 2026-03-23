@@ -291,10 +291,6 @@
       "history": "History",
       "listAriaLabel": "Location settings sections"
     },
-    "scope": {
-      "label": "Scope",
-      "hint": "Choose the structural scope whose location tree you want to edit."
-    },
     "list": {
       "title": "Location directory",
       "description": "Select a scope, browse the tree, and choose a location to review or update.",
@@ -302,8 +298,8 @@
       "emptyScope": "Create a scope first before editing the location hierarchy."
     },
     "tree": {
-      "searchLabel": "Search the tree",
-      "searchPlaceholder": "Search by name or path"
+      "searchPlaceholder": "Search by name or path",
+      "noMatches": "No locations matched this search."
     },
     "history": {
       "title": "Change history",
@@ -317,16 +313,6 @@
         "nameHint": "Use a short label such as North Farm, Shed B, or Plot 12.",
         "displayNameLabel": "Location description",
         "displayNameHint": "Add context that helps users recognize the location quickly."
-      },
-      "structure": {
-        "title": "Structure",
-        "description": "Define the position of this location inside the selected scope tree.",
-        "parentLabel": "Parent location",
-        "parentHint": "Choose the parent location or keep it at the root level.",
-        "rootOptionLabel": "No parent (root location)",
-        "parentSearchLabel": "Find parent",
-        "parentSearchPlaceholder": "Search possible parents",
-        "noParentCandidates": "No locations matched this search."
       }
     },
     "metadata": {
@@ -335,14 +321,10 @@
       "childrenLabel": "Direct children",
       "descendantsLabel": "Total descendants"
     },
-    "reorder": {
-      "title": "Reorder and create",
-      "description": "Reorder siblings with drag and drop, or create new locations relative to the current selection."
-    },
     "dragDropHint": "Drag a handle to reorder before or after a sibling, or drop on a row to move under that location.",
     "action": {
       "cancel": "Cancel",
-      "newRoot": "New root",
+      "newLabel": "New",
       "newChild": "New child",
       "newSibling": "New sibling",
       "delete": "Delete",
@@ -350,18 +332,13 @@
       "save": "Save",
       "saving": "Saving...",
       "moveUp": "Move up",
-      "moveDown": "Move down",
-      "moving": "Moving...",
-      "moveToRoot": "Move to root"
+      "moveDown": "Move down"
     },
-    "selectPrompt": "Select a location from the tree to edit the record.",
     "readOnlyNotice": "You can review the location directory, but only master or admin members can create or edit hierarchical records.",
     "savedNotice": "Location updated successfully.",
     "createdNotice": "Location created successfully.",
     "deletedNotice": "Location deleted successfully.",
     "movedNotice": "Location moved successfully.",
-    "childDeleteBlocked": "Locations with children cannot be deleted until their branch is reorganized.",
-    "moveBlocked": "This location cannot be moved with the current permissions.",
     "newLocationTitle": "New location",
     "error": {
       "load": "Could not load the location directory. Try again.",
@@ -371,12 +348,7 @@
       "move": "Could not move the location. Try again.",
       "validation": "This field cannot be empty."
     },
-    "discardConfirm": "Discard unsaved changes?",
-    "drop": {
-      "before": "Drop before",
-      "inside": "Drop inside",
-      "after": "Drop after"
-    }
+    "discardConfirm": "Discard unsaved changes?"
   },
   "TenantConfigurationPage": {
     "eyebrow": "Configuration",

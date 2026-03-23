@@ -291,10 +291,6 @@
       "history": "Historial",
       "listAriaLabel": "Secciones de la configuración de ubicaciones"
     },
-    "scope": {
-      "label": "Alcance",
-      "hint": "Elige el alcance estructural cuyo árbol de ubicaciones quieres editar."
-    },
     "list": {
       "title": "Directorio de ubicaciones",
       "description": "Selecciona un alcance, navega por el árbol y elige una ubicación para revisar o actualizar.",
@@ -302,8 +298,8 @@
       "emptyScope": "Crea un alcance antes de editar la jerarquía de ubicaciones."
     },
     "tree": {
-      "searchLabel": "Buscar en el árbol",
-      "searchPlaceholder": "Buscar por nombre o ruta"
+      "searchPlaceholder": "Buscar por nombre o ruta",
+      "noMatches": "Ninguna ubicación coincide con esta búsqueda."
     },
     "history": {
       "title": "Historial de cambios",
@@ -317,16 +313,6 @@
         "nameHint": "Usa una etiqueta corta, como Granja Norte, Galpón B o Lote 12.",
         "displayNameLabel": "Descripción de la ubicación",
         "displayNameHint": "Añade contexto para que el usuario reconozca la ubicación rápidamente."
-      },
-      "structure": {
-        "title": "Estructura",
-        "description": "Define la posición de esta ubicación dentro del árbol del alcance seleccionado.",
-        "parentLabel": "Ubicación padre",
-        "parentHint": "Elige la ubicación padre o mantén este registro en el nivel raíz.",
-        "rootOptionLabel": "Sin padre (ubicación raíz)",
-        "parentSearchLabel": "Buscar padre",
-        "parentSearchPlaceholder": "Buscar padres posibles",
-        "noParentCandidates": "Ninguna ubicación coincide con esta búsqueda."
       }
     },
     "metadata": {
@@ -335,14 +321,10 @@
       "childrenLabel": "Hijos directos",
       "descendantsLabel": "Descendientes totales"
     },
-    "reorder": {
-      "title": "Reordenar y crear",
-      "description": "Reordena hermanos con arrastrar y soltar o crea nuevas ubicaciones a partir de la selección actual."
-    },
     "dragDropHint": "Arrastra el asa para reordenar antes o después de un hermano, o suéltala sobre una fila para moverla debajo de esa ubicación.",
     "action": {
       "cancel": "Cancelar",
-      "newRoot": "Nueva raíz",
+      "newLabel": "Nuevo",
       "newChild": "Nuevo hijo",
       "newSibling": "Nuevo hermano",
       "delete": "Eliminar",
@@ -350,18 +332,13 @@
       "save": "Guardar",
       "saving": "Guardando...",
       "moveUp": "Mover arriba",
-      "moveDown": "Mover abajo",
-      "moving": "Moviendo...",
-      "moveToRoot": "Mover a raíz"
+      "moveDown": "Mover abajo"
     },
-    "selectPrompt": "Selecciona una ubicación del árbol para editar el registro.",
     "readOnlyNotice": "Puedes revisar el directorio de ubicaciones, pero solo los miembros master o administrador pueden crear o editar registros jerárquicos.",
     "savedNotice": "Ubicación actualizada correctamente.",
     "createdNotice": "Ubicación creada correctamente.",
     "deletedNotice": "Ubicación eliminada correctamente.",
     "movedNotice": "Ubicación movida correctamente.",
-    "childDeleteBlocked": "Las ubicaciones con hijos no pueden eliminarse hasta reorganizar la rama.",
-    "moveBlocked": "Esta ubicación no puede moverse con los permisos actuales.",
     "newLocationTitle": "Nueva ubicación",
     "error": {
       "load": "No se pudo cargar el directorio de ubicaciones. Inténtalo de nuevo.",
@@ -371,12 +348,7 @@
       "move": "No se pudo mover la ubicación. Inténtalo de nuevo.",
       "validation": "Este campo no puede quedar vacío."
     },
-    "discardConfirm": "¿Descartar los cambios no guardados?",
-    "drop": {
-      "before": "Soltar antes",
-      "inside": "Soltar dentro",
-      "after": "Soltar después"
-    }
+    "discardConfirm": "¿Descartar los cambios no guardados?"
   },
   "TenantConfigurationPage": {
     "eyebrow": "Configuración",

@@ -238,6 +238,45 @@ svg {
   opacity: 0.45;
 }
 
+@keyframes location-editor-flash-ring {
+  0% {
+    opacity: 0;
+    transform: scale(0.992);
+  }
+
+  18% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+
+@keyframes location-editor-flash-fill {
+  0% {
+    opacity: 0;
+  }
+
+  16% {
+    opacity: 0.95;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.location-editor-flash-ring {
+  animation: location-editor-flash-ring 960ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.location-editor-flash-fill {
+  animation: location-editor-flash-fill 960ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 .ui-pill {
   border: var(--border-width-default) solid var(--color-border);
   border-radius: 999px;
