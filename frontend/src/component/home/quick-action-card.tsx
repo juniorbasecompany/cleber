@@ -20,7 +20,7 @@ export function QuickActionCard({
 }: QuickActionCardProps) {
   return (
     <article className="ui-card ui-preview-card-accent flex h-full flex-col gap-4 p-5">
-      <div className="absolute inset-x-0 top-0 h-24 bg-[radial-gradient(circle_at_top_right,_rgba(37,117,216,0.18),_transparent_70%)]" />
+      <div className="ui-preview-card-glow" />
       <div className="relative flex items-start gap-4">
         {iconSlot ? <div className="ui-icon-badge shrink-0">{iconSlot}</div> : null}
         <div className="ui-section-copy">

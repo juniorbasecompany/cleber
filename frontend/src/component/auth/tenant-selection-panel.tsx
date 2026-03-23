@@ -19,6 +19,7 @@ import {
   SparkIcon,
   ValoraMark
 } from "@/component/ui/ui-icons";
+import { Badge } from "@/component/ui/badge";
 
 type TenantSelectionCopy = {
   loading: string;
@@ -64,14 +65,14 @@ function getRoleLabel(role: number) {
   return "unknown";
 }
 
-function getRoleToneClass(role: number) {
+function getRoleTone(role: number): "positive" | "neutral" | "construction" {
   if (role === 1) {
-    return "ui-tone-positive";
+    return "positive";
   }
   if (role === 2) {
-    return "ui-tone-neutral";
+    return "neutral";
   }
-  return "ui-tone-construction";
+  return "construction";
 }
 
 function getTenantDisplayName(option: TenantOption | InviteOption) {
@@ -396,7 +397,7 @@ export function TenantSelectionPanel({
 
   if (isLoading) {
     return (
-      <div className="ui-panel px-6 py-6 text-sm text-[var(--color-text-subtle)]">
+      <div className="ui-panel ui-empty-panel">
         {copy.loading}
       </div>
     );
@@ -406,14 +407,14 @@ export function TenantSelectionPanel({
     <section className="flex flex-col gap-6">
       <header className="ui-panel px-6 py-6 lg:px-7 lg:py-7">
         <div className="flex items-start gap-4">
-          <div className="rounded-[1.25rem] border border-[rgba(37,117,216,0.12)] bg-white/85 p-1.5 shadow-[var(--shadow-xs)]">
+          <div className="ui-auth-mark">
             <ValoraMark />
           </div>
-          <div className="space-y-3">
-            <h1 className="ui-header-title text-3xl font-semibold tracking-[-0.04em] text-[var(--color-text)]">
+          <div className="ui-section-copy">
+            <h1 className="ui-header-title ui-title-page text-3xl">
               {copy.title}
             </h1>
-            <p className="max-w-2xl text-sm leading-7 text-[var(--color-text-muted)]">
+            <p className="ui-page-description max-w-2xl">
               {copy.description}
             </p>
           </div>
@@ -425,16 +426,16 @@ export function TenantSelectionPanel({
       ) : null}
 
       {isCreateFlow ? (
-        <article className="ui-panel flex flex-col gap-4 p-6">
-          <div className="flex items-start gap-4">
+        <article className="ui-panel ui-auth-card">
+          <div className="ui-section-header">
             <span className="ui-icon-badge">
               <SparkIcon className="h-[1.05rem] w-[1.05rem]" />
             </span>
-            <div className="space-y-2">
-              <h2 className="text-lg font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+            <div className="ui-section-copy">
+              <h2 className="ui-header-title ui-title-section text-lg">
                 {copy.createTitle}
               </h2>
-              <p className="text-sm leading-6 text-[var(--color-text-subtle)]">
+              <p className="ui-copy-body">
                 {copy.createDescription}
               </p>
             </div>
@@ -454,30 +455,30 @@ export function TenantSelectionPanel({
 
       {tenantList.length > 0 ? (
         <section className="ui-panel flex flex-col gap-4 p-6">
-          <div className="flex items-center gap-3">
+          <div className="ui-section-header items-center">
             <span className="ui-icon-badge">
               <BuildingIcon className="h-[1.05rem] w-[1.05rem]" />
             </span>
-            <h2 className="ui-header-title text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
-              {copy.activeListTitle}
-            </h2>
+            <div className="ui-section-copy">
+              <h2 className="ui-header-title ui-title-section text-xl">
+                {copy.activeListTitle}
+              </h2>
+            </div>
           </div>
-          <div className="grid gap-4">
+          <div className="ui-preview-stack">
             {tenantList.map((tenant) => (
               <article
                 key={tenant.tenant_id}
-                className="ui-card border-[rgba(37,117,216,0.14)] p-5"
+                className="ui-preview-card ui-preview-card-accent flex flex-col gap-4"
               >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                  <div className="flex flex-col gap-3">
+                    <h3 className="ui-header-title ui-title-section text-base">
                       {getTenantDisplayName(tenant)}
                     </h3>
-                    <span
-                      className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getRoleToneClass(tenant.role)}`}
-                    >
+                    <Badge tone={getRoleTone(tenant.role)}>
                       {getRoleLabel(tenant.role)}
-                    </span>
+                    </Badge>
                   </div>
                   <div>
                     <button
@@ -498,31 +499,34 @@ export function TenantSelectionPanel({
 
       {inviteList.length > 0 ? (
         <section className="ui-panel flex flex-col gap-4 p-6">
-          <div className="flex items-center gap-3">
+          <div className="ui-section-header items-center">
             <span className="ui-icon-badge ui-icon-badge-attention">
               <ClockIcon className="h-[1.05rem] w-[1.05rem]" />
             </span>
-            <h2 className="ui-header-title text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
-              {copy.inviteListTitle}
-            </h2>
+            <div className="ui-section-copy">
+              <h2 className="ui-header-title ui-title-section text-xl">
+                {copy.inviteListTitle}
+              </h2>
+            </div>
           </div>
-          <div className="grid gap-4">
+          <div className="ui-preview-stack">
             {inviteList.map((invite) => (
-              <article key={invite.member_id} className="ui-card p-5">
+              <article
+                key={invite.member_id}
+                className="ui-preview-card flex flex-col gap-4"
+              >
                 <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                  <div className="space-y-3">
-                    <h3 className="text-base font-semibold tracking-[-0.02em] text-[var(--color-text)]">
+                  <div className="flex flex-col gap-3">
+                    <h3 className="ui-header-title ui-title-section text-base">
                       {getTenantDisplayName(invite)}
                     </h3>
                     <div className="flex flex-wrap gap-2">
-                      <span
-                        className={`inline-flex rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em] ${getRoleToneClass(invite.role)}`}
-                      >
+                      <Badge tone={getRoleTone(invite.role)}>
                         {getRoleLabel(invite.role)}
-                      </span>
-                      <span className="ui-badge ui-badge-construction px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.08em]">
+                      </Badge>
+                      <Badge tone="construction">
                         {invite.status}
-                      </span>
+                      </Badge>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-3">
@@ -551,7 +555,7 @@ export function TenantSelectionPanel({
       ) : null}
 
       {!isCreateFlow && tenantList.length === 0 && inviteList.length === 0 ? (
-        <div className="ui-panel px-6 py-6 text-sm text-[var(--color-text-subtle)]">
+        <div className="ui-panel ui-empty-panel">
           {copy.empty}
         </div>
       ) : null}

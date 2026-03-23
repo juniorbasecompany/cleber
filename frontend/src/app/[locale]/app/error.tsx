@@ -11,7 +11,7 @@ export default function AppErrorPage({ error, reset }: AppErrorPageProps) {
   const t = useTranslations("State");
 
   return (
-    <section className="ui-notice-danger rounded-[var(--radius-panel)] p-6 shadow-[var(--shadow-sm)]">
+    <section className="ui-notice-danger ui-notice-panel">
       <div className="flex flex-col gap-3">
         <h2 className="ui-header-title text-xl font-semibold tracking-[-0.03em]">
           {t("errorTitle")}

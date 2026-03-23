@@ -533,7 +533,7 @@ export function MemberConfigurationClient({
               {formError ? (
                 <div className="ui-notice-danger px-4 py-3 text-sm">{formError}</div>
               ) : null}
-              <div className="ui-panel px-6 py-6 text-sm text-[var(--color-text-muted)]">
+              <div className="ui-panel ui-empty-panel">
                 {copy.empty}
               </div>
             </div>
@@ -793,12 +793,12 @@ export function MemberConfigurationClient({
                       </div>
 
                       <div className="ui-metadata-card">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                        <p className="ui-metadata-label">
                           {selectedMember.account_id
                             ? copy.accountLinked
                             : copy.accountPending}
                         </p>
-                        <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                        <p className="ui-metadata-value-strong">
                           {selectedMember.account_id
                             ? `#${selectedMember.account_id}`
                             : copy.accountPending}
@@ -808,7 +808,7 @@ export function MemberConfigurationClient({
                   </section>
                 </>
               ) : (
-                <div className="ui-panel px-6 py-6 text-sm text-[var(--color-text-muted)]">
+                <div className="ui-panel ui-empty-panel">
                   {copy.selectPrompt}
                 </div>
               )}
@@ -836,10 +836,10 @@ export function MemberConfigurationClient({
                 {selectedMember ? (
                   <div className="ui-preview-stack">
                     <div className="ui-preview-card ui-preview-card-accent">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                      <p className="ui-metadata-label">
                         {copy.displayNameLabel}
                       </p>
-                      <p className="ui-header-title mt-2 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--color-text)]">
+                      <p className="ui-preview-headline">
                         {previewDisplayName}
                       </p>
 
@@ -856,16 +856,16 @@ export function MemberConfigurationClient({
                     </div>
 
                     <div className="ui-preview-card">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                      <p className="ui-metadata-label">
                         {copy.nameLabel}
                       </p>
-                      <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                      <p className="ui-preview-value-strong">
                         {previewName}
                       </p>
-                      <p className="mt-3 text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                      <p className="mt-3 ui-metadata-label">
                         {copy.emailLabel}
                       </p>
-                      <p className="mt-2 text-sm text-[var(--color-text)]">
+                      <p className="ui-preview-value">
                         {selectedMember.email}
                       </p>
                     </div>
@@ -873,18 +873,18 @@ export function MemberConfigurationClient({
                     <div className="ui-metadata-card">
                       <div className="ui-metadata-grid ui-metadata-grid-2">
                         <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                          <p className="ui-metadata-label">
                             {copy.memberIdLabel}
                           </p>
-                          <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                          <p className="ui-metadata-value-strong">
                             {selectedMember.id}
                           </p>
                         </div>
                         <div>
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                          <p className="ui-metadata-label">
                             {copy.accountIdLabel}
                           </p>
-                          <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                          <p className="ui-metadata-value-strong">
                             {selectedMember.account_id ?? "-"}
                           </p>
                         </div>
@@ -892,7 +892,7 @@ export function MemberConfigurationClient({
                     </div>
                   </div>
                 ) : (
-                  <p className="mt-5 text-sm leading-6 text-[var(--color-text-subtle)]">
+                  <p className="ui-copy-body mt-5">
                     {copy.selectPrompt}
                   </p>
                 )}
@@ -961,10 +961,10 @@ export function MemberConfigurationClient({
 
             {selectedMember ? (
               <div className="ui-panel p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                <p className="ui-metadata-label">
                   {copy.displayNameLabel}
                 </p>
-                <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
+                <p className="ui-header-title mt-2 text-xl tracking-[-0.03em]">
                   {resolveMemberLabel(selectedMember)}
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2">

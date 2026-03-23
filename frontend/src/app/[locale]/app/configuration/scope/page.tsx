@@ -64,7 +64,7 @@ export default async function ScopeConfigurationPage({
   return (
     <Suspense
       fallback={
-        <div className="ui-panel px-6 py-6 text-sm text-[var(--color-text-muted)]">
+        <div className="ui-panel ui-empty-panel">
           {tState("loadingDescription")}
         </div>
       }

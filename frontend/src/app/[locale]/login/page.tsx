@@ -43,10 +43,10 @@ export default async function LoginPage({
     <main className="ui-shell relative min-h-screen">
       <LoginLocaleBar currentLocale={locale} />
       <Script src="https://accounts.google.com/gsi/client" strategy="afterInteractive" />
-      <section className="mx-auto grid min-h-screen max-w-7xl gap-8 px-6 py-12 lg:grid-cols-[1.15fr_0.85fr] lg:items-center lg:px-8">
-        <div className="ui-panel flex flex-col gap-7 px-6 py-7 lg:px-8 lg:py-8">
+      <section className="ui-auth-layout">
+        <div className="ui-panel ui-auth-hero">
           <div className="flex items-center gap-4">
-            <div className="rounded-[1.35rem] border border-[rgba(37,117,216,0.12)] bg-white/85 p-1.5 shadow-[var(--shadow-xs)]">
+            <div className="ui-auth-mark">
               <ValoraMark />
             </div>
             <Badge>
@@ -55,85 +55,81 @@ export default async function LoginPage({
           </div>
 
           <div className="space-y-4">
-            <h1 className="ui-header-title max-w-3xl text-4xl font-semibold tracking-[-0.05em] text-[var(--color-text)] lg:text-[3.3rem]">
+            <h1 className="ui-header-title ui-title-page max-w-3xl lg:text-[3.3rem]">
               {t("title")}
             </h1>
-            <p className="max-w-2xl text-base leading-8 text-[var(--color-text-muted)]">
+            <p className="ui-page-description max-w-2xl text-base leading-8">
               {t("description")}
             </p>
           </div>
 
-          <div className="grid gap-4 md:grid-cols-3">
-            <article className="ui-card p-5">
+          <div className="ui-auth-card-grid">
+            <article className="ui-card ui-auth-card">
               <div className="ui-icon-badge">
                 <SparkIcon className="h-[1.05rem] w-[1.05rem]" />
               </div>
-              <h2 className="mt-4 text-sm font-semibold text-[var(--color-text)]">
+              <h2 className="ui-header-title ui-title-section">
                 {t("cards.workspace.title")}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-text-subtle)]">
+              <p className="ui-copy-body">
                 {t("cards.workspace.description")}
               </p>
             </article>
 
-            <article className="ui-card p-5">
+            <article className="ui-card ui-auth-card">
               <div className="ui-icon-badge ui-icon-badge-attention">
                 <AuditIcon className="h-[1.05rem] w-[1.05rem]" />
               </div>
-              <h2 className="mt-4 text-sm font-semibold text-[var(--color-text)]">
+              <h2 className="ui-header-title ui-title-section">
                 {t("cards.traceability.title")}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-text-subtle)]">
+              <p className="ui-copy-body">
                 {t("cards.traceability.description")}
               </p>
             </article>
 
-            <article className="ui-card p-5">
+            <article className="ui-card ui-auth-card">
               <div className="ui-icon-badge">
                 <WorkflowIcon className="h-[1.05rem] w-[1.05rem]" />
               </div>
-              <h2 className="mt-4 text-sm font-semibold text-[var(--color-text)]">
+              <h2 className="ui-header-title ui-title-section">
                 {t("cards.nextStep.title")}
               </h2>
-              <p className="mt-2 text-sm leading-6 text-[var(--color-text-subtle)]">
+              <p className="ui-copy-body">
                 {t("cards.nextStep.description")}
               </p>
             </article>
           </div>
         </div>
 
-        <section className="ui-panel p-6 lg:p-7">
-          <div className="flex flex-col gap-2">
-            <h2 className="ui-header-title text-2xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
+        <section className="ui-panel ui-auth-panel">
+          <div className="ui-section-copy">
+            <h2 className="ui-header-title ui-title-section text-2xl">
               {t("form.title")}
             </h2>
-            <p className="text-sm leading-6 text-[var(--color-text-subtle)]">
+            <p className="ui-copy-body">
               {t("form.description")}
             </p>
           </div>
 
           {noticeMessage ? (
-            <div className="ui-notice-attention mt-5 px-4 py-3 text-sm">
+            <div className="ui-notice-attention px-4 py-3 text-sm">
               {noticeMessage}
             </div>
           ) : null}
 
-          <div className="mt-6">
-            <GoogleSignInPanel
-              locale={locale}
-              clientId={googleClientId}
-              buttonLabel={t("form.submitIdle")}
-              buttonPendingLabel={t("form.submitPending")}
-              helperText={t("form.helper")}
-              unavailableText={t("form.googleUnavailable")}
-              genericErrorText={t("form.error")}
-              rememberMeLabel={t("form.rememberMeLabel")}
-            />
-          </div>
+          <GoogleSignInPanel
+            locale={locale}
+            clientId={googleClientId}
+            buttonLabel={t("form.submitIdle")}
+            buttonPendingLabel={t("form.submitPending")}
+            helperText={t("form.helper")}
+            unavailableText={t("form.googleUnavailable")}
+            genericErrorText={t("form.error")}
+            rememberMeLabel={t("form.rememberMeLabel")}
+          />
 
-          <div className="ui-card mt-6 px-4 py-4 text-sm leading-6 text-[var(--color-text-subtle)]">
-            <p>{t("form.accessPolicy")}</p>
-          </div>
+          <div className="ui-auth-policy">{t("form.accessPolicy")}</div>
         </section>
       </section>
     </main>

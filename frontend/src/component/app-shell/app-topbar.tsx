@@ -23,7 +23,7 @@ export function AppTopbar({
 
           <div className="min-w-0">
             <span className="ui-topbar-chip inline-flex items-center gap-2 px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] sm:text-[11px]">
-              <span className="h-2 w-2 rounded-full bg-[var(--color-accent)] shadow-[0_0_0_4px_rgba(37,117,216,0.12)]" />
+              <span className="ui-topbar-status-dot" />
               {tenantLabel}
             </span>
             <p className="ui-header-title ui-title-section mt-2 truncate sm:mt-3 sm:text-lg">

@@ -670,7 +670,7 @@ export function LocationConfigurationClient({
       <div className="ui-layout-directory 2xl:grid-cols-[minmax(18rem,0.84fr)_minmax(0,1.16fr)_minmax(18rem,0.84fr)]">
         <aside className="ui-panel flex flex-col gap-4 px-5 py-5">
           {!directory ? (
-            <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">
+            <div className="ui-panel ui-empty-panel">
               {hasAnyScope ? copy.missingCurrentScope : copy.emptyScope}
             </div>
           ) : null}
@@ -688,48 +688,124 @@ export function LocationConfigurationClient({
 
                 return (
                   <div key={item.id} className="grid gap-1">
-                    <div className={`h-2 rounded-full ${dropKey === topKey ? "bg-[var(--color-accent)]/70" : "bg-transparent"}`} onDragOver={(event) => { if (!draggedLocationId || draggedLocationId === item.id) { return; } event.preventDefault(); setDropKey(topKey); }} onDrop={(event) => { event.preventDefault(); if (!draggedLocationId || draggedLocationId === item.id) { return; } void moveLocation(draggedLocationId, item.parent_location_id ?? null, siblingIndex); }} />
+                    <div
+                      className="ui-directory-drop-slot"
+                      data-active={dropKey === topKey ? "true" : undefined}
+                      onDragOver={(event) => {
+                        if (!draggedLocationId || draggedLocationId === item.id) {
+                          return;
+                        }
+                        event.preventDefault();
+                        setDropKey(topKey);
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        if (!draggedLocationId || draggedLocationId === item.id) {
+                          return;
+                        }
+                        void moveLocation(
+                          draggedLocationId,
+                          item.parent_location_id ?? null,
+                          siblingIndex
+                        );
+                      }}
+                    />
                     <div className="flex items-stretch gap-2">
-                      <button type="button" className="flex w-12 shrink-0 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[var(--color-border-strong)] hover:bg-[var(--color-background-muted)] disabled:cursor-not-allowed disabled:opacity-45" draggable={item.can_move && !isSaving && !isMoving} onDragStart={(event: DragEvent<HTMLButtonElement>) => { setDraggedLocationId(item.id); event.dataTransfer.effectAllowed = "move"; }} onDragEnd={() => { setDraggedLocationId(null); setDropKey(null); }} disabled={!item.can_move || isSaving || isMoving} aria-label={copy.dragDropHint} title={copy.dragDropHint}>
+                      <button
+                        type="button"
+                        className="ui-directory-handle disabled:cursor-not-allowed disabled:opacity-45"
+                        draggable={item.can_move && !isSaving && !isMoving}
+                        onDragStart={(event: DragEvent<HTMLButtonElement>) => {
+                          setDraggedLocationId(item.id);
+                          event.dataTransfer.effectAllowed = "move";
+                        }}
+                        onDragEnd={() => {
+                          setDraggedLocationId(null);
+                          setDropKey(null);
+                        }}
+                        disabled={!item.can_move || isSaving || isMoving}
+                        aria-label={copy.dragDropHint}
+                        title={copy.dragDropHint}
+                      >
                         <GripDotsIcon />
                       </button>
                       <div
-                        className={`ui-directory-item flex flex-1 items-stretch gap-3 ${dropKey === insideKey ? "border-[rgba(37,117,216,0.38)] bg-[var(--color-accent-soft)]/75" : ""}`}
+                        className="ui-directory-item flex flex-1 items-stretch gap-3"
                         data-selected={isSelected ? "true" : undefined}
-                        onDragOver={(event) => { if (!draggedLocationId || draggedLocationId === item.id) { return; } event.preventDefault(); setDropKey(insideKey); }}
-                        onDrop={(event) => { event.preventDefault(); if (!draggedLocationId || draggedLocationId === item.id) { return; } void moveLocation(draggedLocationId, item.id, item.children_count); }}
+                        data-drop-active={dropKey === insideKey ? "true" : undefined}
+                        onDragOver={(event) => {
+                          if (!draggedLocationId || draggedLocationId === item.id) {
+                            return;
+                          }
+                          event.preventDefault();
+                          setDropKey(insideKey);
+                        }}
+                        onDrop={(event) => {
+                          event.preventDefault();
+                          if (!draggedLocationId || draggedLocationId === item.id) {
+                            return;
+                          }
+                          void moveLocation(
+                            draggedLocationId,
+                            item.id,
+                            item.children_count
+                          );
+                        }}
                       >
                         {item.children_count > 0 ? (
-                          <button type="button" className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-[var(--color-border)] text-[11px]" onClick={() => setExpandedIdSet((previous) => { const next = new Set(previous); if (next.has(item.id)) { next.delete(item.id); } else { next.add(item.id); } return next; })}>
+                          <button type="button" className="ui-directory-toggle" onClick={() => setExpandedIdSet((previous) => { const next = new Set(previous); if (next.has(item.id)) { next.delete(item.id); } else { next.add(item.id); } return next; })}>
                             {expandedIdSet.has(item.id) ? "-" : "+"}
                           </button>
-                        ) : <span className="mt-1 inline-flex h-5 w-5 shrink-0 items-center justify-center text-[11px]">•</span>}
+                        ) : <span className="ui-directory-dot">&middot;</span>}
                         <button type="button" className="flex-1 text-left" onClick={() => handleSelectLocation(item)} style={{ paddingLeft: `${item.depth * 1.1}rem` }}>
-                          <p className="text-sm font-semibold text-[var(--color-text)]">{resolveLocationLabel(item)}</p>
-                          <p className="mt-1 text-xs text-[var(--color-text-subtle)]">{item.display_name}</p>
+                          <p className="ui-directory-label">{resolveLocationLabel(item)}</p>
+                          <p className="ui-directory-description">{item.display_name}</p>
                         </button>
                       </div>
-                      <div className="grid w-[7rem] shrink-0 grid-cols-2 gap-2">
-                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => siblingIndex > 0 ? void moveLocation(item.id, item.parent_location_id ?? null, siblingIndex - 1) : undefined} disabled={!item.can_move || siblingIndex < 1 || isSaving || isMoving} aria-label={copy.moveUp} title={copy.moveUp}>
+                      <div className="ui-directory-action-grid">
+                        <button type="button" className="ui-directory-action disabled:cursor-not-allowed disabled:opacity-45" onClick={() => siblingIndex > 0 ? void moveLocation(item.id, item.parent_location_id ?? null, siblingIndex - 1) : undefined} disabled={!item.can_move || siblingIndex < 1 || isSaving || isMoving} aria-label={copy.moveUp} title={copy.moveUp}>
                           <MoveUpIcon />
                         </button>
-                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => handleStartCreate(item.id, true)} disabled={!directory?.can_create || isSaving || isMoving} aria-label={copy.newChild} title={copy.newChild}>
+                        <button type="button" className="ui-directory-action disabled:cursor-not-allowed disabled:opacity-45" onClick={() => handleStartCreate(item.id, true)} disabled={!directory?.can_create || isSaving || isMoving} aria-label={copy.newChild} title={copy.newChild}>
                           <NewChildIcon />
                         </button>
-                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => siblingIndex >= 0 ? void moveLocation(item.id, item.parent_location_id ?? null, siblingIndex + 1) : undefined} disabled={!item.can_move || siblingIndex < 0 || siblingIndex >= siblings.length - 1 || isSaving || isMoving} aria-label={copy.moveDown} title={copy.moveDown}>
+                        <button type="button" className="ui-directory-action disabled:cursor-not-allowed disabled:opacity-45" onClick={() => siblingIndex >= 0 ? void moveLocation(item.id, item.parent_location_id ?? null, siblingIndex + 1) : undefined} disabled={!item.can_move || siblingIndex < 0 || siblingIndex >= siblings.length - 1 || isSaving || isMoving} aria-label={copy.moveDown} title={copy.moveDown}>
                           <MoveDownIcon />
                         </button>
-                        <button type="button" className="inline-flex min-h-11 items-center justify-center rounded-[var(--radius-card)] border border-[var(--color-border-strong)] bg-white/80 text-[var(--color-text-muted)] transition hover:border-[rgba(37,117,216,0.28)] hover:bg-[var(--color-accent-soft)]/45 hover:text-[var(--color-text)] disabled:cursor-not-allowed disabled:opacity-45" onClick={() => handleStartCreate(item.parent_location_id ?? null, true)} disabled={!directory?.can_create || isSaving || isMoving} aria-label={copy.newSibling} title={copy.newSibling}>
+                        <button type="button" className="ui-directory-action disabled:cursor-not-allowed disabled:opacity-45" onClick={() => handleStartCreate(item.parent_location_id ?? null, true)} disabled={!directory?.can_create || isSaving || isMoving} aria-label={copy.newSibling} title={copy.newSibling}>
                           <NewSiblingIcon />
                         </button>
                       </div>
                     </div>
-                    <div className={`h-2 rounded-full ${dropKey === bottomKey ? "bg-[var(--color-accent)]/70" : "bg-transparent"}`} onDragOver={(event) => { if (!draggedLocationId || draggedLocationId === item.id) { return; } event.preventDefault(); setDropKey(bottomKey); }} onDrop={(event) => { event.preventDefault(); if (!draggedLocationId || draggedLocationId === item.id) { return; } void moveLocation(draggedLocationId, item.parent_location_id ?? null, siblingIndex + 1); }} />
+                    <div
+                      className="ui-directory-drop-slot"
+                      data-active={dropKey === bottomKey ? "true" : undefined}
+                      onDragOver={(event) => {
+                        if (!draggedLocationId || draggedLocationId === item.id) {
+                          return;
+                        }
+                        event.preventDefault();
+                        setDropKey(bottomKey);
+                      }}
+                      onDrop={(event) => {
+                        event.preventDefault();
+                        if (!draggedLocationId || draggedLocationId === item.id) {
+                          return;
+                        }
+                        void moveLocation(
+                          draggedLocationId,
+                          item.parent_location_id ?? null,
+                          siblingIndex + 1
+                        );
+                      }}
+                    />
                   </div>
                 );
               })}
 
-            {directory && itemList.length === 0 ? <div className="ui-panel px-4 py-4 text-sm text-[var(--color-text-muted)]">{copy.empty}</div> : null}
+            {directory && itemList.length === 0 ? (
+              <div className="ui-panel ui-empty-panel">{copy.empty}</div>
+            ) : null}
           </div>
 
           <button type="button" className="ui-button-secondary mt-2" onClick={() => handleStartCreate(null, true)} disabled={!directory?.can_create}>{copy.newLabel}</button>
@@ -748,20 +824,11 @@ export function LocationConfigurationClient({
                   <>
                     <span
                       aria-hidden
-                      className="location-editor-flash-ring pointer-events-none absolute inset-0 rounded-[inherit]"
-                      style={{
-                        border: "2px solid rgba(37, 117, 216, 0.46)",
-                        boxShadow:
-                          "0 0 0 6px rgba(37, 117, 216, 0.18), 0 22px 48px rgba(15, 23, 42, 0.12)"
-                      }}
+                      className="ui-editor-flash-ring pointer-events-none absolute inset-0"
                     />
                     <span
                       aria-hidden
-                      className="location-editor-flash-fill pointer-events-none absolute inset-x-0 top-0 h-28 rounded-t-[inherit]"
-                      style={{
-                        background:
-                          "linear-gradient(180deg, rgba(37, 117, 216, 0.18), rgba(37, 117, 216, 0.07) 45%, rgba(37, 117, 216, 0.01) 100%)"
-                      }}
+                      className="ui-editor-flash-fill pointer-events-none absolute inset-x-0 top-0 h-28"
                     />
                   </>
                 ) : null}
@@ -801,21 +868,21 @@ export function LocationConfigurationClient({
               <div className="ui-panel ui-panel-context p-5">
                 <div className="ui-metadata-grid">
                   <div className="ui-metadata-card">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">{copy.metadataIdLabel}</p>
-                    <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">{selectedLocation.id}</p>
+                    <p className="ui-metadata-label">{copy.metadataIdLabel}</p>
+                    <p className="ui-metadata-value-strong">{selectedLocation.id}</p>
                   </div>
                   <div className="ui-metadata-card">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">{copy.metadataPathLabel}</p>
-                    <p className="mt-2 text-sm text-[var(--color-text)]">{selectedLocation.path_labels.join(" / ")}</p>
+                    <p className="ui-metadata-label">{copy.metadataPathLabel}</p>
+                    <p className="ui-metadata-value">{selectedLocation.path_labels.join(" / ")}</p>
                   </div>
                   <div className="ui-metadata-grid ui-metadata-grid-2">
                     <div className="ui-metadata-card">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">{copy.metadataChildrenLabel}</p>
-                      <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">{selectedLocation.children_count}</p>
+                      <p className="ui-metadata-label">{copy.metadataChildrenLabel}</p>
+                      <p className="ui-metadata-value-strong">{selectedLocation.children_count}</p>
                     </div>
                     <div className="ui-metadata-card">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">{copy.metadataDescendantsLabel}</p>
-                      <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">{selectedLocation.descendants_count}</p>
+                      <p className="ui-metadata-label">{copy.metadataDescendantsLabel}</p>
+                      <p className="ui-metadata-value-strong">{selectedLocation.descendants_count}</p>
                     </div>
                   </div>
                 </div>

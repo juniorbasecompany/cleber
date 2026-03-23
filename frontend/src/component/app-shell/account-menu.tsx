@@ -144,9 +144,9 @@ export function AccountMenu({
                 currentValue === "account" ? null : "account"
               )
             }
-            className={`inline-flex min-w-0 items-center text-sm font-medium text-[var(--color-text)] ${
+            className={`ui-account-trigger ${
               isSidebar
-                ? "w-auto max-w-full gap-1 rounded-none border-0 bg-transparent px-0 py-0 shadow-none leading-none transition-colors duration-150 hover:text-[var(--color-primary)] focus-visible:text-[var(--color-primary)]"
+                ? "ui-account-trigger-sidebar w-auto max-w-full"
                 : "w-full ui-menu-trigger gap-3 rounded-none pl-2 pr-2.5 sm:pl-2.5 sm:pr-3"
             }`}
           >
@@ -157,19 +157,17 @@ export function AccountMenu({
             ) : null}
             <span className={`${isSidebar ? "text-left" : "min-w-0 flex-1 text-left"}`}>
               <span
-                className={`block truncate text-[var(--color-text)] ${
+                className={`ui-account-name ${
                   isSidebar
-                    ? "max-w-[10rem] text-[0.8rem] font-medium leading-none tracking-[-0.01em]"
-                    : "text-sm font-semibold"
+                    ? "ui-account-name-sidebar"
+                    : "ui-account-name-default"
                 }`}
               >
                 {accountName}
               </span>
             </span>
             <ChevronDownIcon
-              className={`mt-px shrink-0 ${isSidebar ? "text-[var(--color-text)]" : "text-[var(--color-text-subtle)]"} transition-transform duration-200 ${
-                isAccountMenuOpen ? "rotate-180" : ""
-              }`}
+              className={`ui-account-chevron ${isSidebar ? "text-[var(--color-text)]" : "text-[var(--color-text-subtle)]"}`}
             />
           </button>
 

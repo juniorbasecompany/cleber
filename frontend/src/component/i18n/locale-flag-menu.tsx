@@ -140,8 +140,8 @@ export function LocaleFlagMenu({
           className={panelClassName}
         >
           {switchingLocale ? (
-            <div className="flex justify-end px-4 py-2.5">
-              <span className="text-xs text-[var(--color-text-subtle)]">
+            <div className="ui-menu-feedback">
+              <span className="ui-menu-feedback-label">
                 {copy.switchingLocale}
               </span>
             </div>

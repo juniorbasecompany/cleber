@@ -402,15 +402,15 @@ export function TenantConfigurationClient({
             </section>
 
             <section className="ui-metadata-card">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+              <p className="ui-metadata-label">
                 {copy.metadataIdLabel}
               </p>
-              <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+              <p className="ui-metadata-value-strong">
                 {tenant.id}
               </p>
             </section>
 
-            <div className="border-t border-[var(--color-border)] pt-6" />
+            <div className="ui-divider-top" />
           </div>
 
           <aside className="ui-panel-context">
@@ -434,19 +434,19 @@ export function TenantConfigurationClient({
 
               <div className="ui-preview-stack">
                 <div className="ui-preview-card ui-preview-card-accent">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                  <p className="ui-metadata-label">
                     {copy.displayNameLabel}
                   </p>
-                  <p className="ui-header-title mt-2 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--color-text)]">
+                  <p className="ui-preview-headline">
                     {previewDisplayName}
                   </p>
                 </div>
 
                 <div className="ui-preview-card">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                  <p className="ui-metadata-label">
                     {copy.legalNameLabel}
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                  <p className="ui-preview-value-strong">
                     {previewLegalName}
                   </p>
                 </div>

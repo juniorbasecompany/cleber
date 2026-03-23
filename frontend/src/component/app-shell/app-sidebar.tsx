@@ -44,17 +44,13 @@ export function AppSidebar({
 
   return (
     <aside
-      className={`ui-sidebar flex h-full w-full min-w-0 shrink-0 flex-col ${
-        isDrawer
-          ? ""
-          : "max-w-[19.5rem] border-r border-[var(--color-border)]"
-      }`}
+      className={`ui-sidebar flex h-full w-full min-w-0 shrink-0 flex-col ${isDrawer ? "" : "ui-shell-sidebar"}`}
     >
-      <div className="relative z-20 overflow-visible border-b border-[var(--color-border)] px-5 py-6">
+      <div className="ui-shell-sidebar-header">
         <div className="relative">
-          <div className="flex items-start justify-between gap-4">
+          <div className="ui-shell-brand">
             <div className="min-w-0 flex-1">
-              <h1 className="ui-header-title text-[2.15rem] font-semibold tracking-[-0.04em] leading-none text-[var(--color-text)]">
+              <h1 className="ui-header-title ui-shell-brand-title">
                 {productName}
               </h1>
             </div>
@@ -70,7 +66,7 @@ export function AppSidebar({
                 {workspaceSlot}
               </div>
             ) : (
-              <p className="max-w-[14rem] text-[1.04rem] font-medium leading-6 text-[var(--color-text)]">
+              <p className="ui-shell-workspace">
                 {workspaceLabel}
               </p>
             )}

@@ -278,9 +278,6 @@ export function WorkspaceContextMenu({
       isActive ? "ui-menu-item-active" : ""
     }`;
 
-  const triggerTextClass =
-    "block max-w-[13.5rem] truncate text-[1.04rem] font-medium leading-6 text-[var(--color-text)]";
-
   return (
     <div ref={containerRef} className="relative w-full">
       <div className="flex w-full flex-wrap items-start gap-x-3 gap-y-1.5">
@@ -296,14 +293,10 @@ export function WorkspaceContextMenu({
                 currentValue === "tenant" ? null : "tenant"
               )
             }
-            className="inline-flex max-w-full items-center gap-1 rounded-none border-0 bg-transparent px-0 py-0 text-left shadow-none transition-colors duration-150 hover:text-[var(--color-primary)] focus-visible:text-[var(--color-primary)]"
+            className="ui-menu-inline-trigger"
           >
-            <span className={triggerTextClass}>{currentTenantName}</span>
-            <ChevronDownIcon
-              className={`mt-px shrink-0 text-[var(--color-text-subtle)] transition-transform duration-200 ${
-                isTenantMenuOpen ? "rotate-180" : ""
-              }`}
-            />
+            <span className="ui-menu-inline-label">{currentTenantName}</span>
+            <ChevronDownIcon className="ui-menu-inline-chevron" />
           </button>
 
           {isTenantMenuOpen ? (
@@ -313,8 +306,8 @@ export function WorkspaceContextMenu({
               className="ui-menu-panel absolute left-0 top-[calc(100%+0.375rem)] z-[80] inline-flex w-auto max-w-[min(calc(100vw-3rem),22rem)] flex-col gap-0 overflow-hidden rounded-none p-0"
             >
               {isLoadingTenantList || switchingTenantId !== null ? (
-                <div className="flex justify-end px-4 py-2.5">
-                  <span className="text-xs text-[var(--color-text-subtle)]">
+                <div className="ui-menu-feedback">
+                  <span className="ui-menu-feedback-label">
                     {isLoadingTenantList
                       ? copy.loadingTenantList
                       : copy.switchingTenant}
@@ -323,7 +316,7 @@ export function WorkspaceContextMenu({
               ) : null}
 
               {tenantListError ? (
-                <p className="m-0 border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] px-4 py-2.5 text-sm text-[var(--color-danger-text)]">
+                <p className="ui-menu-feedback-danger">
                   {tenantListError}
                 </p>
               ) : null}
@@ -350,7 +343,7 @@ export function WorkspaceContextMenu({
                   })}
 
                   {tenantList.length === 0 ? (
-                    <p className="m-0 px-4 py-2.5 text-sm text-[var(--color-text-subtle)]">
+                    <p className="ui-menu-empty">
                       {copy.emptyTenantList}
                     </p>
                   ) : null}
@@ -372,16 +365,12 @@ export function WorkspaceContextMenu({
                 currentValue === "scope" ? null : "scope"
               )
             }
-            className="inline-flex max-w-full items-center gap-1 rounded-none border-0 bg-transparent px-0 py-0 text-right shadow-none transition-colors duration-150 hover:text-[var(--color-primary)] focus-visible:text-[var(--color-primary)]"
+            className="ui-menu-inline-trigger"
           >
-            <span className={`${triggerTextClass} text-right`}>
+            <span className="ui-menu-inline-label ui-menu-inline-label-end">
               {selectedScope ? getScopeDisplayName(selectedScope) : copy.noScopeLabel}
             </span>
-            <ChevronDownIcon
-              className={`mt-px shrink-0 text-[var(--color-text-subtle)] transition-transform duration-200 ${
-                isScopeMenuOpen ? "rotate-180" : ""
-              }`}
-            />
+            <ChevronDownIcon className="ui-menu-inline-chevron" />
           </button>
 
           {isScopeMenuOpen ? (
@@ -391,8 +380,8 @@ export function WorkspaceContextMenu({
               className="ui-menu-panel absolute left-0 top-[calc(100%+0.375rem)] z-[80] inline-flex w-auto max-w-[min(calc(100vw-3rem),22rem)] flex-col gap-0 overflow-hidden rounded-none p-0"
             >
               {isLoadingScopeList || switchingScopeId !== null ? (
-                <div className="flex justify-end px-4 py-2.5">
-                  <span className="text-xs text-[var(--color-text-subtle)]">
+                <div className="ui-menu-feedback">
+                  <span className="ui-menu-feedback-label">
                     {isLoadingScopeList
                       ? copy.loadingScopeList
                       : copy.switchingScope}
@@ -401,7 +390,7 @@ export function WorkspaceContextMenu({
               ) : null}
 
               {scopeListError ? (
-                <p className="m-0 border border-[var(--color-danger-border)] bg-[var(--color-danger-surface)] px-4 py-2.5 text-sm text-[var(--color-danger-text)]">
+                <p className="ui-menu-feedback-danger">
                   {scopeListError}
                 </p>
               ) : null}
@@ -428,7 +417,7 @@ export function WorkspaceContextMenu({
                   })}
 
                   {scopeList.length === 0 ? (
-                    <p className="m-0 px-4 py-2.5 text-sm text-[var(--color-text-subtle)]">
+                    <p className="ui-menu-empty">
                       {copy.emptyScopeList}
                     </p>
                   ) : null}

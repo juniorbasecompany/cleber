@@ -712,17 +712,17 @@ export function ScopeConfigurationClient({
 
                 {!isCreateMode && selectedScope ? (
                   <section className="ui-metadata-card">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                    <p className="ui-metadata-label">
                       {copy.metadataIdLabel}
                     </p>
-                    <p className="mt-2 text-sm font-semibold text-[var(--color-text)]">
+                    <p className="ui-metadata-value-strong">
                       {selectedScope.id}
                     </p>
                   </section>
                 ) : null}
               </>
             ) : (
-              <div className="ui-panel px-6 py-6 text-sm text-[var(--color-text-muted)]">
+              <div className="ui-panel ui-empty-panel">
                 {copy.selectPrompt}
               </div>
             )}
@@ -750,25 +750,25 @@ export function ScopeConfigurationClient({
               {selectedScopeKey ? (
                 <div className="ui-preview-stack">
                   <div className="ui-preview-card ui-preview-card-accent">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                    <p className="ui-metadata-label">
                       {copy.nameLabel}
                     </p>
-                    <p className="ui-header-title mt-2 text-[1.9rem] font-semibold tracking-[-0.04em] text-[var(--color-text)]">
+                    <p className="ui-preview-headline">
                       {previewLabel}
                     </p>
                   </div>
 
                   <div className="ui-preview-card">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                    <p className="ui-metadata-label">
                       {copy.displayNameLabel}
                     </p>
-                    <p className="mt-2 text-sm text-[var(--color-text)]">
+                    <p className="ui-preview-value">
                       {previewDescription}
                     </p>
                   </div>
                 </div>
               ) : (
-                <p className="mt-5 text-sm leading-6 text-[var(--color-text-subtle)]">
+                <p className="ui-copy-body mt-5">
                   {copy.selectPrompt}
                 </p>
               )}
@@ -833,10 +833,10 @@ export function ScopeConfigurationClient({
 
             {selectedScopeKey ? (
               <div className="ui-panel p-5">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-[var(--color-text-subtle)]">
+                <p className="ui-metadata-label">
                   {copy.nameLabel}
                 </p>
-                <p className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[var(--color-text)]">
+                <p className="ui-header-title mt-2 text-xl tracking-[-0.03em]">
                   {previewLabel}
                 </p>
               </div>

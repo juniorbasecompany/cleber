@@ -171,9 +171,9 @@ export function GoogleSignInPanel({
   }, [clientId, genericErrorText, handleCredential, isUnavailable]);
 
   return (
-    <div className="space-y-5">
-      <div className="space-y-2">
-        <div className="rounded-[var(--radius-card)] border border-[var(--color-border)] bg-white/75 px-4 py-3 text-sm leading-6 text-[var(--color-text-muted)] shadow-[var(--shadow-xs)]">
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-2">
+        <div className="ui-auth-helper">
           {helperText}
         </div>
         {errorMessage ? (
@@ -190,11 +190,11 @@ export function GoogleSignInPanel({
 
       <div className="flex flex-col gap-3">
         {!isUnavailable ? (
-          <div className="relative h-10 w-[340px] max-w-full" aria-busy={!isReady}>
+          <div className="ui-auth-google-slot" aria-busy={!isReady}>
             {!isReady ? (
               <>
                 <div
-                  className="pointer-events-none absolute inset-0 z-0 rounded-full bg-[var(--color-border)]/25 motion-safe:animate-pulse"
+                  className="ui-auth-google-skeleton motion-safe:animate-pulse"
                   aria-hidden
                 />
                 <span className="sr-only">{buttonLabel}</span>
@@ -209,17 +209,17 @@ export function GoogleSignInPanel({
           </div>
         ) : null}
         {isPending ? (
-          <div className="text-sm font-medium text-[var(--color-text)]">
+          <div className="ui-auth-status">
             {buttonPendingLabel}
           </div>
         ) : null}
-        <label className="flex cursor-pointer items-start gap-3 rounded-[var(--radius-card)] border border-[var(--color-border)] bg-[var(--color-background-muted)]/70 px-4 py-3 text-sm leading-6 text-[var(--color-text-muted)]">
+        <label className="ui-auth-remember">
           <input
             type="checkbox"
             checked={rememberMe}
             onChange={(event) => setRememberMe(event.target.checked)}
             disabled={isUnavailable || isPending}
-            className="mt-1 h-4 w-4 shrink-0 rounded border border-[var(--color-border)] bg-[var(--color-surface)] text-[var(--color-accent)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)] disabled:opacity-50"
+            className="ui-auth-checkbox focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-accent)] disabled:opacity-50"
           />
           <span>{rememberMeLabel}</span>
         </label>
