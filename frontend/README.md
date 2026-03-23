@@ -48,6 +48,16 @@ O frontend foi inicializado com:
   - superfícies e bordas reutilizáveis;
   - componentes semânticos `ui-*`;
   - modificadores e estados compartilhados.
+- Convenção de nomes recomendada:
+  - tokens horizontais: `--color-*`, `--font-*`, `--space-*`, `--radius-*`, `--shadow-*`, `--border-width-*`, `--density-*`;
+  - primitives horizontais: `ui-surface-*`, `ui-border-*`, `ui-tone-*`, `ui-layout-*`, `ui-density-*`;
+  - componentes verticais: `ui-menu`, `ui-panel`, `ui-card`, `ui-title`, `ui-toolbar`, `ui-tab`, `ui-form-section`, `ui-field`, `ui-table`;
+  - modificadores: `ui-menu-bordered`, `ui-panel-editor`, `ui-title-page`, `ui-title-section`;
+  - estados: preferir `data-*` e `aria-*`; quando necessário, usar `is-*`.
+- Regra prática no JSX:
+  - preferir `ui-menu`, `ui-panel`, `ui-title`;
+  - usar modificador só quando a variação for estável e reutilizável;
+  - evitar descrever visual recorrente com utilitários locais.
 - A direção estável de interface continua em `.cursor/skills/interface-product-direction/SKILL.md`.
 
 ## Scripts

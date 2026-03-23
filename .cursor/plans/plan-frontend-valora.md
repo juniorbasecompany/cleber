@@ -110,6 +110,12 @@ Objetivo: criar a base técnica e visual do frontend sem deixar i18n para depois
   - [ ] superfícies e bordas reutilizáveis;
   - [ ] componentes semânticos `ui-*`;
   - [ ] modificadores e estados compartilhados.
+- [ ] Fechar convenção de nomes do CSS global:
+  - [ ] tokens horizontais em `--*`;
+  - [ ] primitives horizontais em `ui-surface-*`, `ui-border-*`, `ui-tone-*`, `ui-layout-*`;
+  - [ ] elementos verticais em `ui-menu`, `ui-panel`, `ui-title`, `ui-form-section`, `ui-toolbar` e equivalentes;
+  - [ ] variações recorrentes em modificadores semânticos;
+  - [ ] estados preferencialmente em `data-*` e `aria-*`, com `is-*` apenas quando necessário.
 - [ ] Refatorar componentes para que decisões recorrentes de layout e acabamento visual saiam de `className` local e passem a consumir classes globais reutilizáveis.
 - [ ] Definir fundação visual mínima:
   - [x] densidade média para alta;

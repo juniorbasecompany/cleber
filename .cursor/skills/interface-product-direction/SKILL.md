@@ -301,6 +301,136 @@ Evitar:
   - mesma solução de borda, painel ou espaçamento reescrita em mais de um lugar;
   - componente que deixa de ser semanticamente simples porque passou a carregar detalhes de acabamento visual do produto.
 
+### Convenção de camadas e nomes
+
+Usar cinco camadas estáveis em `frontend/src/app/globals.css`.
+
+#### 1. Tokens horizontais
+
+Guardam matéria-prima visual que pode servir a qualquer parte do produto.
+
+Padrões de nome:
+
+- `--color-*`
+- `--font-*`
+- `--space-*`
+- `--radius-*`
+- `--shadow-*`
+- `--border-width-*`
+- `--density-*`
+- `--z-*`, quando houver necessidade real
+
+Exemplos:
+
+- `--color-border`
+- `--color-surface`
+- `--space-panel`
+- `--shadow-sm`
+- `--radius-card`
+
+#### 2. Primitives horizontais
+
+Agrupam decisões visuais reutilizáveis, ainda sem falar de um elemento específico.
+
+Padrões de nome:
+
+- `ui-surface-*`
+- `ui-border-*`
+- `ui-tone-*`
+- `ui-layout-*`
+- `ui-density-*`
+- `ui-flow-*`, quando o padrão de ritmo vertical for recorrente
+
+Exemplos:
+
+- `ui-surface-default`
+- `ui-surface-muted`
+- `ui-border-subtle`
+- `ui-border-strong`
+- `ui-tone-danger`
+- `ui-layout-two-column`
+
+#### 3. Componentes verticais semânticos
+
+Representam elementos reais da interface. Esta é a camada que o JSX deve preferir expor.
+
+Padrões de nome:
+
+- `ui-menu`
+- `ui-panel`
+- `ui-card`
+- `ui-title`
+- `ui-toolbar`
+- `ui-tab-list`
+- `ui-tab`
+- `ui-form-section`
+- `ui-field`
+- `ui-table`
+- `ui-sidebar`
+- `ui-topbar`
+
+Regra:
+
+- o vertical consome tokens e primitives horizontais;
+- o componente não redefine localmente o que já faz parte do padrão visual daquele elemento.
+
+#### 4. Modificadores verticais
+
+Especializam um elemento sem quebrar sua semântica base.
+
+Padrões de nome:
+
+- `ui-menu-bordered`
+- `ui-menu-compact`
+- `ui-panel-editor`
+- `ui-panel-context`
+- `ui-panel-sticky`
+- `ui-title-page`
+- `ui-title-section`
+- `ui-field-inline`
+
+Regra:
+
+- modificador existe para variação recorrente;
+- se a variação só existe porque um único componente foi desenhado de forma isolada, ela ainda não merece nome.
+
+#### 5. Estados
+
+Preferir atributos nativos ou semânticos quando existirem.
+
+Ordem de preferência:
+
+1. `data-*` ou `aria-*` já expostos pelo elemento ou biblioteca.
+2. classe `is-*` quando o estado precisar ser explicitado pelo projeto.
+
+Padrões de nome:
+
+- `is-active`
+- `is-open`
+- `is-selected`
+- `is-disabled`
+- `is-delete-pending`
+
+Exemplos de seletores aceitáveis:
+
+- `.ui-tab[aria-selected="true"]`
+- `.ui-menu[data-state="open"]`
+- `.ui-panel.is-delete-pending`
+
+### Regra de uso no JSX
+
+- Preferir `<div className="ui-menu">`.
+- Quando houver variação estável, preferir `<div className="ui-menu ui-menu-bordered">`.
+- Evitar usar primitives horizontais diretamente no JSX, exceto ao construir uma primitive nova ou uma composição realmente genérica.
+- Evitar `className` com mistura local de `border`, `bg`, `shadow`, `rounded`, `px`, `py`, `gap` e similares para resolver padrão recorrente.
+
+### Heurística prática
+
+- Horizontal responde: "quais materiais e regras visuais existem no sistema?"
+- Vertical responde: "que elemento de interface isto é?"
+- Modificador responde: "qual variação estável deste elemento eu quero?"
+- Estado responde: "em que condição este elemento está agora?"
+
 ## O que evitar
 
 - aparência de admin template genérico;
