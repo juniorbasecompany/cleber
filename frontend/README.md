@@ -37,7 +37,17 @@ O frontend foi inicializado com:
 - A base visual atual do frontend usa `light theme`.
 - A fonte única de verdade dos tokens visuais fica em `src/app/globals.css`.
 - Esse ponto central deve concentrar tokens semânticos de cor e primitives recorrentes de layout, como `radius`, borda, sombra e densidade.
-- Componentes devem preferir consumir tokens semânticos e classes reutilizáveis `ui-*`, evitando espalhar cores estruturais e primitives hardcoded por página.
+- Além dos tokens, `src/app/globals.css` deve concentrar as classes estruturais e semânticas da interface.
+- Ajustes de layout e de aspecto visual devem ser feitos em `src/app/globals.css`, não diretamente nos componentes.
+- Componentes devem preferir consumir tokens semânticos e classes reutilizáveis `ui-*`, evitando espalhar cores estruturais, bordas, espaçamentos estruturais e primitives hardcoded por página.
+- O JSX deve indicar o papel do elemento, por exemplo `ui-menu`, `ui-panel`, `ui-title`, `ui-form-section`, e combinar apenas modificadores reutilizáveis.
+- Se houver uma variação recorrente, ela deve ganhar classe própria em `src/app/globals.css`, em vez de ser redesenhada dentro do componente.
+- Organização recomendada para `src/app/globals.css`:
+  - tokens semânticos;
+  - primitives de layout;
+  - superfícies e bordas reutilizáveis;
+  - componentes semânticos `ui-*`;
+  - modificadores e estados compartilhados.
 - A direção estável de interface continua em `.cursor/skills/interface-product-direction/SKILL.md`.
 
 ## Scripts

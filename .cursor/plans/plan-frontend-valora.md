@@ -104,6 +104,13 @@ Objetivo: criar a base técnica e visual do frontend sem deixar i18n para depois
 - [x] Garantir que strings novas entram por chave, não por literal solto.
 - [x] Definir `light theme` como base atual da interface.
 - [x] Centralizar tokens visuais em `src/app/globals.css`.
+- [ ] Fechar arquitetura CSS semântica em `src/app/globals.css`:
+  - [ ] tokens semânticos;
+  - [ ] primitives de layout;
+  - [ ] superfícies e bordas reutilizáveis;
+  - [ ] componentes semânticos `ui-*`;
+  - [ ] modificadores e estados compartilhados.
+- [ ] Refatorar componentes para que decisões recorrentes de layout e acabamento visual saiam de `className` local e passem a consumir classes globais reutilizáveis.
 - [ ] Definir fundação visual mínima:
   - [x] densidade média para alta;
   - [ ] tipografia;
@@ -276,6 +283,8 @@ Objetivo: transformar a home de ponto de entrada em briefing operacional.
 - [ ] Não misturar idioma da UI, locale de formatação e contexto operacional.
 - [ ] Manter i18n aplicado desde o início, sem literais soltas em UI nova.
 - [ ] Preparar o frontend para evolução sem retrabalho grande de layout.
+- [ ] Toda decisão visual recorrente deve nascer em `src/app/globals.css`, não em `className` local de componente.
+- [ ] Componentes devem expor semântica e estado; layout, superfície, borda e variantes compartilhadas devem vir de classes globais reutilizáveis.
 
 ## Decisões futuras que não bloqueiam a Fase 1
 

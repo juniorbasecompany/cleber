@@ -22,6 +22,10 @@ Aplicar o stack acordado em [architecture/technology-stack.md](../../../architec
 
 - Usar **Next.js**, **React**, **TypeScript** e **Tailwind CSS**.
 - Seguir a configuração existente de `eslint` / `eslint-config-next` quando ela estiver declarada no `package.json`.
+- Tratar `frontend/src/app/globals.css` como fonte única de verdade para tokens visuais, primitives de layout, classes semânticas `ui-*` e modificadores reutilizáveis.
+- Fazer ajustes de layout e aparência no `globals.css`, não em `className` local de componente, quando a decisão for parte do padrão da interface.
+- Deixar o componente responsável por semântica, estrutura e comportamento; deixar borda, fundo, sombra, densidade, espaçamento estrutural e variantes visuais compartilhadas sob governo do CSS global.
+- Quando surgir necessidade visual repetível, primeiro criar ou ajustar a classe reutilizável em `globals.css`; só depois consumi-la no componente.
 
 ### Internacionalização
 

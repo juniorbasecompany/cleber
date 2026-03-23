@@ -204,7 +204,9 @@ Diferenciais importantes:
 
 ## Composição e reutilização
 
-Sempre que for possível, aparência, comportamento e variações de interface devem ser definidos em **componentes reutilizáveis**, e não recriados localmente em cada tela.
+Sempre que for possível, **semântica, estrutura de markup e comportamento** devem ser definidos em **componentes reutilizáveis**, e não recriados localmente em cada tela.
+
+A **aparência, o layout recorrente e as variações visuais compartilhadas** devem ficar centralizados em `frontend/src/app/globals.css`, por meio de tokens, primitives e classes semânticas reutilizáveis.
 
 Isto vale especialmente para:
 
@@ -231,7 +233,7 @@ Ao implementar UI nova:
 - preferir estender um componente existente antes de criar uma variação solta na página;
 - criar componente novo quando o padrão tiver potencial real de reutilização;
 - evitar copiar markup, estilos e lógica de interação entre telas;
-- concentrar variantes visuais e comportamentais no próprio componente, com API clara;
+- concentrar comportamento e API no componente, e concentrar variantes visuais e estruturais reutilizáveis no `globals.css`;
 - manter consistência entre estados, feedback, acessibilidade e atalhos do mesmo padrão.
 
 ## IA contextual
@@ -280,6 +282,24 @@ Evitar:
   - combinações locais de borda e superfície que já tenham padrão canônico.
 - Quando houver dúvida entre ajustar um componente isolado ou melhorar a fundação visual, preferir melhorar a fundação.
 - A manutenção do tema deve acontecer, idealmente, por ajuste de token ou de primitive reutilizável, e não por caça manual de classes em telas.
+
+### Arquitetura CSS obrigatória
+
+- Ajuste estrutural ou visual recorrente deve acontecer em `frontend/src/app/globals.css`, não dentro do JSX do componente.
+- O componente deve declarar o papel semântico do elemento e seus estados; o CSS define apresentação, layout e acabamento visual.
+- Decisões como borda, ausência de borda, sombra, raio, fundo, espaçamento estrutural, largura e composição de layout não devem nascer como utilitário solto no componente quando fizerem parte do padrão da interface.
+- Se um menu precisar de borda, o padrão deve existir como classe reutilizável ou modificador em `globals.css`, por exemplo `ui-menu` com uma variação compartilhada de borda.
+- O mesmo princípio vale para todos os elementos de interface: menu, painel, editor, toolbar, título, aba, card, lista, formulário e cabeçalho.
+- Organizar `globals.css` nesta ordem:
+  - tokens semânticos;
+  - primitives de layout;
+  - superfícies e bordas reutilizáveis;
+  - componentes semânticos `ui-*`;
+  - modificadores e estados compartilhados.
+- Em revisão de frontend, tratar como desvio:
+  - componente com decisão visual estrutural repetível embutida em `className`;
+  - mesma solução de borda, painel ou espaçamento reescrita em mais de um lugar;
+  - componente que deixa de ser semanticamente simples porque passou a carregar detalhes de acabamento visual do produto.
 
 ## O que evitar
 
