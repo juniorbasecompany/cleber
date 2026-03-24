@@ -294,6 +294,8 @@
     stroke-width: var(--icon-stroke-width);
     height: var(--icon-size);
     width: var(--icon-size);
+    background: transparent;
+    box-shadow: none;
 }
 
 .ui-mark-size {
