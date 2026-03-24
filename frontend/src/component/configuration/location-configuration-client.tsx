@@ -270,6 +270,7 @@ export function LocationConfigurationClient({
     const editorFlashStartTimeoutRef = useRef<number | null>(null);
     const editorFlashHideTimeoutRef = useRef<number | null>(null);
     const previousEditorFlashKeyRef = useRef<string | null>(null);
+    const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const itemList = useMemo(() => directory?.item_list ?? [], [directory]);
     const childrenByParent = useMemo(() => {
@@ -404,6 +405,11 @@ export function LocationConfigurationClient({
 
         setIsEditorFlashActive(false);
         editorFlashStartTimeoutRef.current = window.setTimeout(() => {
+            editorPanelElementRef.current?.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+                inline: "nearest"
+            });
             setIsEditorFlashActive(true);
             editorFlashStartTimeoutRef.current = null;
             editorFlashHideTimeoutRef.current = window.setTimeout(() => {
@@ -614,6 +620,7 @@ export function LocationConfigurationClient({
                 </aside>
 
                 <div
+                    ref={editorPanelElementRef}
                     className="ui-panel ui-panel-editor ui-editor-panel"
                     data-delete-pending={isDeletePending ? "true" : undefined}
                 >
