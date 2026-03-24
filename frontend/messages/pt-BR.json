@@ -308,7 +308,7 @@
   },
   "LocationConfigurationPage": {
     "title": "Locais",
-    "description": "Nesta tela você mantém a árvore de locais do licenciado ativo, sempre dentro do escopo escolhido no cabeçalho. À esquerda aparece a hierarquia; ao lado, o formulário para nome, descrição e posição na estrutura, além da aba de histórico. Selecione um local na árvore para editá-lo ou use Novo para criar um filho naquele nível. O que você salvar vale apenas para este licenciado na sua sessão.",
+    "description": "Neste painel você vê sua árvore de locais. À esquerda aparece a hierarquia; ao lado, o formulário para editar o nome e outras informações sobre o local, além do painel de histórico. Selecione um local na árvore para editá-lo ou clique no botão Novo para criar uma nova divisão naquele local.",
     "list": {
       "empty": "Nenhum local foi encontrado para o escopo selecionado.",
       "emptyScope": "Crie um escopo antes de editar a hierarquia de locais.",

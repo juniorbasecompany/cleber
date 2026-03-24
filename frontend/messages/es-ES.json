@@ -308,7 +308,7 @@
   },
   "LocationConfigurationPage": {
     "title": "Ubicaciones",
-    "description": "Aquí mantienes el árbol de ubicaciones del licenciatario activo, siempre dentro del alcance elegido en el encabezado. A la izquierda ves la jerarquía; al lado, el formulario de nombre, descripción y posición en la estructura, además de la pestaña de historial. Selecciona una ubicación en el árbol para editarla o usa Nuevo para crear un hijo en ese nivel. Lo que guardes aplica solo a este licenciatario en tu sesión.",
+    "description": "En este panel ves tu árbol de ubicaciones. A la izquierda aparece la jerarquía; al lado, el formulario para editar el nombre y otra información sobre la ubicación, además del panel de historial. Selecciona una ubicación en el árbol para editarla o haz clic en el botón Nuevo para crear una nueva subdivisión en esa ubicación.",
     "list": {
       "empty": "No se encontraron ubicaciones para el alcance seleccionado.",
       "emptyScope": "Crea un alcance antes de editar la jerarquía de ubicaciones.",

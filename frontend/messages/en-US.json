@@ -308,7 +308,7 @@
   },
   "LocationConfigurationPage": {
     "title": "Locations",
-    "description": "This screen is where you maintain the location tree for the active tenant, scoped to the header selector. The hierarchy appears on the left; beside it you edit name, description, and position in the structure, and you can open the history tab. Click a location in the tree to edit it, or use New to add a child at that level. Saved changes apply only to this tenant for your session.",
+    "description": "In this panel you see your location tree. The hierarchy appears on the left; beside it is the form to edit the name and other information about the location, plus the history panel. Select a location in the tree to edit it, or click the New button to create a new subdivision at that location.",
     "list": {
       "empty": "No locations were found for the selected scope.",
       "emptyScope": "Create a scope first before editing the location hierarchy.",
