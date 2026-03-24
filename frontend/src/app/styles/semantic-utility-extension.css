@@ -623,6 +623,7 @@
 
 /* Três faixas com largura mínima; quando o container não comporta numa só linha, os painéis passam para a linha abaixo (ordem do HTML). */
 .ui-layout-directory.ui-layout-directory-editor {
+    container-type: inline-size;
     display: flex;
     flex-flow: row wrap;
     align-items: flex-start;
@@ -645,6 +646,15 @@
     flex: 1 1 18rem;
     min-width: 18rem;
     max-width: 100%;
+}
+
+@container (min-width: 60rem) {
+    .ui-layout-directory.ui-layout-directory-editor > .ui-layout-sticky,
+    .ui-layout-directory.ui-layout-directory-editor > .ui-panel.ui-layout-sticky {
+        position: sticky;
+        top: 2rem;
+        align-self: flex-start;
+    }
 }
 
 @media (max-width: 1024px) {
