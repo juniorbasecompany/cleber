@@ -908,7 +908,7 @@
 .ui-sidebar {
     position: relative;
     border-radius: var(--radius-shell);
-    background: var(--gradient-surface-sidebar);
+    background: var(--color-surface-muted);
     backdrop-filter: blur(var(--blur-overlay-strong));
 }
 
@@ -917,7 +917,7 @@
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: var(--gradient-surface-sidebar-glow);
+    background: transparent;
 }
 
 .ui-topbar {
@@ -1268,22 +1268,17 @@
     padding-block: 0.625rem;
     padding-left: 1.25rem;
     padding-right: 1rem;
-    border: var(--border-width-default) solid transparent;
-    border-radius: var(--radius-control);
     color: var(--color-text-muted);
     transition:
         border-color 0.16s ease,
         background-color 0.16s ease,
         color 0.16s ease,
-        transform 0.16s ease,
         box-shadow 0.16s ease;
 }
 
-.ui-nav-item:hover {
-    border-color: var(--color-hover-border);
-    background: var(--color-surface-glass-soft);
+.ui-nav-item:hover:not(.ui-nav-item-active) {
+    background: var(--color-accent-surface-soft);
     color: var(--color-text);
-    transform: translateX(2px);
 }
 
 .ui-nav-item::before {
@@ -1299,20 +1294,17 @@
 }
 
 .ui-nav-item-active {
-    border-color: var(--color-accent-border-strong);
-    background: var(--gradient-surface-accent);
+    background: var(--color-accent-surface-strong);
     color: var(--color-primary);
     box-shadow: var(--shadow-xs);
 }
 
 .ui-nav-item-active::before {
-    background: var(--gradient-accent-emphasis);
+    background: var(--color-accent);
 }
 
 .ui-nav-item-coming-soon {
-    border-color: var(--color-construction-border-strong);
-    border-style: dashed;
-    background: var(--gradient-surface-nav-soon);
+    background: var(--color-construction-surface);
     color: var(--color-construction-text);
 }
 
