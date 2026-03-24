@@ -352,7 +352,7 @@ export function LocationConfigurationClient({
     const canSubmit = isCreateMode
         ? (directory?.can_create ?? false)
         : isDeletePending
-            ? (selectedLocation?.can_delete ?? false)
+            ? true
             : (selectedLocation?.can_edit ?? false);
 
     const validate = useCallback(() => {
@@ -761,7 +761,7 @@ export function LocationConfigurationClient({
                                     type="button"
                                     className="ui-button-danger"
                                     onClick={() => setIsDeletePending((previous) => !previous)}
-                                    disabled={!selectedLocation.can_delete || isSaving}
+                                    disabled={isSaving}
                                 >
                                     {isDeletePending ? copy.undoDelete : copy.delete}
                                 </button>
