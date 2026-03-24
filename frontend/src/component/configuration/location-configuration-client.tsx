@@ -143,22 +143,38 @@ function LocationNestNode({
                 onSelect(item);
             }}
         >
-            <button
-                type="button"
-                className="ui-location-nest-body"
-                onClick={(event) => {
-                    event.stopPropagation();
-                    onSelect(item);
-                }}
-                disabled={isBusy}
-            >
-                <div className="ui-location-nest-copy">
-                    <p className="ui-location-nest-label">{label}</p>
-                    {description && description !== label ? (
-                        <p className="ui-location-nest-description">{description}</p>
-                    ) : null}
-                </div>
-            </button>
+            <div className="ui-location-nest-head">
+                <button
+                    type="button"
+                    className="ui-location-nest-body"
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        onSelect(item);
+                    }}
+                    disabled={isBusy}
+                >
+                    <div className="ui-location-nest-copy">
+                        <p className="ui-location-nest-label">{label}</p>
+                        {description && description !== label ? (
+                            <p className="ui-location-nest-description">{description}</p>
+                        ) : null}
+                    </div>
+                </button>
+
+                {item.can_create_child ? (
+                    <button
+                        type="button"
+                        className="ui-location-nest-create"
+                        onClick={(event) => {
+                            event.stopPropagation();
+                            onCreate(item.id);
+                        }}
+                        disabled={isBusy}
+                    >
+                        {newLabel}
+                    </button>
+                ) : null}
+            </div>
 
             {childList.length > 0 ? (
                 <div className="ui-location-nest-children">
@@ -177,26 +193,6 @@ function LocationNestNode({
                             onCreate={onCreate}
                         />
                     ))}
-                </div>
-            ) : null}
-
-            {item.can_create_child ? (
-                <div className="ui-location-nest-footer">
-                    <button
-                        type="button"
-                        className="ui-location-nest-create"
-                        style={buildLocationToneStyle(
-                            Math.min(item.depth + 1, maxDepth),
-                            maxDepth
-                        )}
-                        onClick={(event) => {
-                            event.stopPropagation();
-                            onCreate(item.id);
-                        }}
-                        disabled={isBusy}
-                    >
-                        {newLabel}
-                    </button>
                 </div>
             ) : null}
         </section>
@@ -610,6 +606,25 @@ export function LocationConfigurationClient({
                     ) : null}
 
                     <div className="ui-directory-list ui-location-nest-list">
+                        {directory?.can_create ? (
+                            <div className="ui-location-nest-list-toolbar">
+                                <button
+                                    type="button"
+                                    className="ui-location-nest-create"
+                                    style={buildLocationToneStyle(0, maxLocationDepth)}
+                                    data-active={
+                                        isCreateMode && parentLocationId == null
+                                            ? "true"
+                                            : undefined
+                                    }
+                                    onClick={() => handleStartCreate(null)}
+                                    disabled={isSaving}
+                                >
+                                    {copy.newLabel}
+                                </button>
+                            </div>
+                        ) : null}
+
                         {rootLocationList.map((item) => (
                             <LocationNestNode
                                 key={item.id}
@@ -628,21 +643,6 @@ export function LocationConfigurationClient({
 
                         {directory && itemList.length === 0 ? (
                             <div className="ui-panel ui-empty-panel">{copy.empty}</div>
-                        ) : null}
-
-                        {directory?.can_create ? (
-                            <button
-                                type="button"
-                                className="ui-location-nest-create"
-                                style={buildLocationToneStyle(0, maxLocationDepth)}
-                                data-active={
-                                    isCreateMode && parentLocationId == null ? "true" : undefined
-                                }
-                                onClick={() => handleStartCreate(null)}
-                                disabled={isSaving}
-                            >
-                                {copy.newLabel}
-                            </button>
                         ) : null}
                     </div>
                 </aside>
