@@ -52,6 +52,7 @@
 
     --radius-control: 0;
     --radius-card: 0;
+    --radius-badge: 4px;
     --radius-panel: 0;
     --radius-shell: 0;
     --radius-indicator: 999px;
@@ -288,4 +289,3 @@ svg {
 :focus-visible {
     outline: none;
 }
-
