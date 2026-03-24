@@ -770,15 +770,17 @@
 }
 
 .ui-directory-toggle {
-    margin-top: 0.25rem;
     display: inline-flex;
-    height: 1.25rem;
-    width: 1.25rem;
+    height: 2rem;
+    width: 2rem;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;
-    border: var(--border-width-default) solid var(--color-border);
-    font-size: 0.6875rem;
+    font-size: 1.5rem;
+}
+
+.ui-directory-toggle:hover {
+    background: var(--color-accent-surface-soft);
 }
 
 .ui-directory-dot {
@@ -808,8 +810,6 @@
 
 .ui-nav-item-icon {
     display: inline-flex;
-    height: 1.5rem;
-    width: 1.5rem;
     flex-shrink: 0;
     align-items: center;
     justify-content: center;

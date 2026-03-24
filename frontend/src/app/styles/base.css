@@ -66,6 +66,9 @@
     --border-width-strong: 1.5px;
     --border-width-emphasis: 2px;
 
+    --icon-stroke-width: 1;
+    --icon-size: 1.8rem;
+
     --shadow-xs: 0 1px 2px rgba(19, 32, 51, 0.04), 0 10px 22px rgba(19, 32, 51, 0.04);
     --shadow-sm: 0 18px 40px rgba(19, 32, 51, 0.08);
     --shadow-md: 0 28px 64px rgba(19, 32, 51, 0.14);

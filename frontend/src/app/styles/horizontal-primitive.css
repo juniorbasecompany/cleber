@@ -290,29 +290,10 @@
     font-size: 0.875rem;
 }
 
-.ui-icon-xs {
-    height: 0.75rem;
-    width: 0.75rem;
-}
-
-.ui-icon-sm {
-    height: 2rem;
-    width: 2rem;
-}
-
-.ui-icon-md {
-    height: 1.2rem;
-    width: 1.2rem;
-}
-
-.ui-icon-nav {
-    height: 1.1rem;
-    width: 1.1rem;
-}
-
-.ui-icon-arrow {
-    height: 1rem;
-    width: 1rem;
+.ui-icon {
+    stroke-width: var(--icon-stroke-width);
+    height: var(--icon-size);
+    width: var(--icon-size);
 }
 
 .ui-mark-size {
