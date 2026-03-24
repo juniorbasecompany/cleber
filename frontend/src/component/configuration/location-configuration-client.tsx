@@ -269,6 +269,7 @@ export function LocationConfigurationClient({
     const [isEditorFlashActive, setIsEditorFlashActive] = useState(false);
     const editorFlashStartTimeoutRef = useRef<number | null>(null);
     const editorFlashHideTimeoutRef = useRef<number | null>(null);
+    const editorFlashCancelAfterScrollRef = useRef<(() => void) | null>(null);
     const previousEditorFlashKeyRef = useRef<string | null>(null);
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
@@ -402,20 +403,60 @@ export function LocationConfigurationClient({
             window.clearTimeout(editorFlashHideTimeoutRef.current);
             editorFlashHideTimeoutRef.current = null;
         }
+        editorFlashCancelAfterScrollRef.current?.();
+        editorFlashCancelAfterScrollRef.current = null;
 
         setIsEditorFlashActive(false);
         editorFlashStartTimeoutRef.current = window.setTimeout(() => {
-            editorPanelElementRef.current?.scrollIntoView({
+            editorFlashStartTimeoutRef.current = null;
+
+            const panel = editorPanelElementRef.current;
+            panel?.scrollIntoView({
                 behavior: "smooth",
                 block: "start",
                 inline: "nearest"
             });
-            setIsEditorFlashActive(true);
-            editorFlashStartTimeoutRef.current = null;
-            editorFlashHideTimeoutRef.current = window.setTimeout(() => {
-                setIsEditorFlashActive(false);
-                editorFlashHideTimeoutRef.current = null;
-            }, 960);
+
+            let aborted = false;
+            let flashStarted = false;
+            const FLASH_MS = 960;
+            const SCROLL_END_FALLBACK_MS = 900;
+            const scrollEndSupported =
+                typeof Document !== "undefined" && "onscrollend" in Document.prototype;
+
+            const cleanupWait = () => {
+                window.clearTimeout(fallbackTimeoutId);
+                document.removeEventListener("scrollend", onScrollEnd);
+                editorFlashCancelAfterScrollRef.current = null;
+            };
+
+            const startFlash = () => {
+                if (aborted || flashStarted) {
+                    return;
+                }
+                flashStarted = true;
+                cleanupWait();
+                setIsEditorFlashActive(true);
+                editorFlashHideTimeoutRef.current = window.setTimeout(() => {
+                    setIsEditorFlashActive(false);
+                    editorFlashHideTimeoutRef.current = null;
+                }, FLASH_MS);
+            };
+
+            const onScrollEnd = () => {
+                startFlash();
+            };
+
+            if (scrollEndSupported) {
+                document.addEventListener("scrollend", onScrollEnd, { passive: true });
+            }
+            const fallbackMs = scrollEndSupported ? SCROLL_END_FALLBACK_MS : 480;
+            const fallbackTimeoutId = window.setTimeout(startFlash, fallbackMs);
+
+            editorFlashCancelAfterScrollRef.current = () => {
+                aborted = true;
+                cleanupWait();
+            };
         }, 24);
     }, []);
 
@@ -463,6 +504,8 @@ export function LocationConfigurationClient({
             if (editorFlashHideTimeoutRef.current != null) {
                 window.clearTimeout(editorFlashHideTimeoutRef.current);
             }
+            editorFlashCancelAfterScrollRef.current?.();
+            editorFlashCancelAfterScrollRef.current = null;
         };
     }, []);
 
