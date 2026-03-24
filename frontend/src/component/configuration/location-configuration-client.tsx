@@ -13,11 +13,7 @@ import type { CSSProperties, MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
-import {
-    BuildingIcon,
-    HistoryIcon,
-    PreviewIcon
-} from "@/component/ui/ui-icons";
+import { BuildingIcon, HistoryIcon, PreviewIcon } from "@/component/ui/ui-icons";
 import type {
     TenantLocationDirectoryResponse,
     TenantLocationRecord,
@@ -42,7 +38,7 @@ type LocationNestNodeProps = {
     isCreateMode: boolean;
     isBusy: boolean;
     maxDepth: number;
-    newLabel: string;
+    createChildAriaLabel: string;
     onSelect: (location: TenantLocationRecord) => void;
     onCreate: (parentId: number | null) => void;
 };
@@ -119,7 +115,7 @@ function LocationNestNode({
     isCreateMode,
     isBusy,
     maxDepth,
-    newLabel,
+    createChildAriaLabel,
     onSelect,
     onCreate
 }: LocationNestNodeProps) {
@@ -165,13 +161,15 @@ function LocationNestNode({
                     <button
                         type="button"
                         className="ui-location-nest-create"
+                        aria-label={createChildAriaLabel}
+                        title={createChildAriaLabel}
                         onClick={(event) => {
                             event.stopPropagation();
                             onCreate(item.id);
                         }}
                         disabled={isBusy}
                     >
-                        {newLabel}
+                        <span aria-hidden>+</span>
                     </button>
                 ) : null}
             </div>
@@ -188,7 +186,7 @@ function LocationNestNode({
                             isCreateMode={isCreateMode}
                             isBusy={isBusy}
                             maxDepth={maxDepth}
-                            newLabel={newLabel}
+                            createChildAriaLabel={createChildAriaLabel}
                             onSelect={onSelect}
                             onCreate={onCreate}
                         />
@@ -612,6 +610,8 @@ export function LocationConfigurationClient({
                                     type="button"
                                     className="ui-location-nest-create"
                                     style={buildLocationToneStyle(0, maxLocationDepth)}
+                                    aria-label={copy.newLabel}
+                                    title={copy.newLabel}
                                     data-active={
                                         isCreateMode && parentLocationId == null
                                             ? "true"
@@ -620,7 +620,7 @@ export function LocationConfigurationClient({
                                     onClick={() => handleStartCreate(null)}
                                     disabled={isSaving}
                                 >
-                                    {copy.newLabel}
+                                    <span aria-hidden>+</span>
                                 </button>
                             </div>
                         ) : null}
@@ -635,7 +635,7 @@ export function LocationConfigurationClient({
                                 isCreateMode={isCreateMode}
                                 isBusy={isSaving}
                                 maxDepth={maxLocationDepth}
-                                newLabel={copy.newLabel}
+                                createChildAriaLabel={copy.newChild}
                                 onSelect={handleSelectLocation}
                                 onCreate={(draftParentId) => handleStartCreate(draftParentId)}
                             />

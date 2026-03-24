@@ -377,7 +377,6 @@
     --ui-location-nest-child-offset: 1.5rem;
     position: relative;
     display: grid;
-    gap: 1rem;
     border: var(--border-width-default) solid color-mix(in srgb,
             var(--color-location-nest-border-start) var(--ui-location-tone-light-share),
             var(--color-location-nest-border-end) var(--ui-location-tone-dark-share));
@@ -474,7 +473,7 @@
             var(--color-location-nest-border-end) var(--ui-location-tone-dark-share));
     border-radius: var(--radius-control);
     background: transparent;
-    padding: 0.5rem 0.75rem;
+    padding: 0.25rem 0.5rem;
     min-height: 0;
     width: fit-content;
     font-weight: 600;
