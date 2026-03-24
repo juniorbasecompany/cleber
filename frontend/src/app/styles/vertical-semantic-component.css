@@ -4,7 +4,6 @@
     margin-inline: auto;
     display: flex;
     width: 100%;
-    max-width: var(--layout-shell-max-width);
     flex-direction: column;
     gap: 1.5rem;
     padding: 6rem 1rem 1.25rem;
@@ -521,7 +520,6 @@
     margin-inline: auto;
     display: flex;
     width: 100%;
-    max-width: var(--layout-shell-max-width);
     height: auto;
     min-height: 0;
     flex-wrap: wrap;

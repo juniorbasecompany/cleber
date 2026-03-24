@@ -97,7 +97,6 @@
     --measure-account-name-sidebar: 10rem;
     --measure-page-header-side: 20rem;
 
-    --layout-shell-max-width: 112rem;
     --layout-sidebar-width: 19.5rem;
     --layout-drawer-width: min(var(--layout-sidebar-width), calc(100vw - 1rem));
     --layout-menu-max-width: min(calc(100vw - 3rem), 22rem);
