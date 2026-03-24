@@ -53,8 +53,6 @@ export default async function LocationConfigurationPage({
         copy={{
           title: t("title"),
           description: t("description"),
-          statusTitle: t("status.title"),
-          statusDescription: t("status.description"),
           empty: t("list.empty"),
           emptyScope: t("list.emptyScope"),
           missingCurrentScope: t("list.missingCurrentScope"),
@@ -92,8 +90,7 @@ export default async function LocationConfigurationPage({
           loadError: t("error.load"),
           moveError: t("error.move"),
           validationError: t("error.validation"),
-          discardConfirm: t("discardConfirm"),
-          newLocationTitle: t("newLocationTitle")
+          discardConfirm: t("discardConfirm")
         }}
       />
     </Suspense>

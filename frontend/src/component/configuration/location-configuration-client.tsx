@@ -13,7 +13,6 @@ import type { CSSProperties, MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
-import { StatusPanel } from "@/component/app-shell/status-panel";
 import {
     BuildingIcon,
     HistoryIcon,
@@ -592,23 +591,9 @@ export function LocationConfigurationClient({
         validate
     ]);
 
-    const pageTitle = isCreateMode
-        ? copy.newLocationTitle
-        : selectedLocation?.name ?? copy.title;
-
     return (
         <section className="ui-page-stack ui-page-stack-footer">
-            <PageHeader
-                title={pageTitle}
-                description={copy.description}
-                actionSlot={
-                    <StatusPanel
-                        title={copy.statusTitle}
-                        description={copy.statusDescription}
-                        tone="neutral"
-                    />
-                }
-            />
+            <PageHeader title={copy.title} description={copy.description} />
 
             <div className="ui-layout-directory ui-layout-directory-editor">
                 <aside className="ui-panel ui-stack-lg ui-panel-context-card">

@@ -308,11 +308,7 @@
   },
   "LocationConfigurationPage": {
     "title": "Locations",
-    "description": "Edit the hierarchical location directory of the active tenant. Each location belongs to a scope and can be nested under another location in the same scope.",
-    "status": {
-      "title": "Editing locations",
-      "description": "Changes only affect the active tenant in your session. Click a box to edit that location, or use the New button inside a box to create a child at that level."
-    },
+    "description": "This screen is where you maintain the location tree for the active tenant, scoped to the header selector. The hierarchy appears on the left; beside it you edit name, description, and position in the structure, and you can open the history tab. Click a location in the tree to edit it, or use New to add a child at that level. Saved changes apply only to this tenant for your session.",
     "list": {
       "empty": "No locations were found for the selected scope.",
       "emptyScope": "Create a scope first before editing the location hierarchy.",
@@ -361,7 +357,6 @@
     "createdNotice": "Location created successfully.",
     "deletedNotice": "Location deleted successfully.",
     "movedNotice": "Location moved successfully.",
-    "newLocationTitle": "New location",
     "error": {
       "load": "Could not load the location directory. Try again.",
       "save": "Could not save the location. Try again.",
