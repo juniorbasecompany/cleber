@@ -452,8 +452,20 @@
 }
 
 .ui-action-footer-feedback {
-    flex: 1 1 18rem;
-    min-width: 12rem;
+    flex: 0 1 auto;
+    min-width: 0;
+}
+
+@media (max-width: 900px) {
+    .ui-action-footer {
+        justify-content: flex-start;
+        align-items: center;
+    }
+
+    .ui-action-footer-end {
+        width: auto;
+        justify-content: flex-start;
+    }
 }
 
 .ui-history-list {

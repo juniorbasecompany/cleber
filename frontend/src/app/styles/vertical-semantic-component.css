@@ -532,6 +532,8 @@
     display: flex;
     width: 100%;
     max-width: var(--layout-shell-max-width);
+    height: auto;
+    min-height: 0;
     flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
@@ -1085,6 +1087,8 @@
 .ui-shell-footer {
     position: relative;
     z-index: var(--z-shell-footer);
+    height: auto;
+    min-height: 0;
     flex-shrink: 0;
     border-top: var(--border-width-default) solid var(--color-border);
     background: var(--color-shell-footer-surface);
