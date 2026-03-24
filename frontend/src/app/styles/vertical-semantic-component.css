@@ -241,10 +241,17 @@
     gap: 0.75rem;
 }
 
-.ui-preview-card,
-.ui-metadata-card {
+.ui-preview-card {
     border: var(--border-width-default) solid var(--color-border);
     background: var(--gradient-surface-preview);
+    border-radius: var(--radius-preview);
+    padding: 1rem;
+    box-shadow: var(--shadow-xs);
+}
+
+.ui-metadata-card {
+    border: var(--border-width-default) solid var(--color-border);
+    border-radius: var(--radius-metadata);
     padding: 1rem;
     box-shadow: var(--shadow-xs);
 }

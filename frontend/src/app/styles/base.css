@@ -51,9 +51,11 @@
     --color-construction-text: #8e5f10;
 
     --radius-control: 0;
-    --radius-card: 0;
+    --radius-card: 6px;
     --radius-badge: 4px;
-    --radius-panel: 0;
+    --radius-metadata: 4px;
+    --radius-preview: 4px;
+    --radius-panel: 8px;
     --radius-shell: 0;
     --radius-indicator: 999px;
     --radius-skeleton-line: 0.5rem;
