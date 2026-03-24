@@ -621,10 +621,30 @@
     }
 }
 
-@media (min-width: 1536px) {
-    .ui-layout-directory-editor {
-        grid-template-columns: minmax(18rem, 2fr) minmax(0, 1.5fr) minmax(18rem, 1fr);
-    }
+/* Três faixas com largura mínima; quando o container não comporta numa só linha, os painéis passam para a linha abaixo (ordem do HTML). */
+.ui-layout-directory.ui-layout-directory-editor {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+.ui-layout-directory.ui-layout-directory-editor > aside:first-of-type {
+    flex: 2 1 18rem;
+    min-width: 18rem;
+    max-width: 100%;
+}
+
+.ui-layout-directory.ui-layout-directory-editor > .ui-panel-editor {
+    flex: 1.5 1 min(100%, 20rem);
+    min-width: min(100%, 20rem);
+    max-width: 100%;
+}
+
+.ui-layout-directory.ui-layout-directory-editor > aside.ui-panel-context {
+    flex: 1 1 18rem;
+    min-width: 18rem;
+    max-width: 100%;
 }
 
 @media (max-width: 1024px) {
