@@ -1089,7 +1089,8 @@
 }
 
 @media (min-width: 1024px) {
-    .ui-panel.ui-editor-panel-sticky {
+    .ui-layout-sticky,
+    .ui-panel.ui-layout-sticky {
         position: sticky;
         top: 2rem;
         align-self: flex-start;

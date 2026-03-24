@@ -534,7 +534,7 @@ export function LocationConfigurationClient({
             />
 
             <div className="ui-layout-directory ui-layout-directory-editor">
-                <aside className="ui-panel ui-stack-lg ui-panel-context-card">
+                <aside className="ui-panel ui-stack-lg ui-panel-context-card ui-layout-sticky">
                     {!directory ? (
                         <div className="ui-panel ui-empty-panel">
                             {hasAnyScope ? copy.missingCurrentScope : copy.emptyScope}
@@ -586,7 +586,7 @@ export function LocationConfigurationClient({
                 </aside>
 
                 <div
-                    className="ui-panel ui-panel-editor ui-editor-panel-sticky ui-editor-panel"
+                    className="ui-panel ui-panel-editor ui-editor-panel ui-layout-sticky"
                     data-delete-pending={isDeletePending ? "true" : undefined}
                 >
                     <div className="ui-editor-panel-body">
@@ -680,7 +680,7 @@ export function LocationConfigurationClient({
                     </div>
                 </div>
 
-                <aside className="ui-panel-context">
+                <aside className="ui-panel-context ui-layout-sticky">
                     {selectedLocation && !isCreateMode ? (
                         <div className="ui-panel ui-panel-context ui-panel-context-body">
                             <div className="ui-metadata-grid">
