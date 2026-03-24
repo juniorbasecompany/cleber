@@ -435,6 +435,12 @@ export function LocationConfigurationClient({
             return;
         }
 
+        // Primeira chave válida após montagem ou após perder o diretório: só sincroniza a ref, sem flash.
+        if (previousEditorFlashKeyRef.current === null) {
+            previousEditorFlashKeyRef.current = editorFlashKey;
+            return;
+        }
+
         if (previousEditorFlashKeyRef.current === editorFlashKey) {
             return;
         }
