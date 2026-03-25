@@ -273,8 +273,7 @@
       },
       "info": {
         "title": "Information",
-        "description": "Summary of the scope in focus: identifier, values saved on the server, and what this session may change.",
-        "idLabel": "Scope identifier",
+        "description": "Summary of the scope in focus: values saved on the server, and what this session may change.",
         "nameRegisteredLabel": "Saved name",
         "displayRegisteredLabel": "Saved description",
         "canEditLabel": "Can edit",

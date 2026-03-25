@@ -273,8 +273,7 @@
       },
       "info": {
         "title": "Información",
-        "description": "Resumen del alcance en foco: identificador, valores guardados en el servidor y qué puede cambiar esta sesión.",
-        "idLabel": "Identificador del alcance",
+        "description": "Resumen del alcance en foco: valores guardados en el servidor y qué puede cambiar esta sesión.",
         "nameRegisteredLabel": "Nombre guardado",
         "displayRegisteredLabel": "Descripción guardada",
         "canEditLabel": "Puede editar",

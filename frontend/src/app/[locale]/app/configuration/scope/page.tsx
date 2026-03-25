@@ -34,7 +34,6 @@ export default async function ScopeConfigurationPage({
     displayNameHint: t("section.identity.displayNameHint"),
     sectionInfoTitle: t("section.info.title"),
     sectionInfoDescription: t("section.info.description"),
-    infoIdLabel: t("section.info.idLabel"),
     infoNameRegisteredLabel: t("section.info.nameRegisteredLabel"),
     infoDisplayRegisteredLabel: t("section.info.displayRegisteredLabel"),
     infoCanEditLabel: t("section.info.canEditLabel"),

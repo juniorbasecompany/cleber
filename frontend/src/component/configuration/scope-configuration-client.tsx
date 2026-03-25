@@ -31,7 +31,6 @@ export type ScopeConfigurationCopy = {
     displayNameHint: string;
     sectionInfoTitle: string;
     sectionInfoDescription: string;
-    infoIdLabel: string;
     infoNameRegisteredLabel: string;
     infoDisplayRegisteredLabel: string;
     infoCanEditLabel: string;
@@ -62,7 +61,7 @@ type ScopeConfigurationClientProps = {
 type ScopeSelectionKey = number | "new" | null;
 
 function resolveScopeLabel(scope: TenantScopeRecord) {
-    return scope.name.trim() || scope.display_name.trim() || `#${scope.id}`;
+    return scope.name.trim() || scope.display_name.trim() || "—";
 }
 
 function parseSelectedScopeKey(raw: string | null): ScopeSelectionKey {
@@ -434,11 +433,6 @@ export function ScopeConfigurationClient({
                                 <p className="ui-directory-caption-wrap">
                                     {item.display_name}
                                 </p>
-                                <div className="ui-directory-meta">
-                                    <span className="ui-badge ui-badge-neutral">
-                                        #{item.id}
-                                    </span>
-                                </div>
                             </button>
                         ))}
 
@@ -476,17 +470,6 @@ export function ScopeConfigurationClient({
                             description={copy.sectionInfoDescription}
                         >
                             <ul className="ui-info-topic-list">
-                                <li>
-                                    <p className="ui-info-topic-lead">
-                                        <span className="ui-info-topic-label">
-                                            {copy.infoIdLabel}
-                                        </span>
-                                        {": "}
-                                        <span className="ui-info-topic-value">
-                                            {selectedScope.id}
-                                        </span>
-                                    </p>
-                                </li>
                                 <li>
                                     <p className="ui-info-topic-lead">
                                         <span className="ui-info-topic-label">

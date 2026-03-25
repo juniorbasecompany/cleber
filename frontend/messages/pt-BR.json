@@ -273,8 +273,7 @@
       },
       "info": {
         "title": "Informações",
-        "description": "Resumo do escopo em foco: identificador, valores salvos no servidor e o que esta sessão pode alterar.",
-        "idLabel": "Identificador do escopo",
+        "description": "Resumo do escopo em foco: valores salvos no servidor e o que esta sessão pode alterar.",
         "nameRegisteredLabel": "Nome salvo",
         "displayRegisteredLabel": "Descrição salva",
         "canEditLabel": "Pode editar",
