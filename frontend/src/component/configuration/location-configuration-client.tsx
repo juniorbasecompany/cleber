@@ -58,11 +58,14 @@ function resolveLocationLabel(item: TenantLocationRecord) {
 }
 
 function resolveLocationToneRatio(depth: number, maxDepth: number) {
-    if (maxDepth <= 0) {
+    const normalizedDepth = Math.max(depth - 1, 0);
+    const normalizedMaxDepth = Math.max(maxDepth - 1, 0);
+
+    if (normalizedMaxDepth <= 0) {
         return 0;
     }
 
-    return Math.max(0, Math.min(depth / maxDepth, 1));
+    return Math.max(0, Math.min(normalizedDepth / normalizedMaxDepth, 1));
 }
 
 function buildLocationToneStyle(depth: number, maxDepth: number): CSSProperties {
