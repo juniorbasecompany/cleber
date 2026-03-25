@@ -432,7 +432,8 @@ def test_admin_can_create_move_update_and_delete_locations() -> None:
     assert deleted_root is None
 
 
-def test_location_delete_is_blocked_when_location_has_children() -> None:
+def test_location_delete_cascades_to_descendant_list() -> None:
+    """Alinhado ao ERD: FK location.parent_location_id com delete Cascade."""
     with build_test_client(current_member_key="admin") as (client, session, _):
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
@@ -457,15 +458,23 @@ def test_location_delete_is_blocked_when_location_has_children() -> None:
                 "parent_location_id": parent_location.id,
             },
         )
+        session.expire_all()
+        child_location = session.scalar(select(Location).where(Location.name == "Núcleo 1"))
+        assert child_location is not None
 
         response = client.delete(
             f"/auth/tenant/current/scopes/{scope_id}/locations/{parent_location.id}"
         )
+        session.expire_all()
+        deleted_parent = session.get(Location, parent_location.id)
+        deleted_child = session.get(Location, child_location.id)
 
-    assert response.status_code == 400
-    assert response.json()["detail"] == (
-        "Cannot delete location while it still has child locations"
-    )
+    assert response.status_code == 200
+    assert deleted_parent is None
+    assert deleted_child is None
+    name_list = [item["name"] for item in response.json()["item_list"]]
+    assert "Granja Sul" not in name_list
+    assert "Núcleo 1" not in name_list
 
 
 def test_location_move_cannot_create_cycle() -> None:

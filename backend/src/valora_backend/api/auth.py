@@ -1026,7 +1026,7 @@ def _build_tenant_location_directory(
             children_count=len(child_list),
             descendants_count=0,
             can_edit=can_edit_location,
-            can_delete=_member_can_delete_location(actor) and len(child_list) == 0,
+            can_delete=_member_can_delete_location(actor),
             can_create_child=can_edit_location,
             can_move=can_edit_location,
         )
@@ -1525,20 +1525,6 @@ def delete_current_scope_location(
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions to delete location",
-        )
-
-    has_child = session.scalar(
-        select(Location.id)
-        .where(
-            Location.scope_id == target_scope.id,
-            Location.parent_location_id == target_location.id,
-        )
-        .limit(1)
-    )
-    if has_child is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete location while it still has child locations",
         )
 
     session.delete(target_location)

@@ -1,4 +1,5 @@
 @echo off
+CLS
 REM Portas padrao de desenvolvimento: frontend 3003 e backend 8003.
 REM Em frontend/.env.local defina NEXT_PUBLIC_API_URL=http://127.0.0.1:8003 (ou localhost).
 REM Apos alterar .env.local, reinicie o npm run dev.
