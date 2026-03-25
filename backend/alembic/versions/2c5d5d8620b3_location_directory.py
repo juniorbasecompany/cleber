@@ -79,7 +79,7 @@ def upgrade() -> None:
             ["location.scope_id", "location.id"],
             name="location_parent_same_scope_fk",
             onupdate="CASCADE",
-            ondelete="RESTRICT",
+            ondelete="CASCADE",
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint(

@@ -232,7 +232,7 @@ class Location(Base):
             ["location.scope_id", "location.id"],
             name="location_parent_same_scope_fk",
             onupdate="CASCADE",
-            ondelete="RESTRICT",
+            ondelete="CASCADE",
         ),
         Index(
             "location_scope_parent_sort_idx",
