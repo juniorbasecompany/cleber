@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     useCallback,
@@ -9,15 +8,21 @@ import {
     useRef,
     useState
 } from "react";
-import type { CSSProperties, MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
-import { HistoryIcon, InfoIcon } from "@/component/ui/ui-icons";
+import { ConfigurationEditorFooter } from "@/component/configuration/configuration-editor-footer";
+import { ConfigurationHistoryPlaceholder } from "@/component/configuration/configuration-history-placeholder";
+import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
+import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
+import { DirectoryCreateToolbarButton } from "@/component/configuration/directory-create-toolbar-button";
+import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
+import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type {
     TenantScopeDirectoryResponse,
     TenantScopeRecord
 } from "@/lib/auth/types";
+import { parseErrorDetail } from "@/lib/api/parse-error-detail";
 
 export type ScopeConfigurationCopy = {
     title: string;
@@ -66,36 +71,6 @@ type ScopeConfigurationClientProps = {
 
 type ScopeSelectionKey = number | "new" | null;
 
-const APP_SHELL_MAIN_SCROLL_SELECTOR = ".ui-shell-main-scroll";
-
-function buildScopeListCreateToneStyle(): CSSProperties {
-    return {
-        "--ui-location-depth": "0",
-        "--ui-location-tone-light-share": "100%",
-        "--ui-location-tone-dark-share": "0%"
-    } as CSSProperties;
-}
-
-function parseErrorDetail(payload: unknown, fallback: string): string {
-    if (!payload || typeof payload !== "object") {
-        return fallback;
-    }
-
-    const detail = (payload as { detail?: unknown }).detail;
-    if (typeof detail === "string" && detail.trim()) {
-        return detail;
-    }
-
-    if (Array.isArray(detail) && detail.length > 0) {
-        const first = detail[0] as { msg?: string };
-        if (typeof first?.msg === "string" && first.msg.trim()) {
-            return first.msg;
-        }
-    }
-
-    return fallback;
-}
-
 function resolveScopeLabel(scope: TenantScopeRecord) {
     return scope.name.trim() || scope.display_name.trim() || `#${scope.id}`;
 }
@@ -131,59 +106,6 @@ function resolveSelectedScopeKey(
     }
 
     return itemList[0]?.id ?? (canCreate ? "new" : null);
-}
-
-function buildScopePath(basePath: string, scopeKey: ScopeSelectionKey) {
-    const params = new URLSearchParams();
-
-    if (scopeKey === "new") {
-        params.set("scope", "new");
-    } else if (typeof scopeKey === "number") {
-        params.set("scope", String(scopeKey));
-    }
-
-    const query = params.toString();
-    return query ? `${basePath}?${query}` : basePath;
-}
-
-function isOverflowYScrollable(element: HTMLElement): boolean {
-    const style = window.getComputedStyle(element);
-    const overflowY = style.overflowY;
-    const canScroll =
-        overflowY === "auto" ||
-        overflowY === "scroll" ||
-        overflowY === "overlay";
-    return canScroll && element.scrollHeight > element.clientHeight;
-}
-
-function resolveEditorScrollport(panel: HTMLElement): HTMLElement | null {
-    const byShell = panel.closest(APP_SHELL_MAIN_SCROLL_SELECTOR);
-    if (byShell instanceof HTMLElement) {
-        return byShell;
-    }
-    let current: HTMLElement | null = panel.parentElement;
-    while (current) {
-        if (isOverflowYScrollable(current)) {
-            return current;
-        }
-        current = current.parentElement;
-    }
-    return null;
-}
-
-function isEditorPanelTopVisibleInScrollport(panel: HTMLElement): boolean {
-    const scrollport = resolveEditorScrollport(panel);
-    const panelRect = panel.getBoundingClientRect();
-    const marginTopPx =
-        Number.parseFloat(window.getComputedStyle(panel).scrollMarginTop) || 0;
-    const epsilonPx = 0.5;
-
-    if (scrollport) {
-        const scrollRect = scrollport.getBoundingClientRect();
-        return panelRect.top >= scrollRect.top + marginTopPx - epsilonPx;
-    }
-
-    return panelRect.top >= marginTopPx - epsilonPx;
 }
 
 export function ScopeConfigurationClient({
@@ -238,20 +160,11 @@ export function ScopeConfigurationClient({
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeletePending, setIsDeletePending] = useState(false);
-    const [isEditorFlashActive, setIsEditorFlashActive] = useState(false);
-    const editorFlashStartTimeoutRef = useRef<number | null>(null);
-    const editorFlashHideTimeoutRef = useRef<number | null>(null);
-    const editorFlashCancelAfterScrollRef = useRef<(() => void) | null>(null);
-    const previousEditorFlashKeyRef = useRef<string | null>(null);
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const initialSearchScopeKeyRef = useRef<ScopeSelectionKey>(initialSearchScopeKey);
     const selectedScopeKeyRef = useRef<ScopeSelectionKey>(initialSelectedScopeKey);
     const didResolveInitialUrlRef = useRef(false);
-
-    useEffect(() => {
-        setPortalTarget(document.getElementById("app-shell-footer-slot"));
-    }, []);
 
     const selectedScope = useMemo(() => {
         if (isCreateMode) {
@@ -264,6 +177,34 @@ export function ScopeConfigurationClient({
             null
         );
     }, [directory.item_list, isCreateMode, selectedScopeId]);
+
+    const selectedScopeKey: ScopeSelectionKey = isCreateMode ? "new" : selectedScope?.id ?? null;
+
+    useReplaceConfigurationPath(
+        scopePath,
+        searchParams,
+        replacePath,
+        "scope",
+        isCreateMode ? "new" : selectedScope?.id ?? null
+    );
+
+    const editorFlashKey = useMemo(() => {
+        if (isCreateMode) {
+            return "new";
+        }
+
+        if (!selectedScope) {
+            return null;
+        }
+
+        return `id:${String(selectedScope.id)}:name:${selectedScope.name}:display:${selectedScope.display_name}`;
+    }, [isCreateMode, selectedScope]);
+
+    const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
+
+    useEffect(() => {
+        setPortalTarget(document.getElementById("app-shell-footer-slot"));
+    }, []);
 
     useEffect(() => {
         selectedScopeKeyRef.current = isCreateMode ? "new" : selectedScope?.id ?? null;
@@ -313,19 +254,6 @@ export function ScopeConfigurationClient({
         syncFromDirectory(initialDirectory, preferredKey);
     }, [initialDirectory, syncFromDirectory]);
 
-    useEffect(() => {
-        const currentQuery = searchParams.toString();
-        const currentPath = currentQuery ? `${scopePath}?${currentQuery}` : scopePath;
-        const nextPath = buildScopePath(
-            scopePath,
-            isCreateMode ? "new" : selectedScope?.id ?? null
-        );
-
-        if (currentPath !== nextPath) {
-            replacePath(nextPath);
-        }
-    }, [isCreateMode, replacePath, scopePath, searchParams, selectedScope]);
-
     const isDirty = useMemo(() => {
         return (
             name.trim() !== baseline.name.trim() ||
@@ -348,127 +276,6 @@ export function ScopeConfigurationClient({
         setFieldError(nextError);
         return Object.keys(nextError).length === 0;
     }, [copy.validationError, displayName, name]);
-
-    const triggerEditorFlash = useCallback(() => {
-        if (editorFlashStartTimeoutRef.current != null) {
-            window.clearTimeout(editorFlashStartTimeoutRef.current);
-            editorFlashStartTimeoutRef.current = null;
-        }
-        if (editorFlashHideTimeoutRef.current != null) {
-            window.clearTimeout(editorFlashHideTimeoutRef.current);
-            editorFlashHideTimeoutRef.current = null;
-        }
-        editorFlashCancelAfterScrollRef.current?.();
-        editorFlashCancelAfterScrollRef.current = null;
-
-        setIsEditorFlashActive(false);
-        editorFlashStartTimeoutRef.current = window.setTimeout(() => {
-            editorFlashStartTimeoutRef.current = null;
-
-            const panel = editorPanelElementRef.current;
-            if (!panel) {
-                return;
-            }
-
-            let aborted = false;
-            let flashStarted = false;
-            const FLASH_MS = 960;
-            const SCROLL_END_FALLBACK_MS = 900;
-            const scrollEndSupported =
-                typeof Document !== "undefined" && "onscrollend" in Document.prototype;
-
-            let fallbackTimeoutId = 0;
-
-            const cleanupWait = () => {
-                window.clearTimeout(fallbackTimeoutId);
-                document.removeEventListener("scrollend", onScrollEnd);
-                editorFlashCancelAfterScrollRef.current = null;
-            };
-
-            const startFlash = () => {
-                if (aborted || flashStarted) {
-                    return;
-                }
-                flashStarted = true;
-                cleanupWait();
-                setIsEditorFlashActive(true);
-                editorFlashHideTimeoutRef.current = window.setTimeout(() => {
-                    setIsEditorFlashActive(false);
-                    editorFlashHideTimeoutRef.current = null;
-                }, FLASH_MS);
-            };
-
-            const onScrollEnd = () => {
-                startFlash();
-            };
-
-            if (isEditorPanelTopVisibleInScrollport(panel)) {
-                startFlash();
-                return;
-            }
-
-            panel.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-                inline: "nearest"
-            });
-
-            if (scrollEndSupported) {
-                document.addEventListener("scrollend", onScrollEnd, { passive: true });
-            }
-            const fallbackMs = scrollEndSupported ? SCROLL_END_FALLBACK_MS : 480;
-            fallbackTimeoutId = window.setTimeout(startFlash, fallbackMs);
-
-            editorFlashCancelAfterScrollRef.current = () => {
-                aborted = true;
-                cleanupWait();
-            };
-        }, 24);
-    }, []);
-
-    const editorFlashKey = useMemo(() => {
-        if (isCreateMode) {
-            return "new";
-        }
-
-        if (!selectedScope) {
-            return null;
-        }
-
-        return `id:${String(selectedScope.id)}:name:${selectedScope.name}:display:${selectedScope.display_name}`;
-    }, [isCreateMode, selectedScope]);
-
-    useEffect(() => {
-        if (!editorFlashKey) {
-            previousEditorFlashKeyRef.current = null;
-            return;
-        }
-
-        if (previousEditorFlashKeyRef.current === null) {
-            previousEditorFlashKeyRef.current = editorFlashKey;
-            return;
-        }
-
-        if (previousEditorFlashKeyRef.current === editorFlashKey) {
-            return;
-        }
-
-        previousEditorFlashKeyRef.current = editorFlashKey;
-        triggerEditorFlash();
-    }, [editorFlashKey, triggerEditorFlash]);
-
-    useEffect(() => {
-        return () => {
-            if (editorFlashStartTimeoutRef.current != null) {
-                window.clearTimeout(editorFlashStartTimeoutRef.current);
-            }
-            if (editorFlashHideTimeoutRef.current != null) {
-                window.clearTimeout(editorFlashHideTimeoutRef.current);
-            }
-            editorFlashCancelAfterScrollRef.current?.();
-            editorFlashCancelAfterScrollRef.current = null;
-        };
-    }, []);
 
     const handleStartCreate = useCallback(() => {
         if (!directory.can_create || isSaving) {
@@ -499,15 +306,6 @@ export function ScopeConfigurationClient({
             syncFromDirectory(directory, scope.id);
         },
         [copy.discardConfirm, directory, isCreateMode, isDirty, selectedScope, syncFromDirectory]
-    );
-
-    const handleBack = useCallback(
-        (event: MouseEvent<HTMLAnchorElement>) => {
-            if (isDirty && !window.confirm(copy.discardConfirm)) {
-                event.preventDefault();
-            }
-        },
-        [copy.discardConfirm, isDirty]
     );
 
     const handleToggleDelete = useCallback(() => {
@@ -543,7 +341,9 @@ export function ScopeConfigurationClient({
                 const data: unknown = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    setRequestErrorMessage(parseErrorDetail(data, copy.createError));
+                    setRequestErrorMessage(
+                        parseErrorDetail(data, copy.createError) ?? copy.createError
+                    );
                     return;
                 }
 
@@ -583,9 +383,8 @@ export function ScopeConfigurationClient({
             const data: unknown = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setRequestErrorMessage(
-                    parseErrorDetail(data, isDeletePending ? copy.deleteError : copy.saveError)
-                );
+                const fallback = isDeletePending ? copy.deleteError : copy.saveError;
+                setRequestErrorMessage(parseErrorDetail(data, fallback) ?? fallback);
                 return;
             }
 
@@ -629,7 +428,6 @@ export function ScopeConfigurationClient({
         validate
     ]);
 
-    const selectedScopeKey: ScopeSelectionKey = isCreateMode ? "new" : selectedScope?.id ?? null;
     const canEditForm = isCreateMode
         ? directory.can_create
         : selectedScope?.can_edit ?? false;
@@ -655,20 +453,12 @@ export function ScopeConfigurationClient({
 
                     <div className="ui-directory-list">
                         {directory.can_create ? (
-                            <div className="ui-location-nest-list-toolbar">
-                                <button
-                                    type="button"
-                                    className="ui-location-nest-create"
-                                    style={buildScopeListCreateToneStyle()}
-                                    aria-label={copy.newScope}
-                                    title={copy.newScope}
-                                    data-active={isCreateMode ? "true" : undefined}
-                                    onClick={handleStartCreate}
-                                    disabled={isSaving}
-                                >
-                                    <span aria-hidden>{copy.newScope}</span>
-                                </button>
-                            </div>
+                            <DirectoryCreateToolbarButton
+                                label={copy.newScope}
+                                active={isCreateMode}
+                                disabled={isSaving}
+                                onClick={handleStartCreate}
+                            />
                         ) : null}
 
                         {directory.item_list.map((item) => (
@@ -718,191 +508,107 @@ export function ScopeConfigurationClient({
 
                         {selectedScopeKey ? (
                             <div className="ui-editor-card-flow">
-                                <section className="ui-card ui-form-section ui-border-accent">
-                                    {isEditorFlashActive ? (
-                                        <>
-                                            <span
-                                                aria-hidden
-                                                className="ui-editor-flash-ring"
-                                            />
-                                            <span
-                                                aria-hidden
-                                                className="ui-editor-flash-fill"
-                                            />
-                                        </>
-                                    ) : null}
-
-                                    <div className="ui-editor-content">
-                                        <div className="ui-field">
-                                            <label className="ui-field-label" htmlFor="scope-name">
-                                                {copy.nameLabel}
-                                            </label>
-                                            <input
-                                                id="scope-name"
-                                                className="ui-input"
-                                                value={name}
-                                                onChange={(event) => {
-                                                    setName(event.target.value);
-                                                    setFieldError((previous) => ({
-                                                        ...previous,
-                                                        name: undefined
-                                                    }));
-                                                    setSuccessMessage(null);
-                                                }}
-                                                disabled={isDeletePending || !canEditForm}
-                                                aria-invalid={Boolean(fieldError.name)}
-                                            />
-                                            <p className="ui-field-hint">{copy.nameHint}</p>
-                                            {fieldError.name ? (
-                                                <p className="ui-field-error">{fieldError.name}</p>
-                                            ) : null}
-                                        </div>
-                                    </div>
-                                </section>
-
-                                <section className="ui-card ui-form-section ui-border-accent">
-                                    <div className="ui-editor-content">
-                                        <div className="ui-field">
-                                            <label
-                                                className="ui-field-label"
-                                                htmlFor="scope-display-name"
-                                            >
-                                                {copy.displayNameLabel}
-                                            </label>
-                                            <textarea
-                                                id="scope-display-name"
-                                                className="ui-input ui-input-textarea"
-                                                value={displayName}
-                                                onChange={(event) => {
-                                                    setDisplayName(event.target.value);
-                                                    setFieldError((previous) => ({
-                                                        ...previous,
-                                                        displayName: undefined
-                                                    }));
-                                                    setSuccessMessage(null);
-                                                }}
-                                                disabled={isDeletePending || !canEditForm}
-                                                aria-invalid={Boolean(fieldError.displayName)}
-                                            />
-                                            <p className="ui-field-hint">{copy.displayNameHint}</p>
-                                            {fieldError.displayName ? (
-                                                <p className="ui-field-error">
-                                                    {fieldError.displayName}
-                                                </p>
-                                            ) : null}
-                                        </div>
-                                    </div>
-                                </section>
+                                <ConfigurationNameDisplayNameFields
+                                    nameInputId="scope-name"
+                                    displayTextareaId="scope-display-name"
+                                    name={name}
+                                    displayName={displayName}
+                                    setName={setName}
+                                    setDisplayName={setDisplayName}
+                                    setFieldError={setFieldError}
+                                    fieldError={fieldError}
+                                    disabled={isDeletePending || !canEditForm}
+                                    nameLabel={copy.nameLabel}
+                                    nameHint={copy.nameHint}
+                                    displayNameLabel={copy.displayNameLabel}
+                                    displayNameHint={copy.displayNameHint}
+                                    flashActive={isEditorFlashActive}
+                                    onAfterFieldEdit={() => setSuccessMessage(null)}
+                                />
 
                                 {!isCreateMode && selectedScope ? (
-                                    <section className="ui-card ui-form-section ui-border-accent">
-                                        <div className="ui-editor-content">
-                                            <div className="ui-section-header">
-                                                <span className="ui-icon-badge">
-                                                    <InfoIcon className="ui-icon" />
-                                                </span>
-                                                <div className="ui-section-copy">
-                                                    <h2 className="ui-header-title ui-title-section">
-                                                        {copy.sectionInfoTitle}
-                                                    </h2>
-                                                    <p className="ui-copy-body">
-                                                        {copy.sectionInfoDescription}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <ul className="ui-info-topic-list">
-                                                <li>
-                                                    <p className="ui-info-topic-lead">
-                                                        <span className="ui-info-topic-label">
-                                                            {copy.infoIdLabel}
-                                                        </span>
-                                                        {": "}
-                                                        <span className="ui-info-topic-value">
-                                                            {selectedScope.id}
-                                                        </span>
-                                                    </p>
-                                                </li>
-                                                <li>
-                                                    <p className="ui-info-topic-lead">
-                                                        <span className="ui-info-topic-label">
-                                                            {copy.infoNameRegisteredLabel}
-                                                        </span>
-                                                        {": "}
-                                                        <span className="ui-info-topic-value">
-                                                            {selectedScope.name.trim() || "—"}
-                                                        </span>
-                                                    </p>
-                                                </li>
-                                                <li>
-                                                    <p className="ui-info-topic-lead">
-                                                        <span className="ui-info-topic-label">
-                                                            {copy.infoDisplayRegisteredLabel}
-                                                        </span>
-                                                        {": "}
-                                                        <span className="ui-info-topic-value">
-                                                            {selectedScope.display_name.trim() || "—"}
-                                                        </span>
-                                                    </p>
-                                                </li>
-                                                <li>
-                                                    <p className="ui-info-topic-lead">
-                                                        <span className="ui-info-topic-label">
-                                                            {copy.infoCanEditLabel}
-                                                        </span>
-                                                        {": "}
-                                                        <span className="ui-info-topic-value">
-                                                            {selectedScope.can_edit ? copy.infoYes : copy.infoNo}
-                                                        </span>
-                                                    </p>
-                                                </li>
-                                                <li>
-                                                    <p className="ui-info-topic-lead">
-                                                        <span className="ui-info-topic-label">
-                                                            {copy.infoCanDeleteLabel}
-                                                        </span>
-                                                        {": "}
-                                                        <span className="ui-info-topic-value">
-                                                            {selectedScope.can_delete ? copy.infoYes : copy.infoNo}
-                                                        </span>
-                                                    </p>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </section>
+                                    <ConfigurationInfoSection
+                                        title={copy.sectionInfoTitle}
+                                        description={copy.sectionInfoDescription}
+                                    >
+                                        <ul className="ui-info-topic-list">
+                                            <li>
+                                                <p className="ui-info-topic-lead">
+                                                    <span className="ui-info-topic-label">
+                                                        {copy.infoIdLabel}
+                                                    </span>
+                                                    {": "}
+                                                    <span className="ui-info-topic-value">
+                                                        {selectedScope.id}
+                                                    </span>
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <p className="ui-info-topic-lead">
+                                                    <span className="ui-info-topic-label">
+                                                        {copy.infoNameRegisteredLabel}
+                                                    </span>
+                                                    {": "}
+                                                    <span className="ui-info-topic-value">
+                                                        {selectedScope.name.trim() || "—"}
+                                                    </span>
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <p className="ui-info-topic-lead">
+                                                    <span className="ui-info-topic-label">
+                                                        {copy.infoDisplayRegisteredLabel}
+                                                    </span>
+                                                    {": "}
+                                                    <span className="ui-info-topic-value">
+                                                        {selectedScope.display_name.trim() || "—"}
+                                                    </span>
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <p className="ui-info-topic-lead">
+                                                    <span className="ui-info-topic-label">
+                                                        {copy.infoCanEditLabel}
+                                                    </span>
+                                                    {": "}
+                                                    <span className="ui-info-topic-value">
+                                                        {selectedScope.can_edit ? copy.infoYes : copy.infoNo}
+                                                    </span>
+                                                </p>
+                                            </li>
+                                            <li>
+                                                <p className="ui-info-topic-lead">
+                                                    <span className="ui-info-topic-label">
+                                                        {copy.infoCanDeleteLabel}
+                                                    </span>
+                                                    {": "}
+                                                    <span className="ui-info-topic-value">
+                                                        {selectedScope.can_delete ? copy.infoYes : copy.infoNo}
+                                                    </span>
+                                                </p>
+                                            </li>
+                                        </ul>
+                                    </ConfigurationInfoSection>
                                 ) : null}
 
                                 {isCreateMode ? (
-                                    <section className="ui-card ui-form-section ui-border-accent">
-                                        <div className="ui-editor-content">
-                                            <div className="ui-section-header">
-                                                <span className="ui-icon-badge">
-                                                    <InfoIcon className="ui-icon" />
-                                                </span>
-                                                <div className="ui-section-copy">
-                                                    <h2 className="ui-header-title ui-title-section">
-                                                        {copy.sectionInfoTitle}
-                                                    </h2>
-                                                    <p className="ui-copy-body">
-                                                        {copy.sectionInfoDescription}
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            <ul className="ui-info-topic-list">
-                                                <li>
-                                                    <p className="ui-info-topic-lead">
-                                                        <span className="ui-info-topic-label">
-                                                            {copy.infoCreateLead}
-                                                        </span>
-                                                    </p>
-                                                    <p className="ui-field-hint ui-info-topic-hint">
-                                                        {copy.infoCreateHint}
-                                                    </p>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </section>
+                                    <ConfigurationInfoSection
+                                        title={copy.sectionInfoTitle}
+                                        description={copy.sectionInfoDescription}
+                                    >
+                                        <ul className="ui-info-topic-list">
+                                            <li>
+                                                <p className="ui-info-topic-lead">
+                                                    <span className="ui-info-topic-label">
+                                                        {copy.infoCreateLead}
+                                                    </span>
+                                                </p>
+                                                <p className="ui-field-hint ui-info-topic-hint">
+                                                    {copy.infoCreateHint}
+                                                </p>
+                                            </li>
+                                        </ul>
+                                    </ConfigurationInfoSection>
                                 ) : null}
                             </div>
                         ) : (
@@ -914,45 +620,29 @@ export function ScopeConfigurationClient({
                 </div>
             </div>
 
-            <section
-                className="ui-card ui-card-coming-soon ui-panel-body-compact"
-                aria-labelledby="scope-history-heading"
-            >
-                <div className="ui-section-header">
-                    <span className="ui-icon-badge ui-icon-badge-construction">
-                        <HistoryIcon className="ui-icon" />
-                    </span>
-                    <div className="ui-section-copy">
-                        <h2
-                            id="scope-history-heading"
-                            className="ui-header-title ui-title-section"
-                        >
-                            {copy.historyTitle}
-                        </h2>
-                        <p className="ui-copy-body">{copy.historyDescription}</p>
-                    </div>
-                </div>
-            </section>
+            <ConfigurationHistoryPlaceholder
+                headingId="scope-history-heading"
+                title={copy.historyTitle}
+                description={copy.historyDescription}
+            />
 
             {portalTarget
                 ? createPortal(
-                    <div className="ui-action-footer">
-                        <Link
-                            href={configurationPath}
-                            className="ui-button-secondary"
-                            onClick={handleBack}
-                        >
-                            {copy.cancel}
-                        </Link>
-                        <div className="ui-action-footer-feedback">
-                            {footerErrorMessage ? (
-                                <div className="ui-notice-danger ui-notice-block ui-status-copy">
-                                    {footerErrorMessage}
-                                </div>
-                            ) : null}
-                        </div>
-                        <div className="ui-action-footer-end">
-                            {!isCreateMode && selectedScope ? (
+                    <ConfigurationEditorFooter
+                        configurationPath={configurationPath}
+                        cancelLabel={copy.cancel}
+                        discardConfirm={copy.discardConfirm}
+                        isDirty={isDirty}
+                        footerErrorMessage={footerErrorMessage}
+                        onSave={() => void handleSave()}
+                        saveDisabled={
+                            !selectedScopeKey || !canSubmit || isSaving || !isDirty
+                        }
+                        saveLabel={copy.save}
+                        savingLabel={copy.saving}
+                        isSaving={isSaving}
+                        dangerAction={
+                            !isCreateMode && selectedScope ? (
                                 <button
                                     type="button"
                                     className="ui-button-danger"
@@ -961,17 +651,9 @@ export function ScopeConfigurationClient({
                                 >
                                     {isDeletePending ? copy.undoDelete : copy.delete}
                                 </button>
-                            ) : null}
-                            <button
-                                type="button"
-                                className="ui-button-primary"
-                                onClick={() => void handleSave()}
-                                disabled={!selectedScopeKey || !canSubmit || isSaving || !isDirty}
-                            >
-                                {isSaving ? copy.saving : copy.save}
-                            </button>
-                        </div>
-                    </div>,
+                            ) : null
+                        }
+                    />,
                     portalTarget
                 )
                 : null}

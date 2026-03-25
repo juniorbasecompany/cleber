@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
     useCallback,
@@ -9,16 +8,23 @@ import {
     useRef,
     useState
 } from "react";
-import type { CSSProperties, MouseEvent } from "react";
+import type { CSSProperties } from "react";
 import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
-import { HistoryIcon, InfoIcon } from "@/component/ui/ui-icons";
+import { ConfigurationEditorFooter } from "@/component/configuration/configuration-editor-footer";
+import { ConfigurationHistoryPlaceholder } from "@/component/configuration/configuration-history-placeholder";
+import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
+import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
+import { DirectoryCreateToolbarButton } from "@/component/configuration/directory-create-toolbar-button";
+import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
+import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type {
     TenantLocationDirectoryResponse,
     TenantLocationRecord,
     TenantScopeRecord
 } from "@/lib/auth/types";
+import { parseErrorDetail } from "@/lib/api/parse-error-detail";
 
 type Props = {
     locale: string;
@@ -52,40 +58,6 @@ function parseLocationKey(raw: string | null): SelectedLocationKey {
     return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
-function buildPath(
-    basePath: string,
-    locationKey: SelectedLocationKey
-) {
-    const params = new URLSearchParams();
-    if (locationKey === "new") {
-        params.set("location", "new");
-    } else if (typeof locationKey === "number") {
-        params.set("location", String(locationKey));
-    }
-    const query = params.toString();
-    return query ? `${basePath}?${query}` : basePath;
-}
-
-function parseErrorDetail(payload: unknown) {
-    if (!payload || typeof payload !== "object") {
-        return null;
-    }
-
-    const detail = (payload as { detail?: unknown }).detail;
-    if (typeof detail === "string" && detail.trim()) {
-        return detail;
-    }
-
-    if (Array.isArray(detail) && detail.length > 0) {
-        const first = detail[0] as { msg?: string };
-        if (typeof first?.msg === "string" && first.msg.trim()) {
-            return first.msg;
-        }
-    }
-
-    return null;
-}
-
 function resolveLocationLabel(item: TenantLocationRecord) {
     return item.name.trim() || item.display_name.trim() || `#${item.id}`;
 }
@@ -105,49 +77,6 @@ function buildLocationToneStyle(depth: number, maxDepth: number): CSSProperties 
         "--ui-location-tone-light-share": `${((1 - toneRatio) * 100).toFixed(3)}%`,
         "--ui-location-tone-dark-share": `${(toneRatio * 100).toFixed(3)}%`
     } as CSSProperties;
-}
-
-const APP_SHELL_MAIN_SCROLL_SELECTOR = ".ui-shell-main-scroll";
-
-function isOverflowYScrollable(element: HTMLElement): boolean {
-    const style = window.getComputedStyle(element);
-    const overflowY = style.overflowY;
-    const canScroll =
-        overflowY === "auto" ||
-        overflowY === "scroll" ||
-        overflowY === "overlay";
-    return canScroll && element.scrollHeight > element.clientHeight;
-}
-
-function resolveEditorScrollport(panel: HTMLElement): HTMLElement | null {
-    const byShell = panel.closest(APP_SHELL_MAIN_SCROLL_SELECTOR);
-    if (byShell instanceof HTMLElement) {
-        return byShell;
-    }
-    let current: HTMLElement | null = panel.parentElement;
-    while (current) {
-        if (isOverflowYScrollable(current)) {
-            return current;
-        }
-        current = current.parentElement;
-    }
-    return null;
-}
-
-/** Topo do painel já está na zona útil do scrollport (mesma folga que scroll-margin-top do painel). */
-function isEditorPanelTopVisibleInScrollport(panel: HTMLElement): boolean {
-    const scrollport = resolveEditorScrollport(panel);
-    const panelRect = panel.getBoundingClientRect();
-    const marginTopPx =
-        Number.parseFloat(window.getComputedStyle(panel).scrollMarginTop) || 0;
-    const epsilonPx = 0.5;
-
-    if (scrollport) {
-        const scrollRect = scrollport.getBoundingClientRect();
-        return panelRect.top >= scrollRect.top + marginTopPx - epsilonPx;
-    }
-
-    return panelRect.top >= marginTopPx - epsilonPx;
 }
 
 function LocationNestNode({
@@ -302,11 +231,6 @@ export function LocationConfigurationClient({
     const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeletePending, setIsDeletePending] = useState(false);
-    const [isEditorFlashActive, setIsEditorFlashActive] = useState(false);
-    const editorFlashStartTimeoutRef = useRef<number | null>(null);
-    const editorFlashHideTimeoutRef = useRef<number | null>(null);
-    const editorFlashCancelAfterScrollRef = useRef<(() => void) | null>(null);
-    const previousEditorFlashKeyRef = useRef<string | null>(null);
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const itemList = useMemo(() => directory?.item_list ?? [], [directory]);
@@ -361,18 +285,35 @@ export function LocationConfigurationClient({
         ? "new"
         : (selectedLocation?.id ?? null);
 
+    useReplaceConfigurationPath(
+        locationPath,
+        searchParams,
+        replacePath,
+        "location",
+        selectedLocationKey
+    );
+
+    const editorFlashKey = useMemo(() => {
+        if (!directory) {
+            return null;
+        }
+
+        if (isCreateMode) {
+            return `new:${String(parentLocationId ?? "root")}`;
+        }
+
+        if (!selectedLocation) {
+            return null;
+        }
+
+        return `id:${String(selectedLocation.id)}:name:${selectedLocation.name}:display:${selectedLocation.display_name}:parent:${String(selectedLocation.parent_location_id ?? "root")}`;
+    }, [directory, isCreateMode, parentLocationId, selectedLocation]);
+
+    const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
+
     useEffect(() => {
         setPortalTarget(document.getElementById("app-shell-footer-slot"));
     }, []);
-
-    useEffect(() => {
-        const currentQuery = searchParams.toString();
-        const currentPath = currentQuery ? `${locationPath}?${currentQuery}` : locationPath;
-        const nextPath = buildPath(locationPath, selectedLocationKey);
-        if (currentPath !== nextPath) {
-            replacePath(nextPath);
-        }
-    }, [locationPath, replacePath, searchParams, selectedLocationKey]);
 
     const syncEditor = useCallback(
         (
@@ -429,132 +370,6 @@ export function LocationConfigurationClient({
         setFieldError(nextError);
         return Object.keys(nextError).length === 0;
     }, [copy.validationError, displayName, name]);
-
-    const triggerEditorFlash = useCallback(() => {
-        if (editorFlashStartTimeoutRef.current != null) {
-            window.clearTimeout(editorFlashStartTimeoutRef.current);
-            editorFlashStartTimeoutRef.current = null;
-        }
-        if (editorFlashHideTimeoutRef.current != null) {
-            window.clearTimeout(editorFlashHideTimeoutRef.current);
-            editorFlashHideTimeoutRef.current = null;
-        }
-        editorFlashCancelAfterScrollRef.current?.();
-        editorFlashCancelAfterScrollRef.current = null;
-
-        setIsEditorFlashActive(false);
-        editorFlashStartTimeoutRef.current = window.setTimeout(() => {
-            editorFlashStartTimeoutRef.current = null;
-
-            const panel = editorPanelElementRef.current;
-            if (!panel) {
-                return;
-            }
-
-            let aborted = false;
-            let flashStarted = false;
-            const FLASH_MS = 960;
-            const SCROLL_END_FALLBACK_MS = 900;
-            const scrollEndSupported =
-                typeof Document !== "undefined" && "onscrollend" in Document.prototype;
-
-            let fallbackTimeoutId = 0;
-
-            const cleanupWait = () => {
-                window.clearTimeout(fallbackTimeoutId);
-                document.removeEventListener("scrollend", onScrollEnd);
-                editorFlashCancelAfterScrollRef.current = null;
-            };
-
-            const startFlash = () => {
-                if (aborted || flashStarted) {
-                    return;
-                }
-                flashStarted = true;
-                cleanupWait();
-                setIsEditorFlashActive(true);
-                editorFlashHideTimeoutRef.current = window.setTimeout(() => {
-                    setIsEditorFlashActive(false);
-                    editorFlashHideTimeoutRef.current = null;
-                }, FLASH_MS);
-            };
-
-            const onScrollEnd = () => {
-                startFlash();
-            };
-
-            if (isEditorPanelTopVisibleInScrollport(panel)) {
-                startFlash();
-                return;
-            }
-
-            panel.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-                inline: "nearest"
-            });
-
-            if (scrollEndSupported) {
-                document.addEventListener("scrollend", onScrollEnd, { passive: true });
-            }
-            const fallbackMs = scrollEndSupported ? SCROLL_END_FALLBACK_MS : 480;
-            fallbackTimeoutId = window.setTimeout(startFlash, fallbackMs);
-
-            editorFlashCancelAfterScrollRef.current = () => {
-                aborted = true;
-                cleanupWait();
-            };
-        }, 24);
-    }, []);
-
-    const editorFlashKey = useMemo(() => {
-        if (!directory) {
-            return null;
-        }
-
-        if (isCreateMode) {
-            return `new:${String(parentLocationId ?? "root")}`;
-        }
-
-        if (!selectedLocation) {
-            return null;
-        }
-
-        return `id:${String(selectedLocation.id)}:name:${selectedLocation.name}:display:${selectedLocation.display_name}:parent:${String(selectedLocation.parent_location_id ?? "root")}`;
-    }, [directory, isCreateMode, parentLocationId, selectedLocation]);
-
-    useEffect(() => {
-        if (!editorFlashKey) {
-            previousEditorFlashKeyRef.current = null;
-            return;
-        }
-
-        // Primeira chave válida após montagem ou após perder o diretório: só sincroniza a ref, sem flash.
-        if (previousEditorFlashKeyRef.current === null) {
-            previousEditorFlashKeyRef.current = editorFlashKey;
-            return;
-        }
-
-        if (previousEditorFlashKeyRef.current === editorFlashKey) {
-            return;
-        }
-
-        previousEditorFlashKeyRef.current = editorFlashKey;
-        triggerEditorFlash();
-    }, [editorFlashKey, triggerEditorFlash]);
-
-    useEffect(() => {
-        return () => {
-            if (editorFlashStartTimeoutRef.current != null) {
-                window.clearTimeout(editorFlashStartTimeoutRef.current);
-            }
-            if (editorFlashHideTimeoutRef.current != null) {
-                window.clearTimeout(editorFlashHideTimeoutRef.current);
-            }
-            editorFlashCancelAfterScrollRef.current?.();
-            editorFlashCancelAfterScrollRef.current = null;
-        };
-    }, []);
 
     const handleStartCreate = useCallback(
         (draftParentId: number | null) => {
@@ -659,24 +474,13 @@ export function LocationConfigurationClient({
 
                     <div className="ui-directory-list ui-location-nest-list">
                         {directory?.can_create ? (
-                            <div className="ui-location-nest-list-toolbar">
-                                <button
-                                    type="button"
-                                    className="ui-location-nest-create"
-                                    style={buildLocationToneStyle(0, maxLocationDepth)}
-                                    aria-label={copy.newLabel}
-                                    title={copy.newLabel}
-                                    data-active={
-                                        isCreateMode && parentLocationId == null
-                                            ? "true"
-                                            : undefined
-                                    }
-                                    onClick={() => handleStartCreate(null)}
-                                    disabled={isSaving}
-                                >
-                                    <span aria-hidden>Novo local</span>
-                                </button>
-                            </div>
+                            <DirectoryCreateToolbarButton
+                                label={copy.newLabel}
+                                toneStyle={buildLocationToneStyle(0, maxLocationDepth)}
+                                active={isCreateMode && parentLocationId == null}
+                                disabled={isSaving}
+                                onClick={() => handleStartCreate(null)}
+                            />
                         ) : null}
 
                         {rootLocationList.map((item) => (
@@ -708,189 +512,102 @@ export function LocationConfigurationClient({
                 >
                     <div className="ui-editor-panel-body">
                         <div className="ui-editor-card-flow">
-                            <section className="ui-card ui-form-section ui-border-accent">
-                                {isEditorFlashActive ? (
-                                    <>
-                                        <span
-                                            aria-hidden
-                                            className="ui-editor-flash-ring"
-                                        />
-                                        <span
-                                            aria-hidden
-                                            className="ui-editor-flash-fill"
-                                        />
-                                    </>
-                                ) : null}
-
-                                <div className="ui-editor-content">
-                                    <div className="ui-field">
-                                        <label className="ui-field-label" htmlFor="location-name">
-                                            {copy.nameLabel}
-                                        </label>
-                                        <input
-                                            id="location-name"
-                                            className="ui-input"
-                                            value={name}
-                                            onChange={(event) => {
-                                                setName(event.target.value);
-                                                setFieldError((previous) => ({
-                                                    ...previous,
-                                                    name: undefined
-                                                }));
-                                                setRequestErrorMessage(null);
-                                            }}
-                                            disabled={isDeletePending || !canEditForm}
-                                            aria-invalid={Boolean(fieldError.name)}
-                                        />
-                                        <p className="ui-field-hint">{copy.nameHint}</p>
-                                        {fieldError.name ? (
-                                            <p className="ui-field-error">{fieldError.name}</p>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </section>
-
-                            <section className="ui-card ui-form-section ui-border-accent">
-                                <div className="ui-editor-content">
-                                    <div className="ui-field">
-                                        <label
-                                            className="ui-field-label"
-                                            htmlFor="location-display-name"
-                                        >
-                                            {copy.displayNameLabel}
-                                        </label>
-                                        <textarea
-                                            id="location-display-name"
-                                            className="ui-input ui-input-textarea"
-                                            value={displayName}
-                                            onChange={(event) => {
-                                                setDisplayName(event.target.value);
-                                                setFieldError((previous) => ({
-                                                    ...previous,
-                                                    displayName: undefined
-                                                }));
-                                                setRequestErrorMessage(null);
-                                            }}
-                                            disabled={isDeletePending || !canEditForm}
-                                            aria-invalid={Boolean(fieldError.displayName)}
-                                        />
-                                        <p className="ui-field-hint">{copy.displayNameHint}</p>
-                                        {fieldError.displayName ? (
-                                            <p className="ui-field-error">
-                                                {fieldError.displayName}
-                                            </p>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </section>
+                            <ConfigurationNameDisplayNameFields
+                                nameInputId="location-name"
+                                displayTextareaId="location-display-name"
+                                name={name}
+                                displayName={displayName}
+                                setName={setName}
+                                setDisplayName={setDisplayName}
+                                setFieldError={setFieldError}
+                                fieldError={fieldError}
+                                disabled={isDeletePending || !canEditForm}
+                                nameLabel={copy.nameLabel}
+                                nameHint={copy.nameHint}
+                                displayNameLabel={copy.displayNameLabel}
+                                displayNameHint={copy.displayNameHint}
+                                flashActive={isEditorFlashActive}
+                                onAfterFieldEdit={() => setRequestErrorMessage(null)}
+                            />
 
                             {directory ? (
-                                <section className="ui-card ui-form-section ui-border-accent">
-                                    <div className="ui-editor-content">
-                                        <div className="ui-section-header">
-                                            <span className="ui-icon-badge">
-                                                <InfoIcon className="ui-icon" />
-                                            </span>
-                                            <div className="ui-section-copy">
-                                                <h2 className="ui-header-title ui-title-section">
-                                                    {copy.sectionStructureTitle}
-                                                </h2>
-                                                <p className="ui-copy-body">
-                                                    {copy.sectionStructureDescription}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <ul className="ui-info-topic-list">
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.sectionStructureLevelLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {structureLevelDisplay}
-                                                    </span>
-                                                </p>
-                                                <p className="ui-field-hint ui-info-topic-hint">
-                                                    {copy.sectionStructureLevelHint}
-                                                </p>
-                                            </li>
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.sectionStructureOrderLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {isCreateMode || !selectedLocation
-                                                            ? copy.sectionStructureOrderPending
-                                                            : String(selectedLocation.sort_order)}
-                                                    </span>
-                                                </p>
-                                                <p className="ui-field-hint ui-info-topic-hint">
+                                <ConfigurationInfoSection
+                                    title={copy.sectionStructureTitle}
+                                    description={copy.sectionStructureDescription}
+                                >
+                                    <ul className="ui-info-topic-list">
+                                        <li>
+                                            <p className="ui-info-topic-lead">
+                                                <span className="ui-info-topic-label">
+                                                    {copy.sectionStructureLevelLabel}
+                                                </span>
+                                                {": "}
+                                                <span className="ui-info-topic-value">
+                                                    {structureLevelDisplay}
+                                                </span>
+                                            </p>
+                                            <p className="ui-field-hint ui-info-topic-hint">
+                                                {copy.sectionStructureLevelHint}
+                                            </p>
+                                        </li>
+                                        <li>
+                                            <p className="ui-info-topic-lead">
+                                                <span className="ui-info-topic-label">
+                                                    {copy.sectionStructureOrderLabel}
+                                                </span>
+                                                {": "}
+                                                <span className="ui-info-topic-value">
                                                     {isCreateMode || !selectedLocation
-                                                        ? copy.sectionStructureOrderHintCreate
-                                                        : copy.sectionStructureOrderHintEdit}
-                                                </p>
-                                            </li>
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.sectionStructureParentLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {structureParentLabel}
-                                                    </span>
-                                                </p>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </section>
+                                                        ? copy.sectionStructureOrderPending
+                                                        : String(selectedLocation.sort_order)}
+                                                </span>
+                                            </p>
+                                            <p className="ui-field-hint ui-info-topic-hint">
+                                                {isCreateMode || !selectedLocation
+                                                    ? copy.sectionStructureOrderHintCreate
+                                                    : copy.sectionStructureOrderHintEdit}
+                                            </p>
+                                        </li>
+                                        <li>
+                                            <p className="ui-info-topic-lead">
+                                                <span className="ui-info-topic-label">
+                                                    {copy.sectionStructureParentLabel}
+                                                </span>
+                                                {": "}
+                                                <span className="ui-info-topic-value">
+                                                    {structureParentLabel}
+                                                </span>
+                                            </p>
+                                        </li>
+                                    </ul>
+                                </ConfigurationInfoSection>
                             ) : null}
                         </div>
                     </div>
                 </div>
             </div>
 
-            <section className="ui-card ui-card-coming-soon ui-panel-body-compact">
-                <div className="ui-section-header">
-                    <span className="ui-icon-badge ui-icon-badge-construction">
-                        <HistoryIcon className="ui-icon" />
-                    </span>
-                    <div className="ui-section-copy">
-                        <h2 className="ui-header-title ui-title-section">
-                            {copy.historyTitle}
-                        </h2>
-                        <p className="ui-copy-body">{copy.historyDescription}</p>
-                    </div>
-                </div>
-            </section>
+            <ConfigurationHistoryPlaceholder
+                headingId="location-history-heading"
+                title={copy.historyTitle}
+                description={copy.historyDescription}
+            />
 
             {portalTarget
                 ? createPortal(
-                    <div className="ui-action-footer">
-                        <Link
-                            href={configurationPath}
-                            className="ui-button-secondary"
-                            onClick={(event: MouseEvent<HTMLAnchorElement>) => {
-                                if (isDirty && !window.confirm(copy.discardConfirm)) {
-                                    event.preventDefault();
-                                }
-                            }}
-                        >
-                            {copy.cancel}
-                        </Link>
-                        <div className="ui-action-footer-feedback">
-                            {footerErrorMessage ? (
-                                <div className="ui-notice-danger ui-notice-block ui-status-copy">
-                                    {footerErrorMessage}
-                                </div>
-                            ) : null}
-                        </div>
-                        <div className="ui-action-footer-end">
-                            {!isCreateMode && selectedLocation ? (
+                    <ConfigurationEditorFooter
+                        configurationPath={configurationPath}
+                        cancelLabel={copy.cancel}
+                        discardConfirm={copy.discardConfirm}
+                        isDirty={isDirty}
+                        footerErrorMessage={footerErrorMessage}
+                        onSave={() => void handleSave()}
+                        saveDisabled={!directory || !canSubmit || isSaving || !isDirty}
+                        saveLabel={copy.save}
+                        savingLabel={copy.saving}
+                        isSaving={isSaving}
+                        dangerAction={
+                            !isCreateMode && selectedLocation ? (
                                 <button
                                     type="button"
                                     className="ui-button-danger"
@@ -899,17 +616,9 @@ export function LocationConfigurationClient({
                                 >
                                     {isDeletePending ? copy.undoDelete : copy.delete}
                                 </button>
-                            ) : null}
-                            <button
-                                type="button"
-                                className="ui-button-primary"
-                                onClick={() => void handleSave()}
-                                disabled={!directory || !canSubmit || isSaving || !isDirty}
-                            >
-                                {isSaving ? copy.saving : copy.save}
-                            </button>
-                        </div>
-                    </div>,
+                            ) : null
+                        }
+                    />,
                     portalTarget
                 )
                 : null}
