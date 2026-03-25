@@ -55,6 +55,11 @@ export default async function AppLayout({
       label: t("navigation.home"),
       href: `/${locale}/app`
     },
+    {
+      key: "location",
+      label: t("navigation.location"),
+      href: `/${locale}/app/configuration/location`
+    },
     ...appModuleKeyList.map((key) => ({
       key,
       label: t(`navigation.${key}`),

@@ -7,6 +7,7 @@ type IconProps = {
 type NavigationIconProps = IconProps & {
     kind:
     | "home"
+    | "location"
     | "operation"
     | "record"
     | "import"
@@ -80,6 +81,23 @@ export function OperationsIcon({ className }: IconProps) {
             <path d="M5 18.5V10m7 8.5V5.5m7 13V8.5" />
             <path d="M3.5 20.5h17" />
             <path d="M4 10l4.5-3 4 2.5L20 5.5" />
+        </svg>
+    );
+}
+
+export function LocationIcon({ className }: IconProps) {
+    return (
+        <svg
+            className={mergeClassName(className)}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+        >
+            <path d="M12 21s-6.5-4.4-6.5-10a6.5 6.5 0 0 1 13 0c0 5.6-6.5 10-6.5 10Z" />
+            <circle cx="12" cy="11" r="2.25" />
         </svg>
     );
 }
@@ -388,6 +406,8 @@ export function NavigationIcon({
     switch (kind) {
         case "home":
             return <DashboardIcon className={className} />;
+        case "location":
+            return <LocationIcon className={className} />;
         case "operation":
             return <OperationsIcon className={className} />;
         case "record":

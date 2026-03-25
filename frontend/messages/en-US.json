@@ -5,6 +5,7 @@
     "workspaceLabel": "Operational and auditable workspace",
     "navigation": {
       "home": "Home",
+      "location": "Locations",
       "operation": "Operations",
       "record": "Records",
       "import": "Imports",
