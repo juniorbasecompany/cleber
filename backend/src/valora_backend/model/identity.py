@@ -204,12 +204,7 @@ class Member(Base):
     status: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
-        comment=(
-            "Situação do usuário:\n"
-            "1) Ativo\n"
-            "2) Pendente\n"
-            "3) Desativado"
-        ),
+        comment=("Situação do usuário:\n" "1) Ativo\n" "2) Pendente\n" "3) Desativado"),
     )
 
 
