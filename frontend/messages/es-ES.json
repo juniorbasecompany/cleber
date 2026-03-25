@@ -189,13 +189,7 @@
   "MemberConfigurationPage": {
     "title": "Miembros",
     "description": "Edita el registro de los miembros vinculados al licenciatario activo. Nombre, rol y estado quedan centralizados en este directorio.",
-    "status": {
-      "title": "Edición de miembros",
-      "description": "Los cambios solo afectan al licenciatario activo de tu sesión. El correo sigue siendo la referencia de acceso del vínculo."
-    },
     "list": {
-      "title": "Directorio del licenciatario",
-      "description": "Selecciona un miembro para revisar o actualizar el registro.",
       "empty": "No se encontraron miembros para el licenciatario activo."
     },
     "history": {
@@ -204,8 +198,6 @@
     },
     "section": {
       "profile": {
-        "title": "Identidad",
-        "description": "Nombre corto y nombre completo mostrados dentro del contexto del licenciatario.",
         "displayNameLabel": "Nombre para mostrar",
         "displayNameHint": "Se usa en las superficies internas del licenciatario.",
         "nameLabel": "Nombre completo",
@@ -236,9 +228,6 @@
     },
     "readOnlyNotice": "Puedes revisar el directorio de miembros, pero solo los miembros master o administrador pueden editar registros.",
     "protectedRecordNotice": "Este registro está protegido por los permisos actuales. Selecciona otro miembro para editar.",
-    "savedNotice": "Miembro actualizado correctamente.",
-    "deletedNotice": "Miembro eliminado correctamente.",
-    "selectPrompt": "Selecciona un miembro de la lista para editar el registro.",
     "role": {
       "master": "Master",
       "admin": "Administrador",

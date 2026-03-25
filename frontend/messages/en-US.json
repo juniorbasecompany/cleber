@@ -189,13 +189,7 @@
   "MemberConfigurationPage": {
     "title": "Members",
     "description": "Edit the records of the members linked to the active tenant. Name, role, and status stay centralized in this directory.",
-    "status": {
-      "title": "Editing members",
-      "description": "Changes only affect the active tenant in your session. Email remains the access reference for the relationship."
-    },
     "list": {
-      "title": "Tenant directory",
-      "description": "Select a member to review or update the record.",
       "empty": "No members were found for the active tenant."
     },
     "history": {
@@ -204,8 +198,6 @@
     },
     "section": {
       "profile": {
-        "title": "Identity",
-        "description": "Short name and full name displayed inside the tenant context.",
         "displayNameLabel": "Display name",
         "displayNameHint": "Used across the tenant's internal surfaces.",
         "nameLabel": "Full name",
@@ -236,9 +228,6 @@
     },
     "readOnlyNotice": "You can review the member directory, but only master or admin members can edit records.",
     "protectedRecordNotice": "This record is protected by the current permissions. Select another member to edit.",
-    "savedNotice": "Member updated successfully.",
-    "deletedNotice": "Member deleted successfully.",
-    "selectPrompt": "Select a member from the list to edit the record.",
     "role": {
       "master": "Master",
       "admin": "Administrator",

@@ -39,8 +39,8 @@ Novos painéis **diretório + editor** devem preferir **Shell + política**; usa
 
 | Padrão | Exemplo | Notas |
 |--------|---------|--------|
-| **A — Diretório + editor central** | `scope-configuration-client`, `location-configuration-client` | `ConfigurationDirectoryEditorShell`, URLs com item selecionado quando aplicável. |
-| **B — Registro com abas e preview** | `member-configuration-client`, `tenant-configuration-client` | Layout distinto (abas, preview lateral, etc.); **não** obrigatório usar o Shell da coluna A nesta fase. |
+| **A — Diretório + editor central** | `scope-configuration-client`, `location-configuration-client`, `member-configuration-client` | `ConfigurationDirectoryEditorShell`, URLs com item selecionado quando aplicável. |
+| **B — Registro com abas e preview** | `tenant-configuration-client` | Layout distinto (abas, preview lateral, etc.); **não** obrigatório usar o Shell da coluna A nesta fase. |
 
 ## Ações e feedback visual
 
