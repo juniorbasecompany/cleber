@@ -26,6 +26,7 @@ export default async function MemberConfigurationPage({
     title: t("title"),
     description: t("description"),
     empty: t("list.empty"),
+    selectToEdit: t("editor.selectToEdit"),
     historyTitle: t("history.title"),
     historyDescription: t("history.description"),
     displayNameLabel: t("section.profile.displayNameLabel"),

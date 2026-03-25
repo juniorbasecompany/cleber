@@ -17,6 +17,8 @@ import { parseErrorDetail } from "@/lib/api/parse-error-detail";
 export type TenantConfigurationCopy = {
     title: string;
     description: string;
+    /** Painel vazio até o utilizador abrir o registo na lista (padrão dos diretórios). */
+    emptyEditor: string;
     historyTitle: string;
     historyDescription: string;
     legalNameLabel: string;
@@ -66,11 +68,12 @@ export function TenantConfigurationClient({
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
 
     const [tenant, setTenant] = useState(initialTenant);
-    const [displayName, setDisplayName] = useState(initialTenant.display_name);
-    const [legalName, setLegalName] = useState(initialTenant.name);
+    const [editorEngaged, setEditorEngaged] = useState(false);
+    const [displayName, setDisplayName] = useState("");
+    const [legalName, setLegalName] = useState("");
     const [baseline, setBaseline] = useState({
-        displayName: initialTenant.display_name,
-        legalName: initialTenant.name
+        displayName: "",
+        legalName: ""
     });
     const [fieldError, setFieldError] = useState<{
         displayName?: string;
@@ -82,22 +85,25 @@ export function TenantConfigurationClient({
 
     useEffect(() => {
         setTenant(initialTenant);
-        setDisplayName(initialTenant.display_name);
-        setLegalName(initialTenant.name);
-        setBaseline({
-            displayName: initialTenant.display_name,
-            legalName: initialTenant.name
-        });
         setFieldError({});
         setRequestErrorMessage(null);
         setIsDeletePending(false);
-    }, [initialTenant]);
+        if (editorEngaged) {
+            setDisplayName(initialTenant.display_name);
+            setLegalName(initialTenant.name);
+            setBaseline({
+                displayName: initialTenant.display_name,
+                legalName: initialTenant.name
+            });
+        }
+    }, [editorEngaged, initialTenant]);
 
-    const editorFlashKey = useMemo(
-        () =>
-            `id:${String(tenant.id)}:legal:${tenant.name}:display:${tenant.display_name}`,
-        [tenant.display_name, tenant.id, tenant.name]
-    );
+    const editorFlashKey = useMemo(() => {
+        if (!editorEngaged) {
+            return null;
+        }
+        return `id:${String(tenant.id)}:legal:${tenant.name}:display:${tenant.display_name}`;
+    }, [editorEngaged, tenant.display_name, tenant.id, tenant.name]);
     const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
 
     const isDirty = useMemo(() => {
@@ -128,7 +134,37 @@ export function TenantConfigurationClient({
         setIsDeletePending((previous) => !previous);
     }, [isSaving, tenant.can_delete]);
 
+    const handleDirectoryRowClick = useCallback(() => {
+        if (editorEngaged) {
+            if (isDirty && !window.confirm(copy.discardConfirm)) {
+                return;
+            }
+            setEditorEngaged(false);
+            setDisplayName("");
+            setLegalName("");
+            setBaseline({ displayName: "", legalName: "" });
+            setFieldError({});
+            setRequestErrorMessage(null);
+            setIsDeletePending(false);
+            return;
+        }
+
+        setEditorEngaged(true);
+        setDisplayName(tenant.display_name);
+        setLegalName(tenant.name);
+        setBaseline({
+            displayName: tenant.display_name,
+            legalName: tenant.name
+        });
+        setFieldError({});
+        setRequestErrorMessage(null);
+        setIsDeletePending(false);
+    }, [copy.discardConfirm, editorEngaged, isDirty, tenant.display_name, tenant.name]);
+
     const handleSave = useCallback(async () => {
+        if (!editorEngaged) {
+            return;
+        }
         setRequestErrorMessage(null);
         if (!isDeletePending && !validate()) {
             return;
@@ -186,6 +222,7 @@ export function TenantConfigurationClient({
         copy.deleteError,
         copy.saveError,
         displayName,
+        editorEngaged,
         isDeletePending,
         legalName,
         locale,
@@ -197,14 +234,14 @@ export function TenantConfigurationClient({
         isCreateMode: false,
         isDeletePending,
         canCreate: false,
-        canEdit: tenant.can_edit
+        canEdit: editorEngaged && tenant.can_edit
     });
 
     const footerErrorMessage =
         requestErrorMessage ?? fieldError.name ?? fieldError.displayName ?? null;
 
-    const asideTitle = resolveAsideTitle(displayName, legalName, tenant.id);
-    const asideCaption = legalName.trim() || `#${tenant.id}`;
+    const asideTitle = resolveAsideTitle(tenant.display_name, tenant.name, tenant.id);
+    const asideCaption = tenant.name.trim() || `#${tenant.id}`;
 
     return (
         <ConfigurationDirectoryEditorShell
@@ -212,6 +249,9 @@ export function TenantConfigurationClient({
             headerDescription={copy.description}
             editorPanelRef={editorPanelElementRef}
             isDeletePending={isDeletePending}
+            editorVariant="emptyWhenNoContext"
+            hasEditorContext={editorEngaged}
+            emptyEditorMessage={copy.emptyEditor}
             directoryAside={
                 <>
                     {!tenant.can_edit ? (
@@ -221,10 +261,12 @@ export function TenantConfigurationClient({
                     ) : null}
 
                     <div className="ui-directory-list">
-                        <div
+                        <button
+                            type="button"
                             className="ui-directory-item"
-                            data-selected="true"
+                            data-selected={editorEngaged ? "true" : undefined}
                             data-delete-pending={isDeletePending ? "true" : undefined}
+                            onClick={handleDirectoryRowClick}
                         >
                             <div className="ui-row-between">
                                 <div className="ui-min-w-0">
@@ -232,7 +274,7 @@ export function TenantConfigurationClient({
                                     <p className="ui-directory-caption">{asideCaption}</p>
                                 </div>
                             </div>
-                        </div>
+                        </button>
                     </div>
                 </>
             }
@@ -285,7 +327,7 @@ export function TenantConfigurationClient({
                 footerErrorMessage,
                 onSave: () => void handleSave(),
                 saveDisabled: directoryEditorSaveDisabled({
-                    hasEditableContext: true,
+                    hasEditableContext: editorEngaged,
                     canSubmit,
                     isSaving,
                     isDirty
@@ -293,16 +335,17 @@ export function TenantConfigurationClient({
                 saveLabel: copy.save,
                 savingLabel: copy.saving,
                 isSaving,
-                dangerAction: (
-                    <button
-                        type="button"
-                        className="ui-button-danger"
-                        onClick={handleToggleDelete}
-                        disabled={!tenant.can_delete || isSaving}
-                    >
-                        {isDeletePending ? copy.undoDelete : copy.delete}
-                    </button>
-                )
+                dangerAction:
+                    editorEngaged && tenant.can_delete ? (
+                        <button
+                            type="button"
+                            className="ui-button-danger"
+                            onClick={handleToggleDelete}
+                            disabled={isSaving}
+                        >
+                            {isDeletePending ? copy.undoDelete : copy.delete}
+                        </button>
+                    ) : null
             }}
         />
     );

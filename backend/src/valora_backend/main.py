@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from valora_backend.api.auth import router as auth_router
 from valora_backend.db import engine, get_session
+from valora_backend.middleware.audit_request_context import AuditRequestContextMiddleware
 
 
 @asynccontextmanager
@@ -20,6 +21,7 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+    app.add_middleware(AuditRequestContextMiddleware)
 
     @app.get("/health")
     def health_check() -> dict[str, str]:

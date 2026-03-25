@@ -7,6 +7,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
+from valora_backend.audit_request import apply_audit_gucs_for_session
 from valora_backend.auth.jwt import verify_token
 from valora_backend.auth.service import member_role_name
 from valora_backend.db import get_session
@@ -74,6 +75,7 @@ def get_current_member(
             detail="Active member not found for tenant",
         )
 
+    apply_audit_gucs_for_session(session, member.tenant_id, member.account_id)
     return member
 
 

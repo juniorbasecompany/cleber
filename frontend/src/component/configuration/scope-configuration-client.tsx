@@ -91,10 +91,15 @@ function resolveSelectedScopeKey(
     }
 
     if (typeof preferredKey === "number") {
-        return itemList.find((item) => item.id === preferredKey)?.id ?? (itemList[0]?.id ?? null);
+        const found = itemList.find((item) => item.id === preferredKey)?.id;
+        if (found != null) {
+            return found;
+        }
+        return canCreate ? "new" : (itemList[0]?.id ?? null);
     }
 
-    return itemList[0]?.id ?? (canCreate ? "new" : null);
+    /* Sem query explícita: mesmo padrão que locais/unidades — painel vazio (novo), quando permitido. */
+    return canCreate ? "new" : (itemList[0]?.id ?? null);
 }
 
 export function ScopeConfigurationClient({
@@ -104,10 +109,7 @@ export function ScopeConfigurationClient({
 }: ScopeConfigurationClientProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const initialSearchScopeKey =
-        parseSelectedScopeKey(searchParams.get("scope")) ??
-        initialDirectory.current_scope_id ??
-        null;
+    const initialSearchScopeKey = parseSelectedScopeKey(searchParams.get("scope"));
     const initialSelectedScopeKey = resolveSelectedScopeKey(
         initialDirectory.item_list,
         initialSearchScopeKey,
@@ -159,9 +161,9 @@ export function ScopeConfigurationClient({
         }
 
         return (
-            directory.item_list.find((item) => item.id === selectedScopeId) ??
-            directory.item_list[0] ??
-            null
+            selectedScopeId == null
+                ? null
+                : (directory.item_list.find((item) => item.id === selectedScopeId) ?? null)
         );
     }, [directory.item_list, isCreateMode, selectedScopeId]);
 

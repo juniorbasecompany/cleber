@@ -70,3 +70,7 @@ Para o esquema JSON completo (tipos, enums, áreas, notas), ver [reference.md](r
 ## Manutenção
 
 - A fonte de verdade do diagrama é `backend/erd.json`; edições no drawDB ou no repo devem refletir nesse arquivo.
+
+## Tabela `log` e lista de tabelas monitorizadas
+
+- Ao alterar em `backend/erd.json` a lista de valores em `log.table_name` (ou o CHECK equivalente no modelo/migrations), seguir a skill [**audit-log-triggers**](../audit-log-triggers/SKILL.md) para triggers PostgreSQL, contrato `set_config` / `SET LOCAL` e testes opcionais com `VALORA_AUDIT_PG_TEST=1`.

@@ -154,6 +154,9 @@
         "list": {
             "empty": "No members were found for the active tenant."
         },
+        "editor": {
+            "selectToEdit": "Select a member in the list to view and edit their details."
+        },
         "history": {
             "title": "Change history",
             "description": "A timeline of record changes will appear here when directory auditing is available. Until then, this block stays as a layout and traceability placeholder."
@@ -370,6 +373,9 @@
     "TenantConfigurationPage": {
         "title": "Tenant",
         "description": "These fields identify the contracting organization in the workspace, top bar, and lists. Changes apply to the active tenant of your session.",
+        "editor": {
+            "selectToEdit": "Select the tenant in the list to view and edit its details."
+        },
         "history": {
             "title": "Change history",
             "description": "A timeline of who changed what will appear here when the audit API is available. Until then, this block remains the reserved space for layout and traceability next to the form."

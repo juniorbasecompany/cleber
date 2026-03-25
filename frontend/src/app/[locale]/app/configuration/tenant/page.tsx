@@ -25,6 +25,7 @@ export default async function TenantConfigurationPage({
   const copy = {
     title: t("title"),
     description: t("description"),
+    emptyEditor: t("editor.selectToEdit"),
     historyTitle: t("history.title"),
     historyDescription: t("history.description"),
     legalNameLabel: t("section.legal.nameLabel"),

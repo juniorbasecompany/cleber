@@ -24,6 +24,8 @@ export type MemberConfigurationCopy = {
     title: string;
     description: string;
     empty: string;
+    /** Painel vazio até o utilizador escolher um registo na lista (padrão dos diretórios). */
+    selectToEdit: string;
     historyTitle: string;
     historyDescription: string;
     displayNameLabel: string;
@@ -107,11 +109,10 @@ function resolveSelectedMemberId(
     itemList: TenantMemberRecord[],
     preferredMemberId: number | null
 ): number | null {
-    return (
-        itemList.find((item) => item.id === preferredMemberId)?.id ??
-        itemList[0]?.id ??
-        null
-    );
+    if (preferredMemberId == null) {
+        return null;
+    }
+    return itemList.find((item) => item.id === preferredMemberId)?.id ?? null;
 }
 
 export function MemberConfigurationClient({
@@ -176,11 +177,10 @@ export function MemberConfigurationClient({
     }, [selectedMemberId]);
 
     const selectedMember = useMemo(() => {
-        return (
-            directory.item_list.find((item) => item.id === selectedMemberId) ??
-            directory.item_list[0] ??
-            null
-        );
+        if (selectedMemberId == null) {
+            return null;
+        }
+        return directory.item_list.find((item) => item.id === selectedMemberId) ?? null;
     }, [directory.item_list, selectedMemberId]);
 
     const editorFlashKey = useMemo(() => {
@@ -368,7 +368,8 @@ export function MemberConfigurationClient({
     const footerErrorMessage =
         requestErrorMessage ?? fieldError.name ?? fieldError.displayName ?? null;
 
-    const hasDirectoryContext = directory.item_list.length > 0;
+    const hasMemberList = directory.item_list.length > 0;
+    const hasEditorSelection = selectedMember != null;
 
     return (
         <ConfigurationDirectoryEditorShell
@@ -377,8 +378,8 @@ export function MemberConfigurationClient({
             editorPanelRef={editorPanelElementRef}
             isDeletePending={isDeletePending}
             editorVariant="emptyWhenNoContext"
-            hasEditorContext={hasDirectoryContext}
-            emptyEditorMessage={copy.empty}
+            hasEditorContext={hasEditorSelection}
+            emptyEditorMessage={hasMemberList ? copy.selectToEdit : copy.empty}
             directoryAside={
                 <>
                     {!directory.can_edit ? (
@@ -531,7 +532,7 @@ export function MemberConfigurationClient({
                 footerErrorMessage,
                 onSave: () => void handleSave(),
                 saveDisabled: directoryEditorSaveDisabled({
-                    hasEditableContext: hasDirectoryContext,
+                    hasEditableContext: hasEditorSelection,
                     canSubmit,
                     isSaving,
                     isDirty

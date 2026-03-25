@@ -107,9 +107,21 @@ python script_validate_schema_phase1.py
 
 O script confere as tabelas `tenant`, `account`, `member`, PKs, FKs (incl. `ON DELETE` / `UPDATE`), `CHECK`s e o índice único parcial em `member`. Exit code `0` se passar.
 
+### Testes de triggers de auditoria (`log`)
+
+Com Postgres acessível e `alembic upgrade head` aplicado, na pasta `backend`:
+
+```bash
+set VALORA_AUDIT_PG_TEST=1
+python -m pytest tests/test_audit_triggers_pg.py -q
+```
+
+(PowerShell: `$env:VALORA_AUDIT_PG_TEST='1'`.) Sem essa variável, os testes são ignorados.
+
 ### Sessão e API (fase 1 — E.2)
 
-- [`src/valora_backend/db.py`](src/valora_backend/db.py): `engine`, `SessionLocal`, dependency `get_session` e alias `SessionDep`.
+- [`src/valora_backend/db.py`](src/valora_backend/db.py): `engine`, `SessionLocal`, dependency `get_session` (injeta `Request` e, no PostgreSQL, aplica `set_config` local para auditoria após `after_begin`) e alias `SessionDep`.
+- [`src/valora_backend/middleware/audit_request_context.py`](src/valora_backend/middleware/audit_request_context.py): preenche `request.state` com `tenant_id` e `account_id` a partir do JWT válido.
 - O endpoint `GET /health/db` usa a sessão para `SELECT 1` e confirma ligação ao banco.
 
 ## Estrutura inicial
@@ -118,6 +130,6 @@ O script confere as tabelas `tenant`, `account`, `member`, PKs, FKs (incl. `ON D
 - `src/valora_backend/`: pacote da aplicação.
 - `src/valora_backend/config.py`: configuração via `pydantic-settings` (`POSTGRES_PASSWORD` → URL do banco em `database_url`).
 - `src/valora_backend/model/`: modelos SQLAlchemy (fase 1: `tenant`, `account`, `member` em `identity.py`).
-- `src/valora_backend/db.py`: engine, sessão e dependency FastAPI (`get_session`).
+- `src/valora_backend/db.py`: engine, sessão e dependency FastAPI (`get_session` com contexto de auditoria no PostgreSQL).
 - `alembic/`: migrations; `env.py` usa `Base.metadata` e a mesma URL que o backend.
 - `script_validate_schema_phase1.py`: validação automática do schema da fase 1 (E.1).

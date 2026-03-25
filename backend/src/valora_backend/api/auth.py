@@ -33,8 +33,16 @@ from valora_backend.api.scope_hierarchy_directory_support import (
     normalize_scope_hierarchy_order,
     validate_scope_hierarchy_parent_change,
 )
+from valora_backend.audit_request import apply_audit_gucs_for_session
 from valora_backend.db import get_session
-from valora_backend.model.identity import Account, Location, Member, Scope, Tenant, Unity
+from valora_backend.model.identity import (
+    Account,
+    Location,
+    Member,
+    Scope,
+    Tenant,
+    Unity,
+)
 from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
 
 router = APIRouter(prefix="/auth", tags=["auth"])
@@ -416,6 +424,7 @@ def _find_or_create_account(session: Session, identity: GoogleIdentity) -> Accou
     if account:
         if _sync_account_name(account, identity):
             session.add(account)
+            apply_audit_gucs_for_session(session, None, account.id)
             commit_session_with_null_if_empty(session)
             session.refresh(account)
         return account
@@ -429,6 +438,8 @@ def _find_or_create_account(session: Session, identity: GoogleIdentity) -> Accou
         provider_subject=identity.provider_subject,
     )
     session.add(account)
+    session.flush()
+    apply_audit_gucs_for_session(session, None, account.id)
     commit_session_with_null_if_empty(session)
     session.refresh(account)
     return account
@@ -465,13 +476,11 @@ def _link_pending_member_to_account(session: Session, account: Account) -> None:
         )
     ).all()
 
-    changed = False
     for pending_member in pending_member_list:
-        changed = _sync_member_identity(pending_member, account) or changed
-        session.add(pending_member)
-
-    if changed:
-        commit_session_with_null_if_empty(session)
+        if _sync_member_identity(pending_member, account):
+            session.add(pending_member)
+            apply_audit_gucs_for_session(session, pending_member.tenant_id, account.id)
+            commit_session_with_null_if_empty(session)
 
 
 def _list_active_tenant_option_list(
@@ -596,6 +605,8 @@ def _create_initial_tenant_member(session: Session, account: Account) -> Member:
         display_name=account.display_name,
     )
     session.add(tenant)
+    session.flush()
+    apply_audit_gucs_for_session(session, tenant.id, account.id)
     commit_session_with_null_if_empty(session)
     session.refresh(tenant)
 
@@ -609,6 +620,8 @@ def _create_initial_tenant_member(session: Session, account: Account) -> Member:
         status=ACTIVE_STATUS,
     )
     session.add(member)
+    session.flush()
+    apply_audit_gucs_for_session(session, tenant.id, account.id)
     commit_session_with_null_if_empty(session)
     session.refresh(member)
     return member
@@ -641,6 +654,7 @@ def _resolve_member_for_access(
 
     if _sync_member_identity(pending_member, account):
         session.add(pending_member)
+        apply_audit_gucs_for_session(session, pending_member.tenant_id, account.id)
         commit_session_with_null_if_empty(session)
         session.refresh(pending_member)
 
@@ -693,6 +707,7 @@ def auth_google(
 
     if _sync_member_identity(member, account):
         session.add(member)
+        apply_audit_gucs_for_session(session, member.tenant_id, account.id)
         commit_session_with_null_if_empty(session)
         session.refresh(member)
 
@@ -1022,9 +1037,7 @@ def _build_tenant_location_directory(
     visited_location_id_set: set[int] = set()
     can_edit_hierarchy = _member_can_edit_scope_hierarchy_directory(actor)
 
-    def append_branch(
-        location: Location, *, depth: int, path_prefix: list[str]
-    ) -> int:
+    def append_branch(location: Location, *, depth: int, path_prefix: list[str]) -> int:
         visited_location_id_set.add(location.id)
         path_labels = [*path_prefix, hierarchy_item_label(location)]
         child_list = child_list_by_parent_id.get(location.id, [])
@@ -1083,9 +1096,7 @@ def _get_scope_unity_list(session: Session, *, scope_id: int) -> list[Unity]:
     )
 
 
-def _get_scope_unity_or_404(
-    session: Session, *, scope_id: int, unity_id: int
-) -> Unity:
+def _get_scope_unity_or_404(session: Session, *, scope_id: int, unity_id: int) -> Unity:
     target_unity = session.get(Unity, unity_id)
     if not target_unity or target_unity.scope_id != scope_id:
         raise HTTPException(
@@ -1139,9 +1150,7 @@ def _build_tenant_unity_directory(
     visited_unity_id_set: set[int] = set()
     can_edit_hierarchy = _member_can_edit_scope_hierarchy_directory(actor)
 
-    def append_branch(
-        unity_row: Unity, *, depth: int, path_prefix: list[str]
-    ) -> int:
+    def append_branch(unity_row: Unity, *, depth: int, path_prefix: list[str]) -> int:
         visited_unity_id_set.add(unity_row.id)
         path_labels = [*path_prefix, hierarchy_item_label(unity_row)]
         child_list = child_list_by_parent_id.get(unity_row.id, [])
@@ -1295,7 +1304,9 @@ def delete_current_tenant(
             detail="Only master members can delete tenant",
         )
 
-    member_list = list(session.scalars(select(Member).where(Member.tenant_id == tenant.id)))
+    member_list = list(
+        session.scalars(select(Member).where(Member.tenant_id == tenant.id))
+    )
     for tenant_member in member_list:
         session.delete(tenant_member)
 
@@ -1732,9 +1743,7 @@ def create_current_scope_unity(
         scope_id=target_scope.id,
         parent_unity_id=body.parent_unity_id,
         sort_order=sum(
-            1
-            for item in unity_list
-            if item.parent_unity_id == body.parent_unity_id
+            1 for item in unity_list if item.parent_unity_id == body.parent_unity_id
         ),
     )
     session.add(unity)
@@ -1940,6 +1949,7 @@ def accept_invite(
     _sync_member_identity(member, account)
     member.status = ACTIVE_STATUS
     session.add(member)
+    apply_audit_gucs_for_session(session, member.tenant_id, account.id)
     commit_session_with_null_if_empty(session)
 
     return InviteActionResponse(
@@ -1983,6 +1993,7 @@ def reject_invite(
     _sync_member_identity(member, account)
     member.status = DISABLED_STATUS
     session.add(member)
+    apply_audit_gucs_for_session(session, member.tenant_id, account.id)
     commit_session_with_null_if_empty(session)
 
     return InviteActionResponse(

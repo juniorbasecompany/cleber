@@ -154,6 +154,9 @@
         "list": {
             "empty": "No se encontraron miembros para el licenciatario activo."
         },
+        "editor": {
+            "selectToEdit": "Selecciona un miembro en la lista para ver y editar los datos."
+        },
         "history": {
             "title": "Historial de cambios",
             "description": "Una línea de tiempo de los cambios de registro aparecerá aquí cuando la auditoría del directorio esté disponible. Hasta entonces, este bloque queda como referencia de layout y trazabilidad."
@@ -370,6 +373,9 @@
     "TenantConfigurationPage": {
         "title": "Licenciatario",
         "description": "Estos campos identifican a la organización contratante en el espacio de trabajo, la barra superior y las listas. Los cambios aplican al licenciatario activo de tu sesión.",
+        "editor": {
+            "selectToEdit": "Selecciona el licenciatario en la lista para ver y editar los datos."
+        },
         "history": {
             "title": "Historial de cambios",
             "description": "Una línea de tiempo de quién cambió qué aparecerá aquí cuando exista la API de auditoría. Hasta entonces, este bloque permanece como espacio reservado de diseño y trazabilidad junto al formulario."
