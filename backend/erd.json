@@ -540,7 +540,7 @@
           "name": "sort_order",
           "comment": "Ordem da unidade produtiva em relação às demais de mesmo nível.",
           "type": "INTEGER",
-          "default": "",
+          "default": "0",
           "check": "",
           "primary": false,
           "unique": false,
@@ -629,7 +629,7 @@
       "endTableId": "unity",
       "endFieldId": "scope_id",
       "cardinality": "one_to_many",
-      "updateConstraint": "Update",
+      "updateConstraint": "Cascade",
       "deleteConstraint": "Restrict"
     },
     {

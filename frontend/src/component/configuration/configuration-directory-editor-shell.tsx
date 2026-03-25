@@ -13,7 +13,7 @@ type LayoutPropsWithoutEditorBody = Omit<
 >;
 
 type ShellAlwaysShowFormProps = LayoutPropsWithoutEditorBody & {
-    /** Padrão: formulário sempre dentro de `ui-editor-card-flow` (escopo, locais). */
+    /** Padrão: formulário sempre dentro de `ui-editor-card-flow` (diretórios hierárquicos por escopo). */
     editorVariant?: "alwaysShowForm";
     editorForm: ReactNode;
 };

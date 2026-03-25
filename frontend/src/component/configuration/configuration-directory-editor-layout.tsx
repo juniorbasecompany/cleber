@@ -27,7 +27,7 @@ export type ConfigurationDirectoryEditorLayoutProps = {
 };
 
 /**
- * Casca partilhada das telas de configuração com diretório + editor (escopo, locais, …).
+ * Casca partilhada das telas de configuração com diretório + editor (escopo, árvores por escopo, …).
  * Lista vs árvore e conteúdo do editor ficam nos slots; regras de negócio permanecem no pai.
  */
 export function ConfigurationDirectoryEditorLayout({

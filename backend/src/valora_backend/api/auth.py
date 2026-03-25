@@ -819,11 +819,13 @@ def _member_can_delete_scope(member: Member) -> bool:
     return member.role in (MASTER_ROLE, ADMIN_ROLE)
 
 
-def _member_can_edit_location(member: Member) -> bool:
+def _member_can_edit_scope_hierarchy_directory(member: Member) -> bool:
+    """Permissão para editar árvores hierárquicas por escopo (ex.: location, unity)."""
     return _member_can_edit_scope(member)
 
 
-def _member_can_delete_location(member: Member) -> bool:
+def _member_can_delete_scope_hierarchy_directory(member: Member) -> bool:
+    """Permissão para apagar nós em árvores hierárquicas por escopo (ex.: location, unity)."""
     return _member_can_delete_scope(member)
 
 
@@ -971,9 +973,9 @@ def _validate_unity_parent_change(
         get_parent_id=lambda item: item.parent_unity_id,
         parent_id=parent_unity_id,
         moving_id=moving_unity_id,
-        not_found_detail="Parent productive unit not found for current scope",
-        self_parent_detail="Productive unit cannot be its own parent",
-        cycle_detail="Productive unit cannot move under one of its descendants",
+        not_found_detail="Parent unity not found for current scope",
+        self_parent_detail="Unity cannot be its own parent",
+        cycle_detail="Unity cannot move under one of its descendants",
     )
 
 
@@ -1018,7 +1020,7 @@ def _build_tenant_location_directory(
 
     item_list: list[TenantLocationRecord] = []
     visited_location_id_set: set[int] = set()
-    can_edit_location = _member_can_edit_location(actor)
+    can_edit_hierarchy = _member_can_edit_scope_hierarchy_directory(actor)
 
     def append_branch(
         location: Location, *, depth: int, path_prefix: list[str]
@@ -1036,10 +1038,10 @@ def _build_tenant_location_directory(
             path_labels=path_labels,
             children_count=len(child_list),
             descendants_count=0,
-            can_edit=can_edit_location,
-            can_delete=_member_can_delete_location(actor),
-            can_create_child=can_edit_location,
-            can_move=can_edit_location,
+            can_edit=can_edit_hierarchy,
+            can_delete=_member_can_delete_scope_hierarchy_directory(actor),
+            can_create_child=can_edit_hierarchy,
+            can_move=can_edit_hierarchy,
         )
         item_list.append(record)
 
@@ -1065,8 +1067,8 @@ def _build_tenant_location_directory(
         scope_id=scope.id,
         scope_name=scope.name,
         scope_display_name=scope.display_name,
-        can_edit=can_edit_location,
-        can_create=can_edit_location,
+        can_edit=can_edit_hierarchy,
+        can_create=can_edit_hierarchy,
         item_list=item_list,
     )
 
@@ -1088,7 +1090,7 @@ def _get_scope_unity_or_404(
     if not target_unity or target_unity.scope_id != scope_id:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Productive unit not found for current scope",
+            detail="Unity not found for current scope",
         )
 
     return target_unity
@@ -1110,9 +1112,9 @@ def _move_unity_in_scope(
         set_parent_id=lambda item, value: setattr(item, "parent_unity_id", value),
         new_parent_id=parent_unity_id,
         target_index=target_index,
-        not_found_detail="Parent productive unit not found for current scope",
-        self_parent_detail="Productive unit cannot be its own parent",
-        cycle_detail="Productive unit cannot move under one of its descendants",
+        not_found_detail="Parent unity not found for current scope",
+        self_parent_detail="Unity cannot be its own parent",
+        cycle_detail="Unity cannot move under one of its descendants",
     )
 
 
@@ -1135,7 +1137,7 @@ def _build_tenant_unity_directory(
 
     item_list: list[TenantUnityRecord] = []
     visited_unity_id_set: set[int] = set()
-    can_edit_unity = _member_can_edit_location(actor)
+    can_edit_hierarchy = _member_can_edit_scope_hierarchy_directory(actor)
 
     def append_branch(
         unity_row: Unity, *, depth: int, path_prefix: list[str]
@@ -1153,10 +1155,10 @@ def _build_tenant_unity_directory(
             path_labels=path_labels,
             children_count=len(child_list),
             descendants_count=0,
-            can_edit=can_edit_unity,
-            can_delete=_member_can_delete_location(actor),
-            can_create_child=can_edit_unity,
-            can_move=can_edit_unity,
+            can_edit=can_edit_hierarchy,
+            can_delete=_member_can_delete_scope_hierarchy_directory(actor),
+            can_create_child=can_edit_hierarchy,
+            can_move=can_edit_hierarchy,
         )
         item_list.append(record)
 
@@ -1182,8 +1184,8 @@ def _build_tenant_unity_directory(
         scope_id=scope.id,
         scope_name=scope.name,
         scope_display_name=scope.display_name,
-        can_edit=can_edit_unity,
-        can_create=can_edit_unity,
+        can_edit=can_edit_hierarchy,
+        can_create=can_edit_hierarchy,
         item_list=item_list,
     )
 
@@ -1471,7 +1473,7 @@ def delete_current_tenant_scope(
     if has_unity is not None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot delete scope while it still has productive units",
+            detail="Cannot delete scope while it still has unities",
         )
 
     session.delete(target_scope)
@@ -1516,7 +1518,7 @@ def create_current_scope_location(
         actor=current_member,
         scope_id=scope_id,
     )
-    if not _member_can_edit_location(current_member):
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions to create location",
@@ -1570,7 +1572,7 @@ def patch_current_scope_location(
         scope_id=target_scope.id,
         location_id=location_id,
     )
-    if not _member_can_edit_location(current_member):
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions to update location",
@@ -1617,7 +1619,7 @@ def move_current_scope_location(
         scope_id=target_scope.id,
         location_id=location_id,
     )
-    if not _member_can_edit_location(current_member):
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions to move location",
@@ -1658,7 +1660,7 @@ def delete_current_scope_location(
         scope_id=target_scope.id,
         location_id=location_id,
     )
-    if not _member_can_delete_location(current_member):
+    if not _member_can_delete_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Insufficient permissions to delete location",
@@ -1712,10 +1714,10 @@ def create_current_scope_unity(
         actor=current_member,
         scope_id=scope_id,
     )
-    if not _member_can_edit_location(current_member):
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions to create productive unit",
+            detail="Insufficient permissions to create unity",
         )
 
     unity_list = _get_scope_unity_list(session, scope_id=target_scope.id)
@@ -1766,10 +1768,10 @@ def patch_current_scope_unity(
         scope_id=target_scope.id,
         unity_id=unity_id,
     )
-    if not _member_can_edit_location(current_member):
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions to update productive unit",
+            detail="Insufficient permissions to update unity",
         )
 
     if target_unity.parent_unity_id != body.parent_unity_id:
@@ -1813,10 +1815,10 @@ def move_current_scope_unity(
         scope_id=target_scope.id,
         unity_id=unity_id,
     )
-    if not _member_can_edit_location(current_member):
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions to move productive unit",
+            detail="Insufficient permissions to move unity",
         )
 
     _move_unity_in_scope(
@@ -1854,10 +1856,10 @@ def delete_current_scope_unity(
         scope_id=target_scope.id,
         unity_id=unity_id,
     )
-    if not _member_can_delete_location(current_member):
+    if not _member_can_delete_scope_hierarchy_directory(current_member):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Insufficient permissions to delete productive unit",
+            detail="Insufficient permissions to delete unity",
         )
 
     session.delete(target_unity)

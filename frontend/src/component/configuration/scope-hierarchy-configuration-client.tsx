@@ -1,5 +1,9 @@
 "use client";
 
+/**
+ * Cliente partilhado para painéis de diretório hierárquico por escopo (locais, unidades produtivas).
+ * O markup e o fluxo espelham um único padrão para evitar divergência de layout entre recursos.
+ */
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";

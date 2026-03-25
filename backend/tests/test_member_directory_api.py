@@ -771,7 +771,7 @@ def test_unity_move_cannot_create_cycle() -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == (
-        "Productive unit cannot move under one of its descendants"
+        "Unity cannot move under one of its descendants"
     )
 
 
@@ -793,7 +793,7 @@ def test_scope_delete_is_blocked_when_scope_has_unities() -> None:
 
     assert response.status_code == 400
     assert response.json()["detail"] == (
-        "Cannot delete scope while it still has productive units"
+        "Cannot delete scope while it still has unities"
     )
 
 
@@ -812,6 +812,4 @@ def test_member_cannot_create_unity() -> None:
         )
 
     assert response.status_code == 403
-    assert response.json()["detail"] == (
-        "Insufficient permissions to create productive unit"
-    )
+    assert response.json()["detail"] == "Insufficient permissions to create unity"
