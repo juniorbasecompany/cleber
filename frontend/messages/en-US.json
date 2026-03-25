@@ -327,7 +327,7 @@
       },
       "structure": {
         "title": "Information",
-        "description": "Summary of the location in focus within the scope: tree level, order among siblings under the same parent, and which location is the parent. This is read-only context; order can change when using move, when that action is available.",
+        "description": "Summary of the location in focus, with the level in the hierarchy and the order among siblings of the same location.",
         "levelLabel": "Hierarchy level",
         "levelHint": "Counted from the scope root (1 = root).",
         "parentLabel": "Parent location",

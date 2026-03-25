@@ -327,7 +327,7 @@
       },
       "structure": {
         "title": "Información",
-        "description": "Resumen de la ubicación en foco dentro del alcance: nivel en el árbol, orden entre hermanos bajo el mismo padre y cuál es la ubicación padre. Son datos solo de consulta; el orden puede cambiar al usar mover, cuando esa acción esté disponible.",
+        "description": "Resumen de la ubicación en foco, con el nivel en la jerarquía y el orden entre hermanos de la misma ubicación.",
         "levelLabel": "Nivel jerárquico",
         "levelHint": "Contado desde la raíz del alcance (1 = raíz).",
         "parentLabel": "Ubicación padre",
