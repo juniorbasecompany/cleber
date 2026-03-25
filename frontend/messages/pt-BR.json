@@ -259,31 +259,31 @@
   "ScopeConfigurationPage": {
     "title": "Escopos",
     "description": "Edite a base estrutural mínima do licenciado ativo. Cada escopo define um recorte inicial que sustentará os cadastros e módulos posteriores.",
-    "status": {
-      "title": "Edição de escopos",
-      "description": "As alterações afetam apenas o licenciado ativo da sua sessão. Use este diretório para criar, revisar e manter os escopos estruturais."
-    },
-    "list": {
-      "title": "Diretório de escopos",
-      "description": "Selecione um escopo para revisar ou atualizar o cadastro estrutural.",
-      "empty": "Nenhum escopo foi encontrado para o licenciado ativo."
-    },
+    "empty": "Nenhum escopo foi encontrado para o licenciado ativo.",
     "history": {
       "title": "Histórico de alterações",
       "description": "Uma linha do tempo das alterações de escopo aparecerá aqui quando a auditoria estrutural estiver disponível. Até lá, este bloco permanece como referência de layout e rastreabilidade."
     },
     "section": {
       "identity": {
-        "title": "Identificação",
-        "description": "Nome curto e descrição do escopo usados como base para os próximos cadastros estruturais.",
         "nameLabel": "Nome do escopo",
         "nameHint": "Use um rótulo curto para identificar o escopo, como Aves, Soja ou Leite.",
         "displayNameLabel": "Descrição do escopo",
         "displayNameHint": "Explique o recorte do escopo com mais contexto, como Aves para produção de ovos."
+      },
+      "info": {
+        "title": "Informações",
+        "description": "Resumo do escopo em foco: identificador, valores salvos no servidor e o que esta sessão pode alterar.",
+        "idLabel": "Identificador do escopo",
+        "nameRegisteredLabel": "Nome salvo",
+        "displayRegisteredLabel": "Descrição salva",
+        "canEditLabel": "Pode editar",
+        "canDeleteLabel": "Pode apagar",
+        "yes": "Sim",
+        "no": "Não",
+        "createLead": "Novo escopo estrutural",
+        "createHint": "Você está definindo um novo recorte para o licenciado ativo. Salve para registrá-lo no diretório."
       }
-    },
-    "metadata": {
-      "idLabel": "Identificador do escopo"
     },
     "action": {
       "cancel": "Cancelar",

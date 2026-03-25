@@ -259,31 +259,31 @@
   "ScopeConfigurationPage": {
     "title": "Scopes",
     "description": "Edit the minimum structural foundation of the active tenant. Each scope defines an initial slice that will support later records and modules.",
-    "status": {
-      "title": "Editing scopes",
-      "description": "Changes only affect the active tenant in your session. Use this directory to create, review, and maintain structural scopes."
-    },
-    "list": {
-      "title": "Scope directory",
-      "description": "Select a scope to review or update the structural record.",
-      "empty": "No scopes were found for the active tenant."
-    },
+    "empty": "No scopes were found for the active tenant.",
     "history": {
       "title": "Change history",
       "description": "A timeline of scope changes will appear here when structural auditing is available. Until then, this block stays as a layout and traceability placeholder."
     },
     "section": {
       "identity": {
-        "title": "Identity",
-        "description": "Short name and description of the scope used as the base for the next structural records.",
         "nameLabel": "Scope name",
         "nameHint": "Use a short label to identify the scope, such as Poultry, Soy, or Milk.",
         "displayNameLabel": "Scope description",
         "displayNameHint": "Explain the scope slice with more context, such as Poultry for egg production."
+      },
+      "info": {
+        "title": "Information",
+        "description": "Summary of the scope in focus: identifier, values saved on the server, and what this session may change.",
+        "idLabel": "Scope identifier",
+        "nameRegisteredLabel": "Saved name",
+        "displayRegisteredLabel": "Saved description",
+        "canEditLabel": "Can edit",
+        "canDeleteLabel": "Can delete",
+        "yes": "Yes",
+        "no": "No",
+        "createLead": "New structural scope",
+        "createHint": "You are defining a new slice for the active tenant. Save to register it in the directory."
       }
-    },
-    "metadata": {
-      "idLabel": "Scope identifier"
     },
     "action": {
       "cancel": "Cancel",

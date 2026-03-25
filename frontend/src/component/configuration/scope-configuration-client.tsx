@@ -2,13 +2,18 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import type { MouseEvent } from "react";
+import {
+    useCallback,
+    useEffect,
+    useMemo,
+    useRef,
+    useState
+} from "react";
+import type { CSSProperties, MouseEvent } from "react";
 import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
-import { StatusPanel } from "@/component/app-shell/status-panel";
-import { HistoryIcon, PreviewIcon, ScopeIcon } from "@/component/ui/ui-icons";
+import { HistoryIcon, InfoIcon } from "@/component/ui/ui-icons";
 import type {
     TenantScopeDirectoryResponse,
     TenantScopeRecord
@@ -17,20 +22,24 @@ import type {
 export type ScopeConfigurationCopy = {
     title: string;
     description: string;
-    statusTitle: string;
-    statusDescription: string;
-    listTitle: string;
-    listDescription: string;
     empty: string;
     historyTitle: string;
     historyDescription: string;
-    sectionIdentityTitle: string;
-    sectionIdentityDescription: string;
     nameLabel: string;
     nameHint: string;
     displayNameLabel: string;
     displayNameHint: string;
-    metadataIdLabel: string;
+    sectionInfoTitle: string;
+    sectionInfoDescription: string;
+    infoIdLabel: string;
+    infoNameRegisteredLabel: string;
+    infoDisplayRegisteredLabel: string;
+    infoCanEditLabel: string;
+    infoCanDeleteLabel: string;
+    infoYes: string;
+    infoNo: string;
+    infoCreateLead: string;
+    infoCreateHint: string;
     cancel: string;
     newScope: string;
     delete: string;
@@ -56,6 +65,16 @@ type ScopeConfigurationClientProps = {
 };
 
 type ScopeSelectionKey = number | "new" | null;
+
+const APP_SHELL_MAIN_SCROLL_SELECTOR = ".ui-shell-main-scroll";
+
+function buildScopeListCreateToneStyle(): CSSProperties {
+    return {
+        "--ui-location-depth": "0",
+        "--ui-location-tone-light-share": "100%",
+        "--ui-location-tone-dark-share": "0%"
+    } as CSSProperties;
+}
 
 function parseErrorDetail(payload: unknown, fallback: string): string {
     if (!payload || typeof payload !== "object") {
@@ -127,6 +146,46 @@ function buildScopePath(basePath: string, scopeKey: ScopeSelectionKey) {
     return query ? `${basePath}?${query}` : basePath;
 }
 
+function isOverflowYScrollable(element: HTMLElement): boolean {
+    const style = window.getComputedStyle(element);
+    const overflowY = style.overflowY;
+    const canScroll =
+        overflowY === "auto" ||
+        overflowY === "scroll" ||
+        overflowY === "overlay";
+    return canScroll && element.scrollHeight > element.clientHeight;
+}
+
+function resolveEditorScrollport(panel: HTMLElement): HTMLElement | null {
+    const byShell = panel.closest(APP_SHELL_MAIN_SCROLL_SELECTOR);
+    if (byShell instanceof HTMLElement) {
+        return byShell;
+    }
+    let current: HTMLElement | null = panel.parentElement;
+    while (current) {
+        if (isOverflowYScrollable(current)) {
+            return current;
+        }
+        current = current.parentElement;
+    }
+    return null;
+}
+
+function isEditorPanelTopVisibleInScrollport(panel: HTMLElement): boolean {
+    const scrollport = resolveEditorScrollport(panel);
+    const panelRect = panel.getBoundingClientRect();
+    const marginTopPx =
+        Number.parseFloat(window.getComputedStyle(panel).scrollMarginTop) || 0;
+    const epsilonPx = 0.5;
+
+    if (scrollport) {
+        const scrollRect = scrollport.getBoundingClientRect();
+        return panelRect.top >= scrollRect.top + marginTopPx - epsilonPx;
+    }
+
+    return panelRect.top >= marginTopPx - epsilonPx;
+}
+
 export function ScopeConfigurationClient({
     locale,
     initialDirectory,
@@ -151,6 +210,13 @@ export function ScopeConfigurationClient({
     const configurationPath = `/${locale}/app/configuration`;
     const scopePath = `/${locale}/app/configuration/scope`;
 
+    const replacePath = useCallback(
+        (nextPath: string) => {
+            router.replace(nextPath, { scroll: false });
+        },
+        [router]
+    );
+
     const [directory, setDirectory] = useState(initialDirectory);
     const [selectedScopeId, setSelectedScopeId] = useState<number | null>(
         typeof initialSelectedScopeKey === "number" ? initialSelectedScopeKey : null
@@ -168,10 +234,16 @@ export function ScopeConfigurationClient({
         name?: string;
         displayName?: string;
     }>({});
-    const [formError, setFormError] = useState<string | null>(null);
+    const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [isDeletePending, setIsDeletePending] = useState(false);
+    const [isEditorFlashActive, setIsEditorFlashActive] = useState(false);
+    const editorFlashStartTimeoutRef = useRef<number | null>(null);
+    const editorFlashHideTimeoutRef = useRef<number | null>(null);
+    const editorFlashCancelAfterScrollRef = useRef<(() => void) | null>(null);
+    const previousEditorFlashKeyRef = useRef<string | null>(null);
+    const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
     const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const initialSearchScopeKeyRef = useRef<ScopeSelectionKey>(initialSearchScopeKey);
     const selectedScopeKeyRef = useRef<ScopeSelectionKey>(initialSelectedScopeKey);
@@ -223,7 +295,7 @@ export function ScopeConfigurationClient({
                 displayName: nextSelectedScope?.display_name ?? ""
             });
             setFieldError({});
-            setFormError(null);
+            setRequestErrorMessage(null);
             setIsDeletePending(false);
             setSuccessMessage(nextSuccessMessage);
 
@@ -242,19 +314,17 @@ export function ScopeConfigurationClient({
     }, [initialDirectory, syncFromDirectory]);
 
     useEffect(() => {
-        const currentPath = buildScopePath(
-            scopePath,
-            parseSelectedScopeKey(searchParams.get("scope"))
-        );
+        const currentQuery = searchParams.toString();
+        const currentPath = currentQuery ? `${scopePath}?${currentQuery}` : scopePath;
         const nextPath = buildScopePath(
             scopePath,
             isCreateMode ? "new" : selectedScope?.id ?? null
         );
 
         if (currentPath !== nextPath) {
-            router.replace(nextPath);
+            replacePath(nextPath);
         }
-    }, [isCreateMode, router, scopePath, searchParams, selectedScope]);
+    }, [isCreateMode, replacePath, scopePath, searchParams, selectedScope]);
 
     const isDirty = useMemo(() => {
         return (
@@ -278,6 +348,127 @@ export function ScopeConfigurationClient({
         setFieldError(nextError);
         return Object.keys(nextError).length === 0;
     }, [copy.validationError, displayName, name]);
+
+    const triggerEditorFlash = useCallback(() => {
+        if (editorFlashStartTimeoutRef.current != null) {
+            window.clearTimeout(editorFlashStartTimeoutRef.current);
+            editorFlashStartTimeoutRef.current = null;
+        }
+        if (editorFlashHideTimeoutRef.current != null) {
+            window.clearTimeout(editorFlashHideTimeoutRef.current);
+            editorFlashHideTimeoutRef.current = null;
+        }
+        editorFlashCancelAfterScrollRef.current?.();
+        editorFlashCancelAfterScrollRef.current = null;
+
+        setIsEditorFlashActive(false);
+        editorFlashStartTimeoutRef.current = window.setTimeout(() => {
+            editorFlashStartTimeoutRef.current = null;
+
+            const panel = editorPanelElementRef.current;
+            if (!panel) {
+                return;
+            }
+
+            let aborted = false;
+            let flashStarted = false;
+            const FLASH_MS = 960;
+            const SCROLL_END_FALLBACK_MS = 900;
+            const scrollEndSupported =
+                typeof Document !== "undefined" && "onscrollend" in Document.prototype;
+
+            let fallbackTimeoutId = 0;
+
+            const cleanupWait = () => {
+                window.clearTimeout(fallbackTimeoutId);
+                document.removeEventListener("scrollend", onScrollEnd);
+                editorFlashCancelAfterScrollRef.current = null;
+            };
+
+            const startFlash = () => {
+                if (aborted || flashStarted) {
+                    return;
+                }
+                flashStarted = true;
+                cleanupWait();
+                setIsEditorFlashActive(true);
+                editorFlashHideTimeoutRef.current = window.setTimeout(() => {
+                    setIsEditorFlashActive(false);
+                    editorFlashHideTimeoutRef.current = null;
+                }, FLASH_MS);
+            };
+
+            const onScrollEnd = () => {
+                startFlash();
+            };
+
+            if (isEditorPanelTopVisibleInScrollport(panel)) {
+                startFlash();
+                return;
+            }
+
+            panel.scrollIntoView({
+                behavior: "smooth",
+                block: "start",
+                inline: "nearest"
+            });
+
+            if (scrollEndSupported) {
+                document.addEventListener("scrollend", onScrollEnd, { passive: true });
+            }
+            const fallbackMs = scrollEndSupported ? SCROLL_END_FALLBACK_MS : 480;
+            fallbackTimeoutId = window.setTimeout(startFlash, fallbackMs);
+
+            editorFlashCancelAfterScrollRef.current = () => {
+                aborted = true;
+                cleanupWait();
+            };
+        }, 24);
+    }, []);
+
+    const editorFlashKey = useMemo(() => {
+        if (isCreateMode) {
+            return "new";
+        }
+
+        if (!selectedScope) {
+            return null;
+        }
+
+        return `id:${String(selectedScope.id)}:name:${selectedScope.name}:display:${selectedScope.display_name}`;
+    }, [isCreateMode, selectedScope]);
+
+    useEffect(() => {
+        if (!editorFlashKey) {
+            previousEditorFlashKeyRef.current = null;
+            return;
+        }
+
+        if (previousEditorFlashKeyRef.current === null) {
+            previousEditorFlashKeyRef.current = editorFlashKey;
+            return;
+        }
+
+        if (previousEditorFlashKeyRef.current === editorFlashKey) {
+            return;
+        }
+
+        previousEditorFlashKeyRef.current = editorFlashKey;
+        triggerEditorFlash();
+    }, [editorFlashKey, triggerEditorFlash]);
+
+    useEffect(() => {
+        return () => {
+            if (editorFlashStartTimeoutRef.current != null) {
+                window.clearTimeout(editorFlashStartTimeoutRef.current);
+            }
+            if (editorFlashHideTimeoutRef.current != null) {
+                window.clearTimeout(editorFlashHideTimeoutRef.current);
+            }
+            editorFlashCancelAfterScrollRef.current?.();
+            editorFlashCancelAfterScrollRef.current = null;
+        };
+    }, []);
 
     const handleStartCreate = useCallback(() => {
         if (!directory.can_create || isSaving) {
@@ -324,13 +515,13 @@ export function ScopeConfigurationClient({
             return;
         }
 
-        setFormError(null);
+        setRequestErrorMessage(null);
         setSuccessMessage(null);
         setIsDeletePending((previous) => !previous);
     }, [isSaving, selectedScope]);
 
     const handleSave = useCallback(async () => {
-        setFormError(null);
+        setRequestErrorMessage(null);
         setSuccessMessage(null);
 
         if (!isDeletePending && !validate()) {
@@ -352,7 +543,7 @@ export function ScopeConfigurationClient({
                 const data: unknown = await response.json().catch(() => ({}));
 
                 if (!response.ok) {
-                    setFormError(parseErrorDetail(data, copy.createError));
+                    setRequestErrorMessage(parseErrorDetail(data, copy.createError));
                     return;
                 }
 
@@ -392,7 +583,7 @@ export function ScopeConfigurationClient({
             const data: unknown = await response.json().catch(() => ({}));
 
             if (!response.ok) {
-                setFormError(
+                setRequestErrorMessage(
                     parseErrorDetail(data, isDeletePending ? copy.deleteError : copy.saveError)
                 );
                 return;
@@ -411,7 +602,7 @@ export function ScopeConfigurationClient({
                 isDeletePending ? copy.deletedNotice : copy.savedNotice
             );
         } catch {
-            setFormError(
+            setRequestErrorMessage(
                 isCreateMode
                     ? copy.createError
                     : isDeletePending
@@ -438,14 +629,6 @@ export function ScopeConfigurationClient({
         validate
     ]);
 
-    const pageTitle = isCreateMode
-        ? copy.newScope
-        : selectedScope
-            ? resolveScopeLabel(selectedScope)
-            : copy.title;
-    const previewLabel = name.trim() || pageTitle;
-    const previewDescription =
-        displayName.trim() || selectedScope?.display_name.trim() || copy.selectPrompt;
     const selectedScopeKey: ScopeSelectionKey = isCreateMode ? "new" : selectedScope?.id ?? null;
     const canEditForm = isCreateMode
         ? directory.can_create
@@ -455,59 +638,39 @@ export function ScopeConfigurationClient({
         : isDeletePending
             ? selectedScope?.can_delete ?? false
             : selectedScope?.can_edit ?? false;
+    const footerErrorMessage =
+        requestErrorMessage ?? fieldError.name ?? fieldError.displayName ?? null;
 
     return (
         <section className="ui-page-stack ui-page-stack-footer">
-            <PageHeader
-                title={pageTitle}
-                description={copy.description}
-                actionSlot={
-                    <StatusPanel
-                        title={copy.statusTitle}
-                        description={copy.statusDescription}
-                        tone="neutral"
-                    />
-                }
-            />
+            <PageHeader title={copy.title} description={copy.description} />
 
             <div className="ui-layout-directory ui-layout-directory-editor">
                 <aside className="ui-panel ui-stack-lg ui-panel-context-card">
-                    <div className="ui-section-header">
-                        <span className="ui-icon-badge">
-                            <ScopeIcon className="ui-icon" />
-                        </span>
-                        <div className="ui-section-copy">
-                            <h2 className="ui-header-title ui-title-section">
-                                {copy.listTitle}
-                            </h2>
-                            <p className="ui-copy-body">
-                                {copy.listDescription}
-                            </p>
-                        </div>
-                    </div>
-
                     {!directory.can_edit ? (
                         <div className="ui-notice-attention ui-notice-block">
                             {copy.readOnlyNotice}
                         </div>
                     ) : null}
 
-                    {selectedScopeKey === "new" ? (
-                        <button
-                            type="button"
-                            onClick={handleStartCreate}
-                            className="ui-directory-create"
-                        >
-                            <p className="ui-directory-title">
-                                {copy.newScope}
-                            </p>
-                            <p className="ui-directory-caption">
-                                {copy.sectionIdentityDescription}
-                            </p>
-                        </button>
-                    ) : null}
+                    <div className="ui-directory-list">
+                        {directory.can_create ? (
+                            <div className="ui-location-nest-list-toolbar">
+                                <button
+                                    type="button"
+                                    className="ui-location-nest-create"
+                                    style={buildScopeListCreateToneStyle()}
+                                    aria-label={copy.newScope}
+                                    title={copy.newScope}
+                                    data-active={isCreateMode ? "true" : undefined}
+                                    onClick={handleStartCreate}
+                                    disabled={isSaving}
+                                >
+                                    <span aria-hidden>{copy.newScope}</span>
+                                </button>
+                            </div>
+                        ) : null}
 
-                    <div className="ui-grid-list-md">
                         {directory.item_list.map((item) => (
                             <button
                                 key={item.id}
@@ -539,239 +702,255 @@ export function ScopeConfigurationClient({
                             </div>
                         ) : null}
                     </div>
-
-                    {directory.can_create ? (
-                        <button
-                            type="button"
-                            className="ui-button-secondary ui-space-top-sm"
-                            onClick={handleStartCreate}
-                            disabled={isSaving}
-                        >
-                            {copy.newScope}
-                        </button>
-                    ) : null}
                 </aside>
 
                 <div
-                    className="ui-panel ui-panel-editor"
+                    ref={editorPanelElementRef}
+                    className="ui-panel ui-panel-editor ui-editor-panel"
                     data-delete-pending={isDeletePending ? "true" : undefined}
                 >
-                    {successMessage ? (
-                        <div className="ui-status-panel ui-tone-positive ui-status-copy">
-                            {successMessage}
-                        </div>
-                    ) : null}
-
-                    {formError ? (
-                        <div className="ui-notice-danger ui-notice-block">{formError}</div>
-                    ) : null}
-
-                    {selectedScopeKey ? (
-                        <>
-                            <section className="ui-card ui-form-section ui-border-accent">
-                                <div className="ui-section-header">
-                                    <span className="ui-icon-badge">
-                                        <PreviewIcon className="ui-icon" />
-                                    </span>
-                                    <div className="ui-section-copy">
-                                        <h2 className="ui-header-title ui-title-section">
-                                            {copy.sectionIdentityTitle}
-                                        </h2>
-                                        <p className="ui-copy-body">
-                                            {copy.sectionIdentityDescription}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                <div className="ui-form-fields">
-                                    <div className="ui-field">
-                                        <label className="ui-field-label" htmlFor="scope-name">
-                                            {copy.nameLabel}
-                                        </label>
-                                        <input
-                                            id="scope-name"
-                                            className="ui-input"
-                                            value={name}
-                                            onChange={(event) => {
-                                                setName(event.target.value);
-                                                setFieldError((previous) => ({
-                                                    ...previous,
-                                                    name: undefined
-                                                }));
-                                                setSuccessMessage(null);
-                                            }}
-                                            disabled={isDeletePending || !canEditForm}
-                                            aria-invalid={Boolean(fieldError.name)}
-                                        />
-                                        <p className="ui-field-hint">
-                                            {copy.nameHint}
-                                        </p>
-                                        {fieldError.name ? (
-                                            <p className="ui-field-error">{fieldError.name}</p>
-                                        ) : null}
-                                    </div>
-
-                                    <div className="ui-field">
-                                        <label className="ui-field-label" htmlFor="scope-display-name">
-                                            {copy.displayNameLabel}
-                                        </label>
-                                        <textarea
-                                            id="scope-display-name"
-                                            className="ui-input ui-input-textarea"
-                                            value={displayName}
-                                            onChange={(event) => {
-                                                setDisplayName(event.target.value);
-                                                setFieldError((previous) => ({
-                                                    ...previous,
-                                                    displayName: undefined
-                                                }));
-                                                setSuccessMessage(null);
-                                            }}
-                                            disabled={isDeletePending || !canEditForm}
-                                            aria-invalid={Boolean(fieldError.displayName)}
-                                        />
-                                        <p className="ui-field-hint">
-                                            {copy.displayNameHint}
-                                        </p>
-                                        {fieldError.displayName ? (
-                                            <p className="ui-field-error">{fieldError.displayName}</p>
-                                        ) : null}
-                                    </div>
-                                </div>
-                            </section>
-
-                            {!isCreateMode && selectedScope ? (
-                                <section className="ui-metadata-card">
-                                    <p className="ui-metadata-label">
-                                        {copy.metadataIdLabel}
-                                    </p>
-                                    <p className="ui-metadata-value-strong">
-                                        {selectedScope.id}
-                                    </p>
-                                </section>
-                            ) : null}
-                        </>
-                    ) : (
-                        <div className="ui-panel ui-empty-panel">
-                            {copy.selectPrompt}
-                        </div>
-                    )}
-                </div>
-
-                <aside className="ui-panel-context">
-                    <div
-                        className="ui-panel ui-panel-context ui-panel-context-body"
-                        data-delete-pending={isDeletePending ? "true" : undefined}
-                    >
-                        <div className="ui-section-header">
-                            <span className="ui-icon-badge">
-                                <PreviewIcon className="ui-icon" />
-                            </span>
-                            <div className="ui-section-copy">
-                                <h2 className="ui-header-title ui-title-section">
-                                    {copy.nameLabel}
-                                </h2>
-                                <p className="ui-copy-body">
-                                    {copy.nameHint}
-                                </p>
+                    <div className="ui-editor-panel-body">
+                        {successMessage ? (
+                            <div className="ui-status-panel ui-tone-positive ui-status-copy">
+                                {successMessage}
                             </div>
-                        </div>
+                        ) : null}
 
                         {selectedScopeKey ? (
-                            <div className="ui-preview-stack">
-                                <div className="ui-preview-card ui-preview-card-accent">
-                                    <p className="ui-metadata-label">
-                                        {copy.nameLabel}
-                                    </p>
-                                    <p className="ui-preview-headline">
-                                        {previewLabel}
-                                    </p>
-                                </div>
+                            <div className="ui-editor-card-flow">
+                                <section className="ui-card ui-form-section ui-border-accent">
+                                    {isEditorFlashActive ? (
+                                        <>
+                                            <span
+                                                aria-hidden
+                                                className="ui-editor-flash-ring"
+                                            />
+                                            <span
+                                                aria-hidden
+                                                className="ui-editor-flash-fill"
+                                            />
+                                        </>
+                                    ) : null}
 
-                                <div className="ui-preview-card">
-                                    <p className="ui-metadata-label">
-                                        {copy.displayNameLabel}
-                                    </p>
-                                    <p className="ui-preview-value">
-                                        {previewDescription}
-                                    </p>
-                                </div>
+                                    <div className="ui-editor-content">
+                                        <div className="ui-field">
+                                            <label className="ui-field-label" htmlFor="scope-name">
+                                                {copy.nameLabel}
+                                            </label>
+                                            <input
+                                                id="scope-name"
+                                                className="ui-input"
+                                                value={name}
+                                                onChange={(event) => {
+                                                    setName(event.target.value);
+                                                    setFieldError((previous) => ({
+                                                        ...previous,
+                                                        name: undefined
+                                                    }));
+                                                    setSuccessMessage(null);
+                                                }}
+                                                disabled={isDeletePending || !canEditForm}
+                                                aria-invalid={Boolean(fieldError.name)}
+                                            />
+                                            <p className="ui-field-hint">{copy.nameHint}</p>
+                                            {fieldError.name ? (
+                                                <p className="ui-field-error">{fieldError.name}</p>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <section className="ui-card ui-form-section ui-border-accent">
+                                    <div className="ui-editor-content">
+                                        <div className="ui-field">
+                                            <label
+                                                className="ui-field-label"
+                                                htmlFor="scope-display-name"
+                                            >
+                                                {copy.displayNameLabel}
+                                            </label>
+                                            <textarea
+                                                id="scope-display-name"
+                                                className="ui-input ui-input-textarea"
+                                                value={displayName}
+                                                onChange={(event) => {
+                                                    setDisplayName(event.target.value);
+                                                    setFieldError((previous) => ({
+                                                        ...previous,
+                                                        displayName: undefined
+                                                    }));
+                                                    setSuccessMessage(null);
+                                                }}
+                                                disabled={isDeletePending || !canEditForm}
+                                                aria-invalid={Boolean(fieldError.displayName)}
+                                            />
+                                            <p className="ui-field-hint">{copy.displayNameHint}</p>
+                                            {fieldError.displayName ? (
+                                                <p className="ui-field-error">
+                                                    {fieldError.displayName}
+                                                </p>
+                                            ) : null}
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {!isCreateMode && selectedScope ? (
+                                    <section className="ui-card ui-form-section ui-border-accent">
+                                        <div className="ui-editor-content">
+                                            <div className="ui-section-header">
+                                                <span className="ui-icon-badge">
+                                                    <InfoIcon className="ui-icon" />
+                                                </span>
+                                                <div className="ui-section-copy">
+                                                    <h2 className="ui-header-title ui-title-section">
+                                                        {copy.sectionInfoTitle}
+                                                    </h2>
+                                                    <p className="ui-copy-body">
+                                                        {copy.sectionInfoDescription}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <ul className="ui-info-topic-list">
+                                                <li>
+                                                    <p className="ui-info-topic-lead">
+                                                        <span className="ui-info-topic-label">
+                                                            {copy.infoIdLabel}
+                                                        </span>
+                                                        {": "}
+                                                        <span className="ui-info-topic-value">
+                                                            {selectedScope.id}
+                                                        </span>
+                                                    </p>
+                                                </li>
+                                                <li>
+                                                    <p className="ui-info-topic-lead">
+                                                        <span className="ui-info-topic-label">
+                                                            {copy.infoNameRegisteredLabel}
+                                                        </span>
+                                                        {": "}
+                                                        <span className="ui-info-topic-value">
+                                                            {selectedScope.name.trim() || "—"}
+                                                        </span>
+                                                    </p>
+                                                </li>
+                                                <li>
+                                                    <p className="ui-info-topic-lead">
+                                                        <span className="ui-info-topic-label">
+                                                            {copy.infoDisplayRegisteredLabel}
+                                                        </span>
+                                                        {": "}
+                                                        <span className="ui-info-topic-value">
+                                                            {selectedScope.display_name.trim() || "—"}
+                                                        </span>
+                                                    </p>
+                                                </li>
+                                                <li>
+                                                    <p className="ui-info-topic-lead">
+                                                        <span className="ui-info-topic-label">
+                                                            {copy.infoCanEditLabel}
+                                                        </span>
+                                                        {": "}
+                                                        <span className="ui-info-topic-value">
+                                                            {selectedScope.can_edit ? copy.infoYes : copy.infoNo}
+                                                        </span>
+                                                    </p>
+                                                </li>
+                                                <li>
+                                                    <p className="ui-info-topic-lead">
+                                                        <span className="ui-info-topic-label">
+                                                            {copy.infoCanDeleteLabel}
+                                                        </span>
+                                                        {": "}
+                                                        <span className="ui-info-topic-value">
+                                                            {selectedScope.can_delete ? copy.infoYes : copy.infoNo}
+                                                        </span>
+                                                    </p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </section>
+                                ) : null}
+
+                                {isCreateMode ? (
+                                    <section className="ui-card ui-form-section ui-border-accent">
+                                        <div className="ui-editor-content">
+                                            <div className="ui-section-header">
+                                                <span className="ui-icon-badge">
+                                                    <InfoIcon className="ui-icon" />
+                                                </span>
+                                                <div className="ui-section-copy">
+                                                    <h2 className="ui-header-title ui-title-section">
+                                                        {copy.sectionInfoTitle}
+                                                    </h2>
+                                                    <p className="ui-copy-body">
+                                                        {copy.sectionInfoDescription}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <ul className="ui-info-topic-list">
+                                                <li>
+                                                    <p className="ui-info-topic-lead">
+                                                        <span className="ui-info-topic-label">
+                                                            {copy.infoCreateLead}
+                                                        </span>
+                                                    </p>
+                                                    <p className="ui-field-hint ui-info-topic-hint">
+                                                        {copy.infoCreateHint}
+                                                    </p>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </section>
+                                ) : null}
                             </div>
                         ) : (
-                            <p className="ui-copy-body ui-space-top-xl">
+                            <div className="ui-panel ui-empty-panel">
                                 {copy.selectPrompt}
-                            </p>
+                            </div>
                         )}
                     </div>
-                </aside>
+                </div>
             </div>
 
             <section
-                className="ui-layout-record ui-layout-record-history"
+                className="ui-card ui-card-coming-soon ui-panel-body-compact"
                 aria-labelledby="scope-history-heading"
             >
-                <div className="ui-panel ui-panel-body">
-                    <div className="ui-section-header">
-                        <span className="ui-icon-badge ui-icon-badge-construction">
-                            <HistoryIcon className="ui-icon" />
-                        </span>
-                        <div className="ui-section-copy">
-                            <h2
-                                id="scope-history-heading"
-                                className="ui-header-title ui-title-section"
-                            >
-                                {copy.historyTitle}
-                            </h2>
-                            <p className="ui-copy-body ui-history-description">
-                                {copy.historyDescription}
-                            </p>
-                        </div>
-                    </div>
-
-                    <div className="ui-history-list">
-                        {Array.from({ length: 3 }).map((_, index) => (
-                            <div key={index} className="ui-card ui-card-coming-soon ui-history-card">
-                                <div className="ui-skeleton ui-skeleton-label ui-pulse" />
-                                <div className="ui-skeleton ui-skeleton-line ui-skeleton-line-medium ui-space-top-md ui-pulse" />
-                                <div className="ui-skeleton ui-skeleton-line ui-skeleton-line-short ui-space-top-sm ui-pulse" />
-                            </div>
-                        ))}
+                <div className="ui-section-header">
+                    <span className="ui-icon-badge ui-icon-badge-construction">
+                        <HistoryIcon className="ui-icon" />
+                    </span>
+                    <div className="ui-section-copy">
+                        <h2
+                            id="scope-history-heading"
+                            className="ui-header-title ui-title-section"
+                        >
+                            {copy.historyTitle}
+                        </h2>
+                        <p className="ui-copy-body">{copy.historyDescription}</p>
                     </div>
                 </div>
-
-                <aside className="ui-history-card-side">
-                    <StatusPanel
-                        title={copy.statusTitle}
-                        description={copy.statusDescription}
-                        tone="neutral"
-                    />
-
-                    {selectedScopeKey ? (
-                        <div className="ui-panel ui-panel-context-body">
-                            <p className="ui-metadata-label">
-                                {copy.nameLabel}
-                            </p>
-                            <p className="ui-header-title ui-history-card-title">
-                                {previewLabel}
-                            </p>
-                        </div>
-                    ) : null}
-                </aside>
             </section>
 
             {portalTarget
                 ? createPortal(
                     <div className="ui-action-footer">
-                        <div className="ui-action-footer-start">
-                            <Link
-                                href={configurationPath}
-                                className="ui-button-secondary"
-                                onClick={handleBack}
-                            >
-                                {copy.cancel}
-                            </Link>
+                        <Link
+                            href={configurationPath}
+                            className="ui-button-secondary"
+                            onClick={handleBack}
+                        >
+                            {copy.cancel}
+                        </Link>
+                        <div className="ui-action-footer-feedback">
+                            {footerErrorMessage ? (
+                                <div className="ui-notice-danger ui-notice-block ui-status-copy">
+                                    {footerErrorMessage}
+                                </div>
+                            ) : null}
                         </div>
-
                         <div className="ui-action-footer-end">
                             {!isCreateMode && selectedScope ? (
                                 <button

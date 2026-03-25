@@ -259,31 +259,31 @@
   "ScopeConfigurationPage": {
     "title": "Alcances",
     "description": "Edita la base estructural mínima del licenciatario activo. Cada alcance define un recorte inicial que sostendrá los registros y módulos posteriores.",
-    "status": {
-      "title": "Edición de alcances",
-      "description": "Los cambios solo afectan al licenciatario activo de tu sesión. Usa este directorio para crear, revisar y mantener los alcances estructurales."
-    },
-    "list": {
-      "title": "Directorio de alcances",
-      "description": "Selecciona un alcance para revisar o actualizar el registro estructural.",
-      "empty": "No se encontraron alcances para el licenciatario activo."
-    },
+    "empty": "No se encontraron alcances para el licenciatario activo.",
     "history": {
       "title": "Historial de cambios",
       "description": "Una línea de tiempo de los cambios de alcance aparecerá aquí cuando la auditoría estructural esté disponible. Hasta entonces, este bloque queda como referencia de layout y trazabilidad."
     },
     "section": {
       "identity": {
-        "title": "Identidad",
-        "description": "Nombre corto y descripción del alcance usados como base para los próximos registros estructurales.",
         "nameLabel": "Nombre del alcance",
         "nameHint": "Usa una etiqueta corta para identificar el alcance, como Aves, Soja o Leche.",
         "displayNameLabel": "Descripción del alcance",
         "displayNameHint": "Explica el recorte del alcance con más contexto, como Aves para producción de huevos."
+      },
+      "info": {
+        "title": "Información",
+        "description": "Resumen del alcance en foco: identificador, valores guardados en el servidor y qué puede cambiar esta sesión.",
+        "idLabel": "Identificador del alcance",
+        "nameRegisteredLabel": "Nombre guardado",
+        "displayRegisteredLabel": "Descripción guardada",
+        "canEditLabel": "Puede editar",
+        "canDeleteLabel": "Puede eliminar",
+        "yes": "Sí",
+        "no": "No",
+        "createLead": "Nuevo alcance estructural",
+        "createHint": "Estás definiendo un nuevo recorte para el licenciatario activo. Guarda para registrarlo en el directorio."
       }
-    },
-    "metadata": {
-      "idLabel": "Identificador del alcance"
     },
     "action": {
       "cancel": "Cancelar",
