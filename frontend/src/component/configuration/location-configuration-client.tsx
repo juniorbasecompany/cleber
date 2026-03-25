@@ -674,7 +674,7 @@ export function LocationConfigurationClient({
                                     onClick={() => handleStartCreate(null)}
                                     disabled={isSaving}
                                 >
-                                    <span aria-hidden>+</span>
+                                    <span aria-hidden>Novo local</span>
                                 </button>
                             </div>
                         ) : null}
