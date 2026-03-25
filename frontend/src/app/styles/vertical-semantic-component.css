@@ -383,10 +383,6 @@
     gap: 1rem;
 }
 
-.ui-location-nest-list > .ui-directory-item {
-    padding-left: 1.5rem;
-}
-
 .ui-location-nest-list-toolbar {
     display: flex;
     justify-content: flex-end;
@@ -480,7 +476,7 @@
 .ui-location-nest-children {
     display: grid;
     gap: 1rem;
-    padding-left: var(--ui-location-nest-child-offset);
+    padding-left: var(--ui-location-nest-child-offset, 1.5rem);
 }
 
 .ui-location-nest-create {
