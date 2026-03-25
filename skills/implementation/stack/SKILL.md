@@ -32,7 +32,13 @@ Aplicar o stack acordado em [architecture/technology-stack.md](../../../architec
 
 - Seguir [skills/implementation/i18n/SKILL.md](../i18n/SKILL.md) e [skills/implementation/i18n/policy.md](../i18n/policy.md) para texto de interface e mensagens visíveis ao utilizador.
 - Evitar literals soltos em interface.
+- Sempre que uma mudança tocar texto, manter **todos os idiomas suportados sincronizados** em chaves, estrutura, placeholders e conteúdo equivalente.
 - Preferir erro de API com `code` estável quando o cliente precisar traduzir a mensagem.
+
+### Remoções e higiene
+
+- Ao remover funcionalidade, componente, fluxo, texto ou ficheiro, rever e limpar no mesmo ciclo os artefactos relacionados: **CSS**, **i18n**, imports, rotas, assets, testes, mocks, schemas, tipos e qualquer configuração associada.
+- Não deixar elementos órfãos no código após remoções: classes sem uso, chaves de tradução abandonadas, componentes inacessíveis, imports mortos, flags sem efeito ou lógica residual sem caminho real de execução.
 
 ### Painéis de configuração
 
