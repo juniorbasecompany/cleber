@@ -722,61 +722,63 @@ export function LocationConfigurationClient({
                             ) : null}
 
                             <div className="ui-editor-content">
-                                <div className="ui-form-fields">
-                                    <div className="ui-field">
-                                        <label className="ui-field-label" htmlFor="location-name">
-                                            {copy.nameLabel}
-                                        </label>
-                                        <input
-                                            id="location-name"
-                                            className="ui-input"
-                                            value={name}
-                                            onChange={(event) => {
-                                                setName(event.target.value);
-                                                setFieldError((previous) => ({
-                                                    ...previous,
-                                                    name: undefined
-                                                }));
-                                                setRequestErrorMessage(null);
-                                            }}
-                                            disabled={isDeletePending || !canEditForm}
-                                            aria-invalid={Boolean(fieldError.name)}
-                                        />
-                                        <p className="ui-field-hint">{copy.nameHint}</p>
-                                        {fieldError.name ? (
-                                            <p className="ui-field-error">{fieldError.name}</p>
-                                        ) : null}
-                                    </div>
+                                <div className="ui-field">
+                                    <label className="ui-field-label" htmlFor="location-name">
+                                        {copy.nameLabel}
+                                    </label>
+                                    <input
+                                        id="location-name"
+                                        className="ui-input"
+                                        value={name}
+                                        onChange={(event) => {
+                                            setName(event.target.value);
+                                            setFieldError((previous) => ({
+                                                ...previous,
+                                                name: undefined
+                                            }));
+                                            setRequestErrorMessage(null);
+                                        }}
+                                        disabled={isDeletePending || !canEditForm}
+                                        aria-invalid={Boolean(fieldError.name)}
+                                    />
+                                    <p className="ui-field-hint">{copy.nameHint}</p>
+                                    {fieldError.name ? (
+                                        <p className="ui-field-error">{fieldError.name}</p>
+                                    ) : null}
+                                </div>
+                            </div>
+                        </section>
 
-                                    <div className="ui-field">
-                                        <label
-                                            className="ui-field-label"
-                                            htmlFor="location-display-name"
-                                        >
-                                            {copy.displayNameLabel}
-                                        </label>
-                                        <textarea
-                                            id="location-display-name"
-                                            className="ui-input ui-input-textarea"
-                                            value={displayName}
-                                            onChange={(event) => {
-                                                setDisplayName(event.target.value);
-                                                setFieldError((previous) => ({
-                                                    ...previous,
-                                                    displayName: undefined
-                                                }));
-                                                setRequestErrorMessage(null);
-                                            }}
-                                            disabled={isDeletePending || !canEditForm}
-                                            aria-invalid={Boolean(fieldError.displayName)}
-                                        />
-                                        <p className="ui-field-hint">{copy.displayNameHint}</p>
-                                        {fieldError.displayName ? (
-                                            <p className="ui-field-error">
-                                                {fieldError.displayName}
-                                            </p>
-                                        ) : null}
-                                    </div>
+                        <section className="ui-card ui-form-section ui-border-accent">
+                            <div className="ui-editor-content">
+                                <div className="ui-field">
+                                    <label
+                                        className="ui-field-label"
+                                        htmlFor="location-display-name"
+                                    >
+                                        {copy.displayNameLabel}
+                                    </label>
+                                    <textarea
+                                        id="location-display-name"
+                                        className="ui-input ui-input-textarea"
+                                        value={displayName}
+                                        onChange={(event) => {
+                                            setDisplayName(event.target.value);
+                                            setFieldError((previous) => ({
+                                                ...previous,
+                                                displayName: undefined
+                                            }));
+                                            setRequestErrorMessage(null);
+                                        }}
+                                        disabled={isDeletePending || !canEditForm}
+                                        aria-invalid={Boolean(fieldError.displayName)}
+                                    />
+                                    <p className="ui-field-hint">{copy.displayNameHint}</p>
+                                    {fieldError.displayName ? (
+                                        <p className="ui-field-error">
+                                            {fieldError.displayName}
+                                        </p>
+                                    ) : null}
                                 </div>
                             </div>
                         </section>
