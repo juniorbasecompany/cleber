@@ -179,6 +179,8 @@ Regras para esta área:
 - sem transformar o fluxo inicial num wizard ainda;
 - pronta para receber, no futuro, uma camada guiada por perguntas sobre os mesmos cadastros.
 
+Para fluxos **diretório + editor** (lista ou árvore à esquerda, formulário ao centro, histórico placeholder e footer no shell), usar `ConfigurationDirectoryEditorShell` e a política em `configuration-directory-editor-policy.ts`, conforme [architecture/configuration-panels.md](../../../architecture/configuration-panels.md). Evitar duplicar markup do painel direito e regras de `saveDisabled`/`canSubmit` entre páginas desse tipo.
+
 ## Componentes prioritários
 
 Obrigatórios:

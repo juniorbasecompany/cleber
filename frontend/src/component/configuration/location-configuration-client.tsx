@@ -1,19 +1,14 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
-import { createPortal } from "react-dom";
 
-import { PageHeader } from "@/component/app-shell/page-header";
-import { ConfigurationEditorFooter } from "@/component/configuration/configuration-editor-footer";
-import { ConfigurationHistoryPlaceholder } from "@/component/configuration/configuration-history-placeholder";
+import {
+    directoryEditorCanSubmitForDirectoryEditor,
+    directoryEditorSaveDisabled
+} from "@/component/configuration/configuration-directory-editor-policy";
+import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { DirectoryCreateToolbarButton } from "@/component/configuration/directory-create-toolbar-button";
@@ -232,7 +227,6 @@ export function LocationConfigurationClient({
     const [isSaving, setIsSaving] = useState(false);
     const [isDeletePending, setIsDeletePending] = useState(false);
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
-    const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const itemList = useMemo(() => directory?.item_list ?? [], [directory]);
     const childrenByParent = useMemo(() => {
         const next = new Map<number | null, TenantLocationRecord[]>();
@@ -311,10 +305,6 @@ export function LocationConfigurationClient({
 
     const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
 
-    useEffect(() => {
-        setPortalTarget(document.getElementById("app-shell-footer-slot"));
-    }, []);
-
     const syncEditor = useCallback(
         (
             location: TenantLocationRecord | null,
@@ -351,11 +341,12 @@ export function LocationConfigurationClient({
     const canEditForm = isCreateMode
         ? (directory?.can_create ?? false)
         : (selectedLocation?.can_edit ?? false);
-    const canSubmit = isCreateMode
-        ? (directory?.can_create ?? false)
-        : isDeletePending
-            ? true
-            : (selectedLocation?.can_edit ?? false);
+    const canSubmit = directoryEditorCanSubmitForDirectoryEditor({
+        isCreateMode,
+        isDeletePending,
+        canCreate: directory?.can_create ?? false,
+        canEdit: selectedLocation?.can_edit ?? false
+    });
     const footerErrorMessage =
         requestErrorMessage ?? fieldError.name ?? fieldError.displayName ?? null;
 
@@ -455,11 +446,13 @@ export function LocationConfigurationClient({
     ]);
 
     return (
-        <section className="ui-page-stack ui-page-stack-footer">
-            <PageHeader title={copy.title} description={copy.description} />
-
-            <div className="ui-layout-directory ui-layout-directory-editor">
-                <aside className="ui-panel ui-stack-lg ui-panel-context-card">
+        <ConfigurationDirectoryEditorShell
+            headerTitle={copy.title}
+            headerDescription={copy.description}
+            editorPanelRef={editorPanelElementRef}
+            isDeletePending={isDeletePending}
+            directoryAside={
+                <>
                     {!directory ? (
                         <div className="ui-panel ui-empty-panel">
                             {hasAnyScope ? copy.missingCurrentScope : copy.emptyScope}
@@ -503,125 +496,115 @@ export function LocationConfigurationClient({
                             <div className="ui-panel ui-empty-panel">{copy.empty}</div>
                         ) : null}
                     </div>
-                </aside>
+                </>
+            }
+            editorForm={
+                <>
+                    <ConfigurationNameDisplayNameFields
+                        nameInputId="location-name"
+                        displayTextareaId="location-display-name"
+                        name={name}
+                        displayName={displayName}
+                        setName={setName}
+                        setDisplayName={setDisplayName}
+                        setFieldError={setFieldError}
+                        fieldError={fieldError}
+                        disabled={isDeletePending || !canEditForm}
+                        nameLabel={copy.nameLabel}
+                        nameHint={copy.nameHint}
+                        displayNameLabel={copy.displayNameLabel}
+                        displayNameHint={copy.displayNameHint}
+                        flashActive={isEditorFlashActive}
+                        onAfterFieldEdit={() => setRequestErrorMessage(null)}
+                    />
 
-                <div
-                    ref={editorPanelElementRef}
-                    className="ui-panel ui-panel-editor ui-editor-panel"
-                    data-delete-pending={isDeletePending ? "true" : undefined}
-                >
-                    <div className="ui-editor-panel-body">
-                        <div className="ui-editor-card-flow">
-                            <ConfigurationNameDisplayNameFields
-                                nameInputId="location-name"
-                                displayTextareaId="location-display-name"
-                                name={name}
-                                displayName={displayName}
-                                setName={setName}
-                                setDisplayName={setDisplayName}
-                                setFieldError={setFieldError}
-                                fieldError={fieldError}
-                                disabled={isDeletePending || !canEditForm}
-                                nameLabel={copy.nameLabel}
-                                nameHint={copy.nameHint}
-                                displayNameLabel={copy.displayNameLabel}
-                                displayNameHint={copy.displayNameHint}
-                                flashActive={isEditorFlashActive}
-                                onAfterFieldEdit={() => setRequestErrorMessage(null)}
-                            />
-
-                            {directory ? (
-                                <ConfigurationInfoSection
-                                    title={copy.sectionStructureTitle}
-                                    description={copy.sectionStructureDescription}
-                                >
-                                    <ul className="ui-info-topic-list">
-                                        <li>
-                                            <p className="ui-info-topic-lead">
-                                                <span className="ui-info-topic-label">
-                                                    {copy.sectionStructureLevelLabel}
-                                                </span>
-                                                {": "}
-                                                <span className="ui-info-topic-value">
-                                                    {structureLevelDisplay}
-                                                </span>
-                                            </p>
-                                            <p className="ui-field-hint ui-info-topic-hint">
-                                                {copy.sectionStructureLevelHint}
-                                            </p>
-                                        </li>
-                                        <li>
-                                            <p className="ui-info-topic-lead">
-                                                <span className="ui-info-topic-label">
-                                                    {copy.sectionStructureOrderLabel}
-                                                </span>
-                                                {": "}
-                                                <span className="ui-info-topic-value">
-                                                    {isCreateMode || !selectedLocation
-                                                        ? copy.sectionStructureOrderPending
-                                                        : String(selectedLocation.sort_order)}
-                                                </span>
-                                            </p>
-                                            <p className="ui-field-hint ui-info-topic-hint">
-                                                {isCreateMode || !selectedLocation
-                                                    ? copy.sectionStructureOrderHintCreate
-                                                    : copy.sectionStructureOrderHintEdit}
-                                            </p>
-                                        </li>
-                                        <li>
-                                            <p className="ui-info-topic-lead">
-                                                <span className="ui-info-topic-label">
-                                                    {copy.sectionStructureParentLabel}
-                                                </span>
-                                                {": "}
-                                                <span className="ui-info-topic-value">
-                                                    {structureParentLabel}
-                                                </span>
-                                            </p>
-                                        </li>
-                                    </ul>
-                                </ConfigurationInfoSection>
-                            ) : null}
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <ConfigurationHistoryPlaceholder
-                headingId="location-history-heading"
-                title={copy.historyTitle}
-                description={copy.historyDescription}
-            />
-
-            {portalTarget
-                ? createPortal(
-                    <ConfigurationEditorFooter
-                        configurationPath={configurationPath}
-                        cancelLabel={copy.cancel}
-                        discardConfirm={copy.discardConfirm}
-                        isDirty={isDirty}
-                        footerErrorMessage={footerErrorMessage}
-                        onSave={() => void handleSave()}
-                        saveDisabled={!directory || !canSubmit || isSaving || !isDirty}
-                        saveLabel={copy.save}
-                        savingLabel={copy.saving}
-                        isSaving={isSaving}
-                        dangerAction={
-                            !isCreateMode && selectedLocation ? (
-                                <button
-                                    type="button"
-                                    className="ui-button-danger"
-                                    onClick={() => setIsDeletePending((previous) => !previous)}
-                                    disabled={isSaving}
-                                >
-                                    {isDeletePending ? copy.undoDelete : copy.delete}
-                                </button>
-                            ) : null
-                        }
-                    />,
-                    portalTarget
-                )
-                : null}
-        </section>
+                    {directory ? (
+                        <ConfigurationInfoSection
+                            title={copy.sectionStructureTitle}
+                            description={copy.sectionStructureDescription}
+                        >
+                            <ul className="ui-info-topic-list">
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.sectionStructureLevelLabel}
+                                        </span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">
+                                            {structureLevelDisplay}
+                                        </span>
+                                    </p>
+                                    <p className="ui-field-hint ui-info-topic-hint">
+                                        {copy.sectionStructureLevelHint}
+                                    </p>
+                                </li>
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.sectionStructureOrderLabel}
+                                        </span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">
+                                            {isCreateMode || !selectedLocation
+                                                ? copy.sectionStructureOrderPending
+                                                : String(selectedLocation.sort_order)}
+                                        </span>
+                                    </p>
+                                    <p className="ui-field-hint ui-info-topic-hint">
+                                        {isCreateMode || !selectedLocation
+                                            ? copy.sectionStructureOrderHintCreate
+                                            : copy.sectionStructureOrderHintEdit}
+                                    </p>
+                                </li>
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.sectionStructureParentLabel}
+                                        </span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">
+                                            {structureParentLabel}
+                                        </span>
+                                    </p>
+                                </li>
+                            </ul>
+                        </ConfigurationInfoSection>
+                    ) : null}
+                </>
+            }
+            history={{
+                headingId: "location-history-heading",
+                title: copy.historyTitle,
+                description: copy.historyDescription
+            }}
+            footer={{
+                configurationPath,
+                cancelLabel: copy.cancel,
+                discardConfirm: copy.discardConfirm,
+                isDirty,
+                footerErrorMessage,
+                onSave: () => void handleSave(),
+                saveDisabled: directoryEditorSaveDisabled({
+                    hasEditableContext: Boolean(directory),
+                    canSubmit,
+                    isSaving,
+                    isDirty
+                }),
+                saveLabel: copy.save,
+                savingLabel: copy.saving,
+                isSaving,
+                dangerAction:
+                    !isCreateMode && selectedLocation ? (
+                        <button
+                            type="button"
+                            className="ui-button-danger"
+                            onClick={() => setIsDeletePending((previous) => !previous)}
+                            disabled={isSaving}
+                        >
+                            {isDeletePending ? copy.undoDelete : copy.delete}
+                        </button>
+                    ) : null
+            }}
+        />
     );
 }

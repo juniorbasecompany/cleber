@@ -1,18 +1,13 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-    useCallback,
-    useEffect,
-    useMemo,
-    useRef,
-    useState
-} from "react";
-import { createPortal } from "react-dom";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { PageHeader } from "@/component/app-shell/page-header";
-import { ConfigurationEditorFooter } from "@/component/configuration/configuration-editor-footer";
-import { ConfigurationHistoryPlaceholder } from "@/component/configuration/configuration-history-placeholder";
+import {
+    directoryEditorCanSubmitForDirectoryEditor,
+    directoryEditorSaveDisabled
+} from "@/component/configuration/configuration-directory-editor-policy";
+import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { DirectoryCreateToolbarButton } from "@/component/configuration/directory-create-toolbar-button";
@@ -40,7 +35,6 @@ export type ScopeConfigurationCopy = {
     infoNameRegisteredLabel: string;
     infoDisplayRegisteredLabel: string;
     infoCanEditLabel: string;
-    infoCanDeleteLabel: string;
     infoYes: string;
     infoNo: string;
     infoCreateLead: string;
@@ -57,7 +51,6 @@ export type ScopeConfigurationCopy = {
     deleteError: string;
     validationError: string;
     discardConfirm: string;
-    selectPrompt: string;
 };
 
 type ScopeConfigurationClientProps = {
@@ -157,7 +150,6 @@ export function ScopeConfigurationClient({
     const [isSaving, setIsSaving] = useState(false);
     const [isDeletePending, setIsDeletePending] = useState(false);
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
-    const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
     const initialSearchScopeKeyRef = useRef<ScopeSelectionKey>(initialSearchScopeKey);
     const selectedScopeKeyRef = useRef<ScopeSelectionKey>(initialSelectedScopeKey);
     const didResolveInitialUrlRef = useRef(false);
@@ -197,10 +189,6 @@ export function ScopeConfigurationClient({
     }, [isCreateMode, selectedScope]);
 
     const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
-
-    useEffect(() => {
-        setPortalTarget(document.getElementById("app-shell-footer-slot"));
-    }, []);
 
     useEffect(() => {
         selectedScopeKeyRef.current = isCreateMode ? "new" : selectedScope?.id ?? null;
@@ -300,13 +288,13 @@ export function ScopeConfigurationClient({
     );
 
     const handleToggleDelete = useCallback(() => {
-        if (!selectedScope?.can_delete || isSaving) {
+        if (isSaving) {
             return;
         }
 
         setRequestErrorMessage(null);
         setIsDeletePending((previous) => !previous);
-    }, [isSaving, selectedScope]);
+    }, [isSaving]);
 
     const handleSave = useCallback(async () => {
         setRequestErrorMessage(null);
@@ -318,7 +306,6 @@ export function ScopeConfigurationClient({
         setIsSaving(true);
         try {
             if (isCreateMode) {
-                const previousScopeIdSet = new Set(directory.item_list.map((item) => item.id));
                 const response = await fetch("/api/auth/tenant/current/scopes", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -337,16 +324,7 @@ export function ScopeConfigurationClient({
                 }
 
                 const updatedDirectory = data as TenantScopeDirectoryResponse;
-                const createdScopeId =
-                    updatedDirectory.item_list.find((item) => !previousScopeIdSet.has(item.id))?.id ??
-                    updatedDirectory.item_list.find(
-                        (item) =>
-                            item.name === name.trim() && item.display_name === displayName.trim()
-                    )?.id ??
-                    updatedDirectory.item_list[0]?.id ??
-                    null;
-
-                syncFromDirectory(updatedDirectory, createdScopeId);
+                syncFromDirectory(updatedDirectory, "new");
                 return;
             }
 
@@ -378,13 +356,7 @@ export function ScopeConfigurationClient({
             }
 
             const updatedDirectory = data as TenantScopeDirectoryResponse;
-            const nextSelection =
-                isDeletePending && updatedDirectory.item_list.length === 0
-                    ? updatedDirectory.can_create
-                        ? "new"
-                        : null
-                    : selectedScope.id;
-            syncFromDirectory(updatedDirectory, nextSelection);
+            syncFromDirectory(updatedDirectory, "new");
         } catch {
             setRequestErrorMessage(
                 isCreateMode
@@ -400,7 +372,6 @@ export function ScopeConfigurationClient({
         copy.createError,
         copy.deleteError,
         copy.saveError,
-        directory.item_list,
         displayName,
         isCreateMode,
         isDeletePending,
@@ -413,20 +384,23 @@ export function ScopeConfigurationClient({
     const canEditForm = isCreateMode
         ? directory.can_create
         : selectedScope?.can_edit ?? false;
-    const canSubmit = isCreateMode
-        ? directory.can_create
-        : isDeletePending
-            ? selectedScope?.can_delete ?? false
-            : selectedScope?.can_edit ?? false;
+    const canSubmit = directoryEditorCanSubmitForDirectoryEditor({
+        isCreateMode,
+        isDeletePending,
+        canCreate: directory.can_create,
+        canEdit: selectedScope?.can_edit ?? false
+    });
     const footerErrorMessage =
         requestErrorMessage ?? fieldError.name ?? fieldError.displayName ?? null;
 
     return (
-        <section className="ui-page-stack ui-page-stack-footer">
-            <PageHeader title={copy.title} description={copy.description} />
-
-            <div className="ui-layout-directory ui-layout-directory-editor">
-                <aside className="ui-panel ui-stack-lg ui-panel-context-card">
+        <ConfigurationDirectoryEditorShell
+            headerTitle={copy.title}
+            headerDescription={copy.description}
+            editorPanelRef={editorPanelElementRef}
+            isDeletePending={isDeletePending}
+            directoryAside={
+                <>
                     {!directory.can_edit ? (
                         <div className="ui-notice-attention ui-notice-block">
                             {copy.readOnlyNotice}
@@ -474,164 +448,136 @@ export function ScopeConfigurationClient({
                             </div>
                         ) : null}
                     </div>
-                </aside>
+                </>
+            }
+            editorForm={
+                <>
+                    <ConfigurationNameDisplayNameFields
+                        nameInputId="scope-name"
+                        displayTextareaId="scope-display-name"
+                        name={name}
+                        displayName={displayName}
+                        setName={setName}
+                        setDisplayName={setDisplayName}
+                        setFieldError={setFieldError}
+                        fieldError={fieldError}
+                        disabled={isDeletePending || !canEditForm}
+                        nameLabel={copy.nameLabel}
+                        nameHint={copy.nameHint}
+                        displayNameLabel={copy.displayNameLabel}
+                        displayNameHint={copy.displayNameHint}
+                        flashActive={isEditorFlashActive}
+                        onAfterFieldEdit={() => setRequestErrorMessage(null)}
+                    />
 
-                <div
-                    ref={editorPanelElementRef}
-                    className="ui-panel ui-panel-editor ui-editor-panel"
-                    data-delete-pending={isDeletePending ? "true" : undefined}
-                >
-                    <div className="ui-editor-panel-body">
-                        {selectedScopeKey ? (
-                            <div className="ui-editor-card-flow">
-                                <ConfigurationNameDisplayNameFields
-                                    nameInputId="scope-name"
-                                    displayTextareaId="scope-display-name"
-                                    name={name}
-                                    displayName={displayName}
-                                    setName={setName}
-                                    setDisplayName={setDisplayName}
-                                    setFieldError={setFieldError}
-                                    fieldError={fieldError}
-                                    disabled={isDeletePending || !canEditForm}
-                                    nameLabel={copy.nameLabel}
-                                    nameHint={copy.nameHint}
-                                    displayNameLabel={copy.displayNameLabel}
-                                    displayNameHint={copy.displayNameHint}
-                                    flashActive={isEditorFlashActive}
-                                />
+                    {!isCreateMode && selectedScope ? (
+                        <ConfigurationInfoSection
+                            title={copy.sectionInfoTitle}
+                            description={copy.sectionInfoDescription}
+                        >
+                            <ul className="ui-info-topic-list">
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.infoIdLabel}
+                                        </span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">
+                                            {selectedScope.id}
+                                        </span>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.infoNameRegisteredLabel}
+                                        </span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">
+                                            {selectedScope.name.trim() || "—"}
+                                        </span>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.infoDisplayRegisteredLabel}
+                                        </span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">
+                                            {selectedScope.display_name.trim() || "—"}
+                                        </span>
+                                    </p>
+                                </li>
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.infoCanEditLabel}
+                                        </span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">
+                                            {selectedScope.can_edit ? copy.infoYes : copy.infoNo}
+                                        </span>
+                                    </p>
+                                </li>
+                            </ul>
+                        </ConfigurationInfoSection>
+                    ) : null}
 
-                                {!isCreateMode && selectedScope ? (
-                                    <ConfigurationInfoSection
-                                        title={copy.sectionInfoTitle}
-                                        description={copy.sectionInfoDescription}
-                                    >
-                                        <ul className="ui-info-topic-list">
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.infoIdLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {selectedScope.id}
-                                                    </span>
-                                                </p>
-                                            </li>
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.infoNameRegisteredLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {selectedScope.name.trim() || "—"}
-                                                    </span>
-                                                </p>
-                                            </li>
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.infoDisplayRegisteredLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {selectedScope.display_name.trim() || "—"}
-                                                    </span>
-                                                </p>
-                                            </li>
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.infoCanEditLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {selectedScope.can_edit ? copy.infoYes : copy.infoNo}
-                                                    </span>
-                                                </p>
-                                            </li>
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.infoCanDeleteLabel}
-                                                    </span>
-                                                    {": "}
-                                                    <span className="ui-info-topic-value">
-                                                        {selectedScope.can_delete ? copy.infoYes : copy.infoNo}
-                                                    </span>
-                                                </p>
-                                            </li>
-                                        </ul>
-                                    </ConfigurationInfoSection>
-                                ) : null}
-
-                                {isCreateMode ? (
-                                    <ConfigurationInfoSection
-                                        title={copy.sectionInfoTitle}
-                                        description={copy.sectionInfoDescription}
-                                    >
-                                        <ul className="ui-info-topic-list">
-                                            <li>
-                                                <p className="ui-info-topic-lead">
-                                                    <span className="ui-info-topic-label">
-                                                        {copy.infoCreateLead}
-                                                    </span>
-                                                </p>
-                                                <p className="ui-field-hint ui-info-topic-hint">
-                                                    {copy.infoCreateHint}
-                                                </p>
-                                            </li>
-                                        </ul>
-                                    </ConfigurationInfoSection>
-                                ) : null}
-                            </div>
-                        ) : (
-                            <div className="ui-panel ui-empty-panel">
-                                {copy.selectPrompt}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
-
-            <ConfigurationHistoryPlaceholder
-                headingId="scope-history-heading"
-                title={copy.historyTitle}
-                description={copy.historyDescription}
-            />
-
-            {portalTarget
-                ? createPortal(
-                    <ConfigurationEditorFooter
-                        configurationPath={configurationPath}
-                        cancelLabel={copy.cancel}
-                        discardConfirm={copy.discardConfirm}
-                        isDirty={isDirty}
-                        footerErrorMessage={footerErrorMessage}
-                        onSave={() => void handleSave()}
-                        saveDisabled={
-                            !selectedScopeKey || !canSubmit || isSaving || !isDirty
-                        }
-                        saveLabel={copy.save}
-                        savingLabel={copy.saving}
-                        isSaving={isSaving}
-                        dangerAction={
-                            !isCreateMode && selectedScope ? (
-                                <button
-                                    type="button"
-                                    className="ui-button-danger"
-                                    onClick={handleToggleDelete}
-                                    disabled={!selectedScope.can_delete || isSaving}
-                                >
-                                    {isDeletePending ? copy.undoDelete : copy.delete}
-                                </button>
-                            ) : null
-                        }
-                    />,
-                    portalTarget
-                )
-                : null}
-        </section>
+                    {isCreateMode ? (
+                        <ConfigurationInfoSection
+                            title={copy.sectionInfoTitle}
+                            description={copy.sectionInfoDescription}
+                        >
+                            <ul className="ui-info-topic-list">
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">
+                                            {copy.infoCreateLead}
+                                        </span>
+                                    </p>
+                                    <p className="ui-field-hint ui-info-topic-hint">
+                                        {copy.infoCreateHint}
+                                    </p>
+                                </li>
+                            </ul>
+                        </ConfigurationInfoSection>
+                    ) : null}
+                </>
+            }
+            history={{
+                headingId: "scope-history-heading",
+                title: copy.historyTitle,
+                description: copy.historyDescription
+            }}
+            footer={{
+                configurationPath,
+                cancelLabel: copy.cancel,
+                discardConfirm: copy.discardConfirm,
+                isDirty,
+                footerErrorMessage,
+                onSave: () => void handleSave(),
+                saveDisabled: directoryEditorSaveDisabled({
+                    hasEditableContext: Boolean(selectedScopeKey),
+                    canSubmit,
+                    isSaving,
+                    isDirty
+                }),
+                saveLabel: copy.save,
+                savingLabel: copy.saving,
+                isSaving,
+                dangerAction:
+                    !isCreateMode && selectedScope ? (
+                        <button
+                            type="button"
+                            className="ui-button-danger"
+                            onClick={handleToggleDelete}
+                            disabled={isSaving}
+                        >
+                            {isDeletePending ? copy.undoDelete : copy.delete}
+                        </button>
+                    ) : null
+            }}
+        />
     );
 }

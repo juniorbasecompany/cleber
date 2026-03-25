@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { MouseEvent, ReactNode } from "react";
 
-type ConfigurationEditorFooterProps = {
+export type ConfigurationEditorFooterProps = {
     configurationPath: string;
     cancelLabel: string;
     discardConfirm: string;

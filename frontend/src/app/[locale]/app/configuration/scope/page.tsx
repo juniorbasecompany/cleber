@@ -38,7 +38,6 @@ export default async function ScopeConfigurationPage({
     infoNameRegisteredLabel: t("section.info.nameRegisteredLabel"),
     infoDisplayRegisteredLabel: t("section.info.displayRegisteredLabel"),
     infoCanEditLabel: t("section.info.canEditLabel"),
-    infoCanDeleteLabel: t("section.info.canDeleteLabel"),
     infoYes: t("section.info.yes"),
     infoNo: t("section.info.no"),
     infoCreateLead: t("section.info.createLead"),
@@ -54,8 +53,7 @@ export default async function ScopeConfigurationPage({
     createError: t("error.create"),
     deleteError: t("error.delete"),
     validationError: t("error.validation"),
-    discardConfirm: t("discardConfirm"),
-    selectPrompt: t("selectPrompt")
+    discardConfirm: t("discardConfirm")
   };
 
   return (
