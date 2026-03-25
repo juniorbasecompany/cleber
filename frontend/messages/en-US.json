@@ -1,418 +1,418 @@
 {
-  "AppShell": {
-    "productName": "Valora",
-    "productStage": "Phase 1 in progress",
-    "workspaceLabel": "Operational and auditable workspace",
-    "navigation": {
-      "home": "Home",
-      "location": "Locations",
-      "operation": "Operations",
-      "record": "Records",
-      "import": "Imports",
-      "process": "Processing",
-      "audit": "Audit",
-      "configuration": "Configuration",
-      "comingSoon": "coming soon"
-    },
-    "topbar": {
-      "tenantLabel": "Active tenant",
-      "accountLabel": "Account",
-      "localeLabel": "Language and region",
-      "openNavigation": "Open navigation",
-      "closeNavigation": "Close navigation",
-      "signOut": "Sign out",
-      "signOutPending": "Signing out..."
-    },
-    "menu": {
-      "tenantSectionLabel": "Tenant",
-      "tenantTriggerAriaLabel": "Choose tenant",
-      "tenantMenuAriaLabel": "Available tenants",
-      "scopeTriggerAriaLabel": "Choose scope",
-      "scopeMenuAriaLabel": "Available scopes",
-      "localeFlagTriggerAriaLabel": "Choose language and region",
-      "localeFlagMenuAriaLabel": "Available languages",
-      "configurationLabel": "Configuration",
-      "loadingTenantList": "Loading...",
-      "tenantListError": "Could not load the tenant list.",
-      "emptyTenantList": "No tenant available.",
-      "switchingTenant": "Switching tenant...",
-      "loadingScopeList": "Loading scopes...",
-      "scopeListError": "Could not load the scope list.",
-      "emptyScopeList": "No scope available.",
-      "switchingScope": "Saving scope...",
-      "switchingLocale": "Switching language...",
-      "activeLabel": "active",
-      "noScopeLabel": "No scope"
-    }
-  },
-  "HomePage": {
-    "title": "The system foundation is already ready to start Valora's structural setup.",
-    "description": "This home page acts as the application entry point after authentication. It shows the current context, the initial setup status, and the shortest path to administrative configuration.",
-    "status": {
-      "title": "Initial setup pending",
-      "description": "The recommended next step is to open Configuration and register the tenant, members, and scope."
-    },
-    "context": {
-      "workspace": {
-        "title": "Current workspace",
-        "description": "You are already inside the authenticated area of the application, with an active tenant and an interface ready to grow into modules."
-      },
-      "locale": {
-        "title": "Language and region",
-        "description": "The foundation already uses keyed messages and a structure ready to expand internationalization across multiple locales."
-      },
-      "entryFlow": {
-        "title": "Current flow",
-        "description": "Google sign-in already defines the account, the active tenant, and the next useful application flow."
-      }
-    },
-    "setup": {
-      "title": "Initial setup status",
-      "description": "These are the first steps to move the application out of its base state and prepare it for real operation.",
-      "steps": {
-        "organization": {
-          "title": "Register the tenant",
-          "description": "Create the base tenant that will represent the system contractor.",
-          "status": "priority"
+    "AppShell": {
+        "productName": "Valora",
+        "productStage": "Phase 1 in progress",
+        "workspaceLabel": "Operational and auditable workspace",
+        "navigation": {
+            "home": "Home",
+            "location": "Locations",
+            "operation": "Operations",
+            "record": "Records",
+            "import": "Imports",
+            "process": "Processing",
+            "audit": "Audit",
+            "configuration": "Configuration",
+            "comingSoon": "coming soon"
         },
-        "member": {
-          "title": "Register the members",
-          "description": "Define who will operate the system within the tenant context.",
-          "status": "pending"
+        "topbar": {
+            "tenantLabel": "Active tenant",
+            "accountLabel": "Account",
+            "localeLabel": "Language and region",
+            "openNavigation": "Open navigation",
+            "closeNavigation": "Close navigation",
+            "signOut": "Sign out",
+            "signOutPending": "Signing out..."
         },
-        "scope": {
-          "title": "Configure the initial scope",
-          "description": "Prepare the minimum structure that will serve as the foundation for the tenant's future records and modules.",
-          "status": "pending"
+        "menu": {
+            "tenantSectionLabel": "Tenant",
+            "tenantTriggerAriaLabel": "Choose tenant",
+            "tenantMenuAriaLabel": "Available tenants",
+            "scopeTriggerAriaLabel": "Choose scope",
+            "scopeMenuAriaLabel": "Available scopes",
+            "localeFlagTriggerAriaLabel": "Choose language and region",
+            "localeFlagMenuAriaLabel": "Available languages",
+            "configurationLabel": "Configuration",
+            "loadingTenantList": "Loading...",
+            "tenantListError": "Could not load the tenant list.",
+            "emptyTenantList": "No tenant available.",
+            "switchingTenant": "Switching tenant...",
+            "loadingScopeList": "Loading scopes...",
+            "scopeListError": "Could not load the scope list.",
+            "emptyScopeList": "No scope available.",
+            "switchingScope": "Saving scope...",
+            "switchingLocale": "Switching language...",
+            "activeLabel": "active",
+            "noScopeLabel": "No scope"
         }
-      }
     },
-    "quickAction": {
-      "title": "What to do now",
-      "description": "Use these shortcuts to follow the shortest path toward the first useful delivery.",
-      "configuration": {
-        "title": "Open configuration",
-        "description": "Go to the area that will concentrate the initial tenant, member, and scope records.",
-        "action": "Go to Configuration"
-      },
-      "plan": {
-        "title": "View the initial setup queue",
-        "description": "Review the recommended order of records before starting the implementation of the administration screens.",
-        "action": "View next steps"
-      }
-    }
-  },
-  "ConfigurationPage": {
-    "title": "This area will be the first useful data foundation of the system.",
-    "description": "This is where the initial manual records will live before guided assistants, automations, or complete operational modules exist.",
-    "openTenantEditor": "Edit tenant",
-    "openMemberEditor": "Edit members",
-    "openScopeEditor": "Edit scopes",
-    "cards": {
-      "organization": {
+    "HomePage": {
+        "title": "The system foundation is already ready to start Valora's structural setup.",
+        "description": "This home page acts as the application entry point after authentication. It shows the current context, the initial setup status, and the shortest path to administrative configuration.",
+        "status": {
+            "title": "Initial setup pending",
+            "description": "The recommended next step is to open Configuration and register the tenant, members, and scope."
+        },
+        "context": {
+            "workspace": {
+                "title": "Current workspace",
+                "description": "You are already inside the authenticated area of the application, with an active tenant and an interface ready to grow into modules."
+            },
+            "locale": {
+                "title": "Language and region",
+                "description": "The foundation already uses keyed messages and a structure ready to expand internationalization across multiple locales."
+            },
+            "entryFlow": {
+                "title": "Current flow",
+                "description": "Google sign-in already defines the account, the active tenant, and the next useful application flow."
+            }
+        },
+        "setup": {
+            "title": "Initial setup status",
+            "description": "These are the first steps to move the application out of its base state and prepare it for real operation.",
+            "steps": {
+                "organization": {
+                    "title": "Register the tenant",
+                    "description": "Create the base tenant that will represent the system contractor.",
+                    "status": "priority"
+                },
+                "member": {
+                    "title": "Register the members",
+                    "description": "Define who will operate the system within the tenant context.",
+                    "status": "pending"
+                },
+                "scope": {
+                    "title": "Configure the initial scope",
+                    "description": "Prepare the minimum structure that will serve as the foundation for the tenant's future records and modules.",
+                    "status": "pending"
+                }
+            }
+        },
+        "quickAction": {
+            "title": "What to do now",
+            "description": "Use these shortcuts to follow the shortest path toward the first useful delivery.",
+            "configuration": {
+                "title": "Open configuration",
+                "description": "Go to the area that will concentrate the initial tenant, member, and scope records.",
+                "action": "Go to Configuration"
+            },
+            "plan": {
+                "title": "View the initial setup queue",
+                "description": "Review the recommended order of records before starting the implementation of the administration screens.",
+                "action": "View next steps"
+            }
+        }
+    },
+    "ConfigurationPage": {
+        "title": "Organization, who can act, and which context",
+        "description": "Before day-to-day operations, Valora needs three things spelled out: which contracting organization this is (the tenant), who may act inside it (members and roles), and which slice of context data lives in, scopes: branches, projects, sites, whatever matches your operation. This screen is where you maintain that backbone; without it, records and permissions lack a clear frame of reference. The locations tree lives under its own sidebar entry and always follows the active scope you pick in the header.",
+        "openTenantEditor": "Edit tenant",
+        "openMemberEditor": "Edit members",
+        "openScopeEditor": "Edit scopes",
+        "cards": {
+            "organization": {
+                "title": "Tenant",
+                "description": "The contracting organization for this workspace: the name shown in the top bar, tenant switcher, and other surfaces. Here you align display name (what people see every day) and full legal or formal name when you need an official reference. Changes apply to the tenant active in your session; if you manage more than one, switch from the menu before editing."
+            },
+            "member": {
+                "title": "Members",
+                "description": "A member is a person tied to this tenant in the product, not just the sign-in account, but the link with role (master, administrator, member) and status. Everyone listed here can operate in this organization; roles and status control what they can change, including sensitive configuration."
+            },
+            "scope": {
+                "title": "Scope",
+                "description": "A scope is a context unit inside the tenant: where records, and later the locations hierarchy, stay separated instead of mixed together. Think branch, job site, venue, or project,  the label is yours, but the job is always to isolate data that should not appear in one pile. The scope selected in the header is what applies when you work on locations and anything that depends on it."
+            }
+        }
+    },
+    "ModulePlaceholderPage": {
+        "description": "{module} is already connected to the main navigation and uses this placeholder screen until the first functional flow is delivered.",
+        "status": {
+            "title": "Navigable destination available",
+            "description": "This page is enough to validate navigation, active menu state, and incremental rollout of the module."
+        },
+        "cards": {
+            "entry": {
+                "title": "Entry point already connected",
+                "description": "{module} now has its own URL, active sidebar item, and a clickable placeholder for flow review."
+            },
+            "state": {
+                "title": "Visual behavior aligned",
+                "description": "Hover, selected state, and the left indicator follow the same visual rules used by the other menus in the application."
+            },
+            "next": {
+                "title": "Next evolution",
+                "description": "The next delivery for this module can replace this placeholder with the first real workflow without rebuilding global navigation."
+            }
+        },
+        "actions": {
+            "home": {
+                "title": "Return to the entry point",
+                "description": "Go back to Home to review the current context and the next steps for the initial setup.",
+                "label": "Go to Home"
+            },
+            "configuration": {
+                "title": "Open Configuration",
+                "description": "Keep moving through the administrative area while this module's functional flows are still evolving.",
+                "label": "Go to Configuration"
+            }
+        }
+    },
+    "MemberConfigurationPage": {
+        "title": "Members",
+        "description": "Edit the records of the members linked to the active tenant. Name, role, and status stay centralized in this directory.",
+        "list": {
+            "empty": "No members were found for the active tenant."
+        },
+        "history": {
+            "title": "Change history",
+            "description": "A timeline of record changes will appear here when directory auditing is available. Until then, this block stays as a layout and traceability placeholder."
+        },
+        "section": {
+            "profile": {
+                "displayNameLabel": "Display name",
+                "displayNameHint": "Used across the tenant's internal surfaces.",
+                "nameLabel": "Full name",
+                "nameHint": "Use the most complete name for administrative reference."
+            },
+            "access": {
+                "title": "Access",
+                "description": "Role and status control the member's reach inside this tenant.",
+                "emailLabel": "Email",
+                "emailHint": "The email for this relationship remains governed by the authenticated account or the original invite.",
+                "roleLabel": "Role",
+                "statusLabel": "Status",
+                "accountLinked": "Linked account",
+                "accountPending": "Waiting for account link",
+                "accountTopicLabel": "Account"
+            }
+        },
+        "action": {
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "undoDelete": "Undo delete",
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "readOnlyNotice": "You can review the member directory, but only master or admin members can edit records.",
+        "protectedRecordNotice": "This record is protected by the current permissions. Select another member to edit.",
+        "role": {
+            "master": "Master",
+            "admin": "Administrator",
+            "member": "Member"
+        },
+        "statusValue": {
+            "ACTIVE": "Active",
+            "PENDING": "Pending",
+            "DISABLED": "Disabled"
+        },
+        "error": {
+            "save": "Could not save the member. Try again.",
+            "delete": "Could not delete the member. Try again.",
+            "validation": "This field cannot be empty."
+        },
+        "discardConfirm": "Discard unsaved changes?"
+    },
+    "ScopeConfigurationPage": {
+        "title": "Scopes",
+        "description": "Edit the minimum structural foundation of the active tenant. Each scope defines an initial slice that will support later records and modules.",
+        "empty": "No scopes were found for the active tenant.",
+        "history": {
+            "title": "Change history",
+            "description": "A timeline of scope changes will appear here when structural auditing is available. Until then, this block stays as a layout and traceability placeholder."
+        },
+        "section": {
+            "identity": {
+                "nameLabel": "Scope name",
+                "nameHint": "Use a short label to identify the scope, such as Poultry, Soy, or Milk.",
+                "displayNameLabel": "Scope description",
+                "displayNameHint": "Explain the scope slice with more context, such as Poultry for egg production."
+            },
+            "info": {
+                "title": "Information",
+                "description": "Summary of the scope in focus: values saved on the server, and what this session may change.",
+                "nameRegisteredLabel": "Saved name",
+                "displayRegisteredLabel": "Saved description",
+                "canEditLabel": "Can edit",
+                "canDeleteLabel": "Can delete",
+                "yes": "Yes",
+                "no": "No",
+                "createLead": "New structural scope",
+                "createHint": "You are defining a new slice for the active tenant. Save to register it in the directory."
+            }
+        },
+        "action": {
+            "cancel": "Cancel",
+            "new": "New scope",
+            "delete": "Delete",
+            "undoDelete": "Undo delete",
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "readOnlyNotice": "You can review the scope directory, but only master or admin members can create or edit structural records.",
+        "selectPrompt": "Select a scope from the list to edit the structural record.",
+        "error": {
+            "save": "Could not save the scope. Try again.",
+            "create": "Could not create the scope. Try again.",
+            "delete": "Could not delete the scope. Try again.",
+            "validation": "This field cannot be empty."
+        },
+        "discardConfirm": "Discard unsaved changes?"
+    },
+    "LocationConfigurationPage": {
+        "title": "Locations",
+        "description": "In this panel you see your location tree. The hierarchy appears on the left; beside it is the form to edit the name and other information about the location, plus the history panel. Select a location in the tree to edit it, or click the New button to create a new subdivision at that location.",
+        "list": {
+            "empty": "No locations were found for the selected scope.",
+            "emptyScope": "Create a scope first before editing the location hierarchy.",
+            "missingCurrentScope": "Set an active scope from the header selector before editing the location hierarchy."
+        },
+        "history": {
+            "title": "Change history",
+            "description": "A timeline of location hierarchy changes will appear here when structural auditing is available. Until then, this tab stays as a layout and traceability placeholder."
+        },
+        "section": {
+            "identity": {
+                "nameLabel": "Location name",
+                "nameHint": "Use a short name to identify this location. For example: Willow instead of Willow Farm, Brookside instead of Brookside Poultry, or East instead of East Field.",
+                "displayNameLabel": "Location description",
+                "displayNameHint": "Enter the full name of the location. For example: Willow Farm instead of Willow, Brookside Poultry instead of Brookside, or East Field instead of just East."
+            },
+            "structure": {
+                "title": "Information",
+                "description": "Summary of the location in focus, with the level in the hierarchy and the order among siblings of the same location.",
+                "levelLabel": "Hierarchy level",
+                "levelHint": "Counted from the scope root (1 = root).",
+                "parentLabel": "Parent location",
+                "parentRoot": "Scope root (no parent above)",
+                "orderLabel": "Order among siblings",
+                "orderHintEdit": "Used when listing locations at the same level.",
+                "orderHintCreate": "Assigned when you save the new location.",
+                "orderPending": "-"
+            }
+        },
+        "dragDropHint": "Drag a handle to reorder before or after a sibling, or drop on a row to move under that location.",
+        "action": {
+            "cancel": "Cancel",
+            "newLabel": "New",
+            "newChild": "New child",
+            "newSibling": "New sibling",
+            "delete": "Delete",
+            "undoDelete": "Undo delete",
+            "save": "Save",
+            "saving": "Saving...",
+            "moveUp": "Move up",
+            "moveDown": "Move down"
+        },
+        "readOnlyNotice": "You can review the location directory, but only master or admin members can create or edit hierarchical records.",
+        "createdNotice": "Location created successfully.",
+        "deletedNotice": "Location deleted successfully.",
+        "movedNotice": "Location moved successfully.",
+        "error": {
+            "load": "Could not load the location directory. Try again.",
+            "save": "Could not save the location. Try again.",
+            "create": "Could not create the location. Try again.",
+            "delete": "Could not delete the location. Try again.",
+            "move": "Could not move the location. Try again.",
+            "validation": "This field cannot be empty."
+        },
+        "discardConfirm": "Discard unsaved changes?"
+    },
+    "TenantConfigurationPage": {
         "title": "Tenant",
-        "description": "Represents the contracting tenant and will be the first structural record in the application."
-      },
-      "member": {
-        "title": "Member",
-        "description": "Represents who operates the system within the tenant context."
-      },
-      "scope": {
-        "title": "Scope",
-        "description": "Concentrates the minimum structure that will support later modules and records."
-      }
+        "description": "These fields identify the contracting organization in the workspace, top bar, and lists. Changes apply to the active tenant of your session.",
+        "history": {
+            "title": "Change history",
+            "description": "A timeline of who changed what will appear here when the audit API is available. Until then, this block remains the reserved space for layout and traceability next to the form."
+        },
+        "section": {
+            "display": {
+                "title": "Interface name",
+                "description": "Short label shown across the application for the active tenant.",
+                "nameLabel": "Display name",
+                "nameHint": "Used in the top bar, tenant switcher, and other navigation surfaces."
+            },
+            "legal": {
+                "title": "Full legal name",
+                "description": "Official or complete name of the contracting organization.",
+                "nameLabel": "Full name",
+                "nameHint": "Use the formal name; it can match the display name when no shorter label is needed."
+            }
+        },
+        "metadata": {
+            "idLabel": "Internal identifier",
+            "sectionTitle": "System reference",
+            "sectionDescription": "Stable identifier for this tenant in the database."
+        },
+        "action": {
+            "cancel": "Cancel",
+            "delete": "Delete",
+            "undoDelete": "Undo delete",
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "readOnlyNotice": "You can view tenant data, but only master or admin members can edit it.",
+        "error": {
+            "save": "Could not save changes. Try again.",
+            "delete": "Could not delete the tenant. Try again.",
+            "validation": "This field cannot be empty."
+        },
+        "discardConfirm": "Discard unsaved changes?"
+    },
+    "LoginPage": {
+        "eyebrow": "System access",
+        "title": "Authenticate to enter Valora's operational workspace.",
+        "description": "Use your Google account to sign in to Valora. Authentication already connects the account to the relationship between account, tenant, and member.",
+        "notice": {
+            "authRequired": "Sign in to access the protected area of the application.",
+            "signedOut": "Session ended. Sign in again to continue."
+        },
+        "cards": {
+            "workspace": {
+                "title": "A serious workspace from the start",
+                "description": "Navigation is already prepared to grow into modules without looking like a generic admin template."
+            },
+            "traceability": {
+                "title": "Foundation oriented toward traceability",
+                "description": "The interface starts ready to receive history, audit, and contextual explanations in the next phases."
+            },
+            "nextStep": {
+                "title": "Next useful delivery",
+                "description": "After authentication, the user lands on the home page and proceeds to the initial administrative configuration."
+            }
+        },
+        "form": {
+            "title": "Sign in",
+            "description": "At this stage, the initial product access happens through Google authentication and real organizational context.",
+            "submitIdle": "Loading Google authentication...",
+            "submitPending": "Signing in with Google...",
+            "helper": "If there is only one active relationship, access goes directly into the application. When multiple relationships or invites exist, Valora will ask you to choose the tenant.",
+            "accessPolicy": "On the first access without a relationship or invite, Valora automatically creates an initial context so you can complete the administrative setup.",
+            "googleUnavailable": "Google sign-in is unavailable because the public Google client identifier has not been configured in the environment yet.",
+            "error": "Could not complete the Google sign-in. Try again.",
+            "rememberMeLabel": "Stay authenticated on this device"
+        }
+    },
+    "SelectTenantPage": {
+        "loading": "Loading access options...",
+        "title": "Choose how you want to enter Valora.",
+        "description": "Your Google account has been validated. Now you only need to define the active tenant that will govern the session's operational context.",
+        "activeListTitle": "Active organizations",
+        "inviteListTitle": "Pending invites",
+        "createTitle": "Preparing your initial context",
+        "createDescription": "We did not find an active tenant or pending invite. Valora can create the first context for you so you can go straight to the initial administrative configuration.",
+        "createAction": "Create initial tenant",
+        "createPending": "Creating initial tenant...",
+        "acceptAction": "Accept invite",
+        "rejectAction": "Reject invite",
+        "selectAction": "Enter this tenant",
+        "processing": "Processing...",
+        "empty": "No access option was found for this account.",
+        "backToLogin": "Back to sign in",
+        "genericError": "Could not complete this action right now. Try again."
+    },
+    "State": {
+        "loadingDescription": "Loading the application foundation.",
+        "errorTitle": "Could not load this area.",
+        "errorDescription": "There was a problem rendering the interface. You can try again without leaving the current flow.",
+        "retry": "Try again"
     }
-  },
-  "ModulePlaceholderPage": {
-    "description": "{module} is already connected to the main navigation and uses this placeholder screen until the first functional flow is delivered.",
-    "status": {
-      "title": "Navigable destination available",
-      "description": "This page is enough to validate navigation, active menu state, and incremental rollout of the module."
-    },
-    "cards": {
-      "entry": {
-        "title": "Entry point already connected",
-        "description": "{module} now has its own URL, active sidebar item, and a clickable placeholder for flow review."
-      },
-      "state": {
-        "title": "Visual behavior aligned",
-        "description": "Hover, selected state, and the left indicator follow the same visual rules used by the other menus in the application."
-      },
-      "next": {
-        "title": "Next evolution",
-        "description": "The next delivery for this module can replace this placeholder with the first real workflow without rebuilding global navigation."
-      }
-    },
-    "actions": {
-      "home": {
-        "title": "Return to the entry point",
-        "description": "Go back to Home to review the current context and the next steps for the initial setup.",
-        "label": "Go to Home"
-      },
-      "configuration": {
-        "title": "Open Configuration",
-        "description": "Keep moving through the administrative area while this module's functional flows are still evolving.",
-        "label": "Go to Configuration"
-      }
-    }
-  },
-  "MemberConfigurationPage": {
-    "title": "Members",
-    "description": "Edit the records of the members linked to the active tenant. Name, role, and status stay centralized in this directory.",
-    "list": {
-      "empty": "No members were found for the active tenant."
-    },
-    "history": {
-      "title": "Change history",
-      "description": "A timeline of record changes will appear here when directory auditing is available. Until then, this block stays as a layout and traceability placeholder."
-    },
-    "section": {
-      "profile": {
-        "displayNameLabel": "Display name",
-        "displayNameHint": "Used across the tenant's internal surfaces.",
-        "nameLabel": "Full name",
-        "nameHint": "Use the most complete name for administrative reference."
-      },
-      "access": {
-        "title": "Access",
-        "description": "Role and status control the member's reach inside this tenant.",
-        "emailLabel": "Email",
-        "emailHint": "The email for this relationship remains governed by the authenticated account or the original invite.",
-        "roleLabel": "Role",
-        "statusLabel": "Status",
-        "accountLinked": "Linked account",
-        "accountPending": "Waiting for account link",
-        "accountTopicLabel": "Account"
-      }
-    },
-    "action": {
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "undoDelete": "Undo delete",
-      "save": "Save",
-      "saving": "Saving..."
-    },
-    "readOnlyNotice": "You can review the member directory, but only master or admin members can edit records.",
-    "protectedRecordNotice": "This record is protected by the current permissions. Select another member to edit.",
-    "role": {
-      "master": "Master",
-      "admin": "Administrator",
-      "member": "Member"
-    },
-    "statusValue": {
-      "ACTIVE": "Active",
-      "PENDING": "Pending",
-      "DISABLED": "Disabled"
-    },
-    "error": {
-      "save": "Could not save the member. Try again.",
-      "delete": "Could not delete the member. Try again.",
-      "validation": "This field cannot be empty."
-    },
-    "discardConfirm": "Discard unsaved changes?"
-  },
-  "ScopeConfigurationPage": {
-    "title": "Scopes",
-    "description": "Edit the minimum structural foundation of the active tenant. Each scope defines an initial slice that will support later records and modules.",
-    "empty": "No scopes were found for the active tenant.",
-    "history": {
-      "title": "Change history",
-      "description": "A timeline of scope changes will appear here when structural auditing is available. Until then, this block stays as a layout and traceability placeholder."
-    },
-    "section": {
-      "identity": {
-        "nameLabel": "Scope name",
-        "nameHint": "Use a short label to identify the scope, such as Poultry, Soy, or Milk.",
-        "displayNameLabel": "Scope description",
-        "displayNameHint": "Explain the scope slice with more context, such as Poultry for egg production."
-      },
-      "info": {
-        "title": "Information",
-        "description": "Summary of the scope in focus: values saved on the server, and what this session may change.",
-        "nameRegisteredLabel": "Saved name",
-        "displayRegisteredLabel": "Saved description",
-        "canEditLabel": "Can edit",
-        "canDeleteLabel": "Can delete",
-        "yes": "Yes",
-        "no": "No",
-        "createLead": "New structural scope",
-        "createHint": "You are defining a new slice for the active tenant. Save to register it in the directory."
-      }
-    },
-    "action": {
-      "cancel": "Cancel",
-      "new": "New scope",
-      "delete": "Delete",
-      "undoDelete": "Undo delete",
-      "save": "Save",
-      "saving": "Saving..."
-    },
-    "readOnlyNotice": "You can review the scope directory, but only master or admin members can create or edit structural records.",
-    "selectPrompt": "Select a scope from the list to edit the structural record.",
-    "error": {
-      "save": "Could not save the scope. Try again.",
-      "create": "Could not create the scope. Try again.",
-      "delete": "Could not delete the scope. Try again.",
-      "validation": "This field cannot be empty."
-    },
-    "discardConfirm": "Discard unsaved changes?"
-  },
-  "LocationConfigurationPage": {
-    "title": "Locations",
-    "description": "In this panel you see your location tree. The hierarchy appears on the left; beside it is the form to edit the name and other information about the location, plus the history panel. Select a location in the tree to edit it, or click the New button to create a new subdivision at that location.",
-    "list": {
-      "empty": "No locations were found for the selected scope.",
-      "emptyScope": "Create a scope first before editing the location hierarchy.",
-      "missingCurrentScope": "Set an active scope from the header selector before editing the location hierarchy."
-    },
-    "history": {
-      "title": "Change history",
-      "description": "A timeline of location hierarchy changes will appear here when structural auditing is available. Until then, this tab stays as a layout and traceability placeholder."
-    },
-    "section": {
-      "identity": {
-        "nameLabel": "Location name",
-        "nameHint": "Use a short name to identify this location. For example: Willow instead of Willow Farm, Brookside instead of Brookside Poultry, or East instead of East Field.",
-        "displayNameLabel": "Location description",
-        "displayNameHint": "Enter the full name of the location. For example: Willow Farm instead of Willow, Brookside Poultry instead of Brookside, or East Field instead of just East."
-      },
-      "structure": {
-        "title": "Information",
-        "description": "Summary of the location in focus, with the level in the hierarchy and the order among siblings of the same location.",
-        "levelLabel": "Hierarchy level",
-        "levelHint": "Counted from the scope root (1 = root).",
-        "parentLabel": "Parent location",
-        "parentRoot": "Scope root (no parent above)",
-        "orderLabel": "Order among siblings",
-        "orderHintEdit": "Used when listing locations at the same level.",
-        "orderHintCreate": "Assigned when you save the new location.",
-        "orderPending": "—"
-      }
-    },
-    "dragDropHint": "Drag a handle to reorder before or after a sibling, or drop on a row to move under that location.",
-    "action": {
-      "cancel": "Cancel",
-      "newLabel": "New",
-      "newChild": "New child",
-      "newSibling": "New sibling",
-      "delete": "Delete",
-      "undoDelete": "Undo delete",
-      "save": "Save",
-      "saving": "Saving...",
-      "moveUp": "Move up",
-      "moveDown": "Move down"
-    },
-    "readOnlyNotice": "You can review the location directory, but only master or admin members can create or edit hierarchical records.",
-    "createdNotice": "Location created successfully.",
-    "deletedNotice": "Location deleted successfully.",
-    "movedNotice": "Location moved successfully.",
-    "error": {
-      "load": "Could not load the location directory. Try again.",
-      "save": "Could not save the location. Try again.",
-      "create": "Could not create the location. Try again.",
-      "delete": "Could not delete the location. Try again.",
-      "move": "Could not move the location. Try again.",
-      "validation": "This field cannot be empty."
-    },
-    "discardConfirm": "Discard unsaved changes?"
-  },
-  "TenantConfigurationPage": {
-    "title": "Tenant",
-    "description": "These fields identify the contracting organization in the workspace, top bar, and lists. Changes apply to the active tenant of your session.",
-    "history": {
-      "title": "Change history",
-      "description": "A timeline of who changed what will appear here when the audit API is available. Until then, this block remains the reserved space for layout and traceability next to the form."
-    },
-    "section": {
-      "display": {
-        "title": "Interface name",
-        "description": "Short label shown across the application for the active tenant.",
-        "nameLabel": "Display name",
-        "nameHint": "Used in the top bar, tenant switcher, and other navigation surfaces."
-      },
-      "legal": {
-        "title": "Full legal name",
-        "description": "Official or complete name of the contracting organization.",
-        "nameLabel": "Full name",
-        "nameHint": "Use the formal name; it can match the display name when no shorter label is needed."
-      }
-    },
-    "metadata": {
-      "idLabel": "Internal identifier",
-      "sectionTitle": "System reference",
-      "sectionDescription": "Stable identifier for this tenant in the database."
-    },
-    "action": {
-      "cancel": "Cancel",
-      "delete": "Delete",
-      "undoDelete": "Undo delete",
-      "save": "Save",
-      "saving": "Saving..."
-    },
-    "readOnlyNotice": "You can view tenant data, but only master or admin members can edit it.",
-    "error": {
-      "save": "Could not save changes. Try again.",
-      "delete": "Could not delete the tenant. Try again.",
-      "validation": "This field cannot be empty."
-    },
-    "discardConfirm": "Discard unsaved changes?"
-  },
-  "LoginPage": {
-    "eyebrow": "System access",
-    "title": "Authenticate to enter Valora's operational workspace.",
-    "description": "Use your Google account to sign in to Valora. Authentication already connects the account to the relationship between account, tenant, and member.",
-    "notice": {
-      "authRequired": "Sign in to access the protected area of the application.",
-      "signedOut": "Session ended. Sign in again to continue."
-    },
-    "cards": {
-      "workspace": {
-        "title": "A serious workspace from the start",
-        "description": "Navigation is already prepared to grow into modules without looking like a generic admin template."
-      },
-      "traceability": {
-        "title": "Foundation oriented toward traceability",
-        "description": "The interface starts ready to receive history, audit, and contextual explanations in the next phases."
-      },
-      "nextStep": {
-        "title": "Next useful delivery",
-        "description": "After authentication, the user lands on the home page and proceeds to the initial administrative configuration."
-      }
-    },
-    "form": {
-      "title": "Sign in",
-      "description": "At this stage, the initial product access happens through Google authentication and real organizational context.",
-      "submitIdle": "Loading Google authentication...",
-      "submitPending": "Signing in with Google...",
-      "helper": "If there is only one active relationship, access goes directly into the application. When multiple relationships or invites exist, Valora will ask you to choose the tenant.",
-      "accessPolicy": "On the first access without a relationship or invite, Valora automatically creates an initial context so you can complete the administrative setup.",
-      "googleUnavailable": "Google sign-in is unavailable because the public Google client identifier has not been configured in the environment yet.",
-      "error": "Could not complete the Google sign-in. Try again.",
-      "rememberMeLabel": "Stay authenticated on this device"
-    }
-  },
-  "SelectTenantPage": {
-    "loading": "Loading access options...",
-    "title": "Choose how you want to enter Valora.",
-    "description": "Your Google account has been validated. Now you only need to define the active tenant that will govern the session's operational context.",
-    "activeListTitle": "Active organizations",
-    "inviteListTitle": "Pending invites",
-    "createTitle": "Preparing your initial context",
-    "createDescription": "We did not find an active tenant or pending invite. Valora can create the first context for you so you can go straight to the initial administrative configuration.",
-    "createAction": "Create initial tenant",
-    "createPending": "Creating initial tenant...",
-    "acceptAction": "Accept invite",
-    "rejectAction": "Reject invite",
-    "selectAction": "Enter this tenant",
-    "processing": "Processing...",
-    "empty": "No access option was found for this account.",
-    "backToLogin": "Back to sign in",
-    "genericError": "Could not complete this action right now. Try again."
-  },
-  "State": {
-    "loadingDescription": "Loading the application foundation.",
-    "errorTitle": "Could not load this area.",
-    "errorDescription": "There was a problem rendering the interface. You can try again without leaving the current flow.",
-    "retry": "Try again"
-  }
 }
