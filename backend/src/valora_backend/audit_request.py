@@ -1,4 +1,4 @@
-# Variáveis de transação PostgreSQL para auditoria (lidas pelos triggers em log).
+"""Variáveis de transação PostgreSQL usadas pelos gatilhos de auditoria."""
 
 from __future__ import annotations
 
@@ -10,24 +10,32 @@ from sqlalchemy.orm import Session
 from valora_backend.auth.jwt import verify_token
 
 
+def _serialize_audit_guc_value(value: int | None) -> str:
+    """Converte ids de auditoria para o formato aceito por `set_config`.
+
+    String vazia limpa um `SET LOCAL` anterior na mesma transacao.
+    """
+    if value is None:
+        return ""
+    return str(int(value))
+
+
 def apply_audit_gucs_on_connection(
     connection: Connection,
     tenant_id: int | None,
     account_id: int | None,
 ) -> None:
-    """Define set_config local (equivalente a SET LOCAL) na transação corrente."""
+    """Define GUCs locais da transação na conexão PostgreSQL corrente."""
     if connection.dialect.name != "postgresql":
         return
-    if tenant_id is not None:
-        connection.execute(
-            text("SELECT set_config('valora.current_tenant_id', :v, true)"),
-            {"v": str(int(tenant_id))},
-        )
-    if account_id is not None:
-        connection.execute(
-            text("SELECT set_config('valora.current_account_id', :v, true)"),
-            {"v": str(int(account_id))},
-        )
+    connection.execute(
+        text("SELECT set_config('valora.current_tenant_id', :v, true)"),
+        {"v": _serialize_audit_guc_value(tenant_id)},
+    )
+    connection.execute(
+        text("SELECT set_config('valora.current_account_id', :v, true)"),
+        {"v": _serialize_audit_guc_value(account_id)},
+    )
 
 
 def apply_audit_gucs_for_session(
@@ -35,35 +43,50 @@ def apply_audit_gucs_for_session(
     tenant_id: int | None,
     account_id: int | None,
 ) -> None:
-    """Atualiza GUCs de auditoria na conexão da sessão (ex.: após carregar Member)."""
+    """Atualiza as GUCs de auditoria na conexão ativa da sessão SQLAlchemy."""
     apply_audit_gucs_on_connection(session.connection(), tenant_id, account_id)
 
 
+def set_request_audit_state(
+    request: Request,
+    *,
+    tenant_id: int | None,
+    account_id: int | None,
+) -> None:
+    """Persiste os identificadores de auditoria em `request.state`."""
+    request.state.audit_tenant_id = tenant_id
+    request.state.audit_account_id = account_id
+
+
 def apply_audit_transaction_variables(connection: Connection, request: Request) -> None:
-    """Define set_config local na transação a partir do JWT (request.state)."""
-    tid = getattr(request.state, "audit_tenant_id", None)
-    aid = getattr(request.state, "audit_account_id", None)
-    apply_audit_gucs_on_connection(connection, tid, aid)
+    """Aplica as GUCs de auditoria a partir de `request.state` ao iniciar a transação."""
+    tenant_id = getattr(request.state, "audit_tenant_id", None)
+    account_id = getattr(request.state, "audit_account_id", None)
+    apply_audit_gucs_on_connection(connection, tenant_id, account_id)
 
 
 def try_set_audit_state_from_authorization(request: Request) -> None:
-    """Preenche request.state com account_id e tenant_id se o Bearer JWT for válido."""
+    """Preenche `request.state` com ids de auditoria quando houver Bearer JWT válido."""
     auth = request.headers.get("Authorization")
     if not auth or not auth.startswith("Bearer "):
         return
-    raw = auth.removeprefix("Bearer ").strip()
-    if not raw:
+    raw_token = auth.removeprefix("Bearer ").strip()
+    if not raw_token:
         return
     try:
-        payload = verify_token(raw)
+        payload = verify_token(raw_token)
     except HTTPException:
         return
-    sub = payload.get("sub")
+
+    account_id_raw = payload.get("sub")
     tenant_id_raw = payload.get("tenant_id")
-    if sub is None or tenant_id_raw is None:
+    if account_id_raw is None or tenant_id_raw is None:
         return
     try:
-        request.state.audit_account_id = int(sub)
-        request.state.audit_tenant_id = int(tenant_id_raw)
+        set_request_audit_state(
+            request,
+            tenant_id=int(tenant_id_raw),
+            account_id=int(account_id_raw),
+        )
     except (TypeError, ValueError):
         return

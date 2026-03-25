@@ -4,7 +4,7 @@ from collections import defaultdict
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, text
 from sqlalchemy.orm import Session
 
 from valora_backend.auth.dependencies import (
@@ -411,6 +411,26 @@ def _sync_account_name(account: Account, identity: GoogleIdentity) -> bool:
     return changed
 
 
+def _preallocate_bigint_pk_if_postgresql(
+    session: Session, *, table_name: str
+) -> int | None:
+    """Reserva o próximo valor do sequence em PostgreSQL para auditar INSERT com contexto."""
+    bind = session.get_bind()
+    if bind is None or bind.dialect.name != "postgresql":
+        return None
+    return int(
+        session.execute(
+            text("SELECT nextval(pg_get_serial_sequence(:table_name, 'id'))"),
+            {"table_name": table_name},
+        ).scalar_one()
+    )
+
+
+def _apply_member_audit_context(session: Session, actor: Member) -> None:
+    """Reforca o contexto de auditoria na mesma sessao usada pela mutacao."""
+    apply_audit_gucs_for_session(session, actor.tenant_id, actor.account_id)
+
+
 def _find_or_create_account(session: Session, identity: GoogleIdentity) -> Account:
     account = session.scalar(
         select(Account).where(
@@ -431,6 +451,7 @@ def _find_or_create_account(session: Session, identity: GoogleIdentity) -> Accou
 
     name, display_name = build_account_name(identity.name, identity.email)
     account = Account(
+        id=_preallocate_bigint_pk_if_postgresql(session, table_name="account"),
         name=name,
         display_name=display_name,
         email=identity.email,
@@ -438,7 +459,8 @@ def _find_or_create_account(session: Session, identity: GoogleIdentity) -> Accou
         provider_subject=identity.provider_subject,
     )
     session.add(account)
-    session.flush()
+    if account.id is None:
+        session.flush()
     apply_audit_gucs_for_session(session, None, account.id)
     commit_session_with_null_if_empty(session)
     session.refresh(account)
@@ -601,11 +623,13 @@ def _issue_token_for_member(
 
 def _create_initial_tenant_member(session: Session, account: Account) -> Member:
     tenant = Tenant(
+        id=_preallocate_bigint_pk_if_postgresql(session, table_name="tenant"),
         name=account.display_name,
         display_name=account.display_name,
     )
     session.add(tenant)
-    session.flush()
+    if tenant.id is None:
+        session.flush()
     apply_audit_gucs_for_session(session, tenant.id, account.id)
     commit_session_with_null_if_empty(session)
     session.refresh(tenant)
@@ -620,7 +644,6 @@ def _create_initial_tenant_member(session: Session, account: Account) -> Member:
         status=ACTIVE_STATUS,
     )
     session.add(member)
-    session.flush()
     apply_audit_gucs_for_session(session, tenant.id, account.id)
     commit_session_with_null_if_empty(session)
     session.refresh(member)
@@ -1256,6 +1279,7 @@ def patch_current_member_scope(
     )
     current_member.current_scope_id = target_scope.id
     session.add(current_member)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
     session.refresh(current_member)
 
@@ -1280,6 +1304,7 @@ def patch_current_tenant(
     tenant.name = body.name
     tenant.display_name = body.display_name
     session.add(tenant)
+    _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
     session.refresh(tenant)
 
@@ -1307,6 +1332,7 @@ def delete_current_tenant(
     member_list = list(
         session.scalars(select(Member).where(Member.tenant_id == tenant.id))
     )
+    _apply_member_audit_context(session, member)
     for tenant_member in member_list:
         session.delete(tenant_member)
 
@@ -1357,6 +1383,7 @@ def patch_current_tenant_member(
     target_member.name = body.name
     target_member.display_name = body.display_name
     session.add(target_member)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_member_directory(session, actor=current_member)
@@ -1384,6 +1411,7 @@ def create_current_tenant_scope(
         tenant_id=tenant.id,
     )
     session.add(scope)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_scope_directory(session, actor=current_member)
@@ -1415,6 +1443,7 @@ def patch_current_tenant_scope(
     target_scope.name = body.name
     target_scope.display_name = body.display_name
     session.add(target_scope)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_scope_directory(session, actor=current_member)
@@ -1442,6 +1471,7 @@ def delete_current_tenant_member(
             detail="Only master members can delete another member",
         )
 
+    _apply_member_audit_context(session, current_member)
     session.delete(target_member)
     session.commit()
 
@@ -1487,6 +1517,7 @@ def delete_current_tenant_scope(
             detail="Cannot delete scope while it still has unities",
         )
 
+    _apply_member_audit_context(session, current_member)
     session.delete(target_scope)
     session.commit()
 
@@ -1553,6 +1584,7 @@ def create_current_scope_location(
         ),
     )
     session.add(location)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_location_directory(
@@ -1600,6 +1632,7 @@ def patch_current_scope_location(
     target_location.name = body.name
     target_location.display_name = body.display_name
     session.add(target_location)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_location_directory(
@@ -1642,6 +1675,7 @@ def move_current_scope_location(
         parent_location_id=body.parent_location_id,
         target_index=body.target_index,
     )
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_location_directory(
@@ -1677,6 +1711,7 @@ def delete_current_scope_location(
             detail="Insufficient permissions to delete location",
         )
 
+    _apply_member_audit_context(session, current_member)
     session.delete(target_location)
     session.flush()
     _normalize_scope_location_order(session, scope_id=target_scope.id)
@@ -1747,6 +1782,7 @@ def create_current_scope_unity(
         ),
     )
     session.add(unity)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_unity_directory(
@@ -1794,6 +1830,7 @@ def patch_current_scope_unity(
     target_unity.name = body.name
     target_unity.display_name = body.display_name
     session.add(target_unity)
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_unity_directory(
@@ -1836,6 +1873,7 @@ def move_current_scope_unity(
         parent_unity_id=body.parent_unity_id,
         target_index=body.target_index,
     )
+    _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_unity_directory(
@@ -1871,6 +1909,7 @@ def delete_current_scope_unity(
             detail="Insufficient permissions to delete unity",
         )
 
+    _apply_member_audit_context(session, current_member)
     session.delete(target_unity)
     session.flush()
     _normalize_scope_unity_order(session, scope_id=target_scope.id)

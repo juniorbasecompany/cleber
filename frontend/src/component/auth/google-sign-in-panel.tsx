@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -36,6 +36,8 @@ declare global {
         };
       };
     };
+    __valoraGoogleClientIdInitialized?: string;
+    __valoraGoogleCredentialHandler?: (response: { credential?: string }) => void;
   }
 }
 
@@ -67,9 +69,9 @@ export function GoogleSignInPanel({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [rememberMe, setRememberMe] = useState(false);
 
-  const isUnavailable = useMemo(() => !clientId, [clientId]);
+  const isUnavailable = !clientId;
 
-  const handleCredential = useCallback(
+  const handleCredential = useEffectEvent(
     async (credential: string) => {
       setIsPending(true);
       setErrorMessage(null);
@@ -122,7 +124,17 @@ export function GoogleSignInPanel({
         setIsPending(false);
       }
     },
-    [genericErrorText, locale, rememberMe, router]
+  );
+
+  const handleGoogleResponse = useEffectEvent(
+    ({ credential }: { credential?: string }) => {
+      if (!credential) {
+        setErrorMessage(genericErrorText);
+        return;
+      }
+
+      void handleCredential(credential);
+    }
   );
 
   useEffect(() => {
@@ -135,23 +147,24 @@ export function GoogleSignInPanel({
     }
 
     let isCancelled = false;
+    window.__valoraGoogleCredentialHandler = handleGoogleResponse;
+
     const intervalId = window.setInterval(() => {
       if (isCancelled || !window.google || !buttonContainerRef.current) {
         return;
       }
 
-      buttonContainerRef.current.innerHTML = "";
-      window.google.accounts.id.initialize({
-        client_id: nextClientId,
-        callback: ({ credential }) => {
-          if (!credential) {
-            setErrorMessage(genericErrorText);
-            return;
+      if (window.__valoraGoogleClientIdInitialized !== nextClientId) {
+        window.google.accounts.id.initialize({
+          client_id: nextClientId,
+          callback: (response) => {
+            window.__valoraGoogleCredentialHandler?.(response);
           }
+        });
+        window.__valoraGoogleClientIdInitialized = nextClientId;
+      }
 
-          void handleCredential(credential);
-        }
-      });
+      buttonContainerRef.current.innerHTML = "";
       window.google.accounts.id.renderButton(buttonContainerRef.current, {
         theme: "outline",
         size: "large",
@@ -166,9 +179,12 @@ export function GoogleSignInPanel({
     return () => {
       isCancelled = true;
       window.clearInterval(intervalId);
+      if (window.__valoraGoogleCredentialHandler === handleGoogleResponse) {
+        window.__valoraGoogleCredentialHandler = undefined;
+      }
       window.google?.accounts.id.cancel();
     };
-  }, [clientId, genericErrorText, handleCredential, isUnavailable]);
+  }, [clientId, isUnavailable]);
 
   return (
     <div className="ui-stack-xl">

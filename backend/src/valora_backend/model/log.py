@@ -1,19 +1,23 @@
-# Modelo de auditoria: alterações em tabelas principais.
+# Modelo de auditoria: alteracoes em tabelas principais.
 
 from __future__ import annotations
 
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, ForeignKey, Text, text
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, Integer, JSON, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from valora_backend.model.base import Base
 
 
+BIGINT_COMPAT = BigInteger().with_variant(Integer, "sqlite")
+ROW_PAYLOAD_TYPE = JSON().with_variant(JSONB, "postgresql")
+
+
 class Log(Base):
-    """Registo de modificação numa tabela monitorizada."""
+    """Registo de modificacao numa tabela monitorizada."""
 
     __tablename__ = "log"
     __table_args__ = (
@@ -31,26 +35,30 @@ class Log(Base):
             "OR (action_type IN ('I', 'U') AND \"row\" IS NOT NULL)",
             name="log_row_payload_by_action_chk",
         ),
-        {"comment": "Registra modificações feitas nas demais tabelas."},
+        {"comment": "Registra modificacoes feitas nas demais tabelas."},
     )
 
     id: Mapped[int] = mapped_column(
-        BigInteger,
+        BIGINT_COMPAT,
         primary_key=True,
         autoincrement=True,
         comment="Identificador do log.",
     )
     account_id: Mapped[int | None] = mapped_column(
-        BigInteger,
-        ForeignKey("account.id", onupdate="CASCADE", ondelete="SET NULL"),
+        BIGINT_COMPAT,
         nullable=True,
-        comment="Conta do usuário que originou o evento. NULL após exclusão da conta.",
+        comment=(
+            "Identificador da conta que originou o evento, preservado no historico "
+            "mesmo apos exclusao da conta."
+        ),
     )
     tenant_id: Mapped[int | None] = mapped_column(
-        BigInteger,
-        ForeignKey("tenant.id", onupdate="CASCADE", ondelete="SET NULL"),
+        BIGINT_COMPAT,
         nullable=True,
-        comment="Licenciado ao qual o evento se refere. NULL após exclusão do licenciado.",
+        comment=(
+            "Identificador do licenciado relacionado ao evento, preservado no "
+            "historico mesmo apos exclusao do licenciado."
+        ),
     )
     table_name: Mapped[str] = mapped_column(
         Text,
@@ -60,17 +68,17 @@ class Log(Base):
     action_type: Mapped[str] = mapped_column(
         Text,
         nullable=False,
-        comment="Tipo da modificação: I (insert), U (update), D (delete).",
+        comment="Tipo da modificacao: I (insert), U (update), D (delete).",
     )
     row_payload: Mapped[Any | None] = mapped_column(
         "row",
-        JSONB,
+        ROW_PAYLOAD_TYPE,
         nullable=True,
-        comment="Conteúdo da linha. NULL em caso de delete.",
+        comment="Conteudo da linha. NULL em caso de delete.",
     )
     moment_utc: Mapped[datetime] = mapped_column(
         DateTime(timezone=False),
         nullable=False,
-        server_default=text("(now() AT TIME ZONE 'UTC')"),
-        comment="Momento em que ocorreu a ação.",
+        default=lambda: datetime.now(UTC).replace(tzinfo=None),
+        comment="Momento em que ocorreu a acao.",
     )

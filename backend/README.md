@@ -112,11 +112,17 @@ O script confere as tabelas `tenant`, `account`, `member`, PKs, FKs (incl. `ON D
 Com Postgres acessível e `alembic upgrade head` aplicado, na pasta `backend`:
 
 ```bash
-set VALORA_AUDIT_PG_TEST=1
 python -m pytest tests/test_audit_triggers_pg.py -q
 ```
 
-(PowerShell: `$env:VALORA_AUDIT_PG_TEST='1'`.) Sem essa variável, os testes são ignorados.
+Se a URL atual nao for PostgreSQL ou o banco estiver indisponivel, os testes sao ignorados.
+
+Política atual de auditoria:
+
+- `member`, `scope`, `location` e `unity` exigem `tenant_id` e `account_id` no contexto da transação; sem isso, a trigger falha.
+- `tenant` exige `account_id`; `tenant_id` em `INSERT` continua como exceção temporária.
+- `account` permite `tenant_id` ausente; `account_id` em `INSERT` continua como exceção temporária.
+- `log.account_id` e `log.tenant_id` preservam IDs históricos e não são mais reescritos por FK ao apagar `account` ou `tenant`.
 
 ### Sessão e API (fase 1 — E.2)
 

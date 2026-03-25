@@ -2,12 +2,15 @@ from __future__ import annotations
 
 from typing import Any
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from valora_backend.audit_request import apply_audit_gucs_for_session
+from valora_backend.audit_request import (
+    apply_audit_gucs_for_session,
+    set_request_audit_state,
+)
 from valora_backend.auth.jwt import verify_token
 from valora_backend.auth.service import member_role_name
 from valora_backend.db import get_session
@@ -30,6 +33,7 @@ def get_token_payload(
 
 
 def get_current_account(
+    request: Request,
     payload: dict[str, Any] = Depends(get_token_payload),
     session: Session = Depends(get_session),
 ) -> Account:
@@ -47,10 +51,16 @@ def get_current_account(
             detail="Account not found",
         )
 
+    set_request_audit_state(
+        request,
+        tenant_id=None,
+        account_id=account.id,
+    )
     return account
 
 
 def get_current_member(
+    request: Request,
     payload: dict[str, Any] = Depends(get_token_payload),
     session: Session = Depends(get_session),
 ) -> Member:
@@ -75,6 +85,11 @@ def get_current_member(
             detail="Active member not found for tenant",
         )
 
+    set_request_audit_state(
+        request,
+        tenant_id=member.tenant_id,
+        account_id=member.account_id,
+    )
     apply_audit_gucs_for_session(session, member.tenant_id, member.account_id)
     return member
 
