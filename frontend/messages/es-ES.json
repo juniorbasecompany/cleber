@@ -321,9 +321,9 @@
     "section": {
       "identity": {
         "nameLabel": "Nombre de la ubicación",
-        "nameHint": "Usa una etiqueta corta, como Granja Norte, Galpón B o Lote 12.",
+        "nameHint": "Usa un nombre corto para identificar esta ubicación.\n\nPor ejemplo: Mimosa en lugar de Granja Mimosa, Avesul en lugar de Aviario Avesul o Norte en lugar de Talhão Norte.",
         "displayNameLabel": "Descripción de la ubicación",
-        "displayNameHint": "Añade contexto para que el usuario reconozca la ubicación rápidamente."
+        "displayNameHint": "Indica el nombre completo de la ubicación.\n\nPor ejemplo: Granja Mimosa en lugar de Mimosa, Granja Avesul en lugar de Avesul o Talhão Norte en lugar de solo Norte."
       },
       "structure": {
         "title": "Información",

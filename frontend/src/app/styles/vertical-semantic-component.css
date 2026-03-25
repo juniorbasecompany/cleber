@@ -220,6 +220,7 @@
     font-size: 0.75rem;
     line-height: 1.65;
     color: var(--color-text-subtle);
+    white-space: pre-line;
 }
 
 .ui-field-error {

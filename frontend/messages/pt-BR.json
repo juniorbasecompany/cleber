@@ -321,9 +321,9 @@
     "section": {
       "identity": {
         "nameLabel": "Nome do local",
-        "nameHint": "Use um rótulo curto, como Fazenda Norte, Aviário B ou Talhão 12.",
+        "nameHint": "Use um nome curto para identificar esta localização.\n\nPor exemplo: Mimosa em vez de Granja Mimosa, Avesul em vez de Aviário Avesul ou Norte em vez de Talhão Norte.",
         "displayNameLabel": "Descrição do local",
-        "displayNameHint": "Adicione contexto para o usuário reconhecer o local com rapidez."
+        "displayNameHint": "Informe o nome completo do local.\n\nPor exemplo: Granja Mimosa em vez de Mimosa, Granja Avesul em vez de Avesul ou Talhão Norte em vez de apenas Norte."
       },
       "structure": {
         "title": "Informações",
