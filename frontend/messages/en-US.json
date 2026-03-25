@@ -108,10 +108,6 @@
     "openTenantEditor": "Edit tenant",
     "openMemberEditor": "Edit members",
     "openScopeEditor": "Edit scopes",
-    "status": {
-      "title": "Next phase",
-      "description": "Tenant, member, and scope records can already be maintained in this initial area."
-    },
     "cards": {
       "organization": {
         "title": "Tenant",

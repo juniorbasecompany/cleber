@@ -108,10 +108,6 @@
     "openTenantEditor": "Editar licenciado",
     "openMemberEditor": "Editar membros",
     "openScopeEditor": "Editar escopos",
-    "status": {
-      "title": "Fase seguinte",
-      "description": "Licenciado, membros e escopos já podem ser mantidos nesta área inicial."
-    },
     "cards": {
       "organization": {
         "title": "Licenciado",

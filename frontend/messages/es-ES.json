@@ -108,10 +108,6 @@
     "openTenantEditor": "Editar licenciatario",
     "openMemberEditor": "Editar miembros",
     "openScopeEditor": "Editar alcances",
-    "status": {
-      "title": "Siguiente fase",
-      "description": "Licenciatario, miembros y alcances ya pueden mantenerse en esta área inicial."
-    },
     "cards": {
       "organization": {
         "title": "Licenciatario",
