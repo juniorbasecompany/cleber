@@ -426,6 +426,8 @@
         "verbUpdate": "modificó",
         "verbDelete": "eliminó",
         "srBeforeAfter": "Valor anterior: {before}. Valor actual: {after}.",
+        "srInsertedValue": "Valor incluido: {value}.",
+        "srDeletedValue": "Valor antes de la eliminación: {value}.",
         "diffUnavailable": "No se pudo comparar esta actualización con el registro anterior.",
         "diffEmpty": "No se detectaron diferencias respecto al registro anterior.",
         "deletedNote": "Esta entrada representa una eliminación. El registro no incluye payload de fila en este caso.",

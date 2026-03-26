@@ -890,6 +890,7 @@ def test_member_cannot_create_unity() -> None:
 
 
 def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
+    tenant_id_value: int | None = None
     with build_test_client(current_member_key="admin") as (client, session, _):
         tenant = session.scalar(select(Tenant))
         admin_account = session.scalar(
@@ -900,6 +901,7 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
         assert tenant is not None
         assert admin_account is not None
         assert scope_id is not None
+        tenant_id_value = tenant.id
 
         base_time = datetime(2026, 3, 25, 10, 0, 0)
         _seed_log(
@@ -988,7 +990,13 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
     previous_update = payload["item_list"][2]
     insert_item = payload["item_list"][3]
 
-    assert delete_item["row"] is None
+    assert tenant_id_value is not None
+    assert delete_item["row"] == {
+        "id": scope_id,
+        "name": "Aves",
+        "display_name": "Aves especiais",
+        "tenant_id": tenant_id_value,
+    }
     assert delete_item["diff_state"] == "not_applicable"
     assert delete_item["actor_name"] == "Admin User"
 

@@ -426,6 +426,8 @@
         "verbUpdate": "updated",
         "verbDelete": "removed",
         "srBeforeAfter": "Previous value: {before}. Current value: {after}.",
+        "srInsertedValue": "Included value: {value}.",
+        "srDeletedValue": "Value before deletion: {value}.",
         "diffUnavailable": "This update could not be compared to the previous record.",
         "diffEmpty": "No differences were detected compared to the previous record.",
         "deletedNote": "This entry represents a deletion. The log has no row payload in this case.",

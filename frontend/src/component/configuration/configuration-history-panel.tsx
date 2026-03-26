@@ -38,6 +38,72 @@ function stringifyHistoryValue(value: unknown) {
   return serialized ?? "null";
 }
 
+type SnapshotFieldEntry = {
+  field_name: string;
+  value: unknown;
+};
+
+/** Campos do snapshot `row` (INSERT ou DELETE enriquecido), ordem estável. */
+function buildSnapshotFieldEntryList(row: Record<string, unknown> | null): SnapshotFieldEntry[] {
+  if (row == null || typeof row !== "object") {
+    return [];
+  }
+
+  const keyList = Object.keys(row).sort();
+  return keyList.map((field_name) => ({
+    field_name,
+    value: row[field_name]
+  }));
+}
+
+function buildSnapshotHistoryLineBody(
+  snapshotFieldList: SnapshotFieldEntry[],
+  meta: string
+) {
+  if (snapshotFieldList.length === 0) {
+    return null;
+  }
+  const partList = snapshotFieldList.map(
+    (entry) => `${entry.field_name}: ${stringifyHistoryValue(entry.value)}`
+  );
+  return `${meta} --- ${partList.join(" --- ")}`;
+}
+
+type SnapshotAccessibilityKey = "srInsertedValue" | "srDeletedValue";
+
+function HistorySnapshotFieldCenter({
+  logId,
+  snapshotFieldList,
+  srKey,
+  t
+}: {
+  logId: number;
+  snapshotFieldList: SnapshotFieldEntry[];
+  srKey: SnapshotAccessibilityKey;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  return (
+    <div className="ui-history-log-cell-center-inner">
+      {snapshotFieldList.map((entry) => (
+        <div
+          key={`${logId}-${entry.field_name}`}
+          className="ui-history-log-identity-pill"
+        >
+          <span className="ui-history-log-chip-muted">{entry.field_name}</span>
+          <span className="ui-history-log-chip-value ui-history-log-chip-value-plain">
+            <span className="ui-sr-only">
+              {`${entry.field_name}. ${t(srKey, {
+                value: stringifyHistoryValue(entry.value)
+              })}`}
+            </span>
+            <span aria-hidden="true">{stringifyHistoryValue(entry.value)}</span>
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 function formatHistoryMomentCompact(momentUtc: string) {
   const d = new Date(momentUtc);
   const y = d.getFullYear();
@@ -67,12 +133,13 @@ function buildHistoryLineText(
     moment
   });
 
-  if (item.action_type === "I") {
-    return `${meta} --- ${t("verbInsert")}`;
-  }
-
-  if (item.action_type === "D") {
-    return `${meta} --- ${t("verbDelete")}`;
+  if (item.action_type === "I" || item.action_type === "D") {
+    const snapshotFieldList = buildSnapshotFieldEntryList(item.row);
+    const body = buildSnapshotHistoryLineBody(snapshotFieldList, meta);
+    if (body != null) {
+      return body;
+    }
+    return `${meta} --- ${t(item.action_type === "I" ? "verbInsert" : "verbDelete")}`;
   }
 
   if (item.diff_state === "ready" && item.field_change_list.length > 0) {
@@ -109,24 +176,24 @@ function HistoryEntryCenter({
   item: AuditLogRecord;
   t: ReturnType<typeof useTranslations>;
 }) {
-  if (item.action_type === "I") {
-    return (
-      <div className="ui-history-log-cell-center-inner">
-        <div className="ui-history-log-identity-pill ui-history-log-identity-pill-single">
-          <span className="ui-history-log-chip-value ui-history-log-chip-value-plain">
-            {t("lineInsert")}
-          </span>
-        </div>
-      </div>
-    );
-  }
+  if (item.action_type === "I" || item.action_type === "D") {
+    const snapshotFieldList = buildSnapshotFieldEntryList(item.row);
+    if (snapshotFieldList.length > 0) {
+      return (
+        <HistorySnapshotFieldCenter
+          logId={item.id}
+          snapshotFieldList={snapshotFieldList}
+          srKey={item.action_type === "I" ? "srInsertedValue" : "srDeletedValue"}
+          t={t}
+        />
+      );
+    }
 
-  if (item.action_type === "D") {
     return (
       <div className="ui-history-log-cell-center-inner">
         <div className="ui-history-log-identity-pill ui-history-log-identity-pill-single">
           <span className="ui-history-log-chip-value ui-history-log-chip-value-plain">
-            {t("lineDelete")}
+            {item.action_type === "I" ? t("lineInsert") : t("lineDelete")}
           </span>
         </div>
       </div>

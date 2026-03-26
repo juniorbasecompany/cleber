@@ -688,6 +688,14 @@
   white-space: nowrap;
 }
 
+.ui-history-log-entry[data-action="I"] .ui-history-log-chip-muted {
+  background: var(--color-positive-surface);
+}
+
+.ui-history-log-entry[data-action="D"] .ui-history-log-chip-muted {
+  background: var(--color-danger-surface);
+}
+
 .ui-history-log-chip-value {
   box-sizing: border-box;
   padding: 0.28rem 0.55rem;

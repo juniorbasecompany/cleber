@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from typing import Any
@@ -1289,6 +1290,19 @@ def _resolve_history_actor_name(
     return None
 
 
+def _coerce_log_row_payload_dict(value: Any) -> dict[str, Any] | None:
+    """Normaliza o payload JSON da coluna log.row para dict (drivers / legado)."""
+    if isinstance(value, dict):
+        return value
+    if isinstance(value, str):
+        try:
+            parsed: Any = json.loads(value)
+        except json.JSONDecodeError:
+            return None
+        return parsed if isinstance(parsed, dict) else None
+    return None
+
+
 def _build_history_field_change_list(
     *,
     current_row: dict[str, Any] | None,
@@ -1320,7 +1334,7 @@ def _build_previous_row_payload_by_log_id(
     max_before_id = 0
 
     for page_row in page_row_list:
-        if page_row["action_type"] != "U":
+        if page_row["action_type"] not in ("U", "D"):
             continue
 
         record_id = int(page_row["row_id"])
@@ -1359,11 +1373,14 @@ def _build_previous_row_payload_by_log_id(
             continue
 
         while pending_list and prior_log.id < pending_list[0]["before_id"]:
-            if isinstance(prior_log.row_payload, dict):
+            payload_dict = _coerce_log_row_payload_dict(prior_log.row_payload)
+            if payload_dict is not None:
                 previous_row_payload_by_log_id[pending_list[0]["log_id"]] = (
-                    prior_log.row_payload
+                    payload_dict
                 )
-            pending_list.pop(0)
+                pending_list.pop(0)
+            else:
+                break
 
         if not pending_list:
             pending_lookup_by_record_id.pop(record_id, None)
@@ -1462,13 +1479,14 @@ def _build_tenant_history_response(
 
     item_list: list[TenantHistoryRecordResponse] = []
     for history_row in page_row_list:
-        row_payload = (
-            history_row["row_payload"]
-            if isinstance(history_row["row_payload"], dict)
-            else None
-        )
+        row_payload = _coerce_log_row_payload_dict(history_row["row_payload"])
         diff_state = "not_applicable"
         field_change_list: list[TenantHistoryDiffFieldResponse] = []
+
+        if history_row["action_type"] == "D":
+            snapshot_row = previous_row_payload_by_log_id.get(int(history_row["id"]))
+            if snapshot_row is not None:
+                row_payload = snapshot_row
 
         if history_row["action_type"] == "U":
             previous_row = previous_row_payload_by_log_id.get(int(history_row["id"]))
