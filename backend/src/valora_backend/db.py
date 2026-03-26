@@ -5,19 +5,38 @@ from typing import Annotated
 
 from fastapi import Depends, Request
 from sqlalchemy import create_engine, event
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 
 from valora_backend.audit_request import apply_audit_transaction_variables
 from valora_backend.config import Settings
 
-_settings = Settings()
-engine = create_engine(_settings.database_url, pool_pre_ping=True)
-SessionLocal = sessionmaker(
-    bind=engine,
-    autoflush=False,
-    autocommit=False,
-    expire_on_commit=False,
-)
+_engine: Engine | None = None
+SessionLocal: sessionmaker[Session] | None = None
+
+
+def _ensure_engine() -> None:
+    """Cria engine e factory na primeira utilização (permite `/health` sem tocar na BD)."""
+    global _engine, SessionLocal
+    if _engine is not None:
+        return
+    settings = Settings()
+    _engine = create_engine(settings.database_url, pool_pre_ping=True)
+    SessionLocal = sessionmaker(
+        bind=_engine,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=False,
+    )
+
+
+def dispose_engine() -> None:
+    """Liberta o pool ao encerrar a aplicação."""
+    global _engine, SessionLocal
+    if _engine is not None:
+        _engine.dispose()
+        _engine = None
+        SessionLocal = None
 
 
 def get_session(request: Request) -> Generator[Session, None, None]:
@@ -29,6 +48,8 @@ def get_session(request: Request) -> Generator[Session, None, None]:
     e imediatamente antes de qualquer flush.
     """
 
+    _ensure_engine()
+    assert SessionLocal is not None
     session = SessionLocal()
 
     def _apply_request_audit_context() -> None:

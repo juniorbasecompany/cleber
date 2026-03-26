@@ -1,9 +1,20 @@
 # Configuração da aplicação via variáveis de ambiente.
 
+from typing import Self
 from urllib.parse import quote_plus
 
-from pydantic import AliasChoices, Field, SecretStr, computed_field
+from pydantic import AliasChoices, Field, SecretStr, computed_field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+def _sqlalchemy_url_with_psycopg3(url: str) -> str:
+    """Railway/Heroku usam `postgresql://`; o projeto usa o driver psycopg v3."""
+    u = url.strip()
+    if u.startswith("postgres://"):
+        u = "postgresql://" + u.removeprefix("postgres://")
+    if u.startswith("postgresql://") and not u.startswith("postgresql+"):
+        return "postgresql+psycopg://" + u.removeprefix("postgresql://")
+    return u
 
 
 class Settings(BaseSettings):
@@ -19,8 +30,13 @@ class Settings(BaseSettings):
     postgres_port: int = 5434
     postgres_user: str = "valora"
     postgres_db: str = "valora"
-    postgres_password: SecretStr = Field(
+    postgres_password: SecretStr | None = Field(
+        default=None,
         validation_alias=AliasChoices("POSTGRES_PASSWORD", "postgres_password"),
+    )
+    database_url_override: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("DATABASE_URL", "VALORA_DATABASE_URL"),
     )
     google_client_id: str | None = Field(
         default=None,
@@ -51,10 +67,22 @@ class Settings(BaseSettings):
         ),
     )
 
+    @model_validator(mode="after")
+    def _exige_postgres_ou_database_url(self) -> Self:
+        if self.database_url_override is None and self.postgres_password is None:
+            raise ValueError(
+                "Defina DATABASE_URL (ex.: Railway com Postgres ligado) ou POSTGRES_PASSWORD "
+                "com host/porta corretos para o PostgreSQL."
+            )
+        return self
+
     @computed_field
     @property
     def database_url(self) -> str:
-        """URL SQLAlchemy/psycopg; a senha vem só de `POSTGRES_PASSWORD` (nunca hardcoded)."""
+        """URL SQLAlchemy com driver psycopg v3."""
+        if self.database_url_override:
+            return _sqlalchemy_url_with_psycopg3(self.database_url_override)
+        assert self.postgres_password is not None
         pw = quote_plus(self.postgres_password.get_secret_value())
         return (
             f"postgresql+psycopg://{self.postgres_user}:{pw}"

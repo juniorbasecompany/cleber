@@ -7,14 +7,17 @@ from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.orm import Session
 
 from valora_backend.api.auth import router as auth_router
-from valora_backend.db import engine, get_session
+from valora_backend.config import Settings
+from valora_backend.db import dispose_engine, get_session
 from valora_backend.middleware.audit_request_context import AuditRequestContextMiddleware
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    # Valida env (DATABASE_URL ou POSTGRES_PASSWORD) antes de marcar o serviço como pronto.
+    Settings()
     yield
-    engine.dispose()
+    dispose_engine()
 
 
 def audit_detail_from_dbapi_error(exc: DBAPIError) -> tuple[int, str] | None:
