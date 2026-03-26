@@ -87,7 +87,9 @@ def _create_scope(
     return scope
 
 
-def _delete_scope(pg_session: Session, *, scope_id: int, tenant_id: int, account_id: int) -> None:
+def _delete_scope(
+    pg_session: Session, *, scope_id: int, tenant_id: int, account_id: int
+) -> None:
     scope = pg_session.get(Scope, scope_id)
     if scope is None:
         return
@@ -117,7 +119,9 @@ def _delete_account(pg_session: Session, *, account_id: int) -> None:
 def test_audit_log_after_insert_scope_with_set_config(pg_session: Session) -> None:
     suffix = uuid.uuid4().hex[:12]
     account = _create_account(pg_session, suffix=f"scope-insert-{suffix}")
-    tenant = _create_tenant(pg_session, suffix=f"scope-insert-{suffix}", account=account)
+    tenant = _create_tenant(
+        pg_session, suffix=f"scope-insert-{suffix}", account=account
+    )
     scope: Scope | None = None
     try:
         before = pg_session.scalar(select(Log.id).order_by(Log.id.desc()).limit(1))
@@ -145,6 +149,7 @@ def test_audit_log_after_insert_scope_with_set_config(pg_session: Session) -> No
         assert row.account_id == account.id
         assert row.row_payload is not None
         assert row.row_payload.get("name") == "s1"
+        assert row.row_id == scope.id
         if before is not None:
             assert row.id > before
     finally:
@@ -162,7 +167,9 @@ def test_audit_log_after_insert_scope_with_set_config(pg_session: Session) -> No
 def test_audit_log_delete_has_null_row(pg_session: Session) -> None:
     suffix = uuid.uuid4().hex[:12]
     account = _create_account(pg_session, suffix=f"scope-delete-{suffix}")
-    tenant = _create_tenant(pg_session, suffix=f"scope-delete-{suffix}", account=account)
+    tenant = _create_tenant(
+        pg_session, suffix=f"scope-delete-{suffix}", account=account
+    )
     scope = _create_scope(
         pg_session,
         tenant=tenant,
@@ -170,9 +177,10 @@ def test_audit_log_delete_has_null_row(pg_session: Session) -> None:
         name="to-del",
         display_name="del",
     )
+    scope_id = scope.id
     try:
         apply_audit_gucs_for_session(pg_session, tenant.id, account.id)
-        scope_del = pg_session.get(Scope, scope.id)
+        scope_del = pg_session.get(Scope, scope_id)
         assert scope_del is not None
         pg_session.delete(scope_del)
         pg_session.commit()
@@ -190,6 +198,7 @@ def test_audit_log_delete_has_null_row(pg_session: Session) -> None:
         )
         assert row is not None
         assert row.row_payload is None
+        assert row.row_id == scope_id
         assert row.tenant_id == tenant.id
         assert row.account_id == account.id
     finally:
@@ -200,7 +209,9 @@ def test_audit_log_delete_has_null_row(pg_session: Session) -> None:
 def test_audit_scope_insert_without_context_fails(pg_session: Session) -> None:
     suffix = uuid.uuid4().hex[:12]
     account = _create_account(pg_session, suffix=f"scope-nocontext-{suffix}")
-    tenant = _create_tenant(pg_session, suffix=f"scope-nocontext-{suffix}", account=account)
+    tenant = _create_tenant(
+        pg_session, suffix=f"scope-nocontext-{suffix}", account=account
+    )
     try:
         pg_session.add(
             Scope(
@@ -220,7 +231,9 @@ def test_audit_scope_insert_without_context_fails(pg_session: Session) -> None:
 def test_audit_account_update_clears_stale_tenant_context(pg_session: Session) -> None:
     suffix = uuid.uuid4().hex[:12]
     account = _create_account(pg_session, suffix=f"account-update-{suffix}")
-    tenant = _create_tenant(pg_session, suffix=f"account-update-{suffix}", account=account)
+    tenant = _create_tenant(
+        pg_session, suffix=f"account-update-{suffix}", account=account
+    )
     try:
         apply_audit_gucs_for_session(pg_session, tenant.id, account.id)
         apply_audit_gucs_for_session(pg_session, None, account.id)
@@ -241,12 +254,15 @@ def test_audit_account_update_clears_stale_tenant_context(pg_session: Session) -
         assert row is not None
         assert row.account_id == account.id
         assert row.tenant_id is None
+        assert row.row_id == account.id
     finally:
         _delete_tenant(pg_session, tenant_id=tenant.id, account_id=account.id)
         _delete_account(pg_session, account_id=account.id)
 
 
-def test_audit_log_keeps_historical_ids_after_parent_delete(pg_session: Session) -> None:
+def test_audit_log_keeps_historical_ids_after_parent_delete(
+    pg_session: Session,
+) -> None:
     suffix = uuid.uuid4().hex[:12]
     account = _create_account(pg_session, suffix=f"history-{suffix}")
     tenant = _create_tenant(pg_session, suffix=f"history-{suffix}", account=account)
@@ -270,6 +286,7 @@ def test_audit_log_keeps_historical_ids_after_parent_delete(pg_session: Session)
             .limit(1)
         )
         assert historical_row is not None
+        assert historical_row.row_id == scope.id
         historical_log_id = historical_row.id
 
         _delete_scope(
@@ -301,7 +318,9 @@ def test_audit_session_reapplies_context_before_flush_when_request_state_arrives
 ) -> None:
     suffix = uuid.uuid4().hex[:12]
     account = _create_account(pg_session, suffix=f"late-context-{suffix}")
-    tenant = _create_tenant(pg_session, suffix=f"late-context-{suffix}", account=account)
+    tenant = _create_tenant(
+        pg_session, suffix=f"late-context-{suffix}", account=account
+    )
     scope = _create_scope(
         pg_session,
         tenant=tenant,
@@ -341,6 +360,7 @@ def test_audit_session_reapplies_context_before_flush_when_request_state_arrives
         assert row is not None
         assert row.row_payload is not None
         assert row.row_payload.get("name") == "late-context-updated"
+        assert row.row_id == scope.id
     finally:
         session.rollback()
         session_gen.close()

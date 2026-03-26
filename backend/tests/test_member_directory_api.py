@@ -17,7 +17,14 @@ from valora_backend.auth.dependencies import (
 from valora_backend.db import get_session
 from valora_backend.main import create_app
 from valora_backend.model.base import Base
-from valora_backend.model.identity import Account, Location, Member, Scope, Tenant, Unity
+from valora_backend.model.identity import (
+    Account,
+    Location,
+    Member,
+    Scope,
+    Tenant,
+    Unity,
+)
 from valora_backend.model.log import Log
 
 
@@ -177,6 +184,7 @@ def _seed_log(
     account_id: int | None,
     table_name: str,
     action_type: str,
+    row_id: int,
     row_payload: dict[str, object] | None,
     moment_utc: datetime,
 ) -> None:
@@ -186,6 +194,7 @@ def _seed_log(
             account_id=account_id,
             table_name=table_name,
             action_type=action_type,
+            row_id=row_id,
             row_payload=row_payload,
             moment_utc=moment_utc,
         )
@@ -193,7 +202,11 @@ def _seed_log(
 
 
 def test_get_current_tenant_member_directory_exposes_capabilities() -> None:
-    with build_test_client(current_member_key="master") as (client, _, member_id_by_key):
+    with build_test_client(current_member_key="master") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
         response = client.get("/auth/tenant/current/members")
 
     assert response.status_code == 200
@@ -254,7 +267,11 @@ def test_admin_cannot_change_member_access() -> None:
 
 
 def test_master_cannot_activate_member_without_linked_account() -> None:
-    with build_test_client(current_member_key="master") as (client, _, member_id_by_key):
+    with build_test_client(current_member_key="master") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
         response = client.patch(
             f"/auth/tenant/current/members/{member_id_by_key['pending']}",
             json={
@@ -286,11 +303,17 @@ def test_master_can_delete_another_member() -> None:
     assert response.status_code == 200
     assert deleted_member is None
     payload = response.json()
-    assert all(item["id"] != member_id_by_key["member"] for item in payload["item_list"])
+    assert all(
+        item["id"] != member_id_by_key["member"] for item in payload["item_list"]
+    )
 
 
 def test_master_cannot_delete_self_member_record() -> None:
-    with build_test_client(current_member_key="master") as (client, _, member_id_by_key):
+    with build_test_client(current_member_key="master") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
         response = client.delete(
             f"/auth/tenant/current/members/{member_id_by_key['master']}"
         )
@@ -407,7 +430,9 @@ def test_admin_can_create_move_update_and_delete_locations() -> None:
             },
         )
         session.expire_all()
-        child_location = session.scalar(select(Location).where(Location.name == "Aviário B"))
+        child_location = session.scalar(
+            select(Location).where(Location.name == "Aviário B")
+        )
         assert child_location is not None
 
         move_response = client.post(
@@ -450,7 +475,9 @@ def test_admin_can_create_move_update_and_delete_locations() -> None:
 
     assert move_response.status_code == 200
     moved_child = next(
-        item for item in move_response.json()["item_list"] if item["id"] == child_location.id
+        item
+        for item in move_response.json()["item_list"]
+        if item["id"] == child_location.id
     )
     assert moved_child["parent_location_id"] is None
     assert moved_child["sort_order"] == 0
@@ -478,7 +505,9 @@ def test_location_delete_cascades_to_descendant_list() -> None:
             },
         )
         session.expire_all()
-        parent_location = session.scalar(select(Location).where(Location.name == "Granja Sul"))
+        parent_location = session.scalar(
+            select(Location).where(Location.name == "Granja Sul")
+        )
         assert parent_location is not None
 
         client.post(
@@ -490,7 +519,9 @@ def test_location_delete_cascades_to_descendant_list() -> None:
             },
         )
         session.expire_all()
-        child_location = session.scalar(select(Location).where(Location.name == "Núcleo 1"))
+        child_location = session.scalar(
+            select(Location).where(Location.name == "Núcleo 1")
+        )
         assert child_location is not None
         parent_location_id = parent_location.id
         child_location_id = child_location.id
@@ -538,7 +569,9 @@ def test_location_move_cannot_create_cycle() -> None:
             },
         )
         session.expire_all()
-        child_location = session.scalar(select(Location).where(Location.name == "Setor A"))
+        child_location = session.scalar(
+            select(Location).where(Location.name == "Setor A")
+        )
         assert child_location is not None
 
         response = client.post(
@@ -572,7 +605,9 @@ def test_scope_delete_is_blocked_when_scope_has_locations() -> None:
         response = client.delete(f"/auth/tenant/current/scopes/{scope_id}")
 
     assert response.status_code == 400
-    assert response.json()["detail"] == "Cannot delete scope while it still has locations"
+    assert (
+        response.json()["detail"] == "Cannot delete scope while it still has locations"
+    )
 
 
 def test_member_cannot_create_location() -> None:
@@ -602,7 +637,9 @@ def test_member_can_select_current_scope_and_auth_me_exposes_it() -> None:
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
-        patch_response = client.patch("/auth/me/current-scope", json={"scope_id": scope_id})
+        patch_response = client.patch(
+            "/auth/me/current-scope", json={"scope_id": scope_id}
+        )
         session.expire_all()
         current_member = session.get(Member, member_id_by_key["member"])
         directory_response = client.get("/auth/tenant/current/scopes")
@@ -710,7 +747,9 @@ def test_admin_can_create_move_update_and_delete_unities() -> None:
 
     assert move_response.status_code == 200
     moved_child = next(
-        item for item in move_response.json()["item_list"] if item["id"] == child_unity.id
+        item
+        for item in move_response.json()["item_list"]
+        if item["id"] == child_unity.id
     )
     assert moved_child["parent_unity_id"] is None
     assert moved_child["sort_order"] == 0
@@ -853,7 +892,9 @@ def test_member_cannot_create_unity() -> None:
 def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
     with build_test_client(current_member_key="admin") as (client, session, _):
         tenant = session.scalar(select(Tenant))
-        admin_account = session.scalar(select(Account).where(Account.email == "admin@example.com"))
+        admin_account = session.scalar(
+            select(Account).where(Account.email == "admin@example.com")
+        )
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
 
         assert tenant is not None
@@ -867,6 +908,7 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
             account_id=admin_account.id,
             table_name="scope",
             action_type="I",
+            row_id=scope_id,
             row_payload={
                 "id": scope_id,
                 "name": "Aves",
@@ -881,6 +923,7 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
             account_id=admin_account.id,
             table_name="scope",
             action_type="U",
+            row_id=scope_id,
             row_payload={
                 "id": scope_id,
                 "name": "Aves",
@@ -895,6 +938,7 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
             account_id=admin_account.id,
             table_name="scope",
             action_type="U",
+            row_id=scope_id,
             row_payload={
                 "id": scope_id,
                 "name": "Aves",
@@ -909,6 +953,7 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
             account_id=admin_account.id,
             table_name="scope",
             action_type="D",
+            row_id=scope_id,
             row_payload=None,
             moment_utc=base_time.replace(minute=15),
         )
@@ -918,6 +963,7 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
             account_id=admin_account.id,
             table_name="member",
             action_type="U",
+            row_id=999,
             row_payload={"id": 999, "display_name": "Ignored"},
             moment_utc=base_time.replace(minute=20),
         )
@@ -928,7 +974,12 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
     assert response.status_code == 200
     payload = response.json()
 
-    assert [item["action_type"] for item in payload["item_list"]] == ["D", "U", "U", "I"]
+    assert [item["action_type"] for item in payload["item_list"]] == [
+        "D",
+        "U",
+        "U",
+        "I",
+    ]
     assert payload["has_more"] is False
     assert payload["next_offset"] is None
 
@@ -966,7 +1017,9 @@ def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
 def test_tenant_history_endpoint_supports_actor_filter_and_pagination() -> None:
     with build_test_client(current_member_key="admin") as (client, session, _):
         tenant = session.scalar(select(Tenant))
-        admin_account = session.scalar(select(Account).where(Account.email == "admin@example.com"))
+        admin_account = session.scalar(
+            select(Account).where(Account.email == "admin@example.com")
+        )
         master_account = session.scalar(
             select(Account).where(Account.email == "master@example.com")
         )
@@ -984,6 +1037,7 @@ def test_tenant_history_endpoint_supports_actor_filter_and_pagination() -> None:
             account_id=admin_account.id,
             table_name="scope",
             action_type="I",
+            row_id=scope_id,
             row_payload={"id": scope_id, "name": "Aves", "display_name": "Aves A"},
             moment_utc=base_time,
         )
@@ -993,6 +1047,7 @@ def test_tenant_history_endpoint_supports_actor_filter_and_pagination() -> None:
             account_id=admin_account.id,
             table_name="scope",
             action_type="U",
+            row_id=scope_id,
             row_payload={"id": scope_id, "name": "Aves", "display_name": "Aves B"},
             moment_utc=base_time.replace(minute=10),
         )
@@ -1002,6 +1057,7 @@ def test_tenant_history_endpoint_supports_actor_filter_and_pagination() -> None:
             account_id=master_account.id,
             table_name="scope",
             action_type="U",
+            row_id=scope_id,
             row_payload={"id": scope_id, "name": "Aves", "display_name": "Aves C"},
             moment_utc=base_time.replace(minute=20),
         )

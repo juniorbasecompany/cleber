@@ -2,18 +2,39 @@
 
 from __future__ import annotations
 
+import json
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import BigInteger, CheckConstraint, DateTime, Integer, JSON, Text
+from sqlalchemy import BigInteger, CheckConstraint, DateTime, Integer, Text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.types import TypeDecorator
 
 from valora_backend.model.base import Base
 
 
 BIGINT_COMPAT = BigInteger().with_variant(Integer, "sqlite")
-ROW_PAYLOAD_TYPE = JSON().with_variant(JSONB, "postgresql")
+
+
+class _SqliteLogRowPayload(TypeDecorator):
+    """SQLite: None vira NULL SQL (JSON() gravava literal json null e quebrava o CHECK em D)."""
+
+    impl = Text
+    cache_ok = True
+
+    def process_bind_param(self, value: Any, dialect: Any) -> str | None:
+        if value is None:
+            return None
+        return json.dumps(value)
+
+    def process_result_value(self, value: Any, dialect: Any) -> Any:
+        if value is None:
+            return None
+        return json.loads(value)
+
+
+ROW_PAYLOAD_TYPE = _SqliteLogRowPayload().with_variant(JSONB(), "postgresql")
 
 
 class Log(Base):
@@ -69,6 +90,11 @@ class Log(Base):
         Text,
         nullable=False,
         comment="Tipo da modificacao: I (insert), U (update), D (delete).",
+    )
+    row_id: Mapped[int] = mapped_column(
+        BIGINT_COMPAT,
+        nullable=False,
+        comment="Identificador da linha na tabela referida por table_name.",
     )
     row_payload: Mapped[Any | None] = mapped_column(
         "row",

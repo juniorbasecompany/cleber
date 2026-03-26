@@ -9,7 +9,7 @@ description: Triggers PostgreSQL que gravam em log e contrato SET LOCAL / set_co
 
 As tabelas **`tenant`**, **`account`**, **`member`**, **`scope`**, **`location`** e **`unity`** têm triggers `AFTER INSERT OR UPDATE OR DELETE` que inserem uma linha na tabela **`log`**, alinhada ao modelo [`backend/src/valora_backend/model/log.py`](backend/src/valora_backend/model/log.py) e ao CHECK `log_table_name_chk`.
 
-A função PL/pgSQL é **`valora_audit_row_to_log()`** (revisão Alembic que cria triggers: ficheiro `*_audit_row_triggers.py` em [`backend/alembic/versions/`](backend/alembic/versions/)).
+A função PL/pgSQL é **`valora_audit_row_to_log()`** (revisão Alembic que cria triggers: arquivo `*_audit_row_triggers.py` em [`backend/alembic/versions/`](backend/alembic/versions/); coluna `log.row_id` na revisão `d4c8b2a0e1f3_log_row_id_not_null.py`).
 
 ## Contrato de contexto (`SET LOCAL` / `set_config`)
 
@@ -30,6 +30,7 @@ Os campos **`log.tenant_id`** e **`log.account_id`** são preenchidos **apenas**
 ## Comportamento do trigger
 
 - **`action_type`**: `I`, `U` ou `D` conforme `TG_OP`.
+- **`row_id`**: `BIGINT NOT NULL` — `NEW.id` em `INSERT`/`UPDATE`; `OLD.id` em `DELETE` (identificador da linha na tabela monitorizada).
 - **`row`**: JSONB da linha nova (`row_to_json(NEW)::jsonb`) em `I`/`U`; **`NULL`** em `D` (obrigatório pelo CHECK `log_row_payload_by_action_chk`).
 - **`table_name`**: `TG_TABLE_NAME` (deve pertencer ao CHECK em `log`).
 

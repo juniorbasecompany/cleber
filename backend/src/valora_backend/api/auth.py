@@ -402,6 +402,7 @@ class TenantHistoryRecordResponse(BaseModel):
     moment_utc: datetime
     actor_name: str | None = None
     action_type: str
+    row_id: int
     row: dict[str, Any] | None = None
     field_change_list: list[TenantHistoryDiffFieldResponse] = Field(
         default_factory=list
@@ -1276,14 +1277,6 @@ def _validate_history_table_name(table_name: str) -> str:
     return table_name
 
 
-def _extract_log_record_id(row_payload: Any | None) -> int | None:
-    if not isinstance(row_payload, dict):
-        return None
-
-    record_id = row_payload.get("id")
-    return record_id if isinstance(record_id, int) else None
-
-
 def _resolve_history_actor_name(
     *,
     display_name: str | None,
@@ -1330,9 +1323,7 @@ def _build_previous_row_payload_by_log_id(
         if page_row["action_type"] != "U":
             continue
 
-        record_id = _extract_log_record_id(page_row["row_payload"])
-        if record_id is None:
-            continue
+        record_id = int(page_row["row_id"])
 
         log_id = int(page_row["id"])
         pending_lookup_by_record_id[record_id].append(
@@ -1346,21 +1337,22 @@ def _build_previous_row_payload_by_log_id(
     for pending_list in pending_lookup_by_record_id.values():
         pending_list.sort(key=lambda item: item["before_id"], reverse=True)
 
-    prior_log_stream = session.scalars(
+    record_id_tuple = tuple(pending_lookup_by_record_id.keys())
+    prior_query = (
         select(Log)
         .where(
             Log.tenant_id == tenant_id,
             Log.table_name == table_name,
             Log.row_payload.is_not(None),
             Log.id < max_before_id,
+            Log.row_id.in_(record_id_tuple),
         )
         .order_by(Log.id.desc())
     )
+    prior_log_stream = session.scalars(prior_query)
 
     for prior_log in prior_log_stream:
-        record_id = _extract_log_record_id(prior_log.row_payload)
-        if record_id is None:
-            continue
+        record_id = prior_log.row_id
 
         pending_list = pending_lookup_by_record_id.get(record_id)
         if not pending_list:
@@ -1412,6 +1404,7 @@ def _build_tenant_history_response(
             Log.id.label("id"),
             Log.moment_utc.label("moment_utc"),
             Log.action_type.label("action_type"),
+            Log.row_id.label("row_id"),
             Log.row_payload.label("row_payload"),
             Account.display_name.label("actor_display_name"),
             Account.name.label("actor_name"),
@@ -1498,6 +1491,7 @@ def _build_tenant_history_response(
                     email=history_row["actor_email"],
                 ),
                 action_type=history_row["action_type"],
+                row_id=int(history_row["row_id"]),
                 row=row_payload,
                 field_change_list=field_change_list,
                 diff_state=diff_state,
