@@ -54,19 +54,7 @@ function toIsoDateTimeAttr(momentUtc: string) {
 }
 
 function formatHistoryLogIdDisplay(id: number) {
-  return `#${String(id).padStart(2, "0")}`;
-}
-
-function historyIdToneClassName(actionType: AuditLogActionType) {
-  if (actionType === "I") {
-    return "ui-history-log-id-num ui-history-log-id-num-insert";
-  }
-
-  if (actionType === "U") {
-    return "ui-history-log-id-num ui-history-log-id-num-update";
-  }
-
-  return "ui-history-log-id-num ui-history-log-id-num-delete";
+  return `#${id}`;
 }
 
 function buildHistoryLineText(
@@ -305,7 +293,7 @@ export function ConfigurationHistoryPanel({
       {!isLoading && !errorMessage && itemList.length > 0 ? (
         <>
           <ul className="ui-history-log-list">
-            {itemList.map((item) => {
+            {itemList.map((item, index) => {
               const lineText = buildHistoryLineText(item, t);
               const ariaLabel = `${actionTypeAriaLabel(item.action_type, t)}. ${lineText}. ${t("entryLabel", { id: String(item.id) })}`;
               const isoAttr = toIsoDateTimeAttr(item.moment_utc);
@@ -316,25 +304,34 @@ export function ConfigurationHistoryPanel({
                   data-action={item.action_type}
                   aria-label={ariaLabel}
                 >
-                  <div className="ui-history-log-cell ui-history-log-cell-start">
-                    <span className={historyIdToneClassName(item.action_type)}>
-                      {formatHistoryLogIdDisplay(item.id)}
-                    </span>
-                    <span className="ui-history-log-actor">
-                      {item.actor_name ?? t("unknownUser")}
-                    </span>
-                  </div>
-                  <div className="ui-history-log-cell ui-history-log-cell-center">
-                    <HistoryEntryCenter item={item} t={t} />
-                  </div>
-                  <div className="ui-history-log-cell ui-history-log-cell-end">
-                    <time
-                      className="ui-history-log-time"
-                      dateTime={isoAttr}
-                      suppressHydrationWarning
-                    >
-                      {formatHistoryMomentCompact(item.moment_utc)}
-                    </time>
+                  {index > 0 ? (
+                    <hr className="ui-history-log-separator" aria-hidden="true" />
+                  ) : null}
+                  <div className="ui-history-log-entry-row">
+                    <div className="ui-history-log-cell ui-history-log-cell-start">
+                      <div className="ui-history-log-identity-pill">
+                        <span className="ui-history-log-chip-muted">
+                          {item.actor_name ?? t("unknownUser")}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="ui-history-log-cell ui-history-log-cell-center">
+                      <HistoryEntryCenter item={item} t={t} />
+                    </div>
+                    <div className="ui-history-log-cell ui-history-log-cell-end">
+                      <div className="ui-history-log-identity-pill">
+                        <span className="ui-history-log-chip-muted">
+                          {formatHistoryLogIdDisplay(item.id)}
+                        </span>
+                        <time
+                          className="ui-history-log-chip-value"
+                          dateTime={isoAttr}
+                          suppressHydrationWarning
+                        >
+                          {formatHistoryMomentCompact(item.moment_utc)}
+                        </time>
+                      </div>
+                    </div>
                   </div>
                 </li>
               );
