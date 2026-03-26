@@ -1,0 +1,9 @@
+# Monorepo: build a partir da raiz com Docker (backend em ./backend).
+# Garante que o Railway não tenta o Railpack só com a árvore da raiz.
+
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+healthcheckPath = "/health"
