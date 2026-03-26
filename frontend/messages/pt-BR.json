@@ -85,7 +85,7 @@
         "description": "Ajuda a trazer dados externos para dentro do sistema de forma mais prática e confiável."
       },
       "process": {
-        "title": "Processamentos",
+        "title": "Processamento",
         "description": "Executa rotinas sobre os dados cadastrados para apoiar análises e decisões."
       },
       "audit": {
@@ -107,11 +107,11 @@
       },
       "member": {
         "title": "Membros",
-        "description": "Membro é a pessoa vinculada a este licenciado no sistema: não é só a conta de login, é o vínculo com papel (master, administrador, membro) e situação. Quem consta aqui pode operar o ambiente nesta organização; papéis e status definem o que pode ser alterado, inclusive nesta área de configuração."
+        "description": "Membro é a pessoa vinculada a este licenciado no sistema: não é só a conta de acesso, é o vínculo com papel (master, administrador, membro) e situação. Quem consta aqui pode operar o ambiente nesta organização; papéis e situação definem o que pode ser alterado, inclusive nesta área de configuração."
       },
       "scope": {
         "title": "Escopo",
-        "description": "Escopo é uma unidade de contexto dentro do licenciado: onde os cadastros e, na sequência, a hierarquia de locais se separam sem se misturar. Pense em filial, obra, site ou projeto, o rótulo é seu, mas a função é sempre isolar dados que não devem aparecer juntos. O escopo selecionado no cabeçalho é o que vale ao trabalhar em locais e nos fluxos que dependem dele."
+        "description": "Escopo é uma unidade de contexto dentro do licenciado: onde os cadastros e, na sequência, a hierarquia de locais se separam sem se misturar. Pense em filial, obra, sede ou projeto, o rótulo é seu, mas a função é sempre isolar dados que não devem aparecer juntos. O escopo selecionado no cabeçalho é o que vale ao trabalhar em locais e nos fluxos que dependem dele."
       }
     }
   },
@@ -124,15 +124,15 @@
     "cards": {
       "entry": {
         "title": "Entrada já conectada",
-        "description": "{module} agora tem URL própria, item ativo na navegação lateral e placeholder clicável para revisão do fluxo."
+        "description": "{module} agora tem URL própria, item ativo na navegação lateral e tela provisória clicável para revisão do fluxo."
       },
       "state": {
         "title": "Comportamento visual alinhado",
-        "description": "Hover, seleção e barra lateral seguem o mesmo padrão visual dos demais menus da aplicação."
+        "description": "Ao passar o ponteiro, a seleção e a barra lateral seguem o mesmo padrão visual dos demais menus da aplicação."
       },
       "next": {
         "title": "Próxima evolução",
-        "description": "A próxima entrega deste módulo pode substituir este placeholder pela primeira rotina real sem refazer a navegação global."
+        "description": "A próxima entrega deste módulo pode substituir esta tela provisória pela primeira rotina real sem refazer a navegação global."
       }
     },
     "actions": {
@@ -267,13 +267,13 @@
     "section": {
       "identity": {
         "nameLabel": "Nome do local",
-        "nameHint": "Use um nome curto para identificar esta localização. Por exemplo: Rio Verde em vez de Fazenda Rio Verde, Piratini em vez de Aviário Piratini ou Oeste em vez de Talhão Oeste.",
+        "nameHint": "Use um nome curto para identificar este local. Por exemplo: Rio Verde em vez de Fazenda Rio Verde, Piratini em vez de Aviário Piratini ou Oeste em vez de Talhão Oeste.",
         "displayNameLabel": "Descrição do local",
         "displayNameHint": "Informe o nome completo do local. Por exemplo: Fazenda Rio Verde em vez de Rio Verde, Aviário Piratini em vez de Piratini ou Talhão Oeste em vez de apenas Oeste."
       },
       "structure": {
         "title": "Informações",
-        "description": "Resumo da localização em foco, com o nível na hierarquia, a ordem entre irmãos do mesmo local.",
+        "description": "Resumo do local em foco, com o nível na hierarquia, a ordem entre irmãos do mesmo local.",
         "levelLabel": "Nível hierárquico",
         "levelHint": "Contado a partir da raiz do escopo (1 = raiz).",
         "parentLabel": "Local pai",
@@ -417,7 +417,7 @@
   "AuditHistory": {
     "loading": "Carregando histórico...",
     "empty": "Nenhum registro de histórico encontrado.",
-    "unknownUser": "Usuário não encontrado",
+    "unknownUser": "Usuário desconhecido",
     "entryLabel": "Log #{id}",
     "metaLine": "{actor} em {moment}",
     "lineInsert": "Inclusão",
@@ -428,9 +428,9 @@
     "srBeforeAfter": "Valor anterior: {before}. Valor atual: {after}.",
     "srInsertedValue": "Valor incluído: {value}.",
     "srDeletedValue": "Valor antes da exclusão: {value}.",
-    "diffUnavailable": "Não foi possível comparar este update com o registro anterior.",
+    "diffUnavailable": "Não foi possível comparar esta alteração com o registro anterior.",
     "diffEmpty": "Nenhuma diferença foi detectada em relação ao registro anterior.",
-    "deletedNote": "Este registro representa uma exclusão. O log não possui payload da row para este caso.",
+    "deletedNote": "Este registro representa uma exclusão. O log não inclui os dados da linha neste caso.",
     "action": {
       "insert": "Inclusão",
       "update": "Atualização",

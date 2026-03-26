@@ -124,15 +124,15 @@
         "cards": {
             "entry": {
                 "title": "Entrada ya conectada",
-                "description": "{module} ahora tiene URL propia, elemento activo en la barra lateral y un placeholder clicable para revisar el flujo."
+                "description": "{module} ahora tiene URL propia, elemento activo en la barra lateral y una pantalla provisional clicable para revisar el flujo."
             },
             "state": {
                 "title": "Comportamiento visual alineado",
-                "description": "Hover, selección y barra lateral siguen el mismo patrón visual que los demás menús de la aplicación."
+                "description": "Al pasar el puntero, la selección y la barra lateral siguen el mismo patrón visual que los demás menús de la aplicación."
             },
             "next": {
                 "title": "Próxima evolución",
-                "description": "La siguiente entrega de este módulo puede reemplazar este placeholder por el primer flujo real sin rehacer la navegación global."
+                "description": "La siguiente entrega de este módulo puede reemplazar esta pantalla provisional por el primer flujo real sin rehacer la navegación global."
             }
         },
         "actions": {
@@ -212,7 +212,7 @@
         "empty": "No se encontraron alcances para el licenciatario activo.",
         "history": {
             "title": "Historial de cambios",
-            "description": "Consulta los cambios recientes en los ámbitos de este licenciado: quién cambió qué, cuándo y un resumen de lo modificado."
+            "description": "Consulta los cambios recientes en los alcances de este licenciatario: quién cambió qué, cuándo y un resumen de lo modificado."
         },
         "section": {
             "identity": {
@@ -378,7 +378,7 @@
         },
         "history": {
             "title": "Historial de cambios",
-            "description": "Consulta los cambios recientes en los datos del licenciado activo: quién modificó qué, cuándo y un resumen de cada cambio."
+            "description": "Consulta los cambios recientes en los datos del licenciatario activo: quién modificó qué, cuándo y un resumen de cada cambio."
         },
         "section": {
             "display": {
@@ -430,7 +430,7 @@
         "srDeletedValue": "Valor antes de la eliminación: {value}.",
         "diffUnavailable": "No se pudo comparar esta actualización con el registro anterior.",
         "diffEmpty": "No se detectaron diferencias respecto al registro anterior.",
-        "deletedNote": "Esta entrada representa una eliminación. El registro no incluye payload de fila en este caso.",
+        "deletedNote": "Esta entrada representa una eliminación. El registro no incluye los datos de la fila en este caso.",
         "action": {
             "insert": "Alta",
             "update": "Actualización",
