@@ -38,23 +38,57 @@ function stringifyHistoryValue(value: unknown) {
   return serialized ?? "null";
 }
 
-function formatHistoryMoment(momentUtc: string) {
-  return new Intl.DateTimeFormat(undefined, {
-    dateStyle: "medium",
-    timeStyle: "short"
-  }).format(new Date(momentUtc));
+/** Data e hora no formato YYYY-MM-DD HH:mm (horário local). */
+function formatHistoryMomentCompact(momentUtc: string) {
+  const d = new Date(momentUtc);
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  const h = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${y}-${m}-${day} ${h}:${min}`;
 }
 
-function getActionToneClassName(actionType: AuditLogActionType) {
+function buildHistoryLineText(item: AuditLogRecord, t: (key: string, values?: Record<string, string>) => string) {
+  const moment = formatHistoryMomentCompact(item.moment_utc);
+  const meta = t("metaLine", {
+    actor: item.actor_name ?? t("unknownUser"),
+    moment
+  });
+
+  if (item.action_type === "I") {
+    return `${meta} --- ${t("lineInsert")}`;
+  }
+
+  if (item.action_type === "D") {
+    return `${meta} --- ${t("lineDelete")}`;
+  }
+
+  if (item.diff_state === "ready" && item.field_change_list.length > 0) {
+    const partList = item.field_change_list.map(
+      (fieldChange) =>
+        `${fieldChange.field_name}: ${stringifyHistoryValue(fieldChange.previous_value)} → ${stringifyHistoryValue(fieldChange.current_value)}`
+    );
+    return `${meta} --- ${partList.join(" --- ")}`;
+  }
+
+  if (item.diff_state === "missing_previous") {
+    return `${meta} --- ${t("diffUnavailable")}`;
+  }
+
+  return `${meta} --- ${t("diffEmpty")}`;
+}
+
+function actionTypeAriaLabel(actionType: AuditLogActionType, t: (key: string) => string) {
   if (actionType === "I") {
-    return "ui-badge-positive";
+    return t("action.insert");
   }
 
   if (actionType === "U") {
-    return "ui-badge-active";
+    return t("action.update");
   }
 
-  return "ui-badge-danger";
+  return t("action.delete");
 }
 
 export function ConfigurationHistoryPanel({
@@ -175,81 +209,31 @@ export function ConfigurationHistoryPanel({
       ) : null}
 
       {!isLoading && !errorMessage && itemList.length > 0 ? (
-        <div className="ui-history-log-list">
-          {itemList.map((item) => (
-            <article key={item.id} className="ui-card ui-history-log-item">
-              <div className="ui-history-log-head">
-                <div className="ui-history-log-meta">
-                  <div className="ui-badge-row">
-                    <span
-                      className={`ui-badge ${getActionToneClassName(item.action_type)}`}
-                    >
-                      {item.action_type === "I"
-                        ? t("action.insert")
-                        : item.action_type === "U"
-                          ? t("action.update")
-                          : t("action.delete")}
-                    </span>
-                    <span className="ui-badge ui-badge-neutral">
-                      {t("metaLine", {
-                        actor: item.actor_name ?? t("unknownUser"),
-                        moment: formatHistoryMoment(item.moment_utc)
-                      })}
-                    </span>
-                  </div>
-                </div>
-
-                <p className="ui-history-log-caption">
-                  {t("entryLabel", { id: String(item.id) })}
-                </p>
-              </div>
-
-              {item.action_type === "U" ? (
-                <section className="ui-history-log-section">
-                  {item.diff_state === "ready" && item.field_change_list.length > 0 ? (
-                    <div className="ui-history-diff-list">
-                      {item.field_change_list.map((fieldChange) => (
-                        <div
-                          key={`${item.id}-${fieldChange.field_name}`}
-                          className="ui-history-diff-item ui-history-diff-item-compact"
-                        >
-                          <p className="ui-history-diff-field">
-                            {fieldChange.field_name}
-                          </p>
-                          <div className="ui-history-diff-inline">
-                            <span className="ui-sr-only">
-                              {t("srBeforeAfter", {
-                                before: stringifyHistoryValue(fieldChange.previous_value),
-                                after: stringifyHistoryValue(fieldChange.current_value)
-                              })}
-                            </span>
-                            <code className="ui-history-diff-chip">
-                              {stringifyHistoryValue(fieldChange.previous_value)}
-                            </code>
-                            <span className="ui-history-diff-arrow" aria-hidden="true">
-                              →
-                            </span>
-                            <code className="ui-history-diff-chip">
-                              {stringifyHistoryValue(fieldChange.current_value)}
-                            </code>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : item.diff_state === "missing_previous" ? (
-                    <p className="ui-field-hint">{t("diffUnavailable")}</p>
-                  ) : (
-                    <p className="ui-field-hint">{t("diffEmpty")}</p>
-                  )}
-                </section>
-              ) : null}
-
-              {item.action_type === "D" ? (
-                <p className="ui-field-hint">{t("deletedNote")}</p>
-              ) : null}
-            </article>
-          ))}
-        </div>
+        <>
+          <ul className="ui-history-log-list">
+            {itemList.map((item) => {
+              const lineText = buildHistoryLineText(item, t);
+              const ariaLabel = `${actionTypeAriaLabel(item.action_type, t)}. ${lineText}. ${t("entryLabel", { id: String(item.id) })}`;
+              return (
+                <li
+                  key={item.id}
+                  className="ui-history-log-entry"
+                  data-action={item.action_type}
+                  aria-label={ariaLabel}
+                >
+                  <span className="ui-history-log-line">{lineText}</span>
+                </li>
+              );
+            })}
+          </ul>
+          <div className="ui-history-log-legend" role="note" aria-label={t("legendAria")}>
+            <div className="ui-badge-row ui-history-log-legend-row">
+              <span className="ui-badge ui-badge-positive">{t("action.insert")}</span>
+              <span className="ui-badge ui-badge-active">{t("action.update")}</span>
+              <span className="ui-badge ui-badge-danger">{t("action.delete")}</span>
+            </div>
+          </div>
+        </>
       ) : null}
 
       {!errorMessage && hasMore && nextOffset != null ? (
