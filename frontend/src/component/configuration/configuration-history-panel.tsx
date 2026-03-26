@@ -38,7 +38,6 @@ function stringifyHistoryValue(value: unknown) {
   return serialized ?? "null";
 }
 
-/** Data e hora no formato YYYY-MM-DD HH:mm (horário local). */
 function formatHistoryMomentCompact(momentUtc: string) {
   const d = new Date(momentUtc);
   const y = d.getFullYear();
@@ -49,7 +48,31 @@ function formatHistoryMomentCompact(momentUtc: string) {
   return `${y}-${m}-${day} ${h}:${min}`;
 }
 
-function buildHistoryLineText(item: AuditLogRecord, t: (key: string, values?: Record<string, string>) => string) {
+function toIsoDateTimeAttr(momentUtc: string) {
+  const d = new Date(momentUtc);
+  return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
+function formatHistoryLogIdDisplay(id: number) {
+  return `#${String(id).padStart(2, "0")}`;
+}
+
+function historyIdToneClassName(actionType: AuditLogActionType) {
+  if (actionType === "I") {
+    return "ui-history-log-id-num ui-history-log-id-num-insert";
+  }
+
+  if (actionType === "U") {
+    return "ui-history-log-id-num ui-history-log-id-num-update";
+  }
+
+  return "ui-history-log-id-num ui-history-log-id-num-delete";
+}
+
+function buildHistoryLineText(
+  item: AuditLogRecord,
+  t: (key: string, values?: Record<string, string>) => string
+) {
   const moment = formatHistoryMomentCompact(item.moment_utc);
   const meta = t("metaLine", {
     actor: item.actor_name ?? t("unknownUser"),
@@ -89,6 +112,77 @@ function actionTypeAriaLabel(actionType: AuditLogActionType, t: (key: string) =>
   }
 
   return t("action.delete");
+}
+
+function HistoryEntryCenter({
+  item,
+  t
+}: {
+  item: AuditLogRecord;
+  t: ReturnType<typeof useTranslations>;
+}) {
+  if (item.action_type === "I") {
+    return (
+      <div className="ui-history-log-cell-center-inner">
+        <div className="ui-history-change-pill">
+          <span className="ui-history-change-pill-message">{t("lineInsert")}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (item.action_type === "D") {
+    return (
+      <div className="ui-history-log-cell-center-inner">
+        <div className="ui-history-change-pill">
+          <span className="ui-history-change-pill-message">{t("lineDelete")}</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (item.diff_state === "ready" && item.field_change_list.length > 0) {
+    return (
+      <div className="ui-history-log-cell-center-inner">
+        {item.field_change_list.map((fieldChange) => (
+          <div
+            key={`${item.id}-${fieldChange.field_name}`}
+            className="ui-history-change-pill"
+          >
+            <span className="ui-history-change-pill-field">{fieldChange.field_name}</span>
+            <span className="ui-history-change-pill-delta">
+              <span className="ui-sr-only">
+                {`${fieldChange.field_name}. ${t("srBeforeAfter", {
+                  before: stringifyHistoryValue(fieldChange.previous_value),
+                  after: stringifyHistoryValue(fieldChange.current_value)
+                })}`}
+              </span>
+              <span className="ui-history-change-pill-visual" aria-hidden="true">
+                <span className="ui-history-change-pill-value">
+                  {stringifyHistoryValue(fieldChange.previous_value)}
+                </span>
+                <span className="ui-history-change-pill-arrow">→</span>
+                <span className="ui-history-change-pill-value">
+                  {stringifyHistoryValue(fieldChange.current_value)}
+                </span>
+              </span>
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  const hint =
+    item.diff_state === "missing_previous" ? t("diffUnavailable") : t("diffEmpty");
+
+  return (
+    <div className="ui-history-log-cell-center-inner">
+      <div className="ui-history-change-pill">
+        <span className="ui-history-change-pill-message">{hint}</span>
+      </div>
+    </div>
+  );
 }
 
 export function ConfigurationHistoryPanel({
@@ -214,6 +308,7 @@ export function ConfigurationHistoryPanel({
             {itemList.map((item) => {
               const lineText = buildHistoryLineText(item, t);
               const ariaLabel = `${actionTypeAriaLabel(item.action_type, t)}. ${lineText}. ${t("entryLabel", { id: String(item.id) })}`;
+              const isoAttr = toIsoDateTimeAttr(item.moment_utc);
               return (
                 <li
                   key={item.id}
@@ -221,7 +316,26 @@ export function ConfigurationHistoryPanel({
                   data-action={item.action_type}
                   aria-label={ariaLabel}
                 >
-                  <span className="ui-history-log-line">{lineText}</span>
+                  <div className="ui-history-log-cell ui-history-log-cell-start">
+                    <span className={historyIdToneClassName(item.action_type)}>
+                      {formatHistoryLogIdDisplay(item.id)}
+                    </span>
+                    <span className="ui-history-log-actor">
+                      {item.actor_name ?? t("unknownUser")}
+                    </span>
+                  </div>
+                  <div className="ui-history-log-cell ui-history-log-cell-center">
+                    <HistoryEntryCenter item={item} t={t} />
+                  </div>
+                  <div className="ui-history-log-cell ui-history-log-cell-end">
+                    <time
+                      className="ui-history-log-time"
+                      dateTime={isoAttr}
+                      suppressHydrationWarning
+                    >
+                      {formatHistoryMomentCompact(item.moment_utc)}
+                    </time>
+                  </div>
                 </li>
               );
             })}

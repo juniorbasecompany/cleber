@@ -422,6 +422,7 @@
         "metaLine": "{actor} el {moment}",
         "lineInsert": "Alta",
         "lineDelete": "Baja",
+        "srBeforeAfter": "Valor anterior: {before}. Valor actual: {after}.",
         "legendAria": "Leyenda de colores del punto: alta, actualización, baja",
         "diffUnavailable": "No se pudo comparar esta actualización con el registro anterior.",
         "diffEmpty": "No se detectaron diferencias respecto al registro anterior.",

@@ -422,6 +422,7 @@
         "metaLine": "{actor} on {moment}",
         "lineInsert": "Insert",
         "lineDelete": "Delete",
+        "srBeforeAfter": "Previous value: {before}. Current value: {after}.",
         "legendAria": "Dot color key: insert, update, delete",
         "diffUnavailable": "This update could not be compared to the previous record.",
         "diffEmpty": "No differences were detected compared to the previous record.",
