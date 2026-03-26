@@ -1,5 +1,14 @@
 # Monorepo: build a partir da raiz com Docker (backend em ./backend).
 # Garante que o Railway não tenta o Railpack só com a árvore da raiz.
+#
+# Variáveis no serviço "valora" (obrigatório para o processo subir e o healthcheck passar):
+# - Liga o plugin Postgres ao backend com UMA destas opções:
+#   (A) DATABASE_URL = referência ${{ NomeDoTeuPostgres.DATABASE_URL }} (usa o nome exato do serviço Postgres no canvas).
+#   (B) Ou referencia PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE do Postgres (o backend aceita estes nomes).
+# - Só POSTGRES_PASSWORD manual não chega: o default de host é localhost e porta 5434, o que dentro do
+#   container não aponta para o Postgres do Railway. Ou defines DATABASE_URL / PG*, ou POSTGRES_HOST na rede interna.
+# - APP_JWT_SECRET, GOOGLE_CLIENT_ID: como no .env local.
+# - PORT é injetado pelo Railway (não precisas criar).
 
 [build]
 builder = "DOCKERFILE"
