@@ -6,7 +6,6 @@ import { AppShell } from "@/component/app-shell/app-shell";
 import { AccountMenu } from "@/component/app-shell/account-menu";
 import { WorkspaceContextMenu } from "@/component/app-shell/workspace-context-menu";
 import { getAuthSession, getTenantScopeDirectory } from "@/lib/auth/server-session";
-import { appModuleKeyList } from "@/lib/app-shell/module-navigation";
 import { routing } from "@/i18n/routing";
 
 type AppLayoutProps = {
@@ -64,12 +63,7 @@ export default async function AppLayout({
       key: "unity",
       label: t("navigation.unity"),
       href: `/${locale}/app/configuration/unity`
-    },
-    ...appModuleKeyList.map((key) => ({
-      key,
-      label: t(`navigation.${key}`),
-      href: `/${locale}/app/${key}`
-    }))
+    }
   ];
 
   return (

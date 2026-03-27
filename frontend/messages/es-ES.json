@@ -7,11 +7,6 @@
             "home": "Inicio",
             "location": "Ubicaciones",
             "unity": "Unidades",
-            "operation": "Operaciones",
-            "record": "Registros",
-            "import": "Importaciones",
-            "process": "Procesamiento",
-            "audit": "Auditoría",
             "configuration": "Configuración",
             "comingSoon": "próximamente"
         },
@@ -75,22 +70,6 @@
             "location": {
                 "title": "Estructura de ubicaciones",
                 "description": "Organiza la operación por unidades y niveles de jerarquía para tener una visión clara del conjunto."
-            },
-            "record": {
-                "title": "Registros organizados",
-                "description": "Reúne información clave del negocio en un solo lugar para dar continuidad al trabajo."
-            },
-            "import": {
-                "title": "Importación de datos",
-                "description": "Facilita traer datos externos al sistema de forma más práctica y confiable."
-            },
-            "process": {
-                "title": "Procesamiento",
-                "description": "Ejecuta rutinas sobre los datos estructurados para apoyar análisis y decisiones."
-            },
-            "audit": {
-                "title": "Auditoría e historial",
-                "description": "Permite seguir cambios en el tiempo para mejorar transparencia y confianza operativa."
             }
         }
     },
@@ -112,39 +91,6 @@
             "scope": {
                 "title": "Alcance",
                 "description": "Un alcance es una unidad de contexto dentro del licenciatario: donde los registros y, más adelante, la jerarquía de ubicaciones se separan sin mezclarse. Piensa en sucursal, obra, sede o proyecto, la etiqueta es tuya, pero la función es aislar datos que no deberían verse juntos. El alcance elegido en el encabezado es el que rige al trabajar en ubicaciones y en lo que dependa de él."
-            }
-        }
-    },
-    "ModulePlaceholderPage": {
-        "description": "{module} ya está conectado a la navegación principal y usa esta pantalla provisional hasta la primera entrega funcional del flujo.",
-        "status": {
-            "title": "Destino navegable disponible",
-            "description": "Esta página permite validar la navegación, el estado activo del menú y la evolución incremental del módulo."
-        },
-        "cards": {
-            "entry": {
-                "title": "Entrada ya conectada",
-                "description": "{module} ahora tiene URL propia, elemento activo en la barra lateral y una pantalla provisional clicable para revisar el flujo."
-            },
-            "state": {
-                "title": "Comportamiento visual alineado",
-                "description": "Al pasar el puntero, la selección y la barra lateral siguen el mismo patrón visual que los demás menús de la aplicación."
-            },
-            "next": {
-                "title": "Próxima evolución",
-                "description": "La siguiente entrega de este módulo puede reemplazar esta pantalla provisional por el primer flujo real sin rehacer la navegación global."
-            }
-        },
-        "actions": {
-            "home": {
-                "title": "Volver al punto de entrada",
-                "description": "Regresa a Inicio para revisar el contexto actual y los próximos pasos de la configuración inicial.",
-                "label": "Ir a Inicio"
-            },
-            "configuration": {
-                "title": "Abrir Configuración",
-                "description": "Sigue por el área administrativa mientras los flujos funcionales de este módulo siguen en evolución.",
-                "label": "Ir a Configuración"
             }
         }
     },

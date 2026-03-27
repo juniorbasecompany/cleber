@@ -5,15 +5,7 @@ type IconProps = {
 };
 
 type NavigationIconProps = IconProps & {
-    kind:
-    | "home"
-    | "location"
-    | "unity"
-    | "operation"
-    | "record"
-    | "import"
-    | "process"
-    | "audit";
+    kind: "home" | "location" | "unity";
 };
 
 function mergeClassName(className?: string, fallback = "ui-icon") {
@@ -68,24 +60,6 @@ export function DashboardIcon({ className }: IconProps) {
     );
 }
 
-export function OperationsIcon({ className }: IconProps) {
-    return (
-        <svg
-            className={mergeClassName(className)}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-        >
-            <path d="M5 18.5V10m7 8.5V5.5m7 13V8.5" />
-            <path d="M3.5 20.5h17" />
-            <path d="M4 10l4.5-3 4 2.5L20 5.5" />
-        </svg>
-    );
-}
-
 export function LocationIcon({ className }: IconProps) {
     return (
         <svg
@@ -117,61 +91,6 @@ export function UnityIcon({ className }: IconProps) {
             <path d="M12 3 4 8v2l8 5 8-5V8l-8-5Z" />
             <path d="m4 13 8 5 8-5" />
             <path d="m4 18 8 5 8-5" />
-        </svg>
-    );
-}
-
-export function RecordsIcon({ className }: IconProps) {
-    return (
-        <svg
-            className={mergeClassName(className)}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-        >
-            <rect x="5" y="4" width="14" height="16" rx="0" />
-            <path d="M8.5 9h7M8.5 12.5h7M8.5 16h4.5" />
-        </svg>
-    );
-}
-
-export function ImportIcon({ className }: IconProps) {
-    return (
-        <svg
-            className={mergeClassName(className)}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-        >
-            <path d="M12 4.5v10" />
-            <path d="M8.5 11 12 14.5 15.5 11" />
-            <path d="M5 18.5h14" />
-            <path d="M6.5 19.5v-2a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v2" />
-        </svg>
-    );
-}
-
-export function ProcessIcon({ className }: IconProps) {
-    return (
-        <svg
-            className={mergeClassName(className)}
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden
-        >
-            <circle cx="6" cy="6.5" r="2.5" />
-            <circle cx="18" cy="12" r="2.5" />
-            <circle cx="6" cy="17.5" r="2.5" />
-            <path d="M8.5 7.5h5L16 10M8.5 16.5h5L16 14" />
         </svg>
     );
 }
@@ -429,16 +348,6 @@ export function NavigationIcon({
             return <LocationIcon className={className} />;
         case "unity":
             return <UnityIcon className={className} />;
-        case "operation":
-            return <OperationsIcon className={className} />;
-        case "record":
-            return <RecordsIcon className={className} />;
-        case "import":
-            return <ImportIcon className={className} />;
-        case "process":
-            return <ProcessIcon className={className} />;
-        case "audit":
-            return <AuditIcon className={className} />;
         default:
             return <DashboardIcon className={className} />;
     }

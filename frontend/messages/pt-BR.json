@@ -7,11 +7,6 @@
       "home": "Início",
       "location": "Locais",
       "unity": "Unidades",
-      "operation": "Operações",
-      "record": "Registros",
-      "import": "Importações",
-      "process": "Processamento",
-      "audit": "Auditoria",
       "configuration": "Configuração",
       "comingSoon": "em breve"
     },
@@ -75,22 +70,6 @@
       "location": {
         "title": "Estrutura de locais",
         "description": "Permite organizar sua operação por unidades e hierarquias, facilitando a visão do todo."
-      },
-      "record": {
-        "title": "Registros organizados",
-        "description": "Centraliza informações importantes do negócio para manter histórico e acompanhamento."
-      },
-      "import": {
-        "title": "Importação de dados",
-        "description": "Ajuda a trazer dados externos para dentro do sistema de forma mais prática e confiável."
-      },
-      "process": {
-        "title": "Processamento",
-        "description": "Executa rotinas sobre os dados cadastrados para apoiar análises e decisões."
-      },
-      "audit": {
-        "title": "Auditoria e histórico",
-        "description": "Mostra mudanças e evolução dos dados para dar transparência e segurança operacional."
       }
     }
   },
@@ -112,39 +91,6 @@
       "scope": {
         "title": "Escopo",
         "description": "Escopo é uma unidade de contexto dentro do licenciado: onde os cadastros e, na sequência, a hierarquia de locais se separam sem se misturar. Pense em filial, obra, sede ou projeto, o rótulo é seu, mas a função é sempre isolar dados que não devem aparecer juntos. O escopo selecionado no cabeçalho é o que vale ao trabalhar em locais e nos fluxos que dependem dele."
-      }
-    }
-  },
-  "ModulePlaceholderPage": {
-    "description": "{module} já está ligado à navegação principal e usa esta tela provisória até a primeira entrega funcional do fluxo.",
-    "status": {
-      "title": "Destino navegável disponível",
-      "description": "Esta página permite validar navegação, estado ativo do menu e evolução incremental do módulo."
-    },
-    "cards": {
-      "entry": {
-        "title": "Entrada já conectada",
-        "description": "{module} agora tem URL própria, item ativo na navegação lateral e tela provisória clicável para revisão do fluxo."
-      },
-      "state": {
-        "title": "Comportamento visual alinhado",
-        "description": "Ao passar o ponteiro, a seleção e a barra lateral seguem o mesmo padrão visual dos demais menus da aplicação."
-      },
-      "next": {
-        "title": "Próxima evolução",
-        "description": "A próxima entrega deste módulo pode substituir esta tela provisória pela primeira rotina real sem refazer a navegação global."
-      }
-    },
-    "actions": {
-      "home": {
-        "title": "Voltar para o ponto de entrada",
-        "description": "Retorne ao início para revisar o contexto atual e os próximos passos da configuração inicial.",
-        "label": "Ir para Início"
-      },
-      "configuration": {
-        "title": "Abrir Configuração",
-        "description": "Continue pela área administrativa enquanto os fluxos funcionais deste módulo ainda estão em evolução.",
-        "label": "Ir para Configuração"
       }
     }
   },

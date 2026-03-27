@@ -7,11 +7,6 @@
             "home": "Home",
             "location": "Locations",
             "unity": "Units",
-            "operation": "Operations",
-            "record": "Records",
-            "import": "Imports",
-            "process": "Processing",
-            "audit": "Audit",
             "configuration": "Configuration",
             "comingSoon": "coming soon"
         },
@@ -75,22 +70,6 @@
             "location": {
                 "title": "Location structure",
                 "description": "Organize your operation by units and hierarchy levels to keep a clear view of the whole."
-            },
-            "record": {
-                "title": "Organized records",
-                "description": "Keep key business information in one place with better follow-up and continuity."
-            },
-            "import": {
-                "title": "Data import",
-                "description": "Bring external data into the system in a more practical and reliable way."
-            },
-            "process": {
-                "title": "Processing",
-                "description": "Run routines over your structured data to support analysis and decision-making."
-            },
-            "audit": {
-                "title": "Audit and history",
-                "description": "Track changes over time to improve transparency and operational confidence."
             }
         }
     },
@@ -112,39 +91,6 @@
             "scope": {
                 "title": "Scope",
                 "description": "A scope is a context unit inside the tenant: where records, and later the locations hierarchy, stay separated instead of mixed together. Think branch, job site, venue, or project,  the label is yours, but the job is always to isolate data that should not appear in one pile. The scope selected in the header is what applies when you work on locations and anything that depends on it."
-            }
-        }
-    },
-    "ModulePlaceholderPage": {
-        "description": "{module} is already connected to the main navigation and uses this placeholder screen until the first functional flow is delivered.",
-        "status": {
-            "title": "Navigable destination available",
-            "description": "This page is enough to validate navigation, active menu state, and incremental rollout of the module."
-        },
-        "cards": {
-            "entry": {
-                "title": "Entry point already connected",
-                "description": "{module} now has its own URL, active sidebar item, and a clickable placeholder for flow review."
-            },
-            "state": {
-                "title": "Visual behavior aligned",
-                "description": "Hover, selected state, and the left indicator follow the same visual rules used by the other menus in the application."
-            },
-            "next": {
-                "title": "Next evolution",
-                "description": "The next delivery for this module can replace this placeholder with the first real workflow without rebuilding global navigation."
-            }
-        },
-        "actions": {
-            "home": {
-                "title": "Return to the entry point",
-                "description": "Go back to Home to review the current context and the next steps for the initial setup.",
-                "label": "Go to Home"
-            },
-            "configuration": {
-                "title": "Open Configuration",
-                "description": "Keep moving through the administrative area while this module's functional flows are still evolving.",
-                "label": "Go to Configuration"
             }
         }
     },

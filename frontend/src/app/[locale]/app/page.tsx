@@ -4,13 +4,9 @@ import { InfoCard } from "@/component/app-shell/info-card";
 import { PageHeader } from "@/component/app-shell/page-header";
 import { StatusPanel } from "@/component/app-shell/status-panel";
 import {
-    AuditIcon,
     BuildingIcon,
     GlobeIcon,
-    ImportIcon,
     LocationIcon,
-    ProcessIcon,
-    RecordsIcon,
     UsersIcon,
     WorkflowIcon
 } from "@/component/ui/ui-icons";
@@ -57,26 +53,6 @@ export default async function AppHomePage() {
                     title={t("card.location.title")}
                     description={t("card.location.description")}
                     iconSlot={<LocationIcon className="ui-icon" />}
-                />
-                <InfoCard
-                    title={t("card.record.title")}
-                    description={t("card.record.description")}
-                    iconSlot={<RecordsIcon className="ui-icon" />}
-                />
-                <InfoCard
-                    title={t("card.import.title")}
-                    description={t("card.import.description")}
-                    iconSlot={<ImportIcon className="ui-icon" />}
-                />
-                <InfoCard
-                    title={t("card.process.title")}
-                    description={t("card.process.description")}
-                    iconSlot={<ProcessIcon className="ui-icon" />}
-                />
-                <InfoCard
-                    title={t("card.audit.title")}
-                    description={t("card.audit.description")}
-                    iconSlot={<AuditIcon className="ui-icon" />}
                 />
             </section>
         </section>
