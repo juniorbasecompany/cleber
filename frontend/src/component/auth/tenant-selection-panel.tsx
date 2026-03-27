@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
 import {
@@ -88,6 +88,8 @@ export function TenantSelectionPanel({
     const [isProcessing, setIsProcessing] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [snapshot, setSnapshot] = useState<TenantSelectionSnapshot | null>(null);
+    /** Evita reexecutar o create automático quando `isProcessing` volta a false após erro (loop). */
+    const autoCreateTenantOnceRef = useRef(false);
 
     const tenantList = snapshot?.tenant_list ?? emptyTenantList;
     const inviteList = snapshot?.invite_list ?? emptyInviteList;
@@ -376,7 +378,12 @@ export function TenantSelectionPanel({
             return;
         }
 
+        if (autoCreateTenantOnceRef.current) {
+            return;
+        }
+
         const timeoutId = window.setTimeout(() => {
+            autoCreateTenantOnceRef.current = true;
             void handleCreateTenant();
         }, 0);
 
