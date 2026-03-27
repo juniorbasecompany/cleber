@@ -165,6 +165,21 @@
             "validation": "This field cannot be empty.",
             "emailValidation": "Enter a valid email address."
         },
+        "inviteSend": {
+            "sendInvite": "Send invite",
+            "sendInviteAriaLabel": "Send invitation email to {email}",
+            "sending": "Sending...",
+            "successNotice": "Invitation sent to {email}.",
+            "error": {
+                "generic": "Could not send the invitation. Try again.",
+                "member_invite_forbidden": "You do not have permission to send invitations.",
+                "member_invite_not_found": "Member was not found for this tenant.",
+                "member_invite_already_linked": "This member already has a linked account.",
+                "member_invite_invalid_status": "Invitations can only be sent to pending members.",
+                "member_invite_no_email": "This member has no email address for the invitation.",
+                "member_invite_delivery_failed": "The message could not be delivered. Check email settings or try again."
+            }
+        },
         "discardConfirm": "Discard unsaved changes?"
     },
     "ScopeConfigurationPage": {

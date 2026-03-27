@@ -7,6 +7,8 @@ export type ConfigurationEditorFooterProps = {
     discardConfirm: string;
     isDirty: boolean;
     footerErrorMessage: string | null;
+    footerNoticeMessage?: string | null;
+    footerNoticeTone?: "success" | "attention";
     onSave: () => void;
     saveDisabled: boolean;
     saveLabel: string;
@@ -21,6 +23,8 @@ export function ConfigurationEditorFooter({
     discardConfirm,
     isDirty,
     footerErrorMessage,
+    footerNoticeMessage = null,
+    footerNoticeTone = "success",
     onSave,
     saveDisabled,
     saveLabel,
@@ -45,8 +49,22 @@ export function ConfigurationEditorFooter({
             </Link>
             <div className="ui-action-footer-feedback">
                 {footerErrorMessage ? (
-                    <div className="ui-notice-danger ui-notice-block ui-status-copy">
+                    <div
+                        className="ui-notice-danger ui-notice-block ui-status-copy"
+                        style={{ whiteSpace: "pre-line" }}
+                    >
                         {footerErrorMessage}
+                    </div>
+                ) : footerNoticeMessage ? (
+                    <div
+                        className={
+                            footerNoticeTone === "attention"
+                                ? "ui-notice-attention ui-notice-block ui-status-copy"
+                                : "ui-tone-positive ui-notice-block ui-status-copy"
+                        }
+                        style={{ whiteSpace: "pre-line" }}
+                    >
+                        {footerNoticeMessage}
                     </div>
                 ) : null}
             </div>

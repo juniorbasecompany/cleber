@@ -124,6 +124,25 @@ class Settings(BaseSettings):
             "jwt_remember_me_expiration_days",
         ),
     )
+    resend_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("RESEND_API_KEY", "resend_api_key"),
+    )
+    email_from: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("EMAIL_FROM", "email_from"),
+    )
+    app_url: str = Field(
+        default="http://localhost:3000",
+        validation_alias=AliasChoices("APP_URL", "app_url"),
+    )
+    invite_email_locale: str = Field(
+        default="en-US",
+        validation_alias=AliasChoices(
+            "VALORA_INVITE_EMAIL_LOCALE",
+            "invite_email_locale",
+        ),
+    )
 
     @model_validator(mode="after")
     def _exige_postgres_ou_database_url(self) -> Self:

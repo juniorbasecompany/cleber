@@ -75,6 +75,17 @@ export default async function MemberConfigurationPage({
       ACTIVE: t("statusValue.ACTIVE"),
       PENDING: t("statusValue.PENDING"),
       DISABLED: t("statusValue.DISABLED")
+    },
+    inviteSendLabel: t("inviteSend.sendInvite"),
+    inviteSendSendingLabel: t("inviteSend.sending"),
+    inviteSendErrorGeneric: t("inviteSend.error.generic"),
+    inviteSendErrorByCode: {
+      member_invite_forbidden: t("inviteSend.error.member_invite_forbidden"),
+      member_invite_not_found: t("inviteSend.error.member_invite_not_found"),
+      member_invite_already_linked: t("inviteSend.error.member_invite_already_linked"),
+      member_invite_invalid_status: t("inviteSend.error.member_invite_invalid_status"),
+      member_invite_no_email: t("inviteSend.error.member_invite_no_email"),
+      member_invite_delivery_failed: t("inviteSend.error.member_invite_delivery_failed")
     }
   };
 

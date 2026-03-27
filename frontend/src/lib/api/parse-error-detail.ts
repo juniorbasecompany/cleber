@@ -14,6 +14,13 @@ export function parseErrorDetail(
         return detail;
     }
 
+    if (detail && typeof detail === "object" && !Array.isArray(detail)) {
+        const message = (detail as { message?: unknown }).message;
+        if (typeof message === "string" && message.trim()) {
+            return message.trim();
+        }
+    }
+
     if (Array.isArray(detail) && detail.length > 0) {
         const first = detail[0] as { msg?: string };
         if (typeof first?.msg === "string" && first.msg.trim()) {
@@ -22,4 +29,20 @@ export function parseErrorDetail(
     }
 
     return fallback ?? null;
+}
+
+/** Código estável quando a API devolve `detail: { code, message }` (ver skills/implementation/i18n). */
+export function parseErrorCode(payload: unknown): string | null {
+    if (!payload || typeof payload !== "object") {
+        return null;
+    }
+    const detail = (payload as { detail?: unknown }).detail;
+    if (!detail || typeof detail !== "object" || Array.isArray(detail)) {
+        return null;
+    }
+    const code = (detail as { code?: unknown }).code;
+    if (typeof code === "string" && code.trim()) {
+        return code.trim();
+    }
+    return null;
 }

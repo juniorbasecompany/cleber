@@ -165,6 +165,21 @@
       "validation": "Este campo não pode ficar vazio.",
       "emailValidation": "Informe um email válido."
     },
+    "inviteSend": {
+      "sendInvite": "Enviar convite",
+      "sendInviteAriaLabel": "Enviar e-mail de convite para {email}",
+      "sending": "Enviando...",
+      "successNotice": "Convite enviado para {email}.",
+      "error": {
+        "generic": "Não foi possível enviar o convite. Tente novamente.",
+        "member_invite_forbidden": "Você não tem permissão para enviar convites.",
+        "member_invite_not_found": "Membro não encontrado neste licenciado.",
+        "member_invite_already_linked": "Este membro já tem conta vinculada.",
+        "member_invite_invalid_status": "Só é possível enviar convite para membros pendentes.",
+        "member_invite_no_email": "Este membro não tem endereço de e-mail para o convite.",
+        "member_invite_delivery_failed": "A mensagem não pôde ser entregue. Verifique as configurações de e-mail ou tente novamente."
+      }
+    },
     "discardConfirm": "Descartar alterações não salvas?"
   },
   "ScopeConfigurationPage": {

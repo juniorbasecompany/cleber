@@ -165,6 +165,21 @@
             "validation": "Este campo no puede quedar vacío.",
             "emailValidation": "Indica un correo electrónico válido."
         },
+        "inviteSend": {
+            "sendInvite": "Enviar invitación",
+            "sendInviteAriaLabel": "Enviar correo de invitación a {email}",
+            "sending": "Enviando...",
+            "successNotice": "Invitación enviada a {email}.",
+            "error": {
+                "generic": "No se pudo enviar la invitación. Inténtalo de nuevo.",
+                "member_invite_forbidden": "No tienes permiso para enviar invitaciones.",
+                "member_invite_not_found": "No se encontró el miembro en este licenciatario.",
+                "member_invite_already_linked": "Este miembro ya tiene una cuenta vinculada.",
+                "member_invite_invalid_status": "Solo se pueden enviar invitaciones a miembros pendientes.",
+                "member_invite_no_email": "Este miembro no tiene correo electrónico para la invitación.",
+                "member_invite_delivery_failed": "No se pudo entregar el mensaje. Revisa la configuración del correo o inténtalo de nuevo."
+            }
+        },
         "discardConfirm": "¿Descartar los cambios no guardados?"
     },
     "ScopeConfigurationPage": {

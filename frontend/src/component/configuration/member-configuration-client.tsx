@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import {
@@ -19,7 +20,7 @@ import type {
   TenantMemberDirectoryResponse,
   TenantMemberRecord
 } from "@/lib/auth/types";
-import { parseErrorDetail } from "@/lib/api/parse-error-detail";
+import { parseErrorCode, parseErrorDetail } from "@/lib/api/parse-error-detail";
 
 type MemberStatusKey = "ACTIVE" | "PENDING" | "DISABLED";
 
@@ -69,6 +70,10 @@ export type MemberConfigurationCopy = {
   discardConfirm: string;
   roleLabels: Record<"master" | "admin" | "member", string>;
   statusLabels: Record<MemberStatusKey, string>;
+  inviteSendLabel: string;
+  inviteSendSendingLabel: string;
+  inviteSendErrorGeneric: string;
+  inviteSendErrorByCode: Record<string, string>;
 };
 
 type MemberConfigurationClientProps = {
@@ -142,6 +147,35 @@ function resolveSelectionFromPreferredKey(
   return { isCreateMode: false, selectedMemberId: null };
 }
 
+function resolveMemberInviteSendError(
+  payload: unknown,
+  copy: Pick<
+    MemberConfigurationCopy,
+    "inviteSendErrorGeneric" | "inviteSendErrorByCode"
+  >
+): string {
+  const code = parseErrorCode(payload);
+  const detailMessage = parseErrorDetail(payload, null);
+
+  /* O backend envia o motivo técnico (ex.: Resend) em detail.message para este código. */
+  if (code === "member_invite_delivery_failed") {
+    const mapped =
+      copy.inviteSendErrorByCode[code] ?? copy.inviteSendErrorGeneric;
+    if (detailMessage && detailMessage !== mapped) {
+      return `${mapped}\n${detailMessage}`;
+    }
+    return mapped;
+  }
+
+  if (code) {
+    const mapped = copy.inviteSendErrorByCode[code];
+    if (mapped) {
+      return mapped;
+    }
+  }
+  return detailMessage ?? copy.inviteSendErrorGeneric;
+}
+
 function findMemberIdByEmailNormalized(
   itemList: TenantMemberRecord[],
   emailNormalized: string
@@ -166,6 +200,7 @@ export function MemberConfigurationClient({
 }: MemberConfigurationClientProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const tMemberPage = useTranslations("MemberConfigurationPage");
   const initialSearchMemberKey = parseSelectedMemberKey(searchParams.get("member"));
   const initialSelection = resolveSelectionFromPreferredKey(
     initialDirectory.item_list,
@@ -213,6 +248,8 @@ export function MemberConfigurationClient({
     name?: string;
   }>({});
   const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
+  const [footerNoticeMessage, setFooterNoticeMessage] = useState<string | null>(null);
+  const [invitingMemberId, setInvitingMemberId] = useState<number | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
@@ -236,6 +273,16 @@ export function MemberConfigurationClient({
     "member",
     selectedMemberKey
   );
+
+  useEffect(() => {
+    if (!footerNoticeMessage) {
+      return;
+    }
+    const timerId = window.setTimeout(() => {
+      setFooterNoticeMessage(null);
+    }, 5000);
+    return () => window.clearTimeout(timerId);
+  }, [footerNoticeMessage]);
 
   useEffect(() => {
     selectedMemberKeyRef.current = selectedMemberKey;
@@ -303,6 +350,7 @@ export function MemberConfigurationClient({
       });
       setFieldError({});
       setRequestErrorMessage(null);
+      setFooterNoticeMessage(null);
       setIsDeletePending(false);
 
       /* Evita que o efeito de `initialDirectory` leia ref desatualizado e reverta modo criação. */
@@ -394,8 +442,59 @@ export function MemberConfigurationClient({
       return;
     }
 
+    setFooterNoticeMessage(null);
+    setRequestErrorMessage(null);
     syncFromDirectory(directory, "new");
   }, [copy.discardConfirm, directory, isCreateMode, isDirty, isSaving, syncFromDirectory]);
+
+  const handleSendMemberInvite = useCallback(
+    async (item: TenantMemberRecord) => {
+      if (!directoryAllowsMemberInvite(directory) || isSaving) {
+        return;
+      }
+
+      const memberId = item.id;
+      if (!Number.isInteger(memberId) || memberId < 1) {
+        return;
+      }
+
+      setFooterNoticeMessage(null);
+      setRequestErrorMessage(null);
+      setInvitingMemberId(memberId);
+      try {
+        const response = await fetch(
+          `/api/auth/tenant/current/members/${String(memberId)}/invite`,
+          {
+            method: "POST",
+            headers: {
+              "X-Valora-Invite-Email-Locale": locale
+            }
+          }
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+          setRequestErrorMessage(resolveMemberInviteSendError(data, copy));
+          return;
+        }
+
+        const emailRaw = (data as { email?: unknown }).email;
+        const email =
+          typeof emailRaw === "string" && emailRaw.trim()
+            ? emailRaw.trim()
+            : item.email;
+
+        setRequestErrorMessage(null);
+        setFooterNoticeMessage(tMemberPage("inviteSend.successNotice", { email }));
+      } catch {
+        setRequestErrorMessage(copy.inviteSendErrorGeneric);
+        setFooterNoticeMessage(null);
+      } finally {
+        setInvitingMemberId(null);
+      }
+    },
+    [copy, directory, isSaving, locale, tMemberPage]
+  );
 
   const handleSelectMember = useCallback(
     (member: TenantMemberRecord) => {
@@ -407,6 +506,8 @@ export function MemberConfigurationClient({
         return;
       }
 
+      setFooterNoticeMessage(null);
+      setRequestErrorMessage(null);
       syncFromDirectory(directory, member.id);
     },
     [
@@ -430,6 +531,7 @@ export function MemberConfigurationClient({
 
   const handleSave = useCallback(async () => {
     setRequestErrorMessage(null);
+    setFooterNoticeMessage(null);
 
     if (!isDeletePending && !validate()) {
       return;
@@ -616,26 +718,56 @@ export function MemberConfigurationClient({
             ) : null}
 
             {directory.item_list.map((item) => {
+              const showInviteSendAction =
+                canInviteMember &&
+                item.account_id == null &&
+                item.status === "PENDING";
+
               return (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => handleSelectMember(item)}
-                  className="ui-directory-item"
-                  data-selected={item.id === selectedMember?.id ? "true" : undefined}
-                  data-delete-pending={
-                    item.id === selectedMember?.id && isDeletePending
-                      ? "true"
-                      : undefined
-                  }
-                >
-                  <div className="ui-min-w-0">
-                    <p className="ui-directory-title">
-                      {resolveMemberLabel(item)}
-                    </p>
-                    <p className="ui-directory-caption">{item.email}</p>
-                  </div>
-                </button>
+                <div key={item.id} className="ui-directory-row">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectMember(item)}
+                    className="ui-directory-item"
+                    style={{ flex: "1 1 auto", minWidth: 0 }}
+                    data-selected={item.id === selectedMember?.id ? "true" : undefined}
+                    data-delete-pending={
+                      item.id === selectedMember?.id && isDeletePending
+                        ? "true"
+                        : undefined
+                    }
+                  >
+                    <div className="ui-min-w-0">
+                      <p className="ui-directory-title">
+                        {resolveMemberLabel(item)}
+                      </p>
+                      <p className="ui-directory-caption">{item.email}</p>
+                    </div>
+                  </button>
+                  {showInviteSendAction ? (
+                    <button
+                      type="button"
+                      className="ui-button-secondary"
+                      style={{
+                        flex: "0 0 auto",
+                        alignSelf: "center",
+                        whiteSpace: "nowrap"
+                      }}
+                      aria-label={tMemberPage("inviteSend.sendInviteAriaLabel", {
+                        email: item.email
+                      })}
+                      disabled={isSaving || invitingMemberId != null}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        void handleSendMemberInvite(item);
+                      }}
+                    >
+                      {invitingMemberId === item.id
+                        ? copy.inviteSendSendingLabel
+                        : copy.inviteSendLabel}
+                    </button>
+                  ) : null}
+                </div>
               );
             })}
 
@@ -845,6 +977,7 @@ export function MemberConfigurationClient({
         discardConfirm: copy.discardConfirm,
         isDirty,
         footerErrorMessage,
+        footerNoticeMessage,
         onSave: () => void handleSave(),
         saveDisabled: directoryEditorSaveDisabled({
           hasEditableContext: hasMemberEditorContext,

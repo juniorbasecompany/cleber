@@ -3,6 +3,7 @@ from __future__ import annotations
 from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
+from unittest.mock import patch
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event, select
@@ -321,6 +322,84 @@ def test_member_cannot_invite() -> None:
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Insufficient permissions to invite members"
+
+
+def test_master_can_send_member_invite_email() -> None:
+    with build_test_client(current_member_key="master") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
+        with patch(
+            "valora_backend.api.auth.send_member_invite",
+            return_value=(True, ""),
+        ):
+            response = client.post(
+                f"/auth/tenant/current/members/{member_id_by_key['pending']}/invite",
+                headers={"X-Valora-Invite-Email-Locale": "en-US"},
+            )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["email"] == "pending@example.com"
+    assert "successfully" in payload["message"].lower()
+
+
+def test_send_member_invite_email_rejects_active_linked_member() -> None:
+    with build_test_client(current_member_key="master") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
+        response = client.post(
+            f"/auth/tenant/current/members/{member_id_by_key['member']}/invite",
+        )
+
+    assert response.status_code == 400
+    detail = response.json()["detail"]
+    assert detail["code"] == "member_invite_already_linked"
+
+
+def test_member_cannot_send_invite_email() -> None:
+    with build_test_client(current_member_key="member") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
+        response = client.post(
+            f"/auth/tenant/current/members/{member_id_by_key['pending']}/invite",
+        )
+
+    assert response.status_code == 403
+    assert response.json()["detail"]["code"] == "member_invite_forbidden"
+
+
+def test_send_member_invite_email_not_found() -> None:
+    with build_test_client(current_member_key="master") as (client, _, _):
+        response = client.post("/auth/tenant/current/members/999999/invite")
+
+    assert response.status_code == 404
+    assert response.json()["detail"]["code"] == "member_invite_not_found"
+
+
+def test_send_member_invite_email_propagates_delivery_failure() -> None:
+    with build_test_client(current_member_key="master") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
+        with patch(
+            "valora_backend.api.auth.send_member_invite",
+            return_value=(False, "smtp down"),
+        ):
+            response = client.post(
+                f"/auth/tenant/current/members/{member_id_by_key['pending']}/invite",
+            )
+
+    assert response.status_code == 502
+    body = response.json()["detail"]
+    assert body["code"] == "member_invite_delivery_failed"
+    assert body["message"] == "smtp down"
 
 
 def test_admin_can_update_member_profile_without_changing_access() -> None:

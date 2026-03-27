@@ -1,0 +1,47 @@
+{
+  "en-US": {
+    "subject": "Invitation to join {tenant_name} on Valora",
+    "title_prefix": "Welcome to {tenant_name}",
+    "greeting": "Hello {member_name},",
+    "body_lead": "You were invited to join {tenant_name} on Valora.",
+    "cta_intro": "To open the app and get started, use the button below:",
+    "cta_label": "Open Valora",
+    "link_intro": "Or copy this link into your browser:",
+    "instructions_title": "Instructions:",
+    "instruction_existing": "If you already have an account, sign in as usual.",
+    "instruction_new": "If you do not have an account yet, sign in with a Google account that uses this email: {to_email}.",
+    "closing": "Kind regards,",
+    "signature": "The {tenant_name} team",
+    "footer": "This is an automated message from Valora. Please do not reply."
+  },
+  "pt-BR": {
+    "subject": "Convite para participar de {tenant_name} no Valora",
+    "title_prefix": "Bem-vindo(a) a {tenant_name}",
+    "greeting": "Olá {member_name},",
+    "body_lead": "Você foi convidado(a) para participar de {tenant_name} no Valora.",
+    "cta_intro": "Para abrir o aplicativo e começar, use o botão abaixo:",
+    "cta_label": "Abrir o Valora",
+    "link_intro": "Ou copie este link no navegador:",
+    "instructions_title": "Instruções:",
+    "instruction_existing": "Se você já tem uma conta, entre normalmente.",
+    "instruction_new": "Se ainda não tem conta, use uma conta Google com o mesmo e-mail: {to_email}.",
+    "closing": "Atenciosamente,",
+    "signature": "Equipe {tenant_name}",
+    "footer": "Esta é uma mensagem automática do Valora. Por favor, não responda."
+  },
+  "es-ES": {
+    "subject": "Invitación para unirse a {tenant_name} en Valora",
+    "title_prefix": "Bienvenido(a) a {tenant_name}",
+    "greeting": "Hola {member_name},",
+    "body_lead": "Has sido invitado(a) a unirte a {tenant_name} en Valora.",
+    "cta_intro": "Para abrir la aplicación y comenzar, usa el botón de abajo:",
+    "cta_label": "Abrir Valora",
+    "link_intro": "O copia este enlace en tu navegador:",
+    "instructions_title": "Instrucciones:",
+    "instruction_existing": "Si ya tienes una cuenta, inicia sesión con normalidad.",
+    "instruction_new": "Si aún no tienes cuenta, inicia sesión con una cuenta de Google que use este correo: {to_email}.",
+    "closing": "Saludos,",
+    "signature": "El equipo de {tenant_name}",
+    "footer": "Este es un mensaje automático de Valora. Por favor, no respondas."
+  }
+}

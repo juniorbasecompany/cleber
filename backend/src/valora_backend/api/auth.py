@@ -40,6 +40,7 @@ from valora_backend.audit_request import (
     apply_audit_gucs_for_session,
     set_request_audit_state,
 )
+from valora_backend.config import Settings
 from valora_backend.db import get_session
 from valora_backend.model.identity import (
     Account,
@@ -51,6 +52,8 @@ from valora_backend.model.identity import (
 )
 from valora_backend.model.log import Log
 from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
+from valora_backend.locale.member_invite_email import resolve_member_invite_locale
+from valora_backend.services.email_service import send_member_invite
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -186,6 +189,11 @@ class TenantMemberDirectoryResponse(BaseModel):
     can_edit: bool
     can_create: bool
     item_list: list[TenantMemberRecord] = Field(default_factory=list)
+
+
+class TenantMemberInviteEmailResponse(BaseModel):
+    message: str
+    email: str
 
 
 class TenantMemberCreateRequest(BaseModel):
@@ -925,6 +933,20 @@ def _member_can_edit_tenant(member: Member) -> bool:
     return member.role in (MASTER_ROLE, ADMIN_ROLE)
 
 
+def _member_invite_http_error(status_code: int, code: str, message: str) -> HTTPException:
+    return HTTPException(
+        status_code=status_code,
+        detail={"code": code, "message": message},
+    )
+
+
+def _invite_email_locale_from_request(request: Request) -> str:
+    header_locale = request.headers.get("x-valora-invite-email-locale")
+    if header_locale and header_locale.strip():
+        return resolve_member_invite_locale(header_locale.strip())
+    return resolve_member_invite_locale(Settings().invite_email_locale)
+
+
 def _member_can_delete_tenant(member: Member) -> bool:
     return member.role == MASTER_ROLE
 
@@ -1651,6 +1673,79 @@ def create_current_tenant_member(
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_member_directory(session, actor=current_member)
+
+
+@router.post(
+    "/tenant/current/members/{member_id}/invite",
+    response_model=TenantMemberInviteEmailResponse,
+)
+def post_current_tenant_member_invite_email(
+    member_id: int,
+    request: Request,
+    current_member: Member = Depends(get_current_member),
+    tenant: Tenant = Depends(get_current_tenant),
+    session: Session = Depends(get_session),
+):
+    if not _member_can_edit_tenant(current_member):
+        raise _member_invite_http_error(
+            status.HTTP_403_FORBIDDEN,
+            "member_invite_forbidden",
+            "Insufficient permissions to send member invites",
+        )
+
+    target_member = session.get(Member, member_id)
+    if not target_member or target_member.tenant_id != tenant.id:
+        raise _member_invite_http_error(
+            status.HTTP_404_NOT_FOUND,
+            "member_invite_not_found",
+            "Member not found for current tenant",
+        )
+
+    if target_member.account_id is not None:
+        raise _member_invite_http_error(
+            status.HTTP_400_BAD_REQUEST,
+            "member_invite_already_linked",
+            "Member already has a linked account",
+        )
+
+    if target_member.status != PENDING_STATUS:
+        raise _member_invite_http_error(
+            status.HTTP_400_BAD_REQUEST,
+            "member_invite_invalid_status",
+            "Invite email can only be sent for pending members",
+        )
+
+    to_email = (target_member.email or "").strip()
+    if not to_email:
+        raise _member_invite_http_error(
+            status.HTTP_400_BAD_REQUEST,
+            "member_invite_no_email",
+            "Member has no email address for the invite",
+        )
+
+    _apply_member_audit_context(session, current_member)
+    member_name = member_display_name(target_member)
+    tenant_name = tenant_display_name(tenant)
+    invite_locale = _invite_email_locale_from_request(request)
+
+    ok, err = send_member_invite(
+        to_email=to_email,
+        member_name=member_name,
+        tenant_name=tenant_name,
+        locale=invite_locale,
+    )
+    if not ok:
+        # 502: falha do provedor de e-mail (Resend), não bug interno do Valora.
+        raise _member_invite_http_error(
+            status.HTTP_502_BAD_GATEWAY,
+            "member_invite_delivery_failed",
+            err or "Failed to send invite email",
+        )
+
+    return TenantMemberInviteEmailResponse(
+        message="Invite email sent successfully",
+        email=to_email,
+    )
 
 
 @router.get("/tenant/current/scopes", response_model=TenantScopeDirectoryResponse)
