@@ -1,5 +1,6 @@
 import os
 import sys
+import traceback
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, Request
@@ -90,7 +91,17 @@ def create_app() -> FastAPI:
         response = try_build_audit_db_error_response(exc)
         if response is not None:
             return response
-        raise RuntimeError("Unhandled database error") from exc
+        traceback.print_exception(exc, file=sys.stderr)
+        return JSONResponse(
+            {
+                "detail": (
+                    "Falha ao comunicar com o banco de dados. "
+                    "Verifique os logs do servidor e a conexao ao Postgres "
+                    "(DATABASE_URL, migracoes aplicadas)."
+                )
+            },
+            status_code=500,
+        )
 
     @app.exception_handler(IntegrityError)
     async def handle_integrity_error(_request: Request, exc: IntegrityError):
