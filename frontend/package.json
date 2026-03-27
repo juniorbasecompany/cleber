@@ -4,9 +4,9 @@
   "private": true,
   "description": "Frontend web app for the Valora system.",
   "scripts": {
-    "dev": "next dev -p 3003",
-    "build": "next build --webpack",
-    "start": "next start",
+    "dev": "node ./node_modules/next/dist/bin/next dev -p 3003",
+    "build": "node ./node_modules/next/dist/bin/next build --webpack",
+    "start": "node ./node_modules/next/dist/bin/next start",
     "lint": "eslint . && node ./scripts/check-semantic-ui.mjs",
     "typecheck": "tsc --noEmit",
     "check:semantic-ui": "node ./scripts/check-semantic-ui.mjs"
@@ -26,5 +26,8 @@
   "devDependencies": {
     "eslint": "^9.39.4",
     "eslint-config-next": "^16.2.1"
+  },
+  "optionalDependencies": {
+    "@parcel/watcher-win32-x64": "^2.5.6"
   }
 }
