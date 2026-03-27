@@ -558,13 +558,18 @@ export function MemberConfigurationClient({
 
   const canInviteMember = directoryAllowsMemberInvite(directory);
 
-  const canEditForm = isCreateMode ? canInviteMember : (selectedMember?.can_edit ?? false);
+  const recordCanEdit =
+    selectedMember == null
+      ? false
+      : (selectedMember.can_edit ?? directory.can_edit);
+
+  const canEditForm = isCreateMode ? canInviteMember : recordCanEdit;
 
   const canSubmit = directoryEditorCanSubmitForDirectoryEditor({
     isCreateMode,
     isDeletePending,
     canCreate: canInviteMember,
-    canEdit: selectedMember?.can_edit ?? false
+    canEdit: recordCanEdit
   });
 
   const footerErrorMessage =
@@ -578,6 +583,13 @@ export function MemberConfigurationClient({
   const hasMemberList = directory.item_list.length > 0;
   const showAsideEmptyPanel = directory.item_list.length === 0 && !canInviteMember;
   const idleEditorHasAction = hasMemberList || canInviteMember;
+
+  /* Com baseline igual ao servidor (ex.: nome vazio), isDirty fica false e o Salvar travava sem necessidade. */
+  const saveDirtyGate =
+    isDirty ||
+    (!isCreateMode && !isDeletePending && selectedMember != null);
+
+  const hasMemberEditorContext = isCreateMode || selectedMember != null;
 
   return (
     <ConfigurationDirectoryEditorShell
@@ -835,10 +847,10 @@ export function MemberConfigurationClient({
         footerErrorMessage,
         onSave: () => void handleSave(),
         saveDisabled: directoryEditorSaveDisabled({
-          hasEditableContext: Boolean(selectedMemberKey),
+          hasEditableContext: hasMemberEditorContext,
           canSubmit,
           isSaving,
-          isDirty
+          isDirty: saveDirtyGate
         }),
         saveLabel: copy.save,
         savingLabel: copy.saving,

@@ -1804,7 +1804,8 @@ def patch_current_tenant_member(
         target_member.role = body.role
         target_member.status = body.status
 
-    if body.email != (target_member.email or "").strip().lower():
+    normalized_existing_email = (target_member.email or "").strip().lower()
+    if body.email != normalized_existing_email:
         duplicate_id = session.scalar(
             select(Member.id)
             .where(
@@ -1819,7 +1820,9 @@ def patch_current_tenant_member(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="A member with this email already exists for this tenant",
             )
-        target_member.email = body.email
+
+    # Sempre gravar como name/display_name; evita divergência se a comparação acima falhar por edge case.
+    target_member.email = body.email
 
     target_member.name = body.name
     target_member.display_name = body.display_name
