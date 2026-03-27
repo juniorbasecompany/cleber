@@ -257,7 +257,9 @@ def test_master_can_invite_member_by_email() -> None:
     assert created is not None
     assert created.status == 2
     assert created.account_id is None
-    assert any(item["email"] == "novo.convite@example.com" for item in payload["item_list"])
+    assert any(
+        item["email"] == "novo.convite@example.com" for item in payload["item_list"]
+    )
 
 
 def test_master_can_invite_member_with_empty_name_fields() -> None:
@@ -286,7 +288,11 @@ def test_master_can_invite_member_with_empty_name_fields() -> None:
 
 
 def test_invite_member_rejects_duplicate_email() -> None:
-    with build_test_client(current_member_key="master") as (client, _, member_id_by_key):
+    with build_test_client(current_member_key="master") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
         response = client.post(
             "/auth/tenant/current/members",
             json={
@@ -326,6 +332,7 @@ def test_admin_can_update_member_profile_without_changing_access() -> None:
         response = client.patch(
             f"/auth/tenant/current/members/{member_id_by_key['member']}",
             json={
+                "email": "member@example.com",
                 "name": "Member Updated",
                 "display_name": "Updated Member",
                 "role": 3,
@@ -352,6 +359,7 @@ def test_admin_can_clear_member_name_and_display_name() -> None:
         response = client.patch(
             f"/auth/tenant/current/members/{member_id_by_key['member']}",
             json={
+                "email": "member@example.com",
                 "name": "",
                 "display_name": "   ",
                 "role": 3,
@@ -367,11 +375,59 @@ def test_admin_can_clear_member_name_and_display_name() -> None:
     assert updated_member.display_name is None
 
 
+def test_admin_can_change_member_email() -> None:
+    with build_test_client(current_member_key="admin") as (
+        client,
+        session,
+        member_id_by_key,
+    ):
+        response = client.patch(
+            f"/auth/tenant/current/members/{member_id_by_key['member']}",
+            json={
+                "email": "member.renamed@example.com",
+                "name": "Member User",
+                "display_name": "Member User",
+                "role": 3,
+                "status": 1,
+            },
+        )
+        session.expire_all()
+        updated_member = session.get(Member, member_id_by_key["member"])
+
+    assert response.status_code == 200
+    assert updated_member is not None
+    assert updated_member.email == "member.renamed@example.com"
+
+
+def test_patch_member_rejects_duplicate_email() -> None:
+    with build_test_client(current_member_key="admin") as (
+        client,
+        _,
+        member_id_by_key,
+    ):
+        response = client.patch(
+            f"/auth/tenant/current/members/{member_id_by_key['member']}",
+            json={
+                "email": "admin@example.com",
+                "name": "Member User",
+                "display_name": "Member User",
+                "role": 3,
+                "status": 1,
+            },
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "A member with this email already exists for this tenant"
+    )
+
+
 def test_admin_cannot_change_member_access() -> None:
     with build_test_client(current_member_key="admin") as (client, _, member_id_by_key):
         response = client.patch(
             f"/auth/tenant/current/members/{member_id_by_key['member']}",
             json={
+                "email": "member@example.com",
                 "name": "Member Updated",
                 "display_name": "Updated Member",
                 "role": 2,
@@ -394,6 +450,7 @@ def test_master_cannot_activate_member_without_linked_account() -> None:
         response = client.patch(
             f"/auth/tenant/current/members/{member_id_by_key['pending']}",
             json={
+                "email": "pending@example.com",
                 "name": "Pending Invite",
                 "display_name": "Pending Invite",
                 "role": 3,

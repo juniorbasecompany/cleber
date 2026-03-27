@@ -115,7 +115,8 @@
                 "title": "Invitación",
                 "description": "Los registros nuevos quedan como invitación pendiente hasta que la persona acepte con la cuenta del correo indicado.",
                 "createLead": "Registro de invitación",
-                "createHint": "Guarda para registrar la invitación. La persona verá el licenciatario al iniciar sesión con una cuenta de Google que use el mismo correo."
+                "createHint": "Guarda para registrar la invitación. La persona verá el licenciatario al iniciar sesión con una cuenta de Google que use el mismo correo.",
+                "emailFieldHint": "Indica el correo que recibirá la invitación. El primer acceso usa una cuenta de Google con esa misma dirección."
             },
             "idle": {
                 "title": "Información",
@@ -129,7 +130,7 @@
                 "title": "Acceso",
                 "description": "El rol y el estado controlan el alcance del miembro dentro de este licenciatario.",
                 "emailLabel": "Correo electrónico",
-                "emailHint": "El correo de este vínculo sigue gobernado por la cuenta autenticada o por la invitación original.",
+                "memberEmailHint": "Dirección de la invitación y del primer acceso. Puedes cambiarla en cualquier momento; no tiene que coincidir con el correo de la cuenta de Google tras el vínculo.",
                 "roleLabel": "Rol",
                 "statusLabel": "Estado",
                 "accountLinked": "Cuenta vinculada",

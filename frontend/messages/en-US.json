@@ -115,7 +115,8 @@
                 "title": "Invite",
                 "description": "New records start as a pending invite until the person accepts with the account for the email you enter.",
                 "createLead": "Invite registration",
-                "createHint": "Save to register the invite. The person will see this tenant after signing in with a Google account that uses the same email."
+                "createHint": "Save to register the invite. The person will see this tenant after signing in with a Google account that uses the same email.",
+                "emailFieldHint": "Enter the email that will receive the invite. First sign-in uses a Google account with that same address."
             },
             "idle": {
                 "title": "Information",
@@ -129,7 +130,7 @@
                 "title": "Access",
                 "description": "Role and status control the member's reach inside this tenant.",
                 "emailLabel": "Email",
-                "emailHint": "The email for this relationship remains governed by the authenticated account or the original invite.",
+                "memberEmailHint": "Invite and first-login address. You can change it anytime; it does not have to match the Google account email after the link is established.",
                 "roleLabel": "Role",
                 "statusLabel": "Status",
                 "accountLinked": "Linked account",

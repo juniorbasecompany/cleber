@@ -115,7 +115,8 @@
         "title": "Convite",
         "description": "Novos cadastros entram como convite pendente até a pessoa aceitar com a conta do email informado.",
         "createLead": "Cadastro de convite",
-        "createHint": "Salve para registrar o convite. A pessoa verá o licenciado ao entrar com uma conta Google que use o mesmo email."
+        "createHint": "Salve para registrar o convite. A pessoa verá o licenciado ao entrar com uma conta Google que use o mesmo email.",
+        "emailFieldHint": "Informe o email que receberá o convite. O primeiro acesso usa uma conta Google com esse mesmo endereço."
       },
       "idle": {
         "title": "Informações",
@@ -129,7 +130,7 @@
         "title": "Acesso",
         "description": "Papel e situação controlam o alcance do membro neste licenciado.",
         "emailLabel": "Email",
-        "emailHint": "O email deste vínculo continua governado pela conta autenticada ou pelo convite original.",
+        "memberEmailHint": "Endereço do convite e do primeiro login. Pode ser alterado a qualquer momento e não precisa coincidir com o email da conta Google após o vínculo.",
         "roleLabel": "Papel",
         "statusLabel": "Situação",
         "accountLinked": "Conta vinculada",

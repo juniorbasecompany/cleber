@@ -208,10 +208,19 @@ class TenantMemberCreateRequest(BaseModel):
 
 
 class TenantMemberUpdateRequest(BaseModel):
+    email: str
     name: str
     display_name: str
     role: int
     status: int
+
+    @field_validator("email")
+    @classmethod
+    def normalize_member_update_email(cls, value: str) -> str:
+        cleaned = value.strip().lower()
+        if not cleaned or "@" not in cleaned:
+            raise ValueError("invalid email")
+        return cleaned
 
     @field_validator("name", "display_name")
     @classmethod
@@ -543,9 +552,7 @@ def _sync_member_identity(member: Member, account: Account) -> bool:
         member.display_name = account.display_name
         changed = True
 
-    if member.email != account.email:
-        member.email = account.email
-        changed = True
+    # Email do vínculo (convite / identificação) é editável na API; não espelhar account.email após o vínculo.
 
     return changed
 
@@ -839,9 +846,7 @@ def auth_google_select_tenant(
     identity = verify_google_token(body.id_token)
     account = _find_or_create_account(session, identity, request)
     _link_pending_member_to_account(session, account, request)
-    set_request_audit_state(
-        request, tenant_id=body.tenant_id, account_id=account.id
-    )
+    set_request_audit_state(request, tenant_id=body.tenant_id, account_id=account.id)
 
     member = _resolve_member_for_access(
         session,
@@ -1437,9 +1442,7 @@ def _build_previous_row_payload_by_log_id(
         while pending_list and prior_log.id < pending_list[0]["before_id"]:
             payload_dict = _coerce_log_row_payload_dict(prior_log.row_payload)
             if payload_dict is not None:
-                previous_row_payload_by_log_id[pending_list[0]["log_id"]] = (
-                    payload_dict
-                )
+                previous_row_payload_by_log_id[pending_list[0]["log_id"]] = payload_dict
                 pending_list.pop(0)
             else:
                 break
@@ -1800,6 +1803,23 @@ def patch_current_tenant_member(
         _validate_member_status_transition(target_member, body.status)
         target_member.role = body.role
         target_member.status = body.status
+
+    if body.email != (target_member.email or "").strip().lower():
+        duplicate_id = session.scalar(
+            select(Member.id)
+            .where(
+                Member.tenant_id == target_member.tenant_id,
+                func.lower(Member.email) == body.email,
+                Member.id != target_member.id,
+            )
+            .limit(1)
+        )
+        if duplicate_id is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="A member with this email already exists for this tenant",
+            )
+        target_member.email = body.email
 
     target_member.name = body.name
     target_member.display_name = body.display_name

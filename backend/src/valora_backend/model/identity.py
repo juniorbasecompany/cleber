@@ -168,7 +168,10 @@ class Member(Base):
     email: Mapped[str] = mapped_column(
         Text,
         nullable=False,
-        comment="Email do usuário.",
+        comment=(
+            "Email do convite e identificação no primeiro acesso; editável no diretório, "
+            "sem obrigatoriedade de coincidir com account.email após o vínculo."
+        ),
     )
     tenant_id: Mapped[int] = mapped_column(
         BIGINT_COMPAT,
