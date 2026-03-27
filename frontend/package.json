@@ -12,6 +12,7 @@
     "check:semantic-ui": "node ./scripts/check-semantic-ui.mjs"
   },
   "dependencies": {
+    "@swc/helpers": "0.5.20",
     "@tailwindcss/postcss": "^4.2.2",
     "@types/node": "^25.5.0",
     "@types/react": "^19.2.14",
@@ -29,8 +30,5 @@
   },
   "optionalDependencies": {
     "@parcel/watcher-win32-x64": "^2.5.6"
-  },
-  "overrides": {
-    "@swc/helpers": "0.5.20"
   }
 }
