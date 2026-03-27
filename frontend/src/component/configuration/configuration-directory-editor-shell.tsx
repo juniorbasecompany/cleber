@@ -33,9 +33,8 @@ export type ConfigurationDirectoryEditorShellProps =
  * Segunda camada acima do layout: política do corpo do editor (fluxo de cards vs painel vazio).
  * Comportamento de negócio, fetch e aside permanecem no cliente.
  *
- * Telas de diretório (tenant, membro, …) devem usar `editorVariant: "emptyWhenNoContext"` com
- * `hasEditorContext` alinhado à seleção explícita, para a entrada padrão ser painel vazio até o utilizador
- * escolher um registo ou iniciar criação (`scope` e árvores por escopo usam `new` na query).
+ * `emptyWhenNoContext`: útil quando o shell deve esconder o formulário inteiro sem contexto (ex.: certos fluxos de registro único).
+ * Diretórios com atalho **Novo** (`…=new`) devem usar o padrão **`alwaysShowForm`** e tratar vazio no JSX do editor, para o modo criação aparecer como nos outros painéis (escopos, membros).
  */
 export function ConfigurationDirectoryEditorShell(
     props: ConfigurationDirectoryEditorShellProps

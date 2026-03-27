@@ -7,6 +7,7 @@ import {
     directoryEditorCanSubmitForDirectoryEditor,
     directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
+import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
@@ -17,8 +18,11 @@ import { parseErrorDetail } from "@/lib/api/parse-error-detail";
 export type TenantConfigurationCopy = {
     title: string;
     description: string;
-    /** Painel vazio até o utilizador abrir o registo na lista (padrão dos diretórios). */
+    /** Painel vazio até o utilizador abrir o registo na lista ou Novo (padrão dos diretórios). */
     emptyEditor: string;
+    directoryCreateLabel: string;
+    createLead: string;
+    createHint: string;
     historyTitle: string;
     historyDescription: string;
     legalNameLabel: string;
@@ -39,6 +43,8 @@ export type TenantConfigurationCopy = {
     validationError: string;
     discardConfirm: string;
 };
+
+type TenantEditorContext = "none" | "edit" | "new";
 
 type TenantConfigurationClientProps = {
     locale: string;
@@ -68,7 +74,10 @@ export function TenantConfigurationClient({
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
 
     const [tenant, setTenant] = useState(initialTenant);
-    const [editorEngaged, setEditorEngaged] = useState(false);
+    /* Com `can_edit`, mesmo padrão que escopos: abre já em formulário vazio (Novo). Só leitura mantém painel de instrução. */
+    const [editorContext, setEditorContext] = useState<TenantEditorContext>(() =>
+        initialTenant.can_edit ? "new" : "none"
+    );
     const [displayName, setDisplayName] = useState("");
     const [legalName, setLegalName] = useState("");
     const [baseline, setBaseline] = useState({
@@ -89,7 +98,7 @@ export function TenantConfigurationClient({
         setFieldError({});
         setRequestErrorMessage(null);
         setIsDeletePending(false);
-        if (editorEngaged) {
+        if (editorContext === "edit") {
             setDisplayName(initialTenant.display_name);
             setLegalName(initialTenant.name);
             setBaseline({
@@ -97,14 +106,17 @@ export function TenantConfigurationClient({
                 legalName: initialTenant.name
             });
         }
-    }, [editorEngaged, initialTenant]);
+    }, [editorContext, initialTenant]);
 
     const editorFlashKey = useMemo(() => {
-        if (!editorEngaged) {
+        if (editorContext === "none") {
             return null;
         }
+        if (editorContext === "new") {
+            return "new";
+        }
         return `id:${String(tenant.id)}:legal:${tenant.name}:display:${tenant.display_name}`;
-    }, [editorEngaged, tenant.display_name, tenant.id, tenant.name]);
+    }, [editorContext, tenant.display_name, tenant.id, tenant.name]);
     const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
 
     const isDirty = useMemo(() => {
@@ -135,22 +147,8 @@ export function TenantConfigurationClient({
         setIsDeletePending((previous) => !previous);
     }, [isSaving, tenant.can_delete]);
 
-    const handleDirectoryRowClick = useCallback(() => {
-        if (editorEngaged) {
-            if (isDirty && !window.confirm(copy.discardConfirm)) {
-                return;
-            }
-            setEditorEngaged(false);
-            setDisplayName("");
-            setLegalName("");
-            setBaseline({ displayName: "", legalName: "" });
-            setFieldError({});
-            setRequestErrorMessage(null);
-            setIsDeletePending(false);
-            return;
-        }
-
-        setEditorEngaged(true);
+    const loadEditFromTenant = useCallback(() => {
+        setEditorContext("edit");
         setDisplayName(tenant.display_name);
         setLegalName(tenant.name);
         setBaseline({
@@ -160,10 +158,60 @@ export function TenantConfigurationClient({
         setFieldError({});
         setRequestErrorMessage(null);
         setIsDeletePending(false);
-    }, [copy.discardConfirm, editorEngaged, isDirty, tenant.display_name, tenant.name]);
+    }, [tenant.display_name, tenant.name]);
+
+    const collapseToNone = useCallback(() => {
+        setEditorContext("none");
+        setDisplayName("");
+        setLegalName("");
+        setBaseline({ displayName: "", legalName: "" });
+        setFieldError({});
+        setRequestErrorMessage(null);
+        setIsDeletePending(false);
+    }, []);
+
+    const handleTenantRowClick = useCallback(() => {
+        if (editorContext === "edit") {
+            if (isDirty && !window.confirm(copy.discardConfirm)) {
+                return;
+            }
+            collapseToNone();
+            return;
+        }
+
+        if (isDirty && !window.confirm(copy.discardConfirm)) {
+            return;
+        }
+        loadEditFromTenant();
+    }, [
+        collapseToNone,
+        copy.discardConfirm,
+        editorContext,
+        isDirty,
+        loadEditFromTenant
+    ]);
+
+    const handleStartCreate = useCallback(() => {
+        if (!tenant.can_edit || isSaving) {
+            return;
+        }
+        if (editorContext === "new") {
+            return;
+        }
+        if (isDirty && !window.confirm(copy.discardConfirm)) {
+            return;
+        }
+        setEditorContext("new");
+        setDisplayName("");
+        setLegalName("");
+        setBaseline({ displayName: "", legalName: "" });
+        setFieldError({});
+        setRequestErrorMessage(null);
+        setIsDeletePending(false);
+    }, [copy.discardConfirm, editorContext, isDirty, isSaving, tenant.can_edit]);
 
     const handleSave = useCallback(async () => {
-        if (!editorEngaged) {
+        if (editorContext === "none") {
             return;
         }
         setRequestErrorMessage(null);
@@ -213,6 +261,7 @@ export function TenantConfigurationClient({
                 legalName: updated.name
             });
             setIsDeletePending(false);
+            setEditorContext("edit");
             setHistoryRefreshKey((previous) => previous + 1);
             router.refresh();
         } catch {
@@ -224,7 +273,7 @@ export function TenantConfigurationClient({
         copy.deleteError,
         copy.saveError,
         displayName,
-        editorEngaged,
+        editorContext,
         isDeletePending,
         legalName,
         locale,
@@ -236,7 +285,7 @@ export function TenantConfigurationClient({
         isCreateMode: false,
         isDeletePending,
         canCreate: false,
-        canEdit: editorEngaged && tenant.can_edit
+        canEdit: editorContext !== "none" && tenant.can_edit
     });
 
     const footerErrorMessage =
@@ -252,7 +301,7 @@ export function TenantConfigurationClient({
             editorPanelRef={editorPanelElementRef}
             isDeletePending={isDeletePending}
             editorVariant="emptyWhenNoContext"
-            hasEditorContext={editorEngaged}
+            hasEditorContext={editorContext !== "none"}
             emptyEditorMessage={copy.emptyEditor}
             directoryAside={
                 <>
@@ -263,12 +312,21 @@ export function TenantConfigurationClient({
                     ) : null}
 
                     <div className="ui-directory-list">
+                        {tenant.can_edit ? (
+                            <ConfigurationDirectoryCreateButton
+                                label={copy.directoryCreateLabel}
+                                active={editorContext === "new"}
+                                disabled={isSaving}
+                                onClick={handleStartCreate}
+                            />
+                        ) : null}
+
                         <button
                             type="button"
                             className="ui-directory-item"
-                            data-selected={editorEngaged ? "true" : undefined}
+                            data-selected={editorContext === "edit" ? "true" : undefined}
                             data-delete-pending={isDeletePending ? "true" : undefined}
-                            onClick={handleDirectoryRowClick}
+                            onClick={handleTenantRowClick}
                         >
                             <div className="ui-row-between">
                                 <div className="ui-min-w-0">
@@ -300,20 +358,38 @@ export function TenantConfigurationClient({
                         onAfterFieldEdit={() => setRequestErrorMessage(null)}
                     />
 
-                    <ConfigurationInfoSection
-                        title={copy.metadataSectionTitle}
-                        description={copy.metadataSectionDescription}
-                    >
-                        <ul className="ui-info-topic-list">
-                            <li>
-                                <p className="ui-info-topic-lead">
-                                    <span className="ui-info-topic-label">{copy.metadataIdLabel}</span>
-                                    {": "}
-                                    <span className="ui-info-topic-value">{tenant.id}</span>
-                                </p>
-                            </li>
-                        </ul>
-                    </ConfigurationInfoSection>
+                    {editorContext === "edit" ? (
+                        <ConfigurationInfoSection
+                            title={copy.metadataSectionTitle}
+                            description={copy.metadataSectionDescription}
+                        >
+                            <ul className="ui-info-topic-list">
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">{copy.metadataIdLabel}</span>
+                                        {": "}
+                                        <span className="ui-info-topic-value">{tenant.id}</span>
+                                    </p>
+                                </li>
+                            </ul>
+                        </ConfigurationInfoSection>
+                    ) : null}
+
+                    {editorContext === "new" ? (
+                        <ConfigurationInfoSection
+                            title={copy.metadataSectionTitle}
+                            description={copy.metadataSectionDescription}
+                        >
+                            <ul className="ui-info-topic-list">
+                                <li>
+                                    <p className="ui-info-topic-lead">
+                                        <span className="ui-info-topic-label">{copy.createLead}</span>
+                                    </p>
+                                    <p className="ui-field-hint ui-info-topic-hint">{copy.createHint}</p>
+                                </li>
+                            </ul>
+                        </ConfigurationInfoSection>
+                    ) : null}
                 </>
             }
             history={{
@@ -331,7 +407,7 @@ export function TenantConfigurationClient({
                 footerErrorMessage,
                 onSave: () => void handleSave(),
                 saveDisabled: directoryEditorSaveDisabled({
-                    hasEditableContext: editorEngaged,
+                    hasEditableContext: editorContext !== "none",
                     canSubmit,
                     isSaving,
                     isDirty
@@ -340,7 +416,7 @@ export function TenantConfigurationClient({
                 savingLabel: copy.saving,
                 isSaving,
                 dangerAction:
-                    editorEngaged && tenant.can_delete ? (
+                    editorContext === "edit" && tenant.can_delete ? (
                         <button
                             type="button"
                             className="ui-button-danger"

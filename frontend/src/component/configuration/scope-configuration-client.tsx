@@ -10,7 +10,7 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
-import { DirectoryCreateToolbarButton } from "@/component/configuration/directory-create-toolbar-button";
+import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type {
@@ -39,7 +39,7 @@ export type ScopeConfigurationCopy = {
     infoCreateLead: string;
     infoCreateHint: string;
     cancel: string;
-    newScope: string;
+    directoryCreateLabel: string;
     delete: string;
     undoDelete: string;
     save: string;
@@ -413,8 +413,8 @@ export function ScopeConfigurationClient({
 
                     <div className="ui-directory-list">
                         {directory.can_create ? (
-                            <DirectoryCreateToolbarButton
-                                label={copy.newScope}
+                            <ConfigurationDirectoryCreateButton
+                                label={copy.directoryCreateLabel}
                                 active={isCreateMode}
                                 disabled={isSaving}
                                 onClick={handleStartCreate}

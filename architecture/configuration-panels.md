@@ -28,8 +28,9 @@ Padrão canónico para telas como escopo e locais: lista plana ou árvore no `as
 1. **`ConfigurationDirectoryEditorLayout`** — casca só de markup: `PageHeader`, grelha `ui-layout-directory-editor`, `aside` (slot), painel do editor com `ref` e `data-delete-pending`, histórico, portal do footer. Sem política de “o que mostrar” no editor.
 2. **`ConfigurationDirectoryEditorShell`** — compõe o layout e define o contrato do **corpo do editor**:
    - variante predefinida **`alwaysShowForm`**: conteúdo sempre dentro de `div.ui-editor-card-flow` (comportamento atual de escopo e locais);
-   - variante opt-in **`emptyWhenNoContext`**: quando não há contexto de edição, mostra `ui-panel ui-empty-panel` com mensagem configurável; caso contrário, o mesmo wrapper de fluxo de cards.
-3. **`configuration-directory-editor-policy.ts`** — funções puras partilhadas para alinhar o footer entre painéis deste tipo:
+   - variante opt-in **`emptyWhenNoContext`**: quando não há contexto de edição, substitui o corpo do editor por `ui-panel ui-empty-panel` com mensagem configurável (ex.: registro único tipo tenant); nos diretórios com **Novo** na URL (`…=new`), preferir o padrão **`alwaysShowForm`** e colocar o vazio **dentro** de `ui-editor-card-flow`, para o modo criação não ficar por baixo do placeholder do shell (membros e escopos seguem assim).
+3. **`ConfigurationDirectoryCreateButton`** (`configuration-directory-create-button.tsx`) — atalho canônico **Novo** / **Nova** (texto curto por locale e gênero do substantivo) no `aside` do diretório; estilos em `vertical-semantic-component.css` (`ui-configuration-directory-create-*`), mesma linguagem de borda que `ui-directory-item` (não reutilizar tokens visuais da árvore de locais neste botão).
+4. **`configuration-directory-editor-policy.ts`** — funções puras partilhadas para alinhar o footer entre painéis deste tipo:
    - `directoryEditorCanSubmitForDirectoryEditor` — em exclusão pendente, `canSubmit` é `true` (a API valida); não usar `can_delete` na UI para desativar o botão de perigo.
    - `directoryEditorSaveDisabled` — expressão única para `saveDisabled` com `hasEditableContext`, `canSubmit`, `isSaving`, `isDirty`.
 

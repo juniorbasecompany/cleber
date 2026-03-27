@@ -42,7 +42,7 @@ export default async function ScopeConfigurationPage({
     infoCreateLead: t("section.info.createLead"),
     infoCreateHint: t("section.info.createHint"),
     cancel: t("action.cancel"),
-    newScope: t("action.new"),
+    directoryCreateLabel: t("action.new"),
     delete: t("action.delete"),
     undoDelete: t("action.undoDelete"),
     save: t("action.save"),

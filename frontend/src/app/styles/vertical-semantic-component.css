@@ -378,6 +378,64 @@
   color: var(--color-text-subtle);
 }
 
+/* Atalho "Novo" / "Nova" nos painéis Configuração (diretório + editor). */
+.ui-configuration-directory-create-toolbar {
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Mesma linguagem de borda e hover que `ui-directory-item` (lista do aside). */
+.ui-configuration-directory-create-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: var(--border-width-default) solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: transparent;
+  padding: 0.25rem 0.625rem;
+  min-height: 0;
+  width: fit-content;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--color-text-muted);
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.ui-configuration-directory-create-button:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-background-muted);
+  color: var(--color-accent-text);
+}
+
+/* Ativo: mesmo tipo de borda que o estado inativo (sólida), alinhado a `ui-directory-item[data-selected]`. */
+.ui-configuration-directory-create-button[data-active="true"] {
+  border-color: var(--color-accent-border-emphasis);
+  background: var(--color-accent-surface-default);
+  color: var(--color-accent-text);
+  box-shadow: var(--shadow-xs);
+}
+
+.ui-configuration-directory-create-button[data-active="true"]:hover {
+  border-color: var(--color-accent-border-emphasis);
+  background: var(--color-accent-surface-strong);
+  color: var(--color-accent-text);
+}
+
+.ui-configuration-directory-create-button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.ui-configuration-directory-create-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
 .ui-location-nest-list {
   display: grid;
   gap: 1rem;

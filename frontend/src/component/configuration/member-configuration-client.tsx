@@ -10,8 +10,11 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
+import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
+import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
+import type { ConfigurationSelectionKey } from "@/lib/navigation/configuration-path";
 import type {
     TenantMemberDirectoryResponse,
     TenantMemberRecord
@@ -24,8 +27,12 @@ export type MemberConfigurationCopy = {
     title: string;
     description: string;
     empty: string;
-    /** Painel vazio até o utilizador escolher um registo na lista (padrão dos diretórios). */
-    selectToEdit: string;
+    sectionIdleTitle: string;
+    sectionIdleDescription: string;
+    sectionIdleSelectLead: string;
+    sectionIdleSelectHint: string;
+    sectionIdleEmptyLead: string;
+    sectionIdleEmptyHint: string;
     historyTitle: string;
     historyDescription: string;
     displayNameLabel: string;
@@ -41,7 +48,12 @@ export type MemberConfigurationCopy = {
     accountLinked: string;
     accountPending: string;
     accountTopicLabel: string;
+    inviteSectionTitle: string;
+    inviteSectionDescription: string;
+    inviteCreateLead: string;
+    inviteCreateHint: string;
     cancel: string;
+    directoryCreateLabel: string;
     delete: string;
     undoDelete: string;
     save: string;
@@ -49,8 +61,10 @@ export type MemberConfigurationCopy = {
     readOnlyNotice: string;
     protectedRecordNotice: string;
     saveError: string;
+    createError: string;
     deleteError: string;
     validationError: string;
+    emailValidationError: string;
     discardConfirm: string;
     roleLabels: Record<"master" | "admin" | "member", string>;
     statusLabels: Record<MemberStatusKey, string>;
@@ -80,21 +94,13 @@ function normalizeStatusKey(raw: string): MemberStatusKey {
     return "DISABLED";
 }
 
-function getStatusToneClass(status: MemberStatusKey) {
-    if (status === "ACTIVE") {
-        return "ui-tone-positive";
-    }
-
-    if (status === "PENDING") {
-        return "ui-tone-attention";
-    }
-
-    return "ui-tone-danger";
-}
-
-function parseSelectedMemberId(raw: string | null): number | null {
+function parseSelectedMemberKey(raw: string | null): ConfigurationSelectionKey {
     if (!raw) {
         return null;
+    }
+
+    if (raw === "new") {
+        return "new";
     }
 
     const parsed = Number(raw);
@@ -105,14 +111,51 @@ function parseSelectedMemberId(raw: string | null): number | null {
     return parsed;
 }
 
-function resolveSelectedMemberId(
+/** Compatível com respostas sem `can_create` (backend antigo ou proxy em cache). */
+function directoryAllowsMemberInvite(directory: TenantMemberDirectoryResponse): boolean {
+    return directory.can_create ?? directory.can_edit;
+}
+
+function resolveSelectionFromPreferredKey(
     itemList: TenantMemberRecord[],
-    preferredMemberId: number | null
-): number | null {
-    if (preferredMemberId == null) {
-        return null;
+    preferredKey: ConfigurationSelectionKey,
+    canCreate: boolean
+): { isCreateMode: boolean; selectedMemberId: number | null } {
+    if (preferredKey === "new") {
+        return {
+            isCreateMode: Boolean(canCreate),
+            selectedMemberId: null
+        };
     }
-    return itemList.find((item) => item.id === preferredMemberId)?.id ?? null;
+
+    if (typeof preferredKey === "number") {
+        const id = itemList.find((item) => item.id === preferredKey)?.id ?? null;
+        if (id != null) {
+            return { isCreateMode: false, selectedMemberId: id };
+        }
+        /* ID da URL inexistente ou removido: painel ocioso até nova escolha na lista. */
+        return { isCreateMode: false, selectedMemberId: null };
+    }
+
+    /* Sem query explícita: painel de edição vazio (ocioso); convite só com ?member=new ou Novo. */
+    return { isCreateMode: false, selectedMemberId: null };
+}
+
+function findMemberIdByEmailNormalized(
+    itemList: TenantMemberRecord[],
+    emailNormalized: string
+): number | null {
+    const target = emailNormalized.trim().toLowerCase();
+    let best: TenantMemberRecord | null = null;
+    for (const item of itemList) {
+        if (item.email.trim().toLowerCase() !== target) {
+            continue;
+        }
+        if (best == null || item.id > best.id) {
+            best = item;
+        }
+    }
+    return best?.id ?? null;
 }
 
 export function MemberConfigurationClient({
@@ -122,13 +165,18 @@ export function MemberConfigurationClient({
 }: MemberConfigurationClientProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
-    const initialSearchMemberId = parseSelectedMemberId(searchParams.get("member"));
-    const initialSelectedMemberId = resolveSelectedMemberId(
+    const initialSearchMemberKey = parseSelectedMemberKey(searchParams.get("member"));
+    const initialSelection = resolveSelectionFromPreferredKey(
         initialDirectory.item_list,
-        initialSearchMemberId
+        initialSearchMemberKey,
+        directoryAllowsMemberInvite(initialDirectory)
     );
     const initialSelectedMember =
-        initialDirectory.item_list.find((item) => item.id === initialSelectedMemberId) ?? null;
+        initialSelection.selectedMemberId == null
+            ? null
+            : (initialDirectory.item_list.find(
+                  (item) => item.id === initialSelection.selectedMemberId
+              ) ?? null);
 
     const configurationPath = `/${locale}/app/configuration`;
     const memberPath = `/${locale}/app/configuration/member`;
@@ -141,16 +189,20 @@ export function MemberConfigurationClient({
     );
 
     const [directory, setDirectory] = useState(initialDirectory);
+    const [isCreateMode, setIsCreateMode] = useState(initialSelection.isCreateMode);
     const [selectedMemberId, setSelectedMemberId] = useState<number | null>(
-        initialSelectedMemberId
+        initialSelection.selectedMemberId
     );
+    const [inviteEmail, setInviteEmail] = useState("");
+    const [inviteEmailError, setInviteEmailError] = useState<string | undefined>();
     const [displayName, setDisplayName] = useState(
         initialSelectedMember?.display_name ?? ""
     );
     const [name, setName] = useState(initialSelectedMember?.name ?? "");
     const [baseline, setBaseline] = useState({
         displayName: initialSelectedMember?.display_name ?? "",
-        name: initialSelectedMember?.name ?? ""
+        name: initialSelectedMember?.name ?? "",
+        inviteEmail: ""
     });
     const [fieldError, setFieldError] = useState<{
         displayName?: string;
@@ -161,21 +213,29 @@ export function MemberConfigurationClient({
     const [isDeletePending, setIsDeletePending] = useState(false);
     const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
-    const initialSearchMemberIdRef = useRef<number | null>(initialSearchMemberId);
-    const selectedMemberIdRef = useRef<number | null>(initialSelectedMemberId);
+    const initialSearchMemberKeyRef = useRef<ConfigurationSelectionKey>(initialSearchMemberKey);
+    const selectedMemberKeyRef = useRef<ConfigurationSelectionKey>(
+        initialSelection.isCreateMode
+            ? "new"
+            : initialSelection.selectedMemberId
+    );
     const didResolveInitialUrlRef = useRef(false);
+
+    const selectedMemberKey: ConfigurationSelectionKey = isCreateMode
+        ? "new"
+        : selectedMemberId;
 
     useReplaceConfigurationPath(
         memberPath,
         searchParams,
         replacePath,
         "member",
-        selectedMemberId
+        selectedMemberKey
     );
 
     useEffect(() => {
-        selectedMemberIdRef.current = selectedMemberId;
-    }, [selectedMemberId]);
+        selectedMemberKeyRef.current = selectedMemberKey;
+    }, [selectedMemberKey]);
 
     const selectedMember = useMemo(() => {
         if (selectedMemberId == null) {
@@ -185,60 +245,109 @@ export function MemberConfigurationClient({
     }, [directory.item_list, selectedMemberId]);
 
     const editorFlashKey = useMemo(() => {
+        if (isCreateMode) {
+            return "new";
+        }
+
         if (!selectedMember) {
             return null;
         }
 
         return `id:${String(selectedMember.id)}:name:${selectedMember.name}:display:${selectedMember.display_name}`;
-    }, [selectedMember]);
+    }, [isCreateMode, selectedMember]);
 
     const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
 
     const syncFromDirectory = useCallback(
         (
             nextDirectory: TenantMemberDirectoryResponse,
-            preferredMemberId?: number | null
+            preferredKey?: ConfigurationSelectionKey
         ) => {
-            const nextSelectedMemberId = resolveSelectedMemberId(
+            const nextSelection = resolveSelectionFromPreferredKey(
                 nextDirectory.item_list,
-                preferredMemberId ?? null
+                preferredKey ?? null,
+                directoryAllowsMemberInvite(nextDirectory)
             );
             const nextSelectedMember =
-                nextDirectory.item_list.find((item) => item.id === nextSelectedMemberId) ?? null;
+                nextSelection.selectedMemberId == null
+                    ? null
+                    : (nextDirectory.item_list.find(
+                          (item) => item.id === nextSelection.selectedMemberId
+                      ) ?? null);
 
             setDirectory(nextDirectory);
-            setSelectedMemberId(nextSelectedMemberId);
-            setDisplayName(nextSelectedMember?.display_name ?? "");
-            setName(nextSelectedMember?.name ?? "");
+            setIsCreateMode(nextSelection.isCreateMode);
+            setSelectedMemberId(nextSelection.selectedMemberId);
+            setInviteEmail("");
+            setInviteEmailError(undefined);
+            setDisplayName(
+                nextSelection.isCreateMode ? "" : (nextSelectedMember?.display_name ?? "")
+            );
+            setName(nextSelection.isCreateMode ? "" : (nextSelectedMember?.name ?? ""));
             setBaseline({
-                displayName: nextSelectedMember?.display_name ?? "",
-                name: nextSelectedMember?.name ?? ""
+                displayName: nextSelection.isCreateMode
+                    ? ""
+                    : (nextSelectedMember?.display_name ?? ""),
+                name: nextSelection.isCreateMode ? "" : (nextSelectedMember?.name ?? ""),
+                inviteEmail: ""
             });
             setFieldError({});
             setRequestErrorMessage(null);
             setIsDeletePending(false);
 
-            return nextSelectedMemberId;
+            /* Evita que o efeito de `initialDirectory` leia ref desatualizado e reverta modo criação. */
+            selectedMemberKeyRef.current = nextSelection.isCreateMode
+                ? "new"
+                : nextSelection.selectedMemberId;
+
+            return nextSelection;
         },
         []
     );
 
     useEffect(() => {
-        const preferredMemberId = didResolveInitialUrlRef.current
-            ? selectedMemberIdRef.current
-            : initialSearchMemberIdRef.current;
+        const preferredKey = didResolveInitialUrlRef.current
+            ? selectedMemberKeyRef.current
+            : initialSearchMemberKeyRef.current;
 
         didResolveInitialUrlRef.current = true;
-        syncFromDirectory(initialDirectory, preferredMemberId);
+        syncFromDirectory(initialDirectory, preferredKey);
     }, [initialDirectory, syncFromDirectory]);
 
     const isDirty = useMemo(() => {
+        if (isCreateMode) {
+            return (
+                inviteEmail.trim() !== baseline.inviteEmail.trim() ||
+                displayName.trim() !== baseline.displayName.trim() ||
+                name.trim() !== baseline.name.trim()
+            );
+        }
+
         return (
             displayName.trim() !== baseline.displayName.trim() ||
             name.trim() !== baseline.name.trim() ||
             isDeletePending
         );
-    }, [baseline.displayName, baseline.name, displayName, isDeletePending, name]);
+    }, [
+        baseline.displayName,
+        baseline.inviteEmail,
+        baseline.name,
+        displayName,
+        inviteEmail,
+        isCreateMode,
+        isDeletePending,
+        name
+    ]);
+
+    const validateInviteEmail = useCallback(() => {
+        const trimmed = inviteEmail.trim();
+        if (!trimmed || !trimmed.includes("@")) {
+            setInviteEmailError(copy.emailValidationError);
+            return false;
+        }
+        setInviteEmailError(undefined);
+        return true;
+    }, [copy.emailValidationError, inviteEmail]);
 
     const validate = useCallback(() => {
         const nextError: { displayName?: string; name?: string } = {};
@@ -252,12 +361,32 @@ export function MemberConfigurationClient({
         }
 
         setFieldError(nextError);
-        return Object.keys(nextError).length === 0;
-    }, [copy.validationError, displayName, name]);
+        const namesOk = Object.keys(nextError).length === 0;
+        if (isCreateMode) {
+            return namesOk && validateInviteEmail();
+        }
+        return namesOk;
+    }, [copy.validationError, displayName, isCreateMode, name, validateInviteEmail]);
+
+    const handleStartCreate = useCallback(() => {
+        if (!directoryAllowsMemberInvite(directory) || isSaving) {
+            return;
+        }
+
+        if (isCreateMode) {
+            return;
+        }
+
+        if (isDirty && !window.confirm(copy.discardConfirm)) {
+            return;
+        }
+
+        syncFromDirectory(directory, "new");
+    }, [copy.discardConfirm, directory, isCreateMode, isDirty, isSaving, syncFromDirectory]);
 
     const handleSelectMember = useCallback(
         (member: TenantMemberRecord) => {
-            if (member.id === selectedMemberId) {
+            if (!isCreateMode && member.id === selectedMemberId) {
                 return;
             }
 
@@ -267,7 +396,14 @@ export function MemberConfigurationClient({
 
             syncFromDirectory(directory, member.id);
         },
-        [copy.discardConfirm, directory, isDirty, selectedMemberId, syncFromDirectory]
+        [
+            copy.discardConfirm,
+            directory,
+            isCreateMode,
+            isDirty,
+            selectedMemberId,
+            syncFromDirectory
+        ]
     );
 
     const handleToggleDelete = useCallback(() => {
@@ -280,10 +416,6 @@ export function MemberConfigurationClient({
     }, [isSaving]);
 
     const handleSave = useCallback(async () => {
-        if (!selectedMember) {
-            return;
-        }
-
         setRequestErrorMessage(null);
 
         if (!isDeletePending && !validate()) {
@@ -292,24 +424,58 @@ export function MemberConfigurationClient({
 
         setIsSaving(true);
         try {
+            if (isCreateMode) {
+                const emailNormalized = inviteEmail.trim().toLowerCase();
+                const response = await fetch("/api/auth/tenant/current/members", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        email: inviteEmail.trim(),
+                        name: name.trim(),
+                        display_name: displayName.trim()
+                    })
+                });
+                const data: unknown = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    setRequestErrorMessage(
+                        parseErrorDetail(data, copy.createError) ?? copy.createError
+                    );
+                    return;
+                }
+
+                const updatedDirectory = data as TenantMemberDirectoryResponse;
+                const createdId = findMemberIdByEmailNormalized(
+                    updatedDirectory.item_list,
+                    emailNormalized
+                );
+                syncFromDirectory(updatedDirectory, createdId);
+                setHistoryRefreshKey((previous) => previous + 1);
+                return;
+            }
+
+            if (!selectedMember) {
+                return;
+            }
+
             const response = await fetch(
                 `/api/auth/tenant/current/members/${selectedMember.id}`,
                 isDeletePending
                     ? {
-                        method: "DELETE"
-                    }
+                          method: "DELETE"
+                      }
                     : {
-                        method: "PATCH",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({
-                            display_name: displayName.trim(),
-                            name: name.trim(),
-                            role: selectedMember.role,
-                            status: memberStatusValueByKey[
-                                normalizeStatusKey(selectedMember.status)
-                            ]
-                        })
-                    }
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({
+                              display_name: displayName.trim(),
+                              name: name.trim(),
+                              role: selectedMember.role,
+                              status: memberStatusValueByKey[
+                                  normalizeStatusKey(selectedMember.status)
+                              ]
+                          })
+                      }
             );
             const data: unknown = await response.json().catch(() => ({}));
 
@@ -325,14 +491,23 @@ export function MemberConfigurationClient({
             syncFromDirectory(updatedDirectory, selectedMember.id);
             setHistoryRefreshKey((previous) => previous + 1);
         } catch {
-            setRequestErrorMessage(isDeletePending ? copy.deleteError : copy.saveError);
+            setRequestErrorMessage(
+                isCreateMode
+                    ? copy.createError
+                    : isDeletePending
+                      ? copy.deleteError
+                      : copy.saveError
+            );
         } finally {
             setIsSaving(false);
         }
     }, [
+        copy.createError,
         copy.deleteError,
         copy.saveError,
         displayName,
+        inviteEmail,
+        isCreateMode,
         isDeletePending,
         name,
         selectedMember,
@@ -360,18 +535,27 @@ export function MemberConfigurationClient({
         return copy.statusLabels[key];
     }, [copy.statusLabels, selectedMember]);
 
+    const canInviteMember = directoryAllowsMemberInvite(directory);
+
+    const canEditForm = isCreateMode ? canInviteMember : (selectedMember?.can_edit ?? false);
+
     const canSubmit = directoryEditorCanSubmitForDirectoryEditor({
-        isCreateMode: false,
+        isCreateMode,
         isDeletePending,
-        canCreate: false,
+        canCreate: canInviteMember,
         canEdit: selectedMember?.can_edit ?? false
     });
 
     const footerErrorMessage =
-        requestErrorMessage ?? fieldError.name ?? fieldError.displayName ?? null;
+        requestErrorMessage ??
+        fieldError.name ??
+        fieldError.displayName ??
+        inviteEmailError ??
+        null;
 
     const hasMemberList = directory.item_list.length > 0;
-    const hasEditorSelection = selectedMember != null;
+    const showAsideEmptyPanel = directory.item_list.length === 0 && !canInviteMember;
+    const idleEditorHasAction = hasMemberList || canInviteMember;
 
     return (
         <ConfigurationDirectoryEditorShell
@@ -379,9 +563,6 @@ export function MemberConfigurationClient({
             headerDescription={copy.description}
             editorPanelRef={editorPanelElementRef}
             isDeletePending={isDeletePending}
-            editorVariant="emptyWhenNoContext"
-            hasEditorContext={hasEditorSelection}
-            emptyEditorMessage={hasMemberList ? copy.selectToEdit : copy.empty}
             directoryAside={
                 <>
                     {!directory.can_edit ? (
@@ -391,12 +572,16 @@ export function MemberConfigurationClient({
                     ) : null}
 
                     <div className="ui-directory-list">
-                        {directory.item_list.map((item) => {
-                            const itemStatusKey = normalizeStatusKey(item.status);
-                            const roleLabel =
-                                copy.roleLabels[item.role_name as keyof typeof copy.roleLabels] ??
-                                item.role_name;
+                        {canInviteMember ? (
+                            <ConfigurationDirectoryCreateButton
+                                label={copy.directoryCreateLabel}
+                                active={isCreateMode}
+                                disabled={isSaving}
+                                onClick={handleStartCreate}
+                            />
+                        ) : null}
 
+                        {directory.item_list.map((item) => {
                             return (
                                 <button
                                     key={item.id}
@@ -410,32 +595,17 @@ export function MemberConfigurationClient({
                                             : undefined
                                     }
                                 >
-                                    <div className="ui-row-between">
-                                        <div className="ui-min-w-0">
-                                            <p className="ui-directory-title">
-                                                {resolveMemberLabel(item)}
-                                            </p>
-                                            <p className="ui-directory-caption">
-                                                {item.email}
-                                            </p>
-                                        </div>
-                                        <span
-                                            className={`ui-badge ui-badge-neutral ${getStatusToneClass(itemStatusKey)}`}
-                                        >
-                                            {copy.statusLabels[itemStatusKey]}
-                                        </span>
-                                    </div>
-
-                                    <div className="ui-directory-meta">
-                                        <span className="ui-badge ui-badge-neutral">
-                                            {roleLabel}
-                                        </span>
+                                    <div className="ui-min-w-0">
+                                        <p className="ui-directory-title">
+                                            {resolveMemberLabel(item)}
+                                        </p>
+                                        <p className="ui-directory-caption">{item.email}</p>
                                     </div>
                                 </button>
                             );
                         })}
 
-                        {directory.item_list.length === 0 ? (
+                        {showAsideEmptyPanel ? (
                             <div className="ui-panel ui-empty-panel ui-panel-body-compact">
                                 {copy.empty}
                             </div>
@@ -445,10 +615,67 @@ export function MemberConfigurationClient({
             }
             editorForm={
                 <>
-                    {directory.can_edit && selectedMember && !selectedMember.can_edit ? (
+                    {!isCreateMode &&
+                    directory.can_edit &&
+                    selectedMember &&
+                    !selectedMember.can_edit ? (
                         <div className="ui-notice-attention ui-notice-block">
                             {copy.protectedRecordNotice}
                         </div>
+                    ) : null}
+
+                    {isCreateMode ? (
+                        <section className="ui-card ui-form-section ui-border-accent">
+                            <EditorPanelFlashOverlay active={isEditorFlashActive} />
+                            <div className="ui-editor-content">
+                                <div className="ui-field">
+                                    <label className="ui-field-label" htmlFor="member-invite-email">
+                                        {copy.emailLabel}
+                                    </label>
+                                    <input
+                                        id="member-invite-email"
+                                        type="email"
+                                        className="ui-input"
+                                        value={inviteEmail}
+                                        onChange={(event) => {
+                                            setInviteEmail(event.target.value);
+                                            setInviteEmailError(undefined);
+                                            setRequestErrorMessage(null);
+                                        }}
+                                        disabled={isSaving || !canEditForm}
+                                        autoComplete="email"
+                                        aria-invalid={Boolean(inviteEmailError)}
+                                    />
+                                    <p className="ui-field-hint">{copy.emailHint}</p>
+                                    {inviteEmailError ? (
+                                        <p className="ui-field-error">{inviteEmailError}</p>
+                                    ) : null}
+                                </div>
+                            </div>
+                        </section>
+                    ) : null}
+
+                    {!isCreateMode && selectedMember ? (
+                        <section className="ui-card ui-form-section ui-border-accent">
+                            <EditorPanelFlashOverlay active={isEditorFlashActive} />
+                            <div className="ui-editor-content">
+                                <div className="ui-field">
+                                    <label className="ui-field-label" htmlFor="member-email">
+                                        {copy.emailLabel}
+                                    </label>
+                                    <input
+                                        id="member-email"
+                                        type="email"
+                                        className="ui-input"
+                                        value={selectedMember.email}
+                                        readOnly
+                                        disabled={isDeletePending || !selectedMember.can_edit}
+                                        aria-readonly="true"
+                                    />
+                                    <p className="ui-field-hint">{copy.emailHint}</p>
+                                </div>
+                            </div>
+                        </section>
                     ) : null}
 
                     <ConfigurationNameDisplayNameFields
@@ -460,60 +687,102 @@ export function MemberConfigurationClient({
                         setDisplayName={setDisplayName}
                         setFieldError={setFieldError}
                         fieldError={fieldError}
-                        disabled={isDeletePending || !selectedMember?.can_edit}
+                        disabled={isDeletePending || !canEditForm}
                         nameLabel={copy.nameLabel}
                         nameHint={copy.nameHint}
                         displayNameLabel={copy.displayNameLabel}
                         displayNameHint={copy.displayNameHint}
-                        flashActive={isEditorFlashActive}
+                        flashActive={
+                            isEditorFlashActive && !isCreateMode && selectedMember == null
+                        }
                         onAfterFieldEdit={() => setRequestErrorMessage(null)}
                     />
 
-                    {selectedMember ? (
+                    {!isCreateMode && selectedMember ? (
+                        <>
+                            <ConfigurationInfoSection
+                                title={copy.sectionAccessTitle}
+                                description={copy.sectionAccessDescription}
+                            >
+                                <ul className="ui-info-topic-list">
+                                    <li>
+                                        <p className="ui-info-topic-lead">
+                                            <span className="ui-info-topic-label">
+                                                {copy.accountTopicLabel}
+                                            </span>
+                                            {": "}
+                                            <span className="ui-info-topic-value">
+                                                {selectedMember.account_id
+                                                    ? copy.accountLinked
+                                                    : copy.accountPending}
+                                            </span>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p className="ui-info-topic-lead">
+                                            <span className="ui-info-topic-label">
+                                                {copy.roleLabel}
+                                            </span>
+                                            {": "}
+                                            <span className="ui-info-topic-value">
+                                                {accessRoleText}
+                                            </span>
+                                        </p>
+                                    </li>
+                                    <li>
+                                        <p className="ui-info-topic-lead">
+                                            <span className="ui-info-topic-label">
+                                                {copy.statusLabel}
+                                            </span>
+                                            {": "}
+                                            <span className="ui-info-topic-value">
+                                                {accessStatusText}
+                                            </span>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </ConfigurationInfoSection>
+                        </>
+                    ) : null}
+
+                    {isCreateMode ? (
                         <ConfigurationInfoSection
-                            title={copy.sectionAccessTitle}
-                            description={copy.sectionAccessDescription}
+                            title={copy.inviteSectionTitle}
+                            description={copy.inviteSectionDescription}
                         >
                             <ul className="ui-info-topic-list">
                                 <li>
                                     <p className="ui-info-topic-lead">
-                                        <span className="ui-info-topic-label">{copy.emailLabel}</span>
-                                        {": "}
-                                        <span className="ui-info-topic-value">
-                                            {selectedMember.email}
+                                        <span className="ui-info-topic-label">
+                                            {copy.inviteCreateLead}
                                         </span>
                                     </p>
-                                    <p className="ui-field-hint ui-info-topic-hint">{copy.emailHint}</p>
+                                    <p className="ui-field-hint ui-info-topic-hint">
+                                        {copy.inviteCreateHint}
+                                    </p>
                                 </li>
+                            </ul>
+                        </ConfigurationInfoSection>
+                    ) : null}
+
+                    {!isCreateMode && selectedMember == null ? (
+                        <ConfigurationInfoSection
+                            title={copy.sectionIdleTitle}
+                            description={copy.sectionIdleDescription}
+                        >
+                            <ul className="ui-info-topic-list">
                                 <li>
                                     <p className="ui-info-topic-lead">
                                         <span className="ui-info-topic-label">
-                                            {copy.accountTopicLabel}
-                                        </span>
-                                        {": "}
-                                        <span className="ui-info-topic-value">
-                                            {selectedMember.account_id
-                                                ? copy.accountLinked
-                                                : copy.accountPending}
+                                            {idleEditorHasAction
+                                                ? copy.sectionIdleSelectLead
+                                                : copy.sectionIdleEmptyLead}
                                         </span>
                                     </p>
-                                </li>
-                                <li>
-                                    <p className="ui-info-topic-lead">
-                                        <span className="ui-info-topic-label">{copy.roleLabel}</span>
-                                        {": "}
-                                        <span className="ui-info-topic-value">{accessRoleText}</span>
-                                    </p>
-                                </li>
-                                <li>
-                                    <p className="ui-info-topic-lead">
-                                        <span className="ui-info-topic-label">
-                                            {copy.statusLabel}
-                                        </span>
-                                        {": "}
-                                        <span className="ui-info-topic-value">
-                                            {accessStatusText}
-                                        </span>
+                                    <p className="ui-field-hint ui-info-topic-hint">
+                                        {idleEditorHasAction
+                                            ? copy.sectionIdleSelectHint
+                                            : copy.sectionIdleEmptyHint}
                                     </p>
                                 </li>
                             </ul>
@@ -536,7 +805,7 @@ export function MemberConfigurationClient({
                 footerErrorMessage,
                 onSave: () => void handleSave(),
                 saveDisabled: directoryEditorSaveDisabled({
-                    hasEditableContext: hasEditorSelection,
+                    hasEditableContext: Boolean(selectedMemberKey),
                     canSubmit,
                     isSaving,
                     isDirty
@@ -544,16 +813,17 @@ export function MemberConfigurationClient({
                 saveLabel: copy.save,
                 savingLabel: copy.saving,
                 isSaving,
-                dangerAction: selectedMember ? (
-                    <button
-                        type="button"
-                        className="ui-button-danger"
-                        onClick={handleToggleDelete}
-                        disabled={isSaving}
-                    >
-                        {isDeletePending ? copy.undoDelete : copy.delete}
-                    </button>
-                ) : null
+                dangerAction:
+                    !isCreateMode && selectedMember ? (
+                        <button
+                            type="button"
+                            className="ui-button-danger"
+                            onClick={handleToggleDelete}
+                            disabled={isSaving}
+                        >
+                            {isDeletePending ? copy.undoDelete : copy.delete}
+                        </button>
+                    ) : null
             }}
         />
     );

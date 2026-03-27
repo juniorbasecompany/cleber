@@ -74,7 +74,7 @@ export default async function LocationConfigurationPage({
           displayNameHint: t("section.identity.displayNameHint"),
           dragDropHint: t("dragDropHint"),
           cancel: t("action.cancel"),
-          newLabel: t("action.newLabel"),
+          directoryCreateLabel: t("action.new"),
           newChild: t("action.newChild"),
           newSibling: t("action.newSibling"),
           delete: t("action.delete"),

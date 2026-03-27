@@ -22,3 +22,31 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json(result.data);
 }
+
+export async function POST(request: NextRequest) {
+  const authResult = requireToken(request);
+  if (!authResult.ok) {
+    return authResult.error;
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ detail: "Invalid JSON body" }, { status: 400 });
+  }
+
+  const result = await backendFetch<TenantMemberDirectoryResponse>(
+    "/auth/tenant/current/members",
+    {
+      method: "POST",
+      token: authResult.token,
+      body
+    }
+  );
+  if (!result.ok) {
+    return result.error;
+  }
+
+  return NextResponse.json(result.data);
+}

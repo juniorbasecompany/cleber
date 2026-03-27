@@ -100,9 +100,6 @@
         "list": {
             "empty": "No members were found for the active tenant."
         },
-        "editor": {
-            "selectToEdit": "Select a member in the list to view and edit their details."
-        },
         "history": {
             "title": "Change history",
             "description": "Review recent changes to member records: who changed what, when, and a clear summary of each update."
@@ -113,6 +110,20 @@
                 "displayNameHint": "Used across the tenant's internal surfaces.",
                 "nameLabel": "Full name",
                 "nameHint": "Use the most complete name for administrative reference."
+            },
+            "invite": {
+                "title": "Invite",
+                "description": "New records start as a pending invite until the person accepts with the account for the email you enter.",
+                "createLead": "Invite registration",
+                "createHint": "Save to register the invite. The person will see this tenant after signing in with a Google account that uses the same email."
+            },
+            "idle": {
+                "title": "Information",
+                "description": "How to use this panel: pick a member in the list on the left to edit their record, or use New to register an invite when you have permission.",
+                "selectLead": "No member selected",
+                "selectHint": "Click a member in the list or use the New button to register an email invite.",
+                "emptyLead": "No members found",
+                "emptyHint": "There are no members in this tenant and your current permission does not allow registering invites."
             },
             "access": {
                 "title": "Access",
@@ -128,6 +139,7 @@
         },
         "action": {
             "cancel": "Cancel",
+            "new": "New",
             "delete": "Delete",
             "undoDelete": "Undo delete",
             "save": "Save",
@@ -147,8 +159,10 @@
         },
         "error": {
             "save": "Could not save the member. Try again.",
+            "create": "Could not register the member. Try again.",
             "delete": "Could not delete the member. Try again.",
-            "validation": "This field cannot be empty."
+            "validation": "This field cannot be empty.",
+            "emailValidation": "Enter a valid email address."
         },
         "discardConfirm": "Discard unsaved changes?"
     },
@@ -182,14 +196,14 @@
         },
         "action": {
             "cancel": "Cancel",
-            "new": "New scope",
+            "new": "New",
             "delete": "Delete",
             "undoDelete": "Undo delete",
             "save": "Save",
             "saving": "Saving..."
         },
         "readOnlyNotice": "You can review the scope directory, but only master or admin members can create or edit structural records.",
-        "selectPrompt": "Select a scope from the list to edit the structural record.",
+        "selectPrompt": "Select a scope from the list to edit it, or use the New button to create one.",
         "error": {
             "save": "Could not save the scope. Try again.",
             "create": "Could not create the scope. Try again.",
@@ -233,7 +247,7 @@
         "dragDropHint": "Drag a handle to reorder before or after a sibling, or drop on a row to move under that location.",
         "action": {
             "cancel": "Cancel",
-            "newLabel": "New",
+            "new": "New",
             "newChild": "New child",
             "newSibling": "New sibling",
             "delete": "Delete",
@@ -259,7 +273,7 @@
     },
     "UnityConfigurationPage": {
         "title": "Productive units",
-        "description": "This panel shows the productive-unit tree for the scope. The hierarchy is on the left; beside it is the form to edit the name and description, plus the history panel. Select an item in the tree to edit it, or use New to add a child under the chosen item.",
+        "description": "This panel shows the productive-unit tree for the scope. The hierarchy is on the left; beside it is the form to edit the name and description, plus the history panel. Select an item in the tree to edit it, or use the New button to add a child under the chosen item.",
         "list": {
             "empty": "No productive units were found for the selected scope.",
             "emptyScope": "Create a scope before editing productive units.",
@@ -292,7 +306,7 @@
         "dragDropHint": "Drag a handle to reorder before or after a sibling, or drop on a row to move under that item.",
         "action": {
             "cancel": "Cancel",
-            "newLabel": "New",
+            "new": "New",
             "newChild": "New child",
             "newSibling": "New sibling",
             "delete": "Delete",
@@ -320,7 +334,7 @@
         "title": "Tenant",
         "description": "These fields identify the contracting organization in the workspace, top bar, and lists. Changes apply to the active tenant of your session.",
         "editor": {
-            "selectToEdit": "Select the tenant in the list to view and edit its details."
+            "selectToEdit": "Select the tenant in the list to view and edit its details, or use New to open an empty form."
         },
         "history": {
             "title": "Change history",
@@ -343,10 +357,13 @@
         "metadata": {
             "idLabel": "Internal identifier",
             "sectionTitle": "System reference",
-            "sectionDescription": "Stable identifier for this tenant in the database."
+            "sectionDescription": "Stable identifier for this tenant in the database.",
+            "createLead": "Empty form for the active tenant",
+            "createHint": "Fill in the display name and full legal name. Save to update the tenant for this session; the internal identifier does not change."
         },
         "action": {
             "cancel": "Cancel",
+            "new": "New",
             "delete": "Delete",
             "undoDelete": "Undo delete",
             "save": "Save",

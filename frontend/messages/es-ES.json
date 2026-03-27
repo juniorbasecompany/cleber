@@ -100,9 +100,6 @@
         "list": {
             "empty": "No se encontraron miembros para el licenciatario activo."
         },
-        "editor": {
-            "selectToEdit": "Selecciona un miembro en la lista para ver y editar los datos."
-        },
         "history": {
             "title": "Historial de cambios",
             "description": "Consulta los cambios recientes en los miembros: quién modificó qué, cuándo y un resumen claro de cada cambio."
@@ -113,6 +110,20 @@
                 "displayNameHint": "Se usa en las superficies internas del licenciatario.",
                 "nameLabel": "Nombre completo",
                 "nameHint": "Usa el nombre más completo para la referencia administrativa."
+            },
+            "invite": {
+                "title": "Invitación",
+                "description": "Los registros nuevos quedan como invitación pendiente hasta que la persona acepte con la cuenta del correo indicado.",
+                "createLead": "Registro de invitación",
+                "createHint": "Guarda para registrar la invitación. La persona verá el licenciatario al iniciar sesión con una cuenta de Google que use el mismo correo."
+            },
+            "idle": {
+                "title": "Información",
+                "description": "Cómo usar este panel: elige un miembro en la lista de la izquierda para editar su registro, o usa Nuevo para registrar una invitación cuando tengas permiso.",
+                "selectLead": "Ningún miembro seleccionado",
+                "selectHint": "Haz clic en un miembro de la lista o usa el botón Nuevo para registrar una invitación por correo.",
+                "emptyLead": "No se encontraron miembros",
+                "emptyHint": "No hay miembros en este licenciatario y tu permiso actual no permite registrar invitaciones."
             },
             "access": {
                 "title": "Acceso",
@@ -128,6 +139,7 @@
         },
         "action": {
             "cancel": "Cancelar",
+            "new": "Nuevo",
             "delete": "Eliminar",
             "undoDelete": "Desmarcar eliminación",
             "save": "Guardar",
@@ -147,8 +159,10 @@
         },
         "error": {
             "save": "No se pudo guardar el miembro. Inténtalo de nuevo.",
+            "create": "No se pudo registrar el miembro. Inténtalo de nuevo.",
             "delete": "No se pudo eliminar el miembro. Inténtalo de nuevo.",
-            "validation": "Este campo no puede quedar vacío."
+            "validation": "Este campo no puede quedar vacío.",
+            "emailValidation": "Indica un correo electrónico válido."
         },
         "discardConfirm": "¿Descartar los cambios no guardados?"
     },
@@ -182,14 +196,14 @@
         },
         "action": {
             "cancel": "Cancelar",
-            "new": "Nuevo alcance",
+            "new": "Nuevo",
             "delete": "Eliminar",
             "undoDelete": "Desmarcar eliminación",
             "save": "Guardar",
             "saving": "Guardando..."
         },
         "readOnlyNotice": "Puedes revisar el directorio de alcances, pero solo los miembros master o administrador pueden crear o editar registros estructurales.",
-        "selectPrompt": "Selecciona un alcance de la lista para editar el registro estructural.",
+        "selectPrompt": "Selecciona un alcance de la lista para editarlo, o usa el botón Nuevo para dar de alta uno nuevo.",
         "error": {
             "save": "No se pudo guardar el alcance. Inténtalo de nuevo.",
             "create": "No se pudo crear el alcance. Inténtalo de nuevo.",
@@ -200,7 +214,7 @@
     },
     "LocationConfigurationPage": {
         "title": "Ubicaciones",
-        "description": "En este panel ves tu árbol de ubicaciones. A la izquierda aparece la jerarquía; al lado, el formulario para editar el nombre y otra información sobre la ubicación, además del panel de historial. Selecciona una ubicación en el árbol para editarla o haz clic en el botón Nuevo para crear una nueva subdivisión en esa ubicación.",
+        "description": "En este panel ves tu árbol de ubicaciones. A la izquierda aparece la jerarquía; al lado, el formulario para editar el nombre y otra información sobre la ubicación, además del panel de historial. Selecciona una ubicación en el árbol para editarla o haz clic en el botón Nueva para crear una nueva subdivisión en esa ubicación.",
         "list": {
             "empty": "No se encontraron ubicaciones para el alcance seleccionado.",
             "emptyScope": "Crea un alcance antes de editar la jerarquía de ubicaciones.",
@@ -233,7 +247,7 @@
         "dragDropHint": "Arrastra el asa para reordenar antes o después de un hermano, o suéltala sobre una fila para moverla debajo de esa ubicación.",
         "action": {
             "cancel": "Cancelar",
-            "newLabel": "Nuevo",
+            "new": "Nueva",
             "newChild": "Nuevo hijo",
             "newSibling": "Nuevo hermano",
             "delete": "Eliminar",
@@ -259,7 +273,7 @@
     },
     "UnityConfigurationPage": {
         "title": "Unidades productivas",
-        "description": "En este panel ves el árbol de unidades productivas del alcance. A la izquierda está la jerarquía; al lado, el formulario para editar nombre y descripción, además del panel de historial. Selecciona un ítem en el árbol para editarlo o usa Nuevo para crear otro nivel bajo el ítem elegido.",
+        "description": "En este panel ves el árbol de unidades productivas del alcance. A la izquierda está la jerarquía; al lado, el formulario para editar nombre y descripción, además del panel de historial. Selecciona un ítem en el árbol para editarlo o usa el botón Nueva para crear otro nivel bajo el ítem elegido.",
         "list": {
             "empty": "No se encontraron unidades productivas para el alcance seleccionado.",
             "emptyScope": "Crea un alcance antes de editar unidades productivas.",
@@ -292,7 +306,7 @@
         "dragDropHint": "Arrastra el asa para reordenar antes o después de un hermano, o suéltala sobre una fila para moverla debajo de ese ítem.",
         "action": {
             "cancel": "Cancelar",
-            "newLabel": "Nuevo",
+            "new": "Nueva",
             "newChild": "Nuevo hijo",
             "newSibling": "Nuevo hermano",
             "delete": "Eliminar",
@@ -320,7 +334,7 @@
         "title": "Licenciatario",
         "description": "Estos campos identifican a la organización contratante en el espacio de trabajo, la barra superior y las listas. Los cambios aplican al licenciatario activo de tu sesión.",
         "editor": {
-            "selectToEdit": "Selecciona el licenciatario en la lista para ver y editar los datos."
+            "selectToEdit": "Selecciona el licenciatario en la lista para ver y editar los datos, o usa Nuevo para abrir un formulario vacío."
         },
         "history": {
             "title": "Historial de cambios",
@@ -343,10 +357,13 @@
         "metadata": {
             "idLabel": "Identificador interno",
             "sectionTitle": "Referencia en el sistema",
-            "sectionDescription": "Identificador estable del licenciatario en la base de datos."
+            "sectionDescription": "Identificador estable del licenciatario en la base de datos.",
+            "createLead": "Formulario vacío para el licenciatario activo",
+            "createHint": "Completa el nombre para mostrar y el nombre legal completo. Guarda para actualizar el licenciatario de esta sesión; el identificador interno no cambia."
         },
         "action": {
             "cancel": "Cancelar",
+            "new": "Nuevo",
             "delete": "Eliminar",
             "undoDelete": "Desmarcar eliminación",
             "save": "Guardar",

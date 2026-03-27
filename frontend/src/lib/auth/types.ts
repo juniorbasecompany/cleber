@@ -58,6 +58,8 @@ export type TenantMemberRecord = {
 
 export type TenantMemberDirectoryResponse = {
   can_edit: boolean;
+  /** Ausente em respostas antigas do backend; usar `can_edit` como fallback na UI. */
+  can_create?: boolean;
   item_list: TenantMemberRecord[];
 };
 

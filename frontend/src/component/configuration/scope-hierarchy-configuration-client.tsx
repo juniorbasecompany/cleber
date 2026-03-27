@@ -15,7 +15,7 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
-import { DirectoryCreateToolbarButton } from "@/component/configuration/directory-create-toolbar-button";
+import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type {
@@ -510,9 +510,8 @@ export function ScopeHierarchyConfigurationClient<
 
                     <div className="ui-directory-list ui-location-nest-list">
                         {directory?.can_create ? (
-                            <DirectoryCreateToolbarButton
-                                label={copy.newLabel}
-                                toneStyle={buildHierarchyToneStyle(0, maxDepth)}
+                            <ConfigurationDirectoryCreateButton
+                                label={copy.directoryCreateLabel}
                                 active={isCreateMode && parentId == null}
                                 disabled={isSaving}
                                 onClick={() => handleStartCreate(null)}

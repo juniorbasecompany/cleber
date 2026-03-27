@@ -100,9 +100,6 @@
     "list": {
       "empty": "Nenhum membro foi encontrado para o licenciado ativo."
     },
-    "editor": {
-      "selectToEdit": "Selecione um membro na lista para ver e editar os dados."
-    },
     "history": {
       "title": "Histórico de alterações",
       "description": "Consulte o histórico do cadastro de membros: quem alterou, quando e um resumo claro do que mudou."
@@ -113,6 +110,20 @@
         "displayNameHint": "Usado nas áreas internas do licenciado.",
         "nameLabel": "Nome completo",
         "nameHint": "Use o nome mais completo para referência administrativa."
+      },
+      "invite": {
+        "title": "Convite",
+        "description": "Novos cadastros entram como convite pendente até a pessoa aceitar com a conta do email informado.",
+        "createLead": "Cadastro de convite",
+        "createHint": "Salve para registrar o convite. A pessoa verá o licenciado ao entrar com uma conta Google que use o mesmo email."
+      },
+      "idle": {
+        "title": "Informações",
+        "description": "Resumo de como usar este painel: escolha um membro na lista à esquerda para editar o cadastro, ou use Novo para registrar um convite quando tiver permissão.",
+        "selectLead": "Nenhum membro selecionado",
+        "selectHint": "Clique em um membro na lista ou use o botão Novo para cadastrar um convite por email.",
+        "emptyLead": "Nenhum membro encontrado",
+        "emptyHint": "Não há membros neste licenciado e sua permissão atual não permite cadastrar convites."
       },
       "access": {
         "title": "Acesso",
@@ -128,6 +139,7 @@
     },
     "action": {
       "cancel": "Cancelar",
+      "new": "Novo",
       "delete": "Apagar",
       "undoDelete": "Desmarcar exclusão",
       "save": "Salvar",
@@ -147,8 +159,10 @@
     },
     "error": {
       "save": "Não foi possível salvar o membro. Tente novamente.",
+      "create": "Não foi possível cadastrar o membro. Tente novamente.",
       "delete": "Não foi possível apagar o membro. Tente novamente.",
-      "validation": "Este campo não pode ficar vazio."
+      "validation": "Este campo não pode ficar vazio.",
+      "emailValidation": "Informe um email válido."
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },
@@ -182,14 +196,14 @@
     },
     "action": {
       "cancel": "Cancelar",
-      "new": "Novo escopo",
+      "new": "Novo",
       "delete": "Apagar",
       "undoDelete": "Desmarcar exclusão",
       "save": "Salvar",
       "saving": "Salvando..."
     },
     "readOnlyNotice": "Você pode consultar o diretório de escopos, mas só membros master ou administrador podem criar ou editar cadastros estruturais.",
-    "selectPrompt": "Selecione um escopo na lista para editar o cadastro estrutural.",
+    "selectPrompt": "Selecione um escopo na lista para editar, ou use o botão Novo para cadastrar.",
     "error": {
       "save": "Não foi possível salvar o escopo. Tente novamente.",
       "create": "Não foi possível criar o escopo. Tente novamente.",
@@ -233,7 +247,7 @@
     "dragDropHint": "Arraste a alça para reordenar antes ou depois de um irmão, ou solte sobre uma linha para mover para baixo desse local.",
     "action": {
       "cancel": "Cancelar",
-      "newLabel": "Novo",
+      "new": "Novo",
       "newChild": "Novo filho",
       "newSibling": "Novo irmão",
       "delete": "Apagar",
@@ -259,7 +273,7 @@
   },
   "UnityConfigurationPage": {
     "title": "Unidades produtivas",
-    "description": "Neste painel você vê a árvore de unidades produtivas do escopo. À esquerda está a hierarquia; ao lado, o formulário para editar nome e descrição, além do painel de histórico. Selecione um item na árvore para editá-lo ou use Novo para criar outro nível abaixo do item escolhido.",
+    "description": "Neste painel você vê a árvore de unidades produtivas do escopo. À esquerda está a hierarquia; ao lado, o formulário para editar nome e descrição, além do painel de histórico. Selecione um item na árvore para editá-lo ou use o botão Nova para criar outro nível abaixo do item escolhido.",
     "list": {
       "empty": "Nenhuma unidade produtiva foi encontrada para o escopo selecionado.",
       "emptyScope": "Crie um escopo antes de editar unidades produtivas.",
@@ -292,7 +306,7 @@
     "dragDropHint": "Arraste a alça para reordenar antes ou depois de um irmão, ou solte sobre uma linha para mover para baixo desse item.",
     "action": {
       "cancel": "Cancelar",
-      "newLabel": "Novo",
+      "new": "Nova",
       "newChild": "Novo filho",
       "newSibling": "Novo irmão",
       "delete": "Apagar",
@@ -320,7 +334,7 @@
     "title": "Licenciado",
     "description": "Estes campos identificam a organização contratante no ambiente, na barra superior e nas listas. As alterações valem para o licenciado ativo da sua sessão.",
     "editor": {
-      "selectToEdit": "Selecione o licenciado na lista para ver e editar os dados."
+      "selectToEdit": "Selecione o licenciado na lista para ver e editar os dados, ou use o botão Novo para abrir o formulário vazio."
     },
     "history": {
       "title": "Histórico de alterações",
@@ -343,10 +357,13 @@
     "metadata": {
       "idLabel": "Identificador interno",
       "sectionTitle": "Referência no sistema",
-      "sectionDescription": "Identificador estável do licenciado na base de dados."
+      "sectionDescription": "Identificador estável do licenciado na base de dados.",
+      "createLead": "Formulário vazio para o licenciado ativo",
+      "createHint": "Preencha nome de exibição e nome completo oficial. Salve para atualizar o licenciado desta sessão (identificador interno inalterado)."
     },
     "action": {
       "cancel": "Cancelar",
+      "new": "Novo",
       "delete": "Apagar",
       "undoDelete": "Desmarcar exclusão",
       "save": "Salvar",

@@ -7,7 +7,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import or_, select, text
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session
 
 from valora_backend.auth.dependencies import (
@@ -184,7 +184,30 @@ class TenantMemberRecord(BaseModel):
 
 class TenantMemberDirectoryResponse(BaseModel):
     can_edit: bool
+    can_create: bool
     item_list: list[TenantMemberRecord] = Field(default_factory=list)
+
+
+class TenantMemberCreateRequest(BaseModel):
+    email: str
+    name: str
+    display_name: str
+
+    @field_validator("email")
+    @classmethod
+    def normalize_member_invite_email(cls, value: str) -> str:
+        cleaned = value.strip().lower()
+        if not cleaned or "@" not in cleaned:
+            raise ValueError("invalid email")
+        return cleaned
+
+    @field_validator("name", "display_name")
+    @classmethod
+    def strip_non_empty_invite_name(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("must not be empty")
+        return cleaned
 
 
 class TenantMemberUpdateRequest(BaseModel):
@@ -1000,8 +1023,10 @@ def _build_tenant_member_directory(
             item.id,
         )
     )
+    can_manage_directory = _member_can_edit_tenant(actor)
     return TenantMemberDirectoryResponse(
-        can_edit=_member_can_edit_tenant(actor),
+        can_edit=can_manage_directory,
+        can_create=can_manage_directory,
         item_list=[_serialize_tenant_member(actor, item) for item in member_list],
     )
 
@@ -1586,6 +1611,49 @@ def get_current_tenant_member_directory(
     session: Session = Depends(get_session),
 ):
     return _build_tenant_member_directory(session, actor=member)
+
+
+@router.post("/tenant/current/members", response_model=TenantMemberDirectoryResponse)
+def create_current_tenant_member(
+    body: TenantMemberCreateRequest,
+    current_member: Member = Depends(get_current_member),
+    tenant: Tenant = Depends(get_current_tenant),
+    session: Session = Depends(get_session),
+):
+    if not _member_can_edit_tenant(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to invite members",
+        )
+
+    duplicate_id = session.scalar(
+        select(Member.id)
+        .where(
+            Member.tenant_id == tenant.id,
+            func.lower(Member.email) == body.email,
+        )
+        .limit(1)
+    )
+    if duplicate_id is not None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="A member with this email already exists for this tenant",
+        )
+
+    invited = Member(
+        name=body.name,
+        display_name=body.display_name,
+        email=body.email,
+        tenant_id=tenant.id,
+        account_id=None,
+        role=MEMBER_ROLE,
+        status=PENDING_STATUS,
+    )
+    session.add(invited)
+    _apply_member_audit_context(session, current_member)
+    commit_session_with_null_if_empty(session)
+
+    return _build_tenant_member_directory(session, actor=current_member)
 
 
 @router.get("/tenant/current/scopes", response_model=TenantScopeDirectoryResponse)

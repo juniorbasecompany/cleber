@@ -214,12 +214,82 @@ def test_get_current_tenant_member_directory_exposes_capabilities() -> None:
     member_map = {item["id"]: item for item in payload["item_list"]}
 
     assert payload["can_edit"] is True
+    assert payload["can_create"] is True
     assert member_map[member_id_by_key["master"]]["can_edit_access"] is False
     assert member_map[member_id_by_key["master"]]["can_delete"] is False
     assert member_map[member_id_by_key["admin"]]["can_edit"] is True
     assert member_map[member_id_by_key["admin"]]["can_edit_access"] is True
     assert member_map[member_id_by_key["admin"]]["can_delete"] is True
     assert member_map[member_id_by_key["pending"]]["status"] == "PENDING"
+
+
+def test_get_current_tenant_member_directory_member_role_cannot_create() -> None:
+    with build_test_client(current_member_key="member") as (client, _, _):
+        response = client.get("/auth/tenant/current/members")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["can_edit"] is False
+    assert payload["can_create"] is False
+
+
+def test_master_can_invite_member_by_email() -> None:
+    with build_test_client(current_member_key="master") as (
+        client,
+        session,
+        member_id_by_key,
+    ):
+        response = client.post(
+            "/auth/tenant/current/members",
+            json={
+                "email": "novo.convite@example.com",
+                "name": "Novo Convidado",
+                "display_name": "Novo",
+            },
+        )
+        session.expire_all()
+        created = session.scalar(
+            select(Member).where(Member.email == "novo.convite@example.com")
+        )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert created is not None
+    assert created.status == 2
+    assert created.account_id is None
+    assert any(item["email"] == "novo.convite@example.com" for item in payload["item_list"])
+
+
+def test_invite_member_rejects_duplicate_email() -> None:
+    with build_test_client(current_member_key="master") as (client, _, member_id_by_key):
+        response = client.post(
+            "/auth/tenant/current/members",
+            json={
+                "email": "pending@example.com",
+                "name": "Dup",
+                "display_name": "Dup",
+            },
+        )
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == (
+        "A member with this email already exists for this tenant"
+    )
+
+
+def test_member_cannot_invite() -> None:
+    with build_test_client(current_member_key="member") as (client, _, _):
+        response = client.post(
+            "/auth/tenant/current/members",
+            json={
+                "email": "x@example.com",
+                "name": "X",
+                "display_name": "X",
+            },
+        )
+
+    assert response.status_code == 403
+    assert response.json()["detail"] == "Insufficient permissions to invite members"
 
 
 def test_admin_can_update_member_profile_without_changing_access() -> None:
