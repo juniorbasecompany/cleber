@@ -14,8 +14,10 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Apenas na raiz do repositório (layout Python egg). Não usar `lib/` sem
+# âncora: isso ignorava `frontend/src/lib/` e o código não ia para o Git.
+/lib/
+/lib64/
 parts/
 sdist/
 var/
