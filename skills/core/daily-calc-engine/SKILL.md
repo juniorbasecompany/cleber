@@ -12,6 +12,8 @@ Leia estas referências conforme necessário:
 - `references/provenance.md`
 - `references/materialized-facts.md`
 
+Para **fórmulas configuráveis** no backend (expressões com SimpleEval em passos nomeados, lista branca de funções e erros de passo), ver [skills/implementation/rule-formula-simpleeval/SKILL.md](../../implementation/rule-formula-simpleeval/SKILL.md).
+
 ## Fluxo
 
 1. Selecione a entidade ou o segmento ativo para a data.
