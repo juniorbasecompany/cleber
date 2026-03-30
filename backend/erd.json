@@ -1003,7 +1003,7 @@
           "check": "",
           "primary": false,
           "unique": false,
-          "notNull": false,
+          "notNull": true,
           "increment": false,
           "size": "",
           "values": []
@@ -1363,7 +1363,7 @@
       "endFieldId": "parent_result_id",
       "cardinality": "one_to_many",
       "updateConstraint": "Cascade",
-      "deleteConstraint": "Restrict"
+      "deleteConstraint": "Cascade"
     },
     {
       "id": "input.field_id",
