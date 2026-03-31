@@ -248,7 +248,7 @@ def _fill_other_field_labels_via_deepl(
         if target_lang == source_lang:
             continue
         try:
-            translated = translate_text_deepl(
+            translated, _ = translate_text_deepl(
                 text=stripped,
                 source_app_lang=source_lang,
                 target_app_lang=target_lang,

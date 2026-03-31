@@ -30,7 +30,9 @@ Este ficheiro é a **fonte canónica** no repositório para a **política estáv
 - **Decisão:** usar a **DeepL API** como provedor para gerar ou sugerir traduções de textos curtos persistidos na tabela `label` (associada a `field` ou `action`), alinhada aos valores de `lang` já definidos no modelo (`pt-BR`, `en`, `es`).
 - **Âmbito:** rótulos curtos de domínio (por exemplo, nome amigável de campo). Não substitui o fluxo de mensagens da UI em arquivos por locale (**next-intl**), descrito nas regras fixas desta política.
 - **Estado:** o backend preenche os rótulos de **field** nas outras línguas ao criar ou atualizar com `label_lang`/`label_name`, quando `DEEPL_API_KEY` está definida; chamadas só no servidor; `DEEPL_API_BASE_URL` opcional (padrão API Free). Falhas da DeepL são logadas e não impedem gravar o idioma de origem. Rótulos de **action** ainda não usam este fluxo.
-- **Orientação:** mapear `pt-BR`, `en` e `es` para códigos DeepL; prever revisão humana após tradução automática.
+- **Contrato com a API (backend):** autenticação pelo header `Authorization: DeepL-Auth-Key <chave>`; não enviar `auth_key` no corpo nem na query. O pedido envia `text`, **`source_lang`** e **`target_lang`**: o idioma de origem vem do `label_lang` do field (`pt-BR`, `en`, `es`); na API, **`source_lang`** usa códigos agregados **`PT`**, **`EN`**, **`ES`** (a DeepL **não** aceita `PT-BR` nem `EN-US` em `source_lang`). O **`target_lang`** usa variantes **`PT-BR`**, **`EN-US`**, **`ES`**. Para rótulos curtos, o backend envia `split_sentences=0`. Assim reduz ambiguidade em palavras como *data* (calendário vs informação).
+- **Host Free vs Pro:** chaves Free terminam em `:fx` e usam `https://api-free.deepl.com`; chaves Pro usam `https://api.deepl.com`. Se `DEEPL_API_BASE_URL` não corresponder ao tipo de chave, o backend ajusta o host para evitar 403.
+- **Orientação:** prever revisão humana após tradução automática.
 
 ---
 

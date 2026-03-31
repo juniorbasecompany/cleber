@@ -11,6 +11,7 @@ from valora_backend.model.identity import Scope
 from valora_backend.model.rules import Field, Label
 from valora_backend.services.deepl_label_translation import (
     app_lang_to_deepl,
+    app_lang_to_deepl_source,
     resolve_deepl_api_base_url,
     translate_text_deepl,
 )
@@ -48,7 +49,7 @@ def test_resolve_deepl_api_base_url_free_key_matching_host_unchanged() -> None:
     )
 
 
-def test_app_lang_to_deepl_maps() -> None:
+def test_app_lang_to_deepl_maps_target() -> None:
     assert app_lang_to_deepl("pt-BR") == "PT-BR"
     assert app_lang_to_deepl("en") == "EN-US"
     assert app_lang_to_deepl("es") == "ES"
@@ -59,14 +60,27 @@ def test_app_lang_to_deepl_unknown() -> None:
         app_lang_to_deepl("fr")
 
 
+def test_app_lang_to_deepl_source_maps() -> None:
+    assert app_lang_to_deepl_source("pt-BR") == "PT"
+    assert app_lang_to_deepl_source("en") == "EN"
+    assert app_lang_to_deepl_source("es") == "ES"
+
+
+def test_app_lang_to_deepl_source_unknown() -> None:
+    with pytest.raises(ValueError, match="source"):
+        app_lang_to_deepl_source("fr")
+
+
 @patch("valora_backend.services.deepl_label_translation.requests.post")
 def test_translate_text_deepl_success(mock_post: MagicMock) -> None:
     mock_resp = MagicMock()
     mock_resp.raise_for_status = MagicMock()
-    mock_resp.json.return_value = {"translations": [{"text": "  Hello  "}]}
+    mock_resp.json.return_value = {
+        "translations": [{"text": "  Hello  ", "detected_source_language": "PT"}]
+    }
     mock_post.return_value = mock_resp
 
-    out = translate_text_deepl(
+    out, detected = translate_text_deepl(
         text="Oi",
         source_app_lang="pt-BR",
         target_app_lang="en",
@@ -74,6 +88,7 @@ def test_translate_text_deepl_success(mock_post: MagicMock) -> None:
         base_url="https://api-free.deepl.com",
     )
     assert out == "Hello"
+    assert detected == "PT"
 
     mock_post.assert_called_once()
     call_kw = mock_post.call_args
@@ -81,8 +96,9 @@ def test_translate_text_deepl_success(mock_post: MagicMock) -> None:
     data = call_kw[1]["data"]
     assert "auth_key" not in data
     assert data["text"] == "Oi"
-    assert "source_lang" not in data
+    assert data["source_lang"] == "PT"
     assert data["target_lang"] == "EN-US"
+    assert data.get("split_sentences") == "0"
     hdr = call_kw[1]["headers"]
     assert hdr["Authorization"] == "DeepL-Auth-Key k"
 
@@ -100,7 +116,7 @@ def test_create_field_label_triggers_deepl_with_auth_header(monkeypatch: pytest.
         }.get(target, "x")
         m = MagicMock()
         m.raise_for_status = MagicMock()
-        m.json.return_value = {"translations": [{"text": out}]}
+        m.json.return_value = {"translations": [{"text": out, "detected_source_language": "PT"}]}
         return m
 
     # Sufixo :fx = chave Free; assim resolve_deepl_api_base_url mantém api-free (como o fake_post).
@@ -134,6 +150,7 @@ def test_create_field_label_triggers_deepl_with_auth_header(monkeypatch: pytest.
     assert len(calls) == 2
     for c in calls:
         assert "auth_key" not in c["data"]
+        assert c["data"].get("source_lang") == "PT"
         assert c["headers"].get("Authorization") == "DeepL-Auth-Key test-deepl-secret:fx"
 
 

@@ -41,7 +41,7 @@ def main() -> int:
 
     texto = "Número de itens no lote"
     try:
-        en = translate_text_deepl(
+        en, _ = translate_text_deepl(
             text=texto,
             source_app_lang="pt-BR",
             target_app_lang="en",
@@ -50,7 +50,7 @@ def main() -> int:
         )
         print("pt-BR:", texto)
         print("en:   ", en)
-        es = translate_text_deepl(
+        es, _ = translate_text_deepl(
             text=texto,
             source_app_lang="pt-BR",
             target_app_lang="es",

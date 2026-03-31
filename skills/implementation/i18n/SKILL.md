@@ -33,7 +33,7 @@ Garantir que **texto de produto e mensagens de erro** não fiquem espalhados com
 
 ## Metadado (rótulos em base de dados)
 
-- Para tradução assistida de `label` ligada a `field` ou `action` (preenchimento automático ou sugestão entre `pt-BR`, `en`, `es`), seguir a secção **Tradução assistida para metadado em base de dados** em [policy.md](./policy.md) (provedor: **DeepL API**).
+- Para tradução assistida de `label` ligada a **`field`** (preenchimento automático entre `pt-BR`, `en`, `es` ao criar ou atualizar o campo com `label_lang`/`label_name`; a DeepL recebe `source_lang` derivado desse idioma e `target_lang` por destino, ver [policy.md](./policy.md)), seguir a secção **Tradução assistida para metadado em base de dados** (provedor: **DeepL API**; `action` ainda não entra neste fluxo).
 
 ## Referências
 

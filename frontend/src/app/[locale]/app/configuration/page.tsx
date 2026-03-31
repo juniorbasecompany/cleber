@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { InfoCard } from "@/component/app-shell/info-card";
 import { PageHeader } from "@/component/app-shell/page-header";
-import { BuildingIcon, ScopeIcon, SparkIcon, UsersIcon } from "@/component/ui/ui-icons";
+import { BuildingIcon, RulerIcon, ScopeIcon, UsersIcon } from "@/component/ui/ui-icons";
 
 type ConfigurationPageProps = {
     params: Promise<{ locale: string }>;
@@ -45,7 +45,7 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
                 <InfoCard
                     title={t("cards.field.title")}
                     description={t("cards.field.description")}
-                    iconSlot={<SparkIcon className="ui-icon" />}
+                    iconSlot={<RulerIcon className="ui-icon" />}
                     actionHref={fieldEditorHref}
                     actionLabel={t("openFieldEditor")}
                 />

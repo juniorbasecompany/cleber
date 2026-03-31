@@ -35,7 +35,7 @@ APP_JWT_SECRET=
 
 Opcional em deploy: `DATABASE_URL` ou `VALORA_DATABASE_URL` (ver [`config.py`](src/valora_backend/config.py)).
 
-Opcional, tradução assistida de rótulos de field (DeepL): `DEEPL_API_KEY` (chaves **Free** terminam em `:fx` e usam `https://api-free.deepl.com`; chaves **Pro** usam `https://api.deepl.com`). Se `DEEPL_API_BASE_URL` não bater com o tipo de chave, a API responde **403**: o backend corrige o host automaticamente quando detecta mismatch. A autenticação é o header `Authorization: DeepL-Auth-Key …` (não usar `auth_key` no corpo).
+Opcional, tradução assistida de rótulos de field (DeepL): `DEEPL_API_KEY` (chaves **Free** terminam em `:fx` e usam `https://api-free.deepl.com`; chaves **Pro** usam `https://api.deepl.com`). Se `DEEPL_API_BASE_URL` não bater com o tipo de chave, a API responde **403**: o backend corrige o host automaticamente quando detecta mismatch. A autenticação é o header `Authorization: DeepL-Auth-Key …` (não usar `auth_key` no corpo). As traduções automáticas enviam **`source_lang`** e **`target_lang`** (origem = `label_lang`; códigos de origem na API: `PT` / `EN` / `ES`; destino: `PT-BR` / `EN-US` / `ES`). Ver [`deepl_label_translation.py`](src/valora_backend/services/deepl_label_translation.py).
 
 ### Autenticação e sessão
 

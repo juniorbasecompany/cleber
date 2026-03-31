@@ -55,7 +55,13 @@ export function DashboardIcon({ className }: IconProps) {
             strokeLinejoin="round"
             aria-hidden
         >
-            <path d="M4 13.5h6.5V20H4zM13.5 4H20v8h-6.5zM13.5 15.5H20V20h-6.5zM4 4h6.5v6.5H4z" />
+            {/* Painel: coluna de resumo + widgets com série e barras */}
+            <rect x="3" y="3.5" width="9.5" height="17" rx="1" />
+            <rect x="14.5" y="3.5" width="6.5" height="7.5" rx="1" />
+            <rect x="14.5" y="12.5" width="6.5" height="8" rx="1" />
+            <path d="M5.2 7.8h5.2M5.2 10.8h4M5.2 13.8h5.2" />
+            <path d="m15.3 8.9 1.3-1.2 1.2.6 1.4-1.6 1.3.4" />
+            <path d="M15.8 17v3M17.4 15.8v4.2M19 16.6v3.4" />
         </svg>
     );
 }
@@ -88,9 +94,10 @@ export function UnityIcon({ className }: IconProps) {
             strokeLinejoin="round"
             aria-hidden
         >
-            <path d="M12 3 4 8v2l8 5 8-5V8l-8-5Z" />
-            <path d="m4 13 8 5 8-5" />
-            <path d="m4 18 8 5 8-5" />
+            <rect x="3" y="3" width="7" height="7" rx="1" />
+            <rect x="14" y="3" width="7" height="7" rx="1" />
+            <rect x="3" y="14" width="7" height="7" rx="1" />
+            <rect x="14" y="14" width="7" height="7" rx="1" />
         </svg>
     );
 }
@@ -195,6 +202,24 @@ export function WorkflowIcon({ className }: IconProps) {
             <rect x="14" y="9.5" width="6" height="5" rx="0" />
             <rect x="4" y="14.5" width="6" height="5" rx="0" />
             <path d="M10 7h2a2 2 0 0 1 2 2v1M10 17h2a2 2 0 0 0 2-2v-1" />
+        </svg>
+    );
+}
+
+/** Régua horizontal compacta: metáfora de medida nos campos de regra. */
+export function RulerIcon({ className }: IconProps) {
+    return (
+        <svg
+            className={mergeClassName(className)}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+        >
+            <path d="M3 8.5h18v7H3z" />
+            <path d="M4.9 8.5v2.4M8 8.5v1.3M11.1 8.5v2.4M14.2 8.5v1.3M17.3 8.5v2.4M19.1 8.5v1.3" />
         </svg>
     );
 }
@@ -349,7 +374,7 @@ export function NavigationIcon({
         case "unity":
             return <UnityIcon className={className} />;
         case "field":
-            return <SparkIcon className={className} />;
+            return <RulerIcon className={className} />;
         default:
             return <DashboardIcon className={className} />;
     }

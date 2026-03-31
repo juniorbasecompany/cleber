@@ -9,10 +9,17 @@ import requests
 # Valores de `label.lang` para field no modelo.
 FIELD_LABEL_LANG_LIST: tuple[Literal["pt-BR", "en", "es"], ...] = ("pt-BR", "en", "es")
 
-# Códigos aceitos pela DeepL API v2 (translate).
-_APP_LANG_TO_DEEPL: dict[str, str] = {
+# Códigos `target_lang` na API (variantes regionais quando existirem).
+_APP_LANG_TO_DEEPL_TARGET: dict[str, str] = {
     "pt-BR": "PT-BR",
     "en": "EN-US",
+    "es": "ES",
+}
+
+# Códigos `source_lang`: a API aceita agregados (PT, EN), não PT-BR nem EN-US.
+_APP_LANG_TO_DEEPL_SOURCE: dict[str, str] = {
+    "pt-BR": "PT",
+    "en": "EN",
     "es": "ES",
 }
 
@@ -46,10 +53,18 @@ def resolve_deepl_api_base_url(*, configured_url: str, api_key: str | None) -> s
 
 
 def app_lang_to_deepl(lang: str) -> str:
-    """Converte `lang` da aplicação para código DeepL."""
-    code = _APP_LANG_TO_DEEPL.get(lang)
+    """Converte `lang` da aplicação para código DeepL em `target_lang`."""
+    code = _APP_LANG_TO_DEEPL_TARGET.get(lang)
     if code is None:
         raise ValueError(f"Unsupported app label lang for DeepL: {lang!r}")
+    return code
+
+
+def app_lang_to_deepl_source(lang: str) -> str:
+    """Converte `lang` da aplicação para código DeepL em `source_lang`."""
+    code = _APP_LANG_TO_DEEPL_SOURCE.get(lang)
+    if code is None:
+        raise ValueError(f"Unsupported app label lang for DeepL source: {lang!r}")
     return code
 
 
@@ -61,22 +76,25 @@ def translate_text_deepl(
     api_key: str,
     base_url: str,
     timeout_sec: float = 20.0,
-) -> str:
+) -> tuple[str, str | None]:
     """
-    Traduz um texto curto entre dois idiomas da aplicação.
+    Traduz um texto curto do idioma de origem para o de destino da aplicação.
 
-    Não envia `source_lang`: a DeepL deteta o idioma (`source_lang=PT-BR` devolve 400).
-    O parâmetro `source_app_lang` mantém-se para não quebrar chamadas.
+    Envia `source_lang` e `target_lang` (mapeamentos distintos: origem PT/EN/ES,
+    destino PT-BR/EN-US/ES). Para rótulos curtos usa `split_sentences=0`.
+    Retorna (texto traduzido, detected_source_language ou None).
     """
-    _ = source_app_lang
     url = base_url.rstrip("/") + _TRANSLATE_PATH
+    source = app_lang_to_deepl_source(source_app_lang)
     target = app_lang_to_deepl(target_app_lang)
     # DeepL obsoletou auth_key no body/query (403 após jan/2026); usar header oficial.
     resp = requests.post(
         url,
         data={
             "text": text,
+            "source_lang": source,
             "target_lang": target,
+            "split_sentences": "0",
         },
         headers={
             "Authorization": f"DeepL-Auth-Key {api_key}",
@@ -95,4 +113,12 @@ def translate_text_deepl(
     out = first["text"]
     if not isinstance(out, str):
         raise ValueError("DeepL translation text is not a string")
-    return out.strip()
+    raw_detected = first.get("detected_source_language")
+    detected: str | None
+    if raw_detected is None:
+        detected = None
+    elif isinstance(raw_detected, str):
+        detected = raw_detected
+    else:
+        detected = str(raw_detected)
+    return out.strip(), detected
