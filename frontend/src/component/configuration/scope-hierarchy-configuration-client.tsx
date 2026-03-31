@@ -492,6 +492,7 @@ export function ScopeHierarchyConfigurationClient<
         <ConfigurationDirectoryEditorShell
             headerTitle={copy.title}
             headerDescription={copy.description}
+            directoryAsideEditorGrowRatio="4-3"
             editorPanelRef={editorPanelElementRef}
             isDeletePending={isDeletePending}
             directoryAside={

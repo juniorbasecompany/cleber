@@ -12,12 +12,17 @@ import {
 import { ConfigurationHistoryPanel } from "@/component/configuration/configuration-history-panel";
 import type { AuditLogTableName } from "@/lib/auth/types";
 
+/** Pesos de flex-grow entre o aside do diretório e o painel do editor (espaço extra após bases mínimas). */
+export type DirectoryAsideEditorGrowRatio = "4-3" | "2-4";
+
 export type ConfigurationDirectoryEditorLayoutProps = {
     headerTitle: string;
     headerDescription: string;
     directoryAside: ReactNode;
     editorPanelRef: RefObject<HTMLDivElement | null>;
     isDeletePending?: boolean;
+    /** Padrão `2-4` (editor recebe mais peso); `4-3` para árvores hierárquicas (locais, unidades). */
+    directoryAsideEditorGrowRatio?: DirectoryAsideEditorGrowRatio;
     editorBody: ReactNode;
     history: {
         headingId: string;
@@ -39,6 +44,7 @@ export function ConfigurationDirectoryEditorLayout({
     directoryAside,
     editorPanelRef,
     isDeletePending,
+    directoryAsideEditorGrowRatio = "2-4",
     editorBody,
     history,
     footer
@@ -53,7 +59,9 @@ export function ConfigurationDirectoryEditorLayout({
         <section className="ui-page-stack ui-page-stack-footer">
             <PageHeader title={headerTitle} description={headerDescription} />
 
-            <div className="ui-layout-directory ui-layout-directory-editor">
+            <div
+                className={`ui-layout-directory ui-layout-directory-editor ui-layout-directory-editor--grow-${directoryAsideEditorGrowRatio}`}
+            >
                 <aside className="ui-panel ui-stack-lg ui-panel-context-card">
                     {directoryAside}
                 </aside>

@@ -46,6 +46,7 @@ export function ConfigurationDirectoryEditorShell(
         directoryAside,
         editorPanelRef,
         isDeletePending,
+        directoryAsideEditorGrowRatio,
         history,
         footer
     } = props;
@@ -64,6 +65,7 @@ export function ConfigurationDirectoryEditorShell(
             directoryAside={directoryAside}
             editorPanelRef={editorPanelRef}
             isDeletePending={isDeletePending}
+            directoryAsideEditorGrowRatio={directoryAsideEditorGrowRatio}
             editorBody={editorBody}
             history={history}
             footer={footer}

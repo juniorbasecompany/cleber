@@ -2,13 +2,7 @@ import { getTranslations } from "next-intl/server";
 
 import { InfoCard } from "@/component/app-shell/info-card";
 import { PageHeader } from "@/component/app-shell/page-header";
-import {
-    BuildingIcon,
-    RulerIcon,
-    ScopeIcon,
-    UsersIcon,
-    WorkflowIcon
-} from "@/component/ui/ui-icons";
+import { BuildingIcon, ScopeIcon, UsersIcon } from "@/component/ui/ui-icons";
 
 type ConfigurationPageProps = {
     params: Promise<{ locale: string }>;
@@ -20,14 +14,12 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
     const tenantEditorHref = `/${locale}/app/configuration/tenant`;
     const memberEditorHref = `/${locale}/app/configuration/member`;
     const scopeEditorHref = `/${locale}/app/configuration/scope`;
-    const fieldEditorHref = `/${locale}/app/configuration/field`;
-    const actionEditorHref = `/${locale}/app/configuration/action`;
 
     return (
         <section className="ui-page-stack">
             <PageHeader title={t("title")} description={t("description")} />
 
-            <section className="ui-grid-cards-4">
+            <section className="ui-grid-cards-3">
                 <InfoCard
                     title={t("cards.organization.title")}
                     description={t("cards.organization.description")}
@@ -48,20 +40,6 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
                     iconSlot={<ScopeIcon className="ui-icon" />}
                     actionHref={scopeEditorHref}
                     actionLabel={t("openScopeEditor")}
-                />
-                <InfoCard
-                    title={t("cards.field.title")}
-                    description={t("cards.field.description")}
-                    iconSlot={<RulerIcon className="ui-icon" />}
-                    actionHref={fieldEditorHref}
-                    actionLabel={t("openFieldEditor")}
-                />
-                <InfoCard
-                    title={t("cards.action.title")}
-                    description={t("cards.action.description")}
-                    iconSlot={<WorkflowIcon className="ui-icon" />}
-                    actionHref={actionEditorHref}
-                    actionLabel={t("openActionEditor")}
                 />
             </section>
         </section>

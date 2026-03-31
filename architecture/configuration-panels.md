@@ -25,7 +25,7 @@ Padrão canónico para telas como escopo e locais: lista plana ou árvore no `as
 
 ### Camadas de código
 
-1. **`ConfigurationDirectoryEditorLayout`** — casca só de markup: `PageHeader`, grelha `ui-layout-directory-editor`, `aside` (slot), painel do editor com `ref` e `data-delete-pending`, histórico, portal do footer. Sem política de “o que mostrar” no editor.
+1. **`ConfigurationDirectoryEditorLayout`** — casca só de markup: `PageHeader`, grelha `ui-layout-directory-editor`, `aside` (slot), painel do editor com `ref` e `data-delete-pending`, histórico, portal do footer. Sem política de “o que mostrar” no editor. A repartição de espaço extra entre aside e editor usa `directoryAsideEditorGrowRatio`: padrão **`2-4`** (classes `ui-layout-directory-editor--grow-2-4`); diretórios hierárquicos por escopo (locais, unidades via `ScopeHierarchyConfigurationClient`) usam **`4-3`** (`--grow-4-3`), alinhado ao CSS em `semantic-utility-extension.css`.
 2. **`ConfigurationDirectoryEditorShell`** — compõe o layout e define o contrato do **corpo do editor**:
    - variante predefinida **`alwaysShowForm`**: conteúdo sempre dentro de `div.ui-editor-card-flow` (comportamento atual de escopo e locais);
    - variante opt-in **`emptyWhenNoContext`**: quando não há contexto de edição, substitui o corpo do editor por `ui-panel ui-empty-panel` com mensagem configurável (ex.: registro único tipo tenant); nos diretórios com **Novo** na URL (`…=new`), preferir o padrão **`alwaysShowForm`** e colocar o vazio **dentro** de `ui-editor-card-flow`, para o modo criação não ficar por baixo do placeholder do shell (membros e escopos seguem assim).
