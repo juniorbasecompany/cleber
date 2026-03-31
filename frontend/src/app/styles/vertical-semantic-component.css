@@ -715,11 +715,9 @@
 }
 
 .ui-auth-pillar-accent::before {
-  background: linear-gradient(
-    90deg,
-    var(--color-construction-text),
-    var(--color-construction-border)
-  );
+  background: linear-gradient(90deg,
+      var(--color-construction-text),
+      var(--color-construction-border));
   opacity: 0.92;
 }
 
@@ -1319,11 +1317,9 @@
 
 .ui-auth-hero.ui-panel {
   background-image:
-    radial-gradient(
-      ellipse 100% 85% at 96% -6%,
+    radial-gradient(ellipse 100% 85% at 96% -6%,
       var(--color-auth-hero-radial),
-      transparent 52%
-    ),
+      transparent 52%),
     var(--gradient-surface-default);
 }
 
@@ -1785,7 +1781,7 @@
   top: 0;
 }
 
-.ui-formula-example-list li + li {
+.ui-formula-example-list li+li {
   margin-top: 0.35rem;
 }
 
@@ -1856,7 +1852,7 @@
 }
 
 /* Painel de sugestões ao digitar @ */
-.cm-tooltip.cm-tooltip-autocomplete > ul {
+.cm-tooltip.cm-tooltip-autocomplete>ul {
   font-family: var(--font-sans);
   font-size: 0.95rem;
   max-height: 12rem;

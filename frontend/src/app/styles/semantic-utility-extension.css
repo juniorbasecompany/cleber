@@ -390,6 +390,11 @@
   gap: 1rem;
 }
 
+/* Cards de primeiro nível do diretório: fundo branco. */
+.ui-directory-list > .ui-directory-item {
+  background: #fff;
+}
+
 .ui-directory-entry {
   display: grid;
   gap: 0.25rem;
