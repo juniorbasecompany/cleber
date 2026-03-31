@@ -29,8 +29,8 @@ Este ficheiro é a **fonte canónica** no repositório para a **política estáv
 
 - **Decisão:** usar a **DeepL API** como provedor para gerar ou sugerir traduções de textos curtos persistidos na tabela `label` (associada a `field` ou `action`), alinhada aos valores de `lang` já definidos no modelo (`pt-BR`, `en`, `es`).
 - **Âmbito:** rótulos curtos de domínio (por exemplo, nome amigável de campo). Não substitui o fluxo de mensagens da UI em arquivos por locale (**next-intl**), descrito nas regras fixas desta política.
-- **Estado:** por ora apenas decisão documentada; não há integração implementada no backend nem na UI.
-- **Implementação futura (orientação):** chamadas somente no servidor; credencial recomendada via variável de ambiente (por exemplo, `DEEPL_API_KEY`); mapear `pt-BR`, `en` e `es` para os códigos de idioma aceitos pela API DeepL; prever revisão humana após tradução automática.
+- **Estado:** o backend preenche os rótulos de **field** nas outras línguas ao criar ou atualizar com `label_lang`/`label_name`, quando `DEEPL_API_KEY` está definida; chamadas só no servidor; `DEEPL_API_BASE_URL` opcional (padrão API Free). Falhas da DeepL são logadas e não impedem gravar o idioma de origem. Rótulos de **action** ainda não usam este fluxo.
+- **Orientação:** mapear `pt-BR`, `en` e `es` para códigos DeepL; prever revisão humana após tradução automática.
 
 ---
 

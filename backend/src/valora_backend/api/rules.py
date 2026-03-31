@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
+import logging
 from datetime import UTC, datetime
 from typing import Literal
 
+import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field as PydanticField, model_validator
 from sqlalchemy import or_, select
@@ -25,7 +27,14 @@ from valora_backend.model.rules import (
     Result,
 )
 from valora_backend.api.auth import _apply_member_audit_context
+from valora_backend.config import Settings
 from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
+from valora_backend.services.deepl_label_translation import (
+    FIELD_LABEL_LANG_LIST,
+    normalize_deepl_api_key,
+    resolve_deepl_api_base_url,
+    translate_text_deepl,
+)
 
 router = APIRouter(prefix="/auth/tenant/current", tags=["scope-rules"])
 
@@ -212,6 +221,62 @@ def _upsert_field_label_by_lang(
     )
 
 
+def _fill_other_field_labels_via_deepl(
+    session: Session,
+    *,
+    field_id: int,
+    source_lang: str,
+    source_text: str,
+) -> None:
+    """Preenche rótulos nas outras línguas via DeepL; ignora sem chave ou se um idioma falhar."""
+    settings = Settings()
+    key_secret = settings.deepl_api_key
+    if key_secret is None:
+        return
+    stripped = source_text.strip()
+    if not stripped:
+        return
+    api_key = normalize_deepl_api_key(key_secret.get_secret_value())
+    if not api_key:
+        return
+    base = resolve_deepl_api_base_url(
+        configured_url=settings.deepl_api_base_url,
+        api_key=api_key,
+    ).rstrip("/")
+    log = logging.getLogger(__name__)
+    for target_lang in FIELD_LABEL_LANG_LIST:
+        if target_lang == source_lang:
+            continue
+        try:
+            translated = translate_text_deepl(
+                text=stripped,
+                source_app_lang=source_lang,
+                target_app_lang=target_lang,
+                api_key=api_key,
+                base_url=base,
+            )
+        except (requests.RequestException, ValueError) as exc:
+            extra = ""
+            if isinstance(exc, requests.HTTPError) and exc.response is not None:
+                extra = f" response={exc.response.text[:400]!r}"
+            log.warning(
+                "DeepL translation failed for field_id=%s target_lang=%s base_url=%s: %s%s",
+                field_id,
+                target_lang,
+                base,
+                exc,
+                extra,
+            )
+            continue
+        if translated:
+            _upsert_field_label_by_lang(
+                session,
+                field_id=field_id,
+                lang=target_lang,
+                name=translated,
+            )
+
+
 # --- field ---
 
 
@@ -325,6 +390,12 @@ def create_scope_field(
             lang=body.label_lang,
             name=body.label_name,
         )
+        _fill_other_field_labels_via_deepl(
+            session,
+            field_id=row.id,
+            source_lang=body.label_lang,
+            source_text=body.label_name,
+        )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
     return list_scope_fields(scope_id, body.label_lang, member, session)
@@ -368,6 +439,12 @@ def patch_scope_field(
             field_id=row.id,
             lang=body.label_lang,
             name=body.label_name,
+        )
+        _fill_other_field_labels_via_deepl(
+            session,
+            field_id=row.id,
+            source_lang=body.label_lang,
+            source_text=body.label_name,
         )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)

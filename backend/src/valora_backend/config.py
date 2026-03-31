@@ -143,6 +143,17 @@ class Settings(BaseSettings):
             "invite_email_locale",
         ),
     )
+    deepl_api_key: SecretStr | None = Field(
+        default=None,
+        validation_alias=AliasChoices("DEEPL_API_KEY", "deepl_api_key"),
+    )
+    deepl_api_base_url: str = Field(
+        default="https://api-free.deepl.com",
+        validation_alias=AliasChoices(
+            "DEEPL_API_BASE_URL",
+            "deepl_api_base_url",
+        ),
+    )
 
     @model_validator(mode="after")
     def _exige_postgres_ou_database_url(self) -> Self:
