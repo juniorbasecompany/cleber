@@ -10,6 +10,7 @@ import type {
   TenantLocationDirectoryResponse,
   TenantMemberDirectoryResponse,
   TenantScopeDirectoryResponse,
+  TenantScopeFieldDirectoryResponse,
   TenantUnityDirectoryResponse
 } from "@/lib/auth/types";
 
@@ -172,6 +173,40 @@ export async function getTenantUnityDirectory(scopeId: number) {
     }
 
     return (await response.json()) as TenantUnityDirectoryResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function getTenantScopeFieldDirectory(
+  scopeId: number,
+  labelLang: "pt-BR" | "en" | "es"
+) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(authTokenCookieName)?.value;
+  if (!hasAuthSession(token)) {
+    return null;
+  }
+
+  const query = new URLSearchParams({ label_lang: labelLang });
+
+  try {
+    const response = await fetch(
+      `${apiUrl}/auth/tenant/current/scopes/${scopeId}/fields?${query.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as TenantScopeFieldDirectoryResponse;
   } catch {
     return null;
   }

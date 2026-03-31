@@ -7,6 +7,7 @@
             "home": "Home",
             "location": "Locations",
             "unity": "Units",
+            "field": "Fields",
             "configuration": "Configuration",
             "comingSoon": "coming soon"
         },
@@ -79,6 +80,7 @@
         "openTenantEditor": "Edit tenant",
         "openMemberEditor": "Edit members",
         "openScopeEditor": "Edit scopes",
+        "openFieldEditor": "Edit fields",
         "cards": {
             "organization": {
                 "title": "Tenant",
@@ -91,6 +93,10 @@
             "scope": {
                 "title": "Scope",
                 "description": "A scope is a context unit inside the tenant: where records, and later the locations hierarchy, stay separated instead of mixed together. Think branch, job site, venue, or project,  the label is yours, but the job is always to isolate data that should not appear in one pile. The scope selected in the header is what applies when you work on locations and anything that depends on it."
+            },
+            "field": {
+                "title": "Fields",
+                "description": "Fields define value types used by rules in the active scope (for example integers or decimals). The list and editor follow the scope you pick in the header, the same pattern as locations."
             }
         }
     },
@@ -225,6 +231,82 @@
             "create": "Could not create the scope. Try again.",
             "delete": "Could not delete the scope. Try again.",
             "validation": "This field cannot be empty."
+        },
+        "discardConfirm": "Discard unsaved changes?"
+    },
+    "FieldConfigurationPage": {
+        "title": "Fields",
+        "description": "Edit field definitions for the active scope. Each item describes the logical SQL type of values the system stores for that identifier in rules and events.",
+        "empty": "No fields were found for the active scope and your current permission does not allow creating new ones.",
+        "list": {
+            "emptyScope": "Create a scope before editing fields.",
+            "missingCurrentScope": "Set an active scope from the header selector before editing fields.",
+            "loadError": "Could not load fields for this scope. Try again."
+        },
+        "history": {
+            "title": "Change history",
+            "description": "Review recent changes to field definitions for the active scope: who changed what, when, and a summary of each update."
+        },
+        "section": {
+            "fieldName": {
+                "label": "Field name",
+                "hint": "Field name. Enter a short, easy-to-understand name, for example: quantity, value, growth percentage. This name is used in formulas, charts, and reports."
+            },
+            "info": {
+                "title": "Information",
+                "description": "Summary of the field in focus: stable identifier and type saved on the server.",
+                "idLabel": "Identifier",
+                "fieldNameRegisteredLabel": "Name (current language)",
+                "friendlyTypeLabel": "Type (summary)",
+                "sqlTypeRegisteredLabel": "PostgreSQL type",
+                "canEditLabel": "Can edit",
+                "yes": "Yes",
+                "no": "No",
+                "createLead": "New field",
+                "createHint": "You are defining a new field for the active scope. Save to register it in the directory."
+            }
+        },
+        "action": {
+            "cancel": "Cancel",
+            "new": "New",
+            "delete": "Delete",
+            "undoDelete": "Undo delete",
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "readOnlyNotice": "You can review fields for the active scope, but only master or admin members can create or edit rule definitions.",
+        "error": {
+            "save": "Could not save the field. Try again.",
+            "create": "Could not create the field. Try again.",
+            "delete": "Could not delete the field. Try again.",
+            "deleteBlockedDetail": "This field cannot be deleted while event inputs or results still reference it.",
+            "validation": "Choose a valid data type.",
+            "fieldNameRequired": "Enter a field name."
+        },
+        "fieldType": {
+            "label": "Content type",
+            "hint": "Describe what kind of content this field holds.",
+            "option": {
+                "number": "Number",
+                "text": "Text",
+                "boolean": "Yes or no",
+                "timestamp": "Date",
+                "legacy": "Other (existing value)"
+            },
+            "scaleLabel": "Decimal places",
+            "scaleHint": "Enter how many digits after the decimal separator the number should have. Use 0 to 10 decimal places.",
+            "legacyHelp": "This record uses a type outside the list. Pick a standard type to replace it on save, or keep this option.",
+            "caption": {
+                "number": "Number ({scale} dp)",
+                "text": "Text",
+                "boolean": "Yes or no",
+                "timestamp": "Date",
+                "legacy": "{value}"
+            },
+            "error": {
+                "empty": "Select or define a data type.",
+                "scaleRange": "Use a decimal place count between 0 and 10."
+            }
         },
         "discardConfirm": "Discard unsaved changes?"
     },

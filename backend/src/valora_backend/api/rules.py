@@ -185,6 +185,33 @@ def _label_in_scope_or_404(
     return row
 
 
+def _upsert_field_label_by_lang(
+    session: Session,
+    *,
+    field_id: int,
+    lang: str,
+    name: str | None,
+) -> None:
+    """Atualiza ou cria `label` para o campo e idioma. Texto vazio após strip remove o registro."""
+    if name is None:
+        return
+    stripped = name.strip()
+    existing = session.scalar(
+        select(Label).where(Label.field_id == field_id, Label.lang == lang)
+    )
+    if not stripped:
+        if existing is not None:
+            session.delete(existing)
+        return
+    if existing is not None:
+        existing.name = stripped
+        session.add(existing)
+        return
+    session.add(
+        Label(lang=lang, name=stripped, field_id=field_id, action_id=None)
+    )
+
+
 # --- field ---
 
 
@@ -192,6 +219,8 @@ class ScopeFieldRecord(BaseModel):
     id: int
     scope_id: int
     sql_type: str
+    label_id: int | None = None
+    label_name: str | None = None
 
 
 class ScopeFieldListResponse(BaseModel):
@@ -201,10 +230,26 @@ class ScopeFieldListResponse(BaseModel):
 
 class ScopeFieldCreateRequest(BaseModel):
     sql_type: str = PydanticField(min_length=1, max_length=2048)
+    label_lang: Literal["pt-BR", "en", "es"] | None = None
+    label_name: str | None = PydanticField(default=None, max_length=2048)
+
+    @model_validator(mode="after")
+    def label_lang_when_name_sent(self) -> ScopeFieldCreateRequest:
+        if self.label_name is not None and self.label_lang is None:
+            raise ValueError("label_lang is required when label_name is provided")
+        return self
 
 
 class ScopeFieldPatchRequest(BaseModel):
     sql_type: str | None = PydanticField(default=None, min_length=1, max_length=2048)
+    label_lang: Literal["pt-BR", "en", "es"] | None = None
+    label_name: str | None = PydanticField(default=None, max_length=2048)
+
+    @model_validator(mode="after")
+    def label_lang_when_name_sent_patch(self) -> ScopeFieldPatchRequest:
+        if self.label_name is not None and self.label_lang is None:
+            raise ValueError("label_lang is required when label_name is provided")
+        return self
 
 
 @router.get(
@@ -213,6 +258,7 @@ class ScopeFieldPatchRequest(BaseModel):
 )
 def list_scope_fields(
     scope_id: int,
+    label_lang: Literal["pt-BR", "en", "es"] | None = Query(default=None),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
@@ -222,11 +268,37 @@ def list_scope_fields(
             select(Field).where(Field.scope_id == scope_id).order_by(Field.id)
         )
     )
+    label_by_field_id: dict[int, Label] = {}
+    if label_lang is not None and rows:
+        field_id_list = [r.id for r in rows]
+        label_rows = list(
+            session.scalars(
+                select(Label).where(
+                    Label.field_id.in_(field_id_list),
+                    Label.lang == label_lang,
+                )
+            )
+        )
+        for label_row in label_rows:
+            if label_row.field_id is not None:
+                label_by_field_id[label_row.field_id] = label_row
+
+    item_list: list[ScopeFieldRecord] = []
+    for r in rows:
+        pair = label_by_field_id.get(r.id) if label_lang is not None else None
+        item_list.append(
+            ScopeFieldRecord(
+                id=r.id,
+                scope_id=r.scope_id,
+                sql_type=r.type,
+                label_id=pair.id if pair is not None else None,
+                label_name=pair.name if pair is not None else None,
+            )
+        )
+
     return ScopeFieldListResponse(
         can_edit=_member_can_edit_scope_rules(member),
-        item_list=[
-            ScopeFieldRecord(id=r.id, scope_id=r.scope_id, sql_type=r.type) for r in rows
-        ],
+        item_list=item_list,
     )
 
 
@@ -245,9 +317,17 @@ def create_scope_field(
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = Field(scope_id=scope_id, type=body.sql_type.strip())
     session.add(row)
+    session.flush()
+    if body.label_lang is not None and body.label_name is not None:
+        _upsert_field_label_by_lang(
+            session,
+            field_id=row.id,
+            lang=body.label_lang,
+            name=body.label_name,
+        )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_fields(scope_id, member, session)
+    return list_scope_fields(scope_id, body.label_lang, member, session)
 
 
 @router.get(
@@ -282,9 +362,16 @@ def patch_scope_field(
     if body.sql_type is not None:
         row.type = body.sql_type.strip()
     session.add(row)
+    if body.label_lang is not None and body.label_name is not None:
+        _upsert_field_label_by_lang(
+            session,
+            field_id=row.id,
+            lang=body.label_lang,
+            name=body.label_name,
+        )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_fields(scope_id, member, session)
+    return list_scope_fields(scope_id, body.label_lang, member, session)
 
 
 @router.delete(
@@ -313,7 +400,7 @@ def delete_scope_field(
     session.delete(row)
     _apply_member_audit_context(session, member)
     session.commit()
-    return list_scope_fields(scope_id, member, session)
+    return list_scope_fields(scope_id, None, member, session)
 
 
 # --- action ---

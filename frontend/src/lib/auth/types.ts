@@ -120,12 +120,26 @@ export type TenantUnityDirectoryResponse = {
   item_list: TenantUnityRecord[];
 };
 
+export type TenantScopeFieldRecord = {
+  id: number;
+  scope_id: number;
+  sql_type: string;
+  label_id?: number | null;
+  label_name?: string | null;
+};
+
+export type TenantScopeFieldDirectoryResponse = {
+  can_edit: boolean;
+  item_list: TenantScopeFieldRecord[];
+};
+
 export type AuditLogTableName =
   | "tenant"
   | "member"
   | "scope"
   | "location"
-  | "unity";
+  | "unity"
+  | "field";
 
 export type AuditLogActionType = "I" | "U" | "D";
 

@@ -63,6 +63,11 @@ export default async function AppLayout({
       key: "unity",
       label: t("navigation.unity"),
       href: `/${locale}/app/configuration/unity`
+    },
+    {
+      key: "field",
+      label: t("navigation.field"),
+      href: `/${locale}/app/configuration/field`
     }
   ];
 

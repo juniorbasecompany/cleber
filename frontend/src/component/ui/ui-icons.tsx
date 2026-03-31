@@ -5,7 +5,7 @@ type IconProps = {
 };
 
 type NavigationIconProps = IconProps & {
-    kind: "home" | "location" | "unity";
+    kind: "home" | "location" | "unity" | "field";
 };
 
 function mergeClassName(className?: string, fallback = "ui-icon") {
@@ -348,6 +348,8 @@ export function NavigationIcon({
             return <LocationIcon className={className} />;
         case "unity":
             return <UnityIcon className={className} />;
+        case "field":
+            return <SparkIcon className={className} />;
         default:
             return <DashboardIcon className={className} />;
     }

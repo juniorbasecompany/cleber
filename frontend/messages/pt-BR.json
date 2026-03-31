@@ -7,6 +7,7 @@
       "home": "Início",
       "location": "Locais",
       "unity": "Unidades",
+      "field": "Campos",
       "configuration": "Configuração",
       "comingSoon": "em breve"
     },
@@ -79,6 +80,7 @@
     "openTenantEditor": "Editar licenciado",
     "openMemberEditor": "Editar membros",
     "openScopeEditor": "Editar escopos",
+    "openFieldEditor": "Editar campos",
     "cards": {
       "organization": {
         "title": "Licenciado",
@@ -91,6 +93,10 @@
       "scope": {
         "title": "Escopo",
         "description": "Escopo é uma unidade de contexto dentro do licenciado: onde os cadastros e, na sequência, a hierarquia de locais se separam sem se misturar. Pense em filial, obra, sede ou projeto, o rótulo é seu, mas a função é sempre isolar dados que não devem aparecer juntos. O escopo selecionado no cabeçalho é o que vale ao trabalhar em locais e nos fluxos que dependem dele."
+      },
+      "field": {
+        "title": "Campos",
+        "description": "Campos definem tipos de valor usados nas regras do escopo ativo (por exemplo números inteiros ou decimais). A lista e o editor respeitam o escopo que você escolhe no cabeçalho, no mesmo padrão dos locais."
       }
     }
   },
@@ -225,6 +231,82 @@
       "create": "Não foi possível criar o escopo. Tente novamente.",
       "delete": "Não foi possível apagar o escopo. Tente novamente.",
       "validation": "Este campo não pode ficar vazio."
+    },
+    "discardConfirm": "Descartar alterações não salvas?"
+  },
+  "FieldConfigurationPage": {
+    "title": "Campos",
+    "description": "Edite as definições de campo do escopo ativo. Cada item descreve o tipo SQL lógico dos valores que o sistema armazenará para aquele identificador nas regras e eventos.",
+    "empty": "Nenhum campo foi encontrado para o escopo ativo e sua permissão atual não permite cadastrar novos.",
+    "list": {
+      "emptyScope": "Crie um escopo antes de editar campos.",
+      "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar campos.",
+      "loadError": "Não foi possível carregar os campos deste escopo. Tente novamente."
+    },
+    "history": {
+      "title": "Histórico de alterações",
+      "description": "Consulte o histórico das definições de campo do escopo ativo: quem alterou, quando e um resumo do que mudou."
+    },
+    "section": {
+      "fieldName": {
+        "label": "Nome do campo",
+        "hint": "Nome do campo. Informe um nome curto e de fácil entendimento, como: quantidade, valor, percentual de crescimento. Este nome é usado nas fórmulas, gráficos e relatórios."
+      },
+      "info": {
+        "title": "Informações",
+        "description": "Resumo do campo em foco: identificador estável e tipo salvo no servidor.",
+        "idLabel": "Identificador",
+        "fieldNameRegisteredLabel": "Nome (idioma atual)",
+        "friendlyTypeLabel": "Tipo (resumo)",
+        "sqlTypeRegisteredLabel": "Tipo no PostgreSQL",
+        "canEditLabel": "Pode editar",
+        "yes": "Sim",
+        "no": "Não",
+        "createLead": "Novo campo",
+        "createHint": "Você está definindo um novo campo para o escopo ativo. Salve para registrá-lo no diretório."
+      }
+    },
+    "action": {
+      "cancel": "Cancelar",
+      "new": "Novo",
+      "delete": "Apagar",
+      "undoDelete": "Desmarcar exclusão",
+      "save": "Salvar",
+      "saving": "Salvando..."
+    },
+    "readOnlyNotice": "Você pode consultar os campos do escopo ativo, mas só membros master ou administrador podem criar ou editar definições de regras.",
+    "error": {
+      "save": "Não foi possível salvar o campo. Tente novamente.",
+      "create": "Não foi possível criar o campo. Tente novamente.",
+      "delete": "Não foi possível apagar o campo. Tente novamente.",
+      "deleteBlockedDetail": "Não é possível apagar o campo enquanto entradas ou resultados de eventos ainda o referenciam.",
+      "validation": "Escolha um tipo de dado válido.",
+      "fieldNameRequired": "Informe o nome do campo."
+    },
+    "fieldType": {
+      "label": "Tipo de conteúdo",
+      "hint": "Informe como é o conteúdo deste campo.",
+      "option": {
+        "number": "Número",
+        "text": "Texto",
+        "boolean": "Sim ou não",
+        "timestamp": "Data",
+        "legacy": "Outro (valor já salvo)"
+      },
+      "scaleLabel": "Casas decimais",
+      "scaleHint": "Informe quantas casas, depois da vírgula, deve ter o número. Informe de 0 a 10 decimais.",
+      "legacyHelp": "Este registro usa um tipo fora da lista. Escolha um tipo padrão para substituir ao salvar ou mantenha esta opção.",
+      "caption": {
+        "number": "Número ({scale} dec.)",
+        "text": "Texto",
+        "boolean": "Sim ou não",
+        "timestamp": "Data",
+        "legacy": "{value}"
+      },
+      "error": {
+        "empty": "Selecione ou defina um tipo de dado.",
+        "scaleRange": "Use um número de casas decimais entre 0 e 10."
+      }
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },

@@ -7,6 +7,7 @@
             "home": "Inicio",
             "location": "Ubicaciones",
             "unity": "Unidades",
+            "field": "Campos",
             "configuration": "Configuración",
             "comingSoon": "próximamente"
         },
@@ -79,6 +80,7 @@
         "openTenantEditor": "Editar licenciatario",
         "openMemberEditor": "Editar miembros",
         "openScopeEditor": "Editar alcances",
+        "openFieldEditor": "Editar campos",
         "cards": {
             "organization": {
                 "title": "Licenciatario",
@@ -91,6 +93,10 @@
             "scope": {
                 "title": "Alcance",
                 "description": "Un alcance es una unidad de contexto dentro del licenciatario: donde los registros y, más adelante, la jerarquía de ubicaciones se separan sin mezclarse. Piensa en sucursal, obra, sede o proyecto, la etiqueta es tuya, pero la función es aislar datos que no deberían verse juntos. El alcance elegido en el encabezado es el que rige al trabajar en ubicaciones y en lo que dependa de él."
+            },
+            "field": {
+                "title": "Campos",
+                "description": "Los campos definen tipos de valor usados por las reglas del alcance activo (por ejemplo enteros o decimales). La lista y el editor siguen el alcance que eliges en el encabezado, con el mismo patrón que las ubicaciones."
             }
         }
     },
@@ -225,6 +231,82 @@
             "create": "No se pudo crear el alcance. Inténtalo de nuevo.",
             "delete": "No se pudo eliminar el alcance. Inténtalo de nuevo.",
             "validation": "Este campo no puede quedar vacío."
+        },
+        "discardConfirm": "¿Descartar los cambios no guardados?"
+    },
+    "FieldConfigurationPage": {
+        "title": "Campos",
+        "description": "Edita las definiciones de campo del alcance activo. Cada ítem describe el tipo SQL lógico de los valores que el sistema guardará para ese identificador en reglas y eventos.",
+        "empty": "No se encontraron campos para el alcance activo y tu permiso actual no permite crear otros.",
+        "list": {
+            "emptyScope": "Crea un alcance antes de editar campos.",
+            "missingCurrentScope": "Define un alcance activo en el selector del encabezado antes de editar campos.",
+            "loadError": "No se pudieron cargar los campos de este alcance. Inténtalo de nuevo."
+        },
+        "history": {
+            "title": "Historial de cambios",
+            "description": "Consulta el historial de definiciones de campo del alcance activo: quién cambió qué, cuándo y un resumen de lo modificado."
+        },
+        "section": {
+            "fieldName": {
+                "label": "Nombre del campo",
+                "hint": "Nombre del campo. Indica un nombre breve y fácil de entender, por ejemplo: cantidad, valor, porcentaje de crecimiento. Este nombre se usa en fórmulas, gráficos e informes."
+            },
+            "info": {
+                "title": "Información",
+                "description": "Resumen del campo en foco: identificador estable y tipo guardado en el servidor.",
+                "idLabel": "Identificador",
+                "fieldNameRegisteredLabel": "Nombre (idioma actual)",
+                "friendlyTypeLabel": "Tipo (resumen)",
+                "sqlTypeRegisteredLabel": "Tipo en PostgreSQL",
+                "canEditLabel": "Puede editar",
+                "yes": "Sí",
+                "no": "No",
+                "createLead": "Nuevo campo",
+                "createHint": "Estás definiendo un campo nuevo para el alcance activo. Guarda para registrarlo en el directorio."
+            }
+        },
+        "action": {
+            "cancel": "Cancelar",
+            "new": "Nuevo",
+            "delete": "Eliminar",
+            "undoDelete": "Desmarcar eliminación",
+            "save": "Guardar",
+            "saving": "Guardando..."
+        },
+        "readOnlyNotice": "Puedes consultar los campos del alcance activo, pero solo los miembros master o administrador pueden crear o editar definiciones de reglas.",
+        "error": {
+            "save": "No se pudo guardar el campo. Inténtalo de nuevo.",
+            "create": "No se pudo crear el campo. Inténtalo de nuevo.",
+            "delete": "No se pudo eliminar el campo. Inténtalo de nuevo.",
+            "deleteBlockedDetail": "No se puede eliminar el campo mientras entradas o resultados de eventos sigan referenciándolo.",
+            "validation": "Elige un tipo de dato válido.",
+            "fieldNameRequired": "Indica el nombre del campo."
+        },
+        "fieldType": {
+            "label": "Tipo de contenido",
+            "hint": "Indica qué tipo de contenido tiene este campo.",
+            "option": {
+                "number": "Número",
+                "text": "Texto",
+                "boolean": "Sí o no",
+                "timestamp": "Fecha",
+                "legacy": "Otro (valor ya guardado)"
+            },
+            "scaleLabel": "Decimales",
+            "scaleHint": "Indica cuántas cifras, después del separador decimal, debe tener el número. Indica de 0 a 10 decimales.",
+            "legacyHelp": "Este registro usa un tipo fuera de la lista. Elige un tipo estándar para reemplazarlo al guardar o mantén esta opción.",
+            "caption": {
+                "number": "Número ({scale} dec.)",
+                "text": "Texto",
+                "boolean": "Sí o no",
+                "timestamp": "Fecha",
+                "legacy": "{value}"
+            },
+            "error": {
+                "empty": "Selecciona o define un tipo de dato.",
+                "scaleRange": "Usa un número de decimales entre 0 y 10."
+            }
         },
         "discardConfirm": "¿Descartar los cambios no guardados?"
     },
