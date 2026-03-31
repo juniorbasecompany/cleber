@@ -206,8 +206,8 @@ export function WorkflowIcon({ className }: IconProps) {
     );
 }
 
-/** Metáfora de operação ou gatilho de negócio nas ações por escopo. */
-export function ActionBoltIcon({ className }: IconProps) {
+/** Marcos ao longo do fluxo: tipos de operação como etapas no escopo. */
+export function MilestonePathIcon({ className }: IconProps) {
     return (
         <svg
             className={mergeClassName(className)}
@@ -219,7 +219,19 @@ export function ActionBoltIcon({ className }: IconProps) {
             strokeLinejoin="round"
             aria-hidden
         >
-            <path d="M13 2.5 4 14.5h6.5L9 22.5l10.5-12H13l.5-8Z" />
+            <path d="M1.6 2.4C5.5 4 3.5 16 10.5 12C13 9 16.5 18 18 16l5.96 0.08" />
+            <circle cx="3.59" cy="4.98" r="1.2" fill="currentColor" stroke="none" />
+            <circle cx="5.22" cy="10.24" r="1.2" fill="currentColor" stroke="none" />
+            <circle cx="8.34" cy="12.79" r="1.2" fill="currentColor" stroke="none" />
+            <circle cx="12.1" cy="11.46" r="1.2" fill="currentColor" stroke="none" />
+            <circle cx="14.79" cy="13.82" r="1.2" fill="currentColor" stroke="none" />
+            <path d="M18 16V5.85" />
+            <path
+                d="M18 6.45C19.9 7.35 21.9 7.45 23.9 6.35L21.55 8.38 23.9 10.42C22.05 9.85 20.05 9.75 18 10.55z"
+                fill="currentColor"
+                stroke="none"
+            />
+            <circle cx="18" cy="16" r="1.2" fill="currentColor" stroke="none" />
         </svg>
     );
 }
@@ -394,7 +406,7 @@ export function NavigationIcon({
         case "field":
             return <RulerIcon className={className} />;
         case "action":
-            return <ActionBoltIcon className={className} />;
+            return <MilestonePathIcon className={className} />;
         default:
             return <DashboardIcon className={className} />;
     }
