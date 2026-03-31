@@ -236,6 +236,8 @@ export type FormulaStatementEditorProps = {
     disabled: boolean;
     fieldList: FormulaFieldOption[];
     unknownFieldLabel: string;
+    /** Rótulo para leitores de tela quando não há `ariaLabelledBy`. */
+    ariaLabel?: string;
     ariaLabelledBy?: string;
     id: string;
 };
@@ -246,6 +248,7 @@ export function FormulaStatementEditor({
     disabled,
     fieldList,
     unknownFieldLabel,
+    ariaLabel,
     ariaLabelledBy,
     id
 }: FormulaStatementEditorProps) {
@@ -273,12 +276,18 @@ export function FormulaStatementEditor({
                 },
                 ".cm-scroller": {
                     fontFamily: "inherit",
+                    /* Tema base do CodeMirror usa line-height: 1.4; input nativo usa ~normal, o que altera o recuo visual da primeira linha. */
+                    lineHeight: "inherit",
                     overflow: "auto"
                 },
                 ".cm-content": {
-                    padding: "var(--space-control-y) var(--space-control-x)",
+                    padding: 0,
                     caretColor: "var(--color-text)",
                     minHeight: "7rem"
+                },
+                /* Tema base do CodeMirror adiciona padding em cada linha; sem isso o texto fica mais recuado que .ui-input. */
+                ".cm-line": {
+                    padding: 0
                 },
                 ".cm-cursor": {
                     borderLeftColor: "var(--color-text)"
@@ -294,7 +303,11 @@ export function FormulaStatementEditor({
             })
         ];
 
-        if (ariaLabelledBy) {
+        if (ariaLabel) {
+            staticExtensions.push(
+                EditorView.contentAttributes.of({ "aria-label": ariaLabel })
+            );
+        } else if (ariaLabelledBy) {
             staticExtensions.push(
                 EditorView.contentAttributes.of({ "aria-labelledby": ariaLabelledBy })
             );

@@ -13,6 +13,7 @@ dependencies = [
     "pydantic-settings",
     "psycopg[binary]",
     "requests",
+    "simpleeval>=1.0.7,<2",
     "sqlalchemy",
     "uvicorn[standard]",
 ]

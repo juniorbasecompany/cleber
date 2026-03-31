@@ -29,6 +29,10 @@ from valora_backend.model.rules import (
 from valora_backend.api.auth import _apply_member_audit_context
 from valora_backend.config import Settings
 from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
+from valora_backend.rules.formula_statement_validate import (
+    FormulaStatementValidationError,
+    validate_formula_statement_for_scope,
+)
 from valora_backend.services.deepl_label_translation import (
     FIELD_LABEL_LANG_LIST,
     normalize_deepl_api_key,
@@ -83,6 +87,20 @@ def _action_in_scope_or_404(
             detail="Action not found for current scope",
         )
     return row
+
+
+def _formula_statement_validation_error(
+    exc: FormulaStatementValidationError,
+    *,
+    formula_step: int | None = None,
+) -> HTTPException:
+    detail: dict[str, str | int] = {"code": exc.code, "message": exc.message}
+    if formula_step is not None:
+        detail["step"] = formula_step
+    return HTTPException(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        detail=detail,
+    )
 
 
 def _formula_in_action_or_404(
@@ -822,6 +840,16 @@ def create_scope_action_formula(
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     _action_in_scope_or_404(session, scope_id=scope_id, action_id=action_id)
+    try:
+        validate_formula_statement_for_scope(
+            session,
+            scope_id=scope_id,
+            statement=body.statement.strip(),
+        )
+    except FormulaStatementValidationError as exc:
+        raise _formula_statement_validation_error(
+            exc, formula_step=body.step
+        ) from None
     row = Formula(
         action_id=action_id,
         step=body.step,
@@ -859,6 +887,19 @@ def patch_scope_action_formula(
     if body.step is not None:
         row.step = body.step
     if body.statement is not None:
+        try:
+            validate_formula_statement_for_scope(
+                session,
+                scope_id=scope_id,
+                statement=body.statement.strip(),
+            )
+        except FormulaStatementValidationError as exc:
+            effective_step = (
+                body.step if body.step is not None else row.step
+            )
+            raise _formula_statement_validation_error(
+                exc, formula_step=effective_step
+            ) from None
         row.statement = body.statement.strip()
     session.add(row)
     _apply_member_audit_context(session, member)

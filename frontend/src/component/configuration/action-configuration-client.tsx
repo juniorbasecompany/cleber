@@ -20,7 +20,10 @@ import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
-import { runActionFormulaPersist } from "@/lib/configuration/action-formula-persist";
+import {
+    FormulaPersistError,
+    runActionFormulaPersist
+} from "@/lib/configuration/action-formula-persist";
 import type {
     ScopeFormulaListResponse,
     ScopeFormulaRecord,
@@ -141,6 +144,49 @@ function cloneFormulaRowList(rowList: ActionFormulaDraftRow[]): ActionFormulaDra
     return rowList.map((row) => ({ ...row }));
 }
 
+const FORMULA_VALIDATION_CODE_LIST = [
+    "formula_invalid_assignment",
+    "formula_invalid_target",
+    "formula_unknown_field_id",
+    "formula_expression_invalid"
+] as const;
+
+type FormulaValidationCode = (typeof FORMULA_VALIDATION_CODE_LIST)[number];
+
+const FORMULA_VALIDATION_CODE_SET = new Set<string>(FORMULA_VALIDATION_CODE_LIST);
+
+function isFormulaValidationCode(code: string): code is FormulaValidationCode {
+    return FORMULA_VALIDATION_CODE_SET.has(code);
+}
+
+function userMessageForFormulaPersistFailure(
+    error: unknown,
+    tActionPage: (key: string, values?: Record<string, string | number>) => string,
+    fallback: string
+): string {
+    if (error instanceof FormulaPersistError) {
+        if (error.code && isFormulaValidationCode(error.code)) {
+            const description = tActionPage(`formulas.validationError.${error.code}`);
+            if (error.step != null) {
+                return tActionPage("formulas.validationError.whichFormula", {
+                    step: error.step,
+                    description
+                });
+            }
+            return description;
+        }
+        if (error.step != null) {
+            const description = error.message.trim() || fallback;
+            return tActionPage("formulas.validationError.whichFormula", {
+                step: error.step,
+                description
+            });
+        }
+        return error.message;
+    }
+    return error instanceof Error ? error.message : fallback;
+}
+
 function areFormulaDraftListsEqual(a: ActionFormulaDraftRow[], b: ActionFormulaDraftRow[]): boolean {
     if (a.length !== b.length) {
         return false;
@@ -229,6 +275,8 @@ export function ActionConfigurationClient({
     const initialSearchActionKeyRef = useRef<ActionSelectionKey>(initialSearchActionKey);
     const selectedActionKeyRef = useRef<ActionSelectionKey>(initialSelectedActionKey);
     const didResolveInitialUrlRef = useRef(false);
+    /** Após falha ao gravar fórmulas (ex.: validação 422), evita um load imediato que sobrescreve o rascunho. */
+    const skipNextFormulaAutoLoadRef = useRef(false);
 
     const selectedAction = useMemo(() => {
         if (isCreateMode) {
@@ -409,6 +457,10 @@ export function ActionConfigurationClient({
             setFormulaLoading(false);
             return;
         }
+        if (skipNextFormulaAutoLoadRef.current) {
+            skipNextFormulaAutoLoadRef.current = false;
+            return;
+        }
         void loadFormulas();
     }, [loadFormulas, isCreateMode, scopeId, selectedActionId]);
 
@@ -417,7 +469,13 @@ export function ActionConfigurationClient({
         [formulaRowList, formulaBaselineList]
     );
 
+    const handleFormulaRowListChange = useCallback((next: ActionFormulaDraftRow[]) => {
+        setRequestErrorMessage(null);
+        setFormulaRowList(next);
+    }, []);
+
     const handleAddFormula = useCallback(() => {
+        setRequestErrorMessage(null);
         setFormulaRowList((previous) => [
             ...previous,
             {
@@ -545,9 +603,12 @@ export function ActionConfigurationClient({
                             baselineRowList: []
                         });
                     } catch (error) {
-                        const message = error instanceof Error ? error.message : copy.saveError;
-                        setRequestErrorMessage(message);
+                        skipNextFormulaAutoLoadRef.current = true;
                         syncFromDirectory(updatedDirectory, created.id);
+                        setFormulasCanEdit(updatedDirectory.can_edit);
+                        setRequestErrorMessage(
+                            userMessageForFormulaPersistFailure(error, tPage, copy.saveError)
+                        );
                         setHistoryRefreshKey((previous) => previous + 1);
                         return;
                     }
@@ -623,9 +684,9 @@ export function ActionConfigurationClient({
                         baselineRowList: formulaBaselineList
                     });
                 } catch (error) {
-                    const message = error instanceof Error ? error.message : copy.saveError;
-                    setRequestErrorMessage(message);
-                    await loadFormulas();
+                    setRequestErrorMessage(
+                        userMessageForFormulaPersistFailure(error, tPage, copy.saveError)
+                    );
                     return;
                 }
                 await loadFormulas();
@@ -824,7 +885,7 @@ export function ActionConfigurationClient({
                                     isLoading={!isCreateMode && formulaLoading}
                                     fieldList={scopeFieldList}
                                     rowList={formulaRowList}
-                                    onChangeRowList={setFormulaRowList}
+                                    onChangeRowList={handleFormulaRowListChange}
                                     onAdd={handleAddFormula}
                                 />
                             </>

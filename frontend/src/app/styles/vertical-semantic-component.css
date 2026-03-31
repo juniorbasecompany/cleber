@@ -1727,10 +1727,14 @@
   padding: 0;
 }
 
+/* Wrapper só para sortable (ref dnd-kit): sem cartão; espaço vertical entre linhas. */
 .ui-formula-sortable-row {
   margin-bottom: 0.75rem;
-  padding: 1.25rem;
+  padding: 0;
   box-sizing: border-box;
+  border: none;
+  background: transparent;
+  box-shadow: none;
 }
 
 .ui-formula-list .ui-formula-sortable-row:last-child {
@@ -1806,6 +1810,11 @@
   border: var(--border-width-default) solid var(--color-border);
   background: var(--color-surface);
   box-shadow: var(--shadow-sm);
+}
+
+/* Oculta o ícone/letra de tipo (ex.: "C") nas sugestões do CodeMirror. */
+.cm-tooltip.cm-tooltip-autocomplete .cm-completionIcon {
+  display: none;
 }
 
 .ui-formula-row-actions {

@@ -24,6 +24,16 @@ Cada item de `step_list` segue o formato:
 
 O **contexto** é um dicionário que começa com `input_context` e, após cada passo, passa a incluir `context[name] = valor` do passo atual. **A ordem dos passos é semântica**: passos posteriores podem referenciar nomes definidos em passos anteriores.
 
+### `formula.statement` na API (atribuição)
+
+O texto persistido em [`formula.statement`](../../../backend/src/valora_backend/model/rules.py) usa **uma única linha lógica** de atribuição:
+
+- **Lado esquerdo:** exclusivamente `${field:<id>}` (quem recebe o valor).
+- **Separador:** primeiro caractere `=` na instrução (após trim).
+- **Lado direito:** expressão de cálculo com referências `${field:…}` e funções da lista branca; internamente substituídas por nomes `f_<id>` para o SimpleEval.
+
+Na gravação (`POST`/`PATCH` de fórmulas), o backend valida este formato, a existência dos `field_id` no escopo e um **dry-run** da RHS com valores stub (`Decimal("0")` por campo referido na expressão). Códigos estáveis de erro: `formula_invalid_assignment`, `formula_invalid_target`, `formula_unknown_field_id`, `formula_expression_invalid`. Implementação: `valora_backend/rules/formula_statement_validate.py` e `formula_simple_eval.py`.
+
 ## API conceptual
 
 - `build_evaluator(context)`  
@@ -68,7 +78,7 @@ Ao persistir regras executadas pelo utilizador, gravar identificador e **versão
 
 ## Dependência
 
-Quando o código for integrado no backend, adicionar `simpleeval` a `backend/pyproject.toml` e fixar versão de acordo com a política de dependências do repositório.
+O pacote `simpleeval` está declarado em `backend/pyproject.toml` (intervalo de versão fixado, por exemplo `>=1.0.7,<2`). Em upgrades, rever changelog e regressões de segurança.
 
 ## Segurança
 

@@ -44,7 +44,7 @@ type ActionFormulaSectionProps = {
 };
 
 type FormulaRowCopy = {
-    statementLabel: string;
+    statementAriaLabel: string;
     dragHandleAria: string;
     removeAriaLabel: string;
     unmarkAriaLabel: string;
@@ -84,19 +84,12 @@ function SortableFormulaRow({
         <div
             ref={setNodeRef}
             style={style}
-            className="ui-card ui-border-accent ui-formula-sortable-row"
+            className="ui-formula-sortable-row"
             data-dragging={isDragging ? "true" : undefined}
             data-delete-pending={row.pendingDelete ? "true" : undefined}
         >
             <div className="ui-formula-row-layout">
                 <div className="ui-formula-row-field ui-field">
-                    <label
-                        className="ui-field-label"
-                        id={`formula-stmt-label-${row.clientKey}`}
-                        htmlFor={`formula-stmt-${row.clientKey}`}
-                    >
-                        {copy.statementLabel}
-                    </label>
                     <FormulaStatementEditor
                         id={`formula-stmt-${row.clientKey}`}
                         value={row.statement}
@@ -104,7 +97,7 @@ function SortableFormulaRow({
                         disabled={disabled || !canEdit || row.pendingDelete}
                         fieldList={fieldList}
                         unknownFieldLabel={unknownFieldLabel}
-                        ariaLabelledBy={`formula-stmt-label-${row.clientKey}`}
+                        ariaLabel={copy.statementAriaLabel}
                     />
                 </div>
                 <div className="ui-formula-row-actions">
@@ -147,7 +140,7 @@ export function ActionFormulaSection({
     const unknownFieldLabel = t("unknownFieldLabel");
 
     const rowCopy: FormulaRowCopy = {
-        statementLabel: t("statementLabel"),
+        statementAriaLabel: t("statementLabel"),
         dragHandleAria: t("dragHandleAria"),
         removeAriaLabel: t("removeAriaLabel"),
         unmarkAriaLabel: t("unmarkAriaLabel")

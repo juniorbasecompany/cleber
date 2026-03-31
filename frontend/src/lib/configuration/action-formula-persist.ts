@@ -3,6 +3,42 @@
  * ao reordenar ou inserir linhas novas entre existentes.
  */
 
+import {
+    parseErrorCode,
+    parseErrorDetail,
+    parseErrorStep
+} from "@/lib/api/parse-error-detail";
+
+/** Erro de API ao gravar fórmula; `code` estável quando `detail` JSON inclui `code`. */
+export class FormulaPersistError extends Error {
+    readonly code: string | null;
+    /** `step` da fórmula (1..n) quando a API devolve validação 422 com `detail.step`. */
+    readonly step: number | null;
+
+    constructor(message: string, code: string | null, step: number | null = null) {
+        super(message);
+        this.name = "FormulaPersistError";
+        this.code = code;
+        this.step = step;
+    }
+}
+
+function throwPersistFailure(
+    body: unknown,
+    fallback: string,
+    /** Ordem 1..n na lista ativa quando a API não devolve `detail.step`. */
+    clientStep: number | null = null
+): never {
+    const apiStep = parseErrorStep(body);
+    const step =
+        apiStep ?? (clientStep != null && clientStep >= 1 ? clientStep : null);
+    throw new FormulaPersistError(
+        parseErrorDetail(body, fallback) ?? fallback,
+        parseErrorCode(body),
+        step
+    );
+}
+
 export type FormulaPersistRow = {
     serverId?: number;
     statement: string;
@@ -58,7 +94,7 @@ function formulaBasePath(scopeId: number, actionId: number): string {
 }
 
 /**
- * Aplica exclusões, reordenação e criações. Lança Error com mensagem amigável se falhar.
+ * Aplica exclusões, reordenação e criações. Lança FormulaPersistError se falhar.
  */
 export async function persistActionFormulaDraft(
     options: PersistActionFormulaOptions
@@ -78,7 +114,7 @@ export async function persistActionFormulaDraft(
         const response = await fetchImpl(`${base}/${id}`, { method: "DELETE" });
         if (!response.ok) {
             const body: unknown = await response.json().catch(() => ({}));
-            throw new Error(extractDetail(body, "Não foi possível excluir a fórmula."));
+            throwPersistFailure(body, "Não foi possível excluir a fórmula.");
         }
     }
 
@@ -101,7 +137,13 @@ export async function persistActionFormulaDraft(
             });
             if (!response.ok) {
                 const body: unknown = await response.json().catch(() => ({}));
-                throw new Error(extractDetail(body, "Não foi possível reordenar as fórmulas."));
+                const order =
+                    activeRows.findIndex((r) => r.serverId === row.serverId) + 1;
+                throwPersistFailure(
+                    body,
+                    "Não foi possível reordenar as fórmulas.",
+                    order >= 1 ? order : null
+                );
             }
         }
     }
@@ -117,7 +159,7 @@ export async function persistActionFormulaDraft(
             });
             if (!response.ok) {
                 const body: unknown = await response.json().catch(() => ({}));
-                throw new Error(extractDetail(body, "Não foi possível gravar a fórmula."));
+                throwPersistFailure(body, "Não foi possível gravar a fórmula.", position);
             }
         } else {
             const response = await fetchImpl(base, {
@@ -127,7 +169,7 @@ export async function persistActionFormulaDraft(
             });
             if (!response.ok) {
                 const body: unknown = await response.json().catch(() => ({}));
-                throw new Error(extractDetail(body, "Não foi possível criar a fórmula."));
+                throwPersistFailure(body, "Não foi possível criar a fórmula.", position);
             }
         }
         position += 1;
@@ -151,11 +193,12 @@ export async function persistActionFormulaStatementOnly(
         const response = await fetchImpl(`${base}/${id}`, { method: "DELETE" });
         if (!response.ok) {
             const body: unknown = await response.json().catch(() => ({}));
-            throw new Error(extractDetail(body, "Não foi possível excluir a fórmula."));
+            throwPersistFailure(body, "Não foi possível excluir a fórmula.");
         }
     }
 
-    for (const row of activeRows) {
+    for (let i = 0; i < activeRows.length; i += 1) {
+        const row = activeRows[i]!;
         if (row.serverId == null) {
             continue;
         }
@@ -164,6 +207,7 @@ export async function persistActionFormulaStatementOnly(
         if (trimmed === previous) {
             continue;
         }
+        const listStep = i + 1;
         const response = await fetchImpl(`${base}/${row.serverId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
@@ -171,19 +215,13 @@ export async function persistActionFormulaStatementOnly(
         });
         if (!response.ok) {
             const body: unknown = await response.json().catch(() => ({}));
-            throw new Error(extractDetail(body, "Não foi possível gravar a fórmula."));
+            throwPersistFailure(
+                body,
+                "Não foi possível gravar a fórmula.",
+                listStep
+            );
         }
     }
-}
-
-function extractDetail(body: unknown, fallback: string): string {
-    if (body && typeof body === "object" && "detail" in body) {
-        const detail = (body as { detail?: unknown }).detail;
-        if (typeof detail === "string" && detail.trim()) {
-            return detail.trim();
-        }
-    }
-    return fallback;
 }
 
 /**

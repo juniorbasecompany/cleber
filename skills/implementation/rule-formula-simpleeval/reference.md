@@ -1,6 +1,6 @@
 # Referência: `build_evaluator` e `execute_steps`
 
-Exemplo completo do padrão de passos nomeados com SimpleEval. Serve de base quando o módulo for integrado ao `backend/`; não é código canónico do repositório até essa integração existir.
+Exemplo completo do padrão de passos nomeados com SimpleEval. No repositório, a lista branca alinhada a este exemplo está em `backend/src/valora_backend/rules/formula_simple_eval.py` (`build_formula_simple_eval`), usada na validação ao gravar `formula.statement`.
 
 ```python
 from datetime import date

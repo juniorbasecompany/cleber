@@ -65,7 +65,7 @@ Documentação interativa OpenAPI: ao subir o servidor, **`/docs`** (Swagger).
 
 - `.../scopes/{scope_id}/fields` e `.../fields/{field_id}`
 - `.../scopes/{scope_id}/actions` e `.../actions/{action_id}`
-- `.../actions/{action_id}/formulas` e `.../formulas/{formula_id}`
+- `.../actions/{action_id}/formulas` e `.../formulas/{formula_id}` (em `POST`/`PATCH`, a `statement` é validada: atribuição `${field:id} = …`, campos do escopo e dry-run da expressão com [simpleeval](https://pypi.org/project/simpleeval/); ver `valora_backend/rules/`; erros 422 incluem `step` (ordem 1..n). Para reproduzir no terminal: `PYTHONPATH=src python script_try_formula_validate.py 1,2 '"${field:1} = …"' …`.)
 - `.../scopes/{scope_id}/labels` e `.../labels/{label_id}` (filtros opcionais `field_id` / `action_id` na listagem)
 - `.../scopes/{scope_id}/events` e `.../events/{event_id}`
 - `.../events/{event_id}/inputs` e `.../inputs/{input_id}`

@@ -374,7 +374,14 @@
             "dragHandleAria": "Drag to reorder",
             "empty": "No formulas yet. Use new to add one.",
             "loadError": "Could not load formulas. Try again.",
-            "statementRequired": "Each active formula needs a non-empty statement."
+            "statementRequired": "Each active formula needs a non-empty statement.",
+            "validationError": {
+                "whichFormula": "Formula {step} is not correct. Check operators, parentheses, and allowed functions such as abs, min, max, round, Decimal, and date.",
+                "formula_invalid_assignment": "Each step must be an assignment: what receives the value, an equals sign, then the calculation. Check that you have an equals sign and that neither side is empty.",
+                "formula_invalid_target": "Only the field that should receive the result may appear to the left of the equals sign (the one you insert with @ in the editor), nothing else.",
+                "formula_unknown_field_id": "The formula references information that does not exist in this scope. Adjust the chosen items or the text.",
+                "formula_expression_invalid": "The calculation to the right of the equals sign could not be validated. Check parentheses, operators, and allowed functions (such as abs, min, max, round, Decimal, and date)."
+            }
         },
         "discardConfirm": "Discard unsaved changes?"
     },

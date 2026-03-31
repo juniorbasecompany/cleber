@@ -374,7 +374,14 @@
       "dragHandleAria": "Arrastar para reordenar",
       "empty": "Nenhuma fórmula. Use nova para adicionar.",
       "loadError": "Não foi possível carregar as fórmulas. Tente novamente.",
-      "statementRequired": "Cada fórmula ativa precisa de uma instrução não vazia."
+      "statementRequired": "Cada fórmula ativa precisa de uma instrução não vazia.",
+      "validationError": {
+        "whichFormula": "A {step}ª fórmula não está correta. Verifique os operadores, parênteses e funções permitidas, como abs, min, max, round, Decimal e date.",
+        "formula_invalid_assignment": "A instrução precisa ser uma atribuição: quem recebe o valor, sinal de igual e em seguida a conta. Confira se há um igual e se os dois lados não estão vazios.",
+        "formula_invalid_target": "À esquerda do igual deve ficar só a informação que vai receber o resultado (a que você insere com @ no editor), nada mais.",
+        "formula_unknown_field_id": "A fórmula usa uma informação que não existe neste escopo. Ajuste os itens escolhidos ou o texto.",
+        "formula_expression_invalid": "A conta à direita do igual não pôde ser validada. Confira parênteses, operadores e funções permitidas (como abs, min, max, round, Decimal e date)."
+      }
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },

@@ -46,3 +46,23 @@ export function parseErrorCode(payload: unknown): string | null {
     }
     return null;
 }
+
+/** Ordem da fórmula na lista (`step`, 1..n) quando a API devolve `detail.step`. */
+export function parseErrorStep(payload: unknown): number | null {
+    if (!payload || typeof payload !== "object") {
+        return null;
+    }
+    const detail = (payload as { detail?: unknown }).detail;
+    if (!detail || typeof detail !== "object" || Array.isArray(detail)) {
+        return null;
+    }
+    const raw = (detail as { step?: unknown }).step;
+    if (typeof raw === "number" && Number.isInteger(raw) && raw >= 1) {
+        return raw;
+    }
+    if (typeof raw === "string" && /^\d+$/.test(raw.trim())) {
+        const n = parseInt(raw.trim(), 10);
+        return n >= 1 ? n : null;
+    }
+    return null;
+}
