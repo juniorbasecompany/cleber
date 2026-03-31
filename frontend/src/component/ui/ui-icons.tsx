@@ -5,7 +5,7 @@ type IconProps = {
 };
 
 type NavigationIconProps = IconProps & {
-    kind: "home" | "location" | "unity" | "field";
+    kind: "home" | "location" | "unity" | "field" | "action";
 };
 
 function mergeClassName(className?: string, fallback = "ui-icon") {
@@ -206,6 +206,24 @@ export function WorkflowIcon({ className }: IconProps) {
     );
 }
 
+/** Metáfora de operação ou gatilho de negócio nas ações por escopo. */
+export function ActionBoltIcon({ className }: IconProps) {
+    return (
+        <svg
+            className={mergeClassName(className)}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.75"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+        >
+            <path d="M13 2.5 4 14.5h6.5L9 22.5l10.5-12H13l.5-8Z" />
+        </svg>
+    );
+}
+
 /** Régua horizontal compacta: metáfora de medida nos campos de regra. */
 export function RulerIcon({ className }: IconProps) {
     return (
@@ -375,6 +393,8 @@ export function NavigationIcon({
             return <UnityIcon className={className} />;
         case "field":
             return <RulerIcon className={className} />;
+        case "action":
+            return <ActionBoltIcon className={className} />;
         default:
             return <DashboardIcon className={className} />;
     }

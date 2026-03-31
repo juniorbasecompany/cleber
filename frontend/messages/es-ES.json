@@ -8,6 +8,7 @@
             "location": "Ubicaciones",
             "unity": "Unidades",
             "field": "Campos",
+            "action": "Operaciones",
             "configuration": "Configuración",
             "comingSoon": "próximamente"
         },
@@ -81,6 +82,7 @@
         "openMemberEditor": "Editar miembros",
         "openScopeEditor": "Editar alcances",
         "openFieldEditor": "Editar campos",
+        "openActionEditor": "Editar operaciones",
         "cards": {
             "organization": {
                 "title": "Licenciatario",
@@ -97,6 +99,10 @@
             "field": {
                 "title": "Campos",
                 "description": "Los campos definen tipos de valor usados por las reglas del alcance activo (por ejemplo enteros o decimales). La lista y el editor siguen el alcance que eliges en el encabezado, con el mismo patrón que las ubicaciones."
+            },
+            "action": {
+                "title": "Operaciones",
+                "description": "Las operaciones (acciones) son tipos de evento de negocio en el alcance activo, por ejemplo alojamiento o mortalidad. Cada una tiene un nombre claro por idioma y puede tener fórmulas asociadas. La lista sigue el alcance del encabezado, con el mismo patrón que los campos."
             }
         }
     },
@@ -310,6 +316,51 @@
                 "empty": "Selecciona o define un tipo de dato.",
                 "scaleRange": "Usa un número de decimales entre 0 y 10."
             }
+        },
+        "discardConfirm": "¿Descartar los cambios no guardados?"
+    },
+    "ActionConfigurationPage": {
+        "title": "Operaciones",
+        "description": "Define aquí los tipos de operación o medición que se convierten en eventos en el alcance activo (por ejemplo alojamiento o mortalidad). Para cada operación indicas un nombre claro; ese nombre aparece al montar reglas y registrar eventos.",
+        "empty": "No se encontraron operaciones para el alcance activo y tu permiso actual no permite crear nuevas.",
+        "list": {
+            "emptyScope": "Crea un alcance antes de editar operaciones.",
+            "missingCurrentScope": "Define un alcance activo en el selector del encabezado antes de editar operaciones.",
+            "loadError": "No se pudieron cargar las operaciones de este alcance. Inténtalo de nuevo.",
+            "fallbackTitle": "Operación #{id}"
+        },
+        "history": {
+            "title": "Historial de cambios",
+            "description": "Consulta los cambios recientes en las definiciones de operación del alcance activo: quién cambió qué, cuándo y un resumen de cada actualización."
+        },
+        "section": {
+            "actionName": {
+                "label": "Nombre de la operación",
+                "hint": "Nombre breve y fácil de entender, usado en fórmulas, pantallas e informes."
+            },
+            "info": {
+                "title": "Información",
+                "description": "Resumen de la operación en foco en el servidor.",
+                "actionNameRegisteredLabel": "Nombre",
+                "createLead": "Nueva operación",
+                "createHint": "Estás definiendo una nueva operación para el alcance activo. Guarda para registrarla en el directorio."
+            }
+        },
+        "buttons": {
+            "cancel": "Cancelar",
+            "new": "Nuevo",
+            "delete": "Eliminar",
+            "undoDelete": "Desmarcar eliminación",
+            "save": "Guardar",
+            "saving": "Guardando..."
+        },
+        "readOnlyNotice": "Puedes consultar las operaciones del alcance activo, pero solo miembros master o administrador pueden crear o editar definiciones de reglas.",
+        "error": {
+            "save": "No se pudo guardar la operación. Inténtalo de nuevo.",
+            "create": "No se pudo crear la operación. Inténtalo de nuevo.",
+            "delete": "No se pudo eliminar la operación. Inténtalo de nuevo.",
+            "deleteBlockedDetail": "No es posible eliminar la operación mientras eventos aún la referencian.",
+            "actionNameRequired": "Indica el nombre de la operación."
         },
         "discardConfirm": "¿Descartar los cambios no guardados?"
     },

@@ -2,7 +2,13 @@ import { getTranslations } from "next-intl/server";
 
 import { InfoCard } from "@/component/app-shell/info-card";
 import { PageHeader } from "@/component/app-shell/page-header";
-import { BuildingIcon, RulerIcon, ScopeIcon, UsersIcon } from "@/component/ui/ui-icons";
+import {
+    BuildingIcon,
+    RulerIcon,
+    ScopeIcon,
+    UsersIcon,
+    WorkflowIcon
+} from "@/component/ui/ui-icons";
 
 type ConfigurationPageProps = {
     params: Promise<{ locale: string }>;
@@ -15,6 +21,7 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
     const memberEditorHref = `/${locale}/app/configuration/member`;
     const scopeEditorHref = `/${locale}/app/configuration/scope`;
     const fieldEditorHref = `/${locale}/app/configuration/field`;
+    const actionEditorHref = `/${locale}/app/configuration/action`;
 
     return (
         <section className="ui-page-stack">
@@ -48,6 +55,13 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
                     iconSlot={<RulerIcon className="ui-icon" />}
                     actionHref={fieldEditorHref}
                     actionLabel={t("openFieldEditor")}
+                />
+                <InfoCard
+                    title={t("cards.action.title")}
+                    description={t("cards.action.description")}
+                    iconSlot={<WorkflowIcon className="ui-icon" />}
+                    actionHref={actionEditorHref}
+                    actionLabel={t("openActionEditor")}
                 />
             </section>
         </section>

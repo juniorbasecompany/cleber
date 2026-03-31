@@ -8,6 +8,7 @@
       "location": "Locais",
       "unity": "Unidades",
       "field": "Campos",
+      "action": "Operações",
       "configuration": "Configuração",
       "comingSoon": "em breve"
     },
@@ -81,6 +82,7 @@
     "openMemberEditor": "Editar membros",
     "openScopeEditor": "Editar escopos",
     "openFieldEditor": "Editar campos",
+    "openActionEditor": "Editar operações",
     "cards": {
       "organization": {
         "title": "Licenciado",
@@ -97,6 +99,10 @@
       "field": {
         "title": "Campos",
         "description": "Campos definem tipos de valor usados nas regras do escopo ativo (por exemplo números inteiros ou decimais). A lista e o editor respeitam o escopo que você escolhe no cabeçalho, no mesmo padrão dos locais."
+      },
+      "action": {
+        "title": "Operações",
+        "description": "Operações (ações) são os tipos de evento de negócio no escopo ativo, por exemplo alojamento ou mortalidade. Cada uma tem um nome amigável por idioma e pode ter fórmulas associadas. A lista segue o escopo do cabeçalho, no mesmo padrão dos campos."
       }
     }
   },
@@ -310,6 +316,51 @@
         "empty": "Selecione ou defina um tipo de dado.",
         "scaleRange": "Use um número de casas decimais entre 0 e 10."
       }
+    },
+    "discardConfirm": "Descartar alterações não salvas?"
+  },
+  "ActionConfigurationPage": {
+    "title": "Operações",
+    "description": "Defina aqui os tipos de operação ou medição que viram eventos no escopo ativo (por exemplo alojamento ou mortalidade). Para cada operação você informa um nome claro; esse nome aparece ao montar regras e registrar eventos.",
+    "empty": "Nenhuma operação foi encontrada para o escopo ativo e sua permissão atual não permite cadastrar novas.",
+    "list": {
+      "emptyScope": "Crie um escopo antes de editar operações.",
+      "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar operações.",
+      "loadError": "Não foi possível carregar as operações deste escopo. Tente novamente.",
+      "fallbackTitle": "Operação #{id}"
+    },
+    "history": {
+      "title": "Histórico de alterações",
+      "description": "Consulte o histórico das definições de operação do escopo ativo: quem alterou, quando e um resumo do que mudou."
+    },
+    "section": {
+      "actionName": {
+        "label": "Nome da operação",
+        "hint": "Nome curto e fácil de entender, usado em fórmulas, telas e relatórios."
+      },
+      "info": {
+        "title": "Informações",
+        "description": "Resumo da operação em foco no servidor.",
+        "actionNameRegisteredLabel": "Nome",
+        "createLead": "Nova operação",
+        "createHint": "Você está definindo uma nova operação para o escopo ativo. Salve para registrá-la no diretório."
+      }
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "new": "Novo",
+      "delete": "Apagar",
+      "undoDelete": "Desmarcar exclusão",
+      "save": "Salvar",
+      "saving": "Salvando..."
+    },
+    "readOnlyNotice": "Você pode consultar as operações do escopo ativo, mas só membros master ou administrador podem criar ou editar definições de regras.",
+    "error": {
+      "save": "Não foi possível salvar a operação. Tente novamente.",
+      "create": "Não foi possível criar a operação. Tente novamente.",
+      "delete": "Não foi possível apagar a operação. Tente novamente.",
+      "deleteBlockedDetail": "Não é possível apagar a operação enquanto eventos ainda a referenciam.",
+      "actionNameRequired": "Informe o nome da operação."
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },

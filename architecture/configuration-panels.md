@@ -91,6 +91,7 @@ Novos painéis **diretório + editor** devem preferir **Shell + política**; usa
 - Diretório + editor: `frontend/src/component/configuration/configuration-directory-editor-shell.tsx`, `configuration-directory-editor-layout.tsx`, `configuration-directory-editor-policy.ts`
 - Escopo e locais: `frontend/src/component/configuration/scope-configuration-client.tsx`, `location-configuration-client.tsx`, páginas em `frontend/src/app/[locale]/app/configuration/scope/`, `.../location/`
 - Campos por escopo (regras): `frontend/src/component/configuration/field-configuration-client.tsx`, página `frontend/src/app/[locale]/app/configuration/field/` (contexto do escopo ativo, mesmo stack de diretório + editor + histórico)
+- Ações por escopo (rótulos em `label.action_id`): `frontend/src/component/configuration/action-configuration-client.tsx`, página `frontend/src/app/[locale]/app/configuration/action/` (mesmo padrão que campos)
 - `frontend/src/component/configuration/tenant-configuration-client.tsx`
 - `frontend/src/component/configuration/member-configuration-client.tsx`
 - `frontend/src/app/[locale]/app/configuration/tenant/page.tsx`

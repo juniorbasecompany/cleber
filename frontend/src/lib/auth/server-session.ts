@@ -10,6 +10,7 @@ import type {
   TenantCurrentResponse,
   TenantLocationDirectoryResponse,
   TenantMemberDirectoryResponse,
+  TenantScopeActionDirectoryResponse,
   TenantScopeDirectoryResponse,
   TenantScopeFieldDirectoryResponse,
   TenantUnityDirectoryResponse
@@ -208,6 +209,40 @@ export async function getTenantScopeFieldDirectory(
     }
 
     return (await response.json()) as TenantScopeFieldDirectoryResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function getTenantScopeActionDirectory(
+  scopeId: number,
+  labelLang: "pt-BR" | "en" | "es"
+) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(authTokenCookieName)?.value;
+  if (!hasAuthSession(token)) {
+    return null;
+  }
+
+  const query = new URLSearchParams({ label_lang: labelLang });
+
+  try {
+    const response = await fetch(
+      `${apiUrl}/auth/tenant/current/scopes/${scopeId}/actions?${query.toString()}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as TenantScopeActionDirectoryResponse;
   } catch {
     return null;
   }

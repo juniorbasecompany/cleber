@@ -277,6 +277,89 @@ def _fill_other_field_labels_via_deepl(
             )
 
 
+def _upsert_action_label_by_lang(
+    session: Session,
+    *,
+    action_id: int,
+    lang: str,
+    name: str | None,
+) -> None:
+    """Atualiza ou cria `label` para a ação e idioma. Texto vazio após strip remove o registro."""
+    if name is None:
+        return
+    stripped = name.strip()
+    existing = session.scalar(
+        select(Label).where(Label.action_id == action_id, Label.lang == lang)
+    )
+    if not stripped:
+        if existing is not None:
+            session.delete(existing)
+        return
+    if existing is not None:
+        existing.name = stripped
+        session.add(existing)
+        return
+    session.add(
+        Label(lang=lang, name=stripped, field_id=None, action_id=action_id)
+    )
+
+
+def _fill_other_action_labels_via_deepl(
+    session: Session,
+    *,
+    action_id: int,
+    source_lang: str,
+    source_text: str,
+) -> None:
+    """Preenche rótulos nas outras línguas via DeepL; ignora sem chave ou se um idioma falhar."""
+    settings = Settings()
+    key_secret = settings.deepl_api_key
+    if key_secret is None:
+        return
+    stripped = source_text.strip()
+    if not stripped:
+        return
+    api_key = normalize_deepl_api_key(key_secret.get_secret_value())
+    if not api_key:
+        return
+    base = resolve_deepl_api_base_url(
+        configured_url=settings.deepl_api_base_url,
+        api_key=api_key,
+    ).rstrip("/")
+    log = logging.getLogger(__name__)
+    for target_lang in FIELD_LABEL_LANG_LIST:
+        if target_lang == source_lang:
+            continue
+        try:
+            translated, _ = translate_text_deepl(
+                text=stripped,
+                source_app_lang=source_lang,
+                target_app_lang=target_lang,
+                api_key=api_key,
+                base_url=base,
+            )
+        except (requests.RequestException, ValueError) as exc:
+            extra = ""
+            if isinstance(exc, requests.HTTPError) and exc.response is not None:
+                extra = f" response={exc.response.text[:400]!r}"
+            log.warning(
+                "DeepL translation failed for action_id=%s target_lang=%s base_url=%s: %s%s",
+                action_id,
+                target_lang,
+                base,
+                exc,
+                extra,
+            )
+            continue
+        if translated:
+            _upsert_action_label_by_lang(
+                session,
+                action_id=action_id,
+                lang=target_lang,
+                name=translated,
+            )
+
+
 # --- field ---
 
 
@@ -486,6 +569,8 @@ def delete_scope_field(
 class ScopeActionRecord(BaseModel):
     id: int
     scope_id: int
+    label_id: int | None = None
+    label_name: str | None = None
 
 
 class ScopeActionListResponse(BaseModel):
@@ -494,7 +579,25 @@ class ScopeActionListResponse(BaseModel):
 
 
 class ScopeActionCreateRequest(BaseModel):
-    pass
+    label_lang: Literal["pt-BR", "en", "es"] | None = None
+    label_name: str | None = PydanticField(default=None, max_length=2048)
+
+    @model_validator(mode="after")
+    def label_lang_when_name_sent(self) -> ScopeActionCreateRequest:
+        if self.label_name is not None and self.label_lang is None:
+            raise ValueError("label_lang is required when label_name is provided")
+        return self
+
+
+class ScopeActionPatchRequest(BaseModel):
+    label_lang: Literal["pt-BR", "en", "es"] | None = None
+    label_name: str | None = PydanticField(default=None, max_length=2048)
+
+    @model_validator(mode="after")
+    def label_lang_when_name_sent_patch(self) -> ScopeActionPatchRequest:
+        if self.label_name is not None and self.label_lang is None:
+            raise ValueError("label_lang is required when label_name is provided")
+        return self
 
 
 @router.get(
@@ -503,6 +606,7 @@ class ScopeActionCreateRequest(BaseModel):
 )
 def list_scope_actions(
     scope_id: int,
+    label_lang: Literal["pt-BR", "en", "es"] | None = Query(default=None),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
@@ -512,9 +616,36 @@ def list_scope_actions(
             select(Action).where(Action.scope_id == scope_id).order_by(Action.id)
         )
     )
+    label_by_action_id: dict[int, Label] = {}
+    if label_lang is not None and rows:
+        action_id_list = [r.id for r in rows]
+        label_rows = list(
+            session.scalars(
+                select(Label).where(
+                    Label.action_id.in_(action_id_list),
+                    Label.lang == label_lang,
+                )
+            )
+        )
+        for label_row in label_rows:
+            if label_row.action_id is not None:
+                label_by_action_id[label_row.action_id] = label_row
+
+    item_list: list[ScopeActionRecord] = []
+    for r in rows:
+        pair = label_by_action_id.get(r.id) if label_lang is not None else None
+        item_list.append(
+            ScopeActionRecord(
+                id=r.id,
+                scope_id=r.scope_id,
+                label_id=pair.id if pair is not None else None,
+                label_name=pair.name if pair is not None else None,
+            )
+        )
+
     return ScopeActionListResponse(
         can_edit=_member_can_edit_scope_rules(member),
-        item_list=[ScopeActionRecord(id=r.id, scope_id=r.scope_id) for r in rows],
+        item_list=item_list,
     )
 
 
@@ -524,7 +655,7 @@ def list_scope_actions(
 )
 def create_scope_action(
     scope_id: int,
-    _body: ScopeActionCreateRequest,
+    body: ScopeActionCreateRequest,
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
@@ -532,9 +663,23 @@ def create_scope_action(
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = Action(scope_id=scope_id)
     session.add(row)
+    session.flush()
+    if body.label_lang is not None and body.label_name is not None:
+        _upsert_action_label_by_lang(
+            session,
+            action_id=row.id,
+            lang=body.label_lang,
+            name=body.label_name,
+        )
+        _fill_other_action_labels_via_deepl(
+            session,
+            action_id=row.id,
+            source_lang=body.label_lang,
+            source_text=body.label_name,
+        )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_actions(scope_id, member, session)
+    return list_scope_actions(scope_id, body.label_lang, member, session)
 
 
 @router.get(
@@ -550,6 +695,38 @@ def get_scope_action(
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = _action_in_scope_or_404(session, scope_id=scope_id, action_id=action_id)
     return ScopeActionRecord(id=row.id, scope_id=row.scope_id)
+
+
+@router.patch(
+    "/scopes/{scope_id}/actions/{action_id}",
+    response_model=ScopeActionListResponse,
+)
+def patch_scope_action(
+    scope_id: int,
+    action_id: int,
+    body: ScopeActionPatchRequest,
+    member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    _require_scope_rules_editor(member)
+    _get_tenant_scope(session, actor=member, scope_id=scope_id)
+    row = _action_in_scope_or_404(session, scope_id=scope_id, action_id=action_id)
+    if body.label_lang is not None and body.label_name is not None:
+        _upsert_action_label_by_lang(
+            session,
+            action_id=row.id,
+            lang=body.label_lang,
+            name=body.label_name,
+        )
+        _fill_other_action_labels_via_deepl(
+            session,
+            action_id=row.id,
+            source_lang=body.label_lang,
+            source_text=body.label_name,
+        )
+    _apply_member_audit_context(session, member)
+    commit_session_with_null_if_empty(session)
+    return list_scope_actions(scope_id, body.label_lang, member, session)
 
 
 @router.delete(
@@ -573,7 +750,7 @@ def delete_scope_action(
     session.delete(row)
     _apply_member_audit_context(session, member)
     session.commit()
-    return list_scope_actions(scope_id, member, session)
+    return list_scope_actions(scope_id, None, member, session)
 
 
 # --- formula ---

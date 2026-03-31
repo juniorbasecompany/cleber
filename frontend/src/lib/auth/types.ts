@@ -133,13 +133,26 @@ export type TenantScopeFieldDirectoryResponse = {
   item_list: TenantScopeFieldRecord[];
 };
 
+export type TenantScopeActionRecord = {
+  id: number;
+  scope_id: number;
+  label_id?: number | null;
+  label_name?: string | null;
+};
+
+export type TenantScopeActionDirectoryResponse = {
+  can_edit: boolean;
+  item_list: TenantScopeActionRecord[];
+};
+
 export type AuditLogTableName =
   | "tenant"
   | "member"
   | "scope"
   | "location"
   | "unity"
-  | "field";
+  | "field"
+  | "action";
 
 export type AuditLogActionType = "I" | "U" | "D";
 

@@ -8,6 +8,7 @@
             "location": "Locations",
             "unity": "Units",
             "field": "Fields",
+            "action": "Actions",
             "configuration": "Configuration",
             "comingSoon": "coming soon"
         },
@@ -81,6 +82,7 @@
         "openMemberEditor": "Edit members",
         "openScopeEditor": "Edit scopes",
         "openFieldEditor": "Edit fields",
+        "openActionEditor": "Edit actions",
         "cards": {
             "organization": {
                 "title": "Tenant",
@@ -97,6 +99,10 @@
             "field": {
                 "title": "Fields",
                 "description": "Fields define value types used by rules in the active scope (for example integers or decimals). The list and editor follow the scope you pick in the header, the same pattern as locations."
+            },
+            "action": {
+                "title": "Actions",
+                "description": "Actions are business event kinds in the active scope (for example housing or mortality). Each has a friendly name per language and may have formulas attached. The list follows the header scope, the same pattern as fields."
             }
         }
     },
@@ -310,6 +316,51 @@
                 "empty": "Select or define a data type.",
                 "scaleRange": "Use a decimal place count between 0 and 10."
             }
+        },
+        "discardConfirm": "Discard unsaved changes?"
+    },
+    "ActionConfigurationPage": {
+        "title": "Actions",
+        "description": "Define here the kinds of operations or measurements that become events in the active scope (for example housing or mortality). For each action you provide a clear name; that name appears when you build rules and record events.",
+        "empty": "No actions were found for the active scope and your current permission does not allow creating new ones.",
+        "list": {
+            "emptyScope": "Create a scope before editing actions.",
+            "missingCurrentScope": "Set an active scope from the header selector before editing actions.",
+            "loadError": "Could not load actions for this scope. Try again.",
+            "fallbackTitle": "Action #{id}"
+        },
+        "history": {
+            "title": "Change history",
+            "description": "Review recent changes to action definitions for the active scope: who changed what, when, and a summary of each update."
+        },
+        "section": {
+            "actionName": {
+                "label": "Action name",
+                "hint": "Short, easy-to-understand name used in formulas, screens, and reports."
+            },
+            "info": {
+                "title": "Information",
+                "description": "Summary of the action in focus on the server.",
+                "actionNameRegisteredLabel": "Name",
+                "createLead": "New action",
+                "createHint": "You are defining a new action for the active scope. Save to register it in the directory."
+            }
+        },
+        "buttons": {
+            "cancel": "Cancel",
+            "new": "New",
+            "delete": "Delete",
+            "undoDelete": "Undo delete",
+            "save": "Save",
+            "saving": "Saving..."
+        },
+        "readOnlyNotice": "You can review actions for the active scope, but only master or admin members can create or edit rule definitions.",
+        "error": {
+            "save": "Could not save the action. Try again.",
+            "create": "Could not create the action. Try again.",
+            "delete": "Could not delete the action. Try again.",
+            "deleteBlockedDetail": "This action cannot be deleted while events still reference it.",
+            "actionNameRequired": "Enter an action name."
         },
         "discardConfirm": "Discard unsaved changes?"
     },

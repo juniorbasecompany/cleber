@@ -68,6 +68,11 @@ export default async function AppLayout({
       key: "field",
       label: t("navigation.field"),
       href: `/${locale}/app/configuration/field`
+    },
+    {
+      key: "action",
+      label: t("navigation.action"),
+      href: `/${locale}/app/configuration/action`
     }
   ];
 
