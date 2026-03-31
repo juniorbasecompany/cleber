@@ -10,6 +10,7 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { EventFilterPanel } from "@/component/configuration/event-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
@@ -798,6 +799,44 @@ export function EventConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
+      topContent={
+        directory ? (
+          <EventFilterPanel
+            locale={locale}
+            copy={{
+              momentFromLabel: copy.filterMomentFromLabel,
+              momentToLabel: copy.filterMomentToLabel,
+              locationLabel: copy.filterLocationLabel,
+              unityLabel: copy.filterUnityLabel,
+              actionLabel: copy.filterActionLabel,
+              allLabel: copy.filterAll
+            }}
+            filterMomentFromInput={filterMomentFromInput}
+            filterMomentToInput={filterMomentToInput}
+            filterLocationId={filterLocationId}
+            filterUnityId={filterUnityId}
+            filterActionId={filterActionId}
+            locationOptionList={locationOptionList}
+            unityOptionList={unityOptionList}
+            actionOptionList={actionOptionList}
+            onFilterMomentFromChange={(value) => {
+              setFilterMomentFromInput(value ? toLocalMomentInputValue(value) : "");
+            }}
+            onFilterMomentToChange={(value) => {
+              setFilterMomentToInput(value ? toLocalMomentInputValue(value) : "");
+            }}
+            onFilterLocationChange={(value) => {
+              setFilterLocationId(parseNumericFilter(value));
+            }}
+            onFilterUnityChange={(value) => {
+              setFilterUnityId(parseNumericFilter(value));
+            }}
+            onFilterActionChange={(value) => {
+              setFilterActionId(parseNumericFilter(value));
+            }}
+          />
+        ) : null
+      }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       directoryAside={
@@ -810,94 +849,6 @@ export function EventConfigurationClient({
             <div className="ui-notice-attention ui-notice-block">
               {copy.readOnlyNotice}
             </div>
-          ) : null}
-
-          {directory ? (
-            <section className="ui-card ui-form-section ui-border-accent">
-              <h2 className="ui-form-section-title">{copy.filterTitle}</h2>
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-filter-moment-from">
-                  {copy.filterMomentFromLabel}
-                </label>
-                <TenantDateTimePicker
-                  id="event-filter-moment-from"
-                  value={filterMomentFromInput ? new Date(filterMomentFromInput) : null}
-                  onChange={(value) => {
-                    setFilterMomentFromInput(value ? toLocalMomentInputValue(value) : "");
-                  }}
-                  locale={locale}
-                  periodBoundary="start"
-                />
-              </div>
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-filter-moment-to">
-                  {copy.filterMomentToLabel}
-                </label>
-                <TenantDateTimePicker
-                  id="event-filter-moment-to"
-                  value={filterMomentToInput ? new Date(filterMomentToInput) : null}
-                  onChange={(value) => {
-                    setFilterMomentToInput(value ? toLocalMomentInputValue(value) : "");
-                  }}
-                  locale={locale}
-                  periodBoundary="end"
-                />
-              </div>
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-filter-location">
-                  {copy.filterLocationLabel}
-                </label>
-                <select
-                  id="event-filter-location"
-                  className="ui-input ui-input-select"
-                  value={filterLocationId == null ? "" : String(filterLocationId)}
-                  onChange={(event) => setFilterLocationId(parseNumericFilter(event.target.value))}
-                >
-                  <option value="">{copy.filterAll}</option>
-                  {locationOptionList.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-filter-unity">
-                  {copy.filterUnityLabel}
-                </label>
-                <select
-                  id="event-filter-unity"
-                  className="ui-input ui-input-select"
-                  value={filterUnityId == null ? "" : String(filterUnityId)}
-                  onChange={(event) => setFilterUnityId(parseNumericFilter(event.target.value))}
-                >
-                  <option value="">{copy.filterAll}</option>
-                  {unityOptionList.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-filter-action">
-                  {copy.filterActionLabel}
-                </label>
-                <select
-                  id="event-filter-action"
-                  className="ui-input ui-input-select"
-                  value={filterActionId == null ? "" : String(filterActionId)}
-                  onChange={(event) => setFilterActionId(parseNumericFilter(event.target.value))}
-                >
-                  <option value="">{copy.filterAll}</option>
-                  {actionOptionList.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </section>
           ) : null}
 
           <div className="ui-directory-list">
@@ -981,7 +932,7 @@ export function EventConfigurationClient({
                   disabled={isDeletePending || !canEditForm}
                   aria-invalid={Boolean(fieldError.location)}
                 >
-                  <option value="">{copy.filterAll}</option>
+                  <option value="" aria-label={copy.filterAll}></option>
                   {locationOptionList.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.label}
@@ -1012,7 +963,7 @@ export function EventConfigurationClient({
                   disabled={isDeletePending || !canEditForm}
                   aria-invalid={Boolean(fieldError.unity)}
                 >
-                  <option value="">{copy.filterAll}</option>
+                  <option value="" aria-label={copy.filterAll}></option>
                   {unityOptionList.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.label}
@@ -1043,7 +994,7 @@ export function EventConfigurationClient({
                   disabled={isDeletePending || !canEditForm}
                   aria-invalid={Boolean(fieldError.action)}
                 >
-                  <option value="">{copy.filterAll}</option>
+                  <option value="" aria-label={copy.filterAll}></option>
                   {actionOptionList.map((item) => (
                     <option key={item.id} value={item.id}>
                       {item.label}

@@ -18,6 +18,7 @@ export type DirectoryAsideEditorGrowRatio = "4-3" | "2-4";
 export type ConfigurationDirectoryEditorLayoutProps = {
     headerTitle: string;
     headerDescription: string;
+    topContent?: ReactNode;
     directoryAside: ReactNode;
     editorPanelRef: RefObject<HTMLDivElement | null>;
     isDeletePending?: boolean;
@@ -41,6 +42,7 @@ export type ConfigurationDirectoryEditorLayoutProps = {
 export function ConfigurationDirectoryEditorLayout({
     headerTitle,
     headerDescription,
+    topContent,
     directoryAside,
     editorPanelRef,
     isDeletePending,
@@ -58,6 +60,8 @@ export function ConfigurationDirectoryEditorLayout({
     return (
         <section className="ui-page-stack ui-page-stack-footer">
             <PageHeader title={headerTitle} description={headerDescription} />
+
+            {topContent}
 
             <div
                 className={`ui-layout-directory ui-layout-directory-editor ui-layout-directory-editor--grow-${directoryAsideEditorGrowRatio}`}

@@ -433,9 +433,9 @@
       "title": "Filtros da lista",
       "momentFromLabel": "Período inicial",
       "momentToLabel": "Período final",
-      "locationLabel": "Filtrar por local",
-      "unityLabel": "Filtrar por unidade",
-      "actionLabel": "Filtrar por ação",
+      "locationLabel": "Local",
+      "unityLabel": "Unidade",
+      "actionLabel": "Ação",
       "all": "Todos"
     },
     "buttons": {

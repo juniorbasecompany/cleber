@@ -200,6 +200,14 @@
   padding: 1.25rem;
 }
 
+/* Card de filtro com ênfase visual positiva (barra lateral verde). */
+.ui-card.ui-event-filter-card {
+  border: var(--border-width-default) solid var(--color-positive-border-soft);
+  border-color: var(--color-positive-border-soft);
+  background: var(--gradient-surface-card);
+  border-left: 4px solid var(--color-positive-border);
+}
+
 .ui-form-fields {
   display: grid;
   gap: 1.25rem;

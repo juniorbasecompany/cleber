@@ -43,6 +43,7 @@ export function ConfigurationDirectoryEditorShell(
         editorForm,
         headerTitle,
         headerDescription,
+        topContent,
         directoryAside,
         editorPanelRef,
         isDeletePending,
@@ -62,6 +63,7 @@ export function ConfigurationDirectoryEditorShell(
         <ConfigurationDirectoryEditorLayout
             headerTitle={headerTitle}
             headerDescription={headerDescription}
+            topContent={topContent}
             directoryAside={directoryAside}
             editorPanelRef={editorPanelRef}
             isDeletePending={isDeletePending}

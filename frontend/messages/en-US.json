@@ -433,9 +433,9 @@
       "title": "List filters",
       "momentFromLabel": "Start period",
       "momentToLabel": "End period",
-      "locationLabel": "Filter by location",
-      "unityLabel": "Filter by unit",
-      "actionLabel": "Filter by action",
+      "locationLabel": "Location",
+      "unityLabel": "Unit",
+      "actionLabel": "Action",
       "all": "All"
     },
     "buttons": {
