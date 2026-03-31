@@ -362,6 +362,19 @@
             "deleteBlockedDetail": "This action cannot be deleted while events still reference it.",
             "actionNameRequired": "Enter an action name."
         },
+        "formulas": {
+            "title": "Formulas",
+            "description": "Formulas are calculation steps applied when events for this action are processed. Each step is a text expression that can reference scope fields and inputs using the token conventions described in the rules documentation.\n\nThe list order is execution order, top to bottom. Drag the handle on each row to reorder before saving.",
+            "loading": "Loading formulas…",
+            "newFormula": "New formula",
+            "removeAriaLabel": "Mark formula for removal on save",
+            "unmarkAriaLabel": "Unmark removal for this formula",
+            "statementLabel": "Statement",
+            "dragHandleAria": "Drag to reorder",
+            "empty": "No formulas yet. Use New formula to add one.",
+            "loadError": "Could not load formulas. Try again.",
+            "statementRequired": "Each active formula needs a non-empty statement."
+        },
         "discardConfirm": "Discard unsaved changes?"
     },
     "LocationConfigurationPage": {

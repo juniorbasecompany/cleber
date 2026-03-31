@@ -11,10 +11,17 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import {
+    ActionFormulaSection,
+    type ActionFormulaDraftRow
+} from "@/component/configuration/action-formula-section";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
+import { runActionFormulaPersist } from "@/lib/configuration/action-formula-persist";
 import type {
+    ScopeFormulaListResponse,
+    ScopeFormulaRecord,
     TenantScopeActionDirectoryResponse,
     TenantScopeActionRecord,
     TenantScopeRecord
@@ -116,6 +123,40 @@ function isDeleteBlockedDetail(detail: string | null): boolean {
     );
 }
 
+function mapFormulaResponseToDraft(itemList: ScopeFormulaRecord[]): ActionFormulaDraftRow[] {
+    return [...itemList]
+        .sort((a, b) => a.step - b.step || a.id - b.id)
+        .map((item) => ({
+            clientKey: `s-${item.id}`,
+            serverId: item.id,
+            statement: item.statement,
+            pendingDelete: false
+        }));
+}
+
+function cloneFormulaRowList(rowList: ActionFormulaDraftRow[]): ActionFormulaDraftRow[] {
+    return rowList.map((row) => ({ ...row }));
+}
+
+function areFormulaDraftListsEqual(a: ActionFormulaDraftRow[], b: ActionFormulaDraftRow[]): boolean {
+    if (a.length !== b.length) {
+        return false;
+    }
+    for (let i = 0; i < a.length; i += 1) {
+        const left = a[i];
+        const right = b[i];
+        if (
+            left.clientKey !== right.clientKey ||
+            left.serverId !== right.serverId ||
+            left.statement !== right.statement ||
+            left.pendingDelete !== right.pendingDelete
+        ) {
+            return false;
+        }
+    }
+    return true;
+}
+
 export function ActionConfigurationClient({
     locale,
     labelLang,
@@ -175,6 +216,11 @@ export function ActionConfigurationClient({
     const [isSaving, setIsSaving] = useState(false);
     const [isDeletePending, setIsDeletePending] = useState(false);
     const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+    const [formulaRowList, setFormulaRowList] = useState<ActionFormulaDraftRow[]>([]);
+    const [formulaBaselineList, setFormulaBaselineList] = useState<ActionFormulaDraftRow[]>([]);
+    const [formulasCanEdit, setFormulasCanEdit] = useState(false);
+    const [formulaLoading, setFormulaLoading] = useState(false);
+    const [formulaLoadError, setFormulaLoadError] = useState<string | null>(null);
     const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
     const initialSearchActionKeyRef = useRef<ActionSelectionKey>(initialSearchActionKey);
     const selectedActionKeyRef = useRef<ActionSelectionKey>(initialSelectedActionKey);
@@ -290,9 +336,70 @@ export function ActionConfigurationClient({
         syncFromDirectory(initialActionDirectory, preferredKey);
     }, [initialActionDirectory, syncFromDirectory]);
 
+    const scopeId = currentScope?.id;
+
+    const loadFormulas = useCallback(async () => {
+        if (scopeId == null || selectedActionId == null || isCreateMode) {
+            return;
+        }
+        setFormulaLoading(true);
+        setFormulaLoadError(null);
+        try {
+            const response = await fetch(
+                `/api/auth/tenant/current/scopes/${scopeId}/actions/${selectedActionId}/formulas`
+            );
+            const data: unknown = await response.json().catch(() => ({}));
+            if (!response.ok) {
+                setFormulaLoadError(
+                    parseErrorDetail(data, tPage("formulas.loadError")) ?? tPage("formulas.loadError")
+                );
+                return;
+            }
+            const parsed = data as ScopeFormulaListResponse;
+            const rows = mapFormulaResponseToDraft(parsed.item_list);
+            setFormulaRowList(rows);
+            setFormulaBaselineList(cloneFormulaRowList(rows));
+            setFormulasCanEdit(parsed.can_edit);
+        } finally {
+            setFormulaLoading(false);
+        }
+    }, [scopeId, selectedActionId, isCreateMode, tPage]);
+
+    useEffect(() => {
+        if (isCreateMode || scopeId == null || selectedActionId == null) {
+            setFormulaRowList([]);
+            setFormulaBaselineList([]);
+            setFormulasCanEdit(false);
+            setFormulaLoadError(null);
+            setFormulaLoading(false);
+            return;
+        }
+        void loadFormulas();
+    }, [loadFormulas, isCreateMode, scopeId, selectedActionId]);
+
+    const formulasDirty = useMemo(
+        () => !areFormulaDraftListsEqual(formulaRowList, formulaBaselineList),
+        [formulaRowList, formulaBaselineList]
+    );
+
+    const handleAddFormula = useCallback(() => {
+        setFormulaRowList((previous) => [
+            ...previous,
+            {
+                clientKey: `n-${crypto.randomUUID()}`,
+                statement: "",
+                pendingDelete: false
+            }
+        ]);
+    }, []);
+
     const isDirty = useMemo(() => {
-        return actionName.trim() !== baseline.actionName.trim() || isDeletePending;
-    }, [actionName, baseline.actionName, isDeletePending]);
+        return (
+            actionName.trim() !== baseline.actionName.trim() ||
+            isDeletePending ||
+            formulasDirty
+        );
+    }, [actionName, baseline.actionName, isDeletePending, formulasDirty]);
 
     const validate = useCallback(() => {
         if (!actionName.trim()) {
@@ -347,8 +454,6 @@ export function ActionConfigurationClient({
         setIsDeletePending((previous) => !previous);
     }, [isSaving]);
 
-    const scopeId = currentScope?.id;
-
     const handleSave = useCallback(async () => {
         setRequestErrorMessage(null);
 
@@ -358,6 +463,16 @@ export function ActionConfigurationClient({
 
         if (!isDeletePending && !validate()) {
             return;
+        }
+
+        if (!isDeletePending && formulasDirty && (formulasCanEdit || isCreateMode)) {
+            const activeRowList = formulaRowList.filter((row) => !row.pendingDelete);
+            for (const row of activeRowList) {
+                if (!row.statement.trim()) {
+                    setRequestErrorMessage(tPage("formulas.statementRequired"));
+                    return;
+                }
+            }
         }
 
         setIsSaving(true);
@@ -385,6 +500,24 @@ export function ActionConfigurationClient({
                 const created = updatedDirectory.item_list.find(
                     (item) => !previousIdSet.has(item.id)
                 );
+
+                if (created != null && directory.can_edit && formulasDirty) {
+                    try {
+                        await runActionFormulaPersist({
+                            scopeId,
+                            actionId: created.id,
+                            draftRowList: formulaRowList,
+                            baselineRowList: []
+                        });
+                    } catch (error) {
+                        const message = error instanceof Error ? error.message : copy.saveError;
+                        setRequestErrorMessage(message);
+                        syncFromDirectory(updatedDirectory, created.id);
+                        setHistoryRefreshKey((previous) => previous + 1);
+                        return;
+                    }
+                }
+
                 syncFromDirectory(updatedDirectory, created?.id ?? "new");
                 setHistoryRefreshKey((previous) => previous + 1);
                 return;
@@ -394,40 +527,76 @@ export function ActionConfigurationClient({
                 return;
             }
 
-            const response = await fetch(
-                `/api/auth/tenant/current/scopes/${scopeId}/actions/${selectedAction.id}`,
-                isDeletePending
-                    ? {
-                          method: "DELETE"
-                      }
-                    : {
-                          method: "PATCH",
-                          headers: { "Content-Type": "application/json" },
-                          body: JSON.stringify({
-                              label_lang: labelLang,
-                              label_name: actionName.trim()
-                          })
-                      }
-            );
-            const data: unknown = await response.json().catch(() => ({}));
+            if (isDeletePending) {
+                const response = await fetch(
+                    `/api/auth/tenant/current/scopes/${scopeId}/actions/${selectedAction.id}`,
+                    { method: "DELETE" }
+                );
+                const data: unknown = await response.json().catch(() => ({}));
 
-            if (!response.ok) {
-                const fallback = isDeletePending ? copy.deleteError : copy.saveError;
-                const detail = parseErrorDetail(data, fallback) ?? fallback;
-                if (isDeletePending && isDeleteBlockedDetail(detail)) {
-                    setRequestErrorMessage(copy.deleteBlockedDetail);
+                if (!response.ok) {
+                    const detail = parseErrorDetail(data, copy.deleteError) ?? copy.deleteError;
+                    if (isDeleteBlockedDetail(detail)) {
+                        setRequestErrorMessage(copy.deleteBlockedDetail);
+                        return;
+                    }
+                    setRequestErrorMessage(detail);
                     return;
                 }
-                setRequestErrorMessage(detail);
+
+                const updatedDirectory = data as TenantScopeActionDirectoryResponse;
+                const nextKeyAfterMutation: ActionSelectionKey =
+                    updatedDirectory.item_list[0]?.id ?? (updatedDirectory.can_edit ? "new" : null);
+                syncFromDirectory(updatedDirectory, nextKeyAfterMutation);
+                setHistoryRefreshKey((previous) => previous + 1);
                 return;
             }
 
-            const updatedDirectory = data as TenantScopeActionDirectoryResponse;
-            const nextKeyAfterMutation: ActionSelectionKey = isDeletePending
-                ? (updatedDirectory.item_list[0]?.id ??
-                  (updatedDirectory.can_edit ? "new" : null))
-                : selectedAction.id;
-            syncFromDirectory(updatedDirectory, nextKeyAfterMutation);
+            const nameDirty = actionName.trim() !== baseline.actionName.trim();
+            let latestDirectory: TenantScopeActionDirectoryResponse = directory;
+
+            if (nameDirty) {
+                const response = await fetch(
+                    `/api/auth/tenant/current/scopes/${scopeId}/actions/${selectedAction.id}`,
+                    {
+                        method: "PATCH",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            label_lang: labelLang,
+                            label_name: actionName.trim()
+                        })
+                    }
+                );
+                const data: unknown = await response.json().catch(() => ({}));
+
+                if (!response.ok) {
+                    setRequestErrorMessage(parseErrorDetail(data, copy.saveError) ?? copy.saveError);
+                    return;
+                }
+
+                latestDirectory = data as TenantScopeActionDirectoryResponse;
+                setDirectory(latestDirectory);
+                setBaseline({ actionName: actionName.trim() });
+            }
+
+            if (formulasCanEdit && formulasDirty) {
+                try {
+                    await runActionFormulaPersist({
+                        scopeId,
+                        actionId: selectedAction.id,
+                        draftRowList: formulaRowList,
+                        baselineRowList: formulaBaselineList
+                    });
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : copy.saveError;
+                    setRequestErrorMessage(message);
+                    await loadFormulas();
+                    return;
+                }
+                await loadFormulas();
+            }
+
+            syncFromDirectory(latestDirectory, selectedAction.id);
             setHistoryRefreshKey((previous) => previous + 1);
         } catch {
             setRequestErrorMessage(
@@ -441,18 +610,25 @@ export function ActionConfigurationClient({
             setIsSaving(false);
         }
     }, [
+        baseline.actionName,
         copy.createError,
         copy.deleteBlockedDetail,
         copy.deleteError,
         copy.saveError,
         directory,
         actionName,
+        formulaBaselineList,
+        formulaRowList,
+        formulasCanEdit,
+        formulasDirty,
         isCreateMode,
         isDeletePending,
         labelLang,
+        loadFormulas,
         scopeId,
         selectedAction,
         syncFromDirectory,
+        tPage,
         validate
     ]);
 
@@ -558,7 +734,25 @@ export function ActionConfigurationClient({
                             </div>
                         </section>
 
-                        {!isCreateMode && selectedAction ? (
+                        {isCreateMode ? (
+                            <ConfigurationInfoSection
+                                title={copy.sectionInfoTitle}
+                                description={copy.sectionInfoDescription}
+                            >
+                                <ul className="ui-info-topic-list">
+                                    <li>
+                                        <p className="ui-info-topic-lead">
+                                            <span className="ui-info-topic-label">
+                                                {copy.infoCreateLead}
+                                            </span>
+                                        </p>
+                                        <p className="ui-field-hint ui-info-topic-hint">
+                                            {copy.infoCreateHint}
+                                        </p>
+                                    </li>
+                                </ul>
+                            </ConfigurationInfoSection>
+                        ) : selectedAction ? (
                             <ConfigurationInfoSection
                                 title={copy.sectionInfoTitle}
                                 description={copy.sectionInfoDescription}
@@ -579,24 +773,25 @@ export function ActionConfigurationClient({
                             </ConfigurationInfoSection>
                         ) : null}
 
-                        {isCreateMode ? (
-                            <ConfigurationInfoSection
-                                title={copy.sectionInfoTitle}
-                                description={copy.sectionInfoDescription}
-                            >
-                                <ul className="ui-info-topic-list">
-                                    <li>
-                                        <p className="ui-info-topic-lead">
-                                            <span className="ui-info-topic-label">
-                                                {copy.infoCreateLead}
-                                            </span>
-                                        </p>
-                                        <p className="ui-field-hint ui-info-topic-hint">
-                                            {copy.infoCreateHint}
-                                        </p>
-                                    </li>
-                                </ul>
-                            </ConfigurationInfoSection>
+                        {(isCreateMode && directory.can_edit) ||
+                        (!isCreateMode && selectedAction && !isDeletePending) ? (
+                            <>
+                                {!isCreateMode && formulaLoadError ? (
+                                    <div className="ui-notice-attention ui-notice-block">
+                                        {formulaLoadError}
+                                    </div>
+                                ) : null}
+                                <ActionFormulaSection
+                                    canEdit={
+                                        isCreateMode ? Boolean(directory.can_edit) : formulasCanEdit
+                                    }
+                                    disabled={isSaving}
+                                    isLoading={!isCreateMode && formulaLoading}
+                                    rowList={formulaRowList}
+                                    onChangeRowList={setFormulaRowList}
+                                    onAdd={handleAddFormula}
+                                />
+                            </>
                         ) : null}
                     </>
                 ) : (

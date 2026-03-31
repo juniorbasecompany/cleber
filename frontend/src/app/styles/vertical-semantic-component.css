@@ -1719,6 +1719,142 @@
   color: var(--color-danger-action-foreground);
 }
 
+/* Linha do item de fórmula: campo flexível à esquerda, ações compactas à direita. */
+.ui-formula-row-layout {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem 0.75rem;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+.ui-formula-row-field {
+  flex: 1 1 18rem;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.ui-formula-row-field .ui-field-label {
+  overflow-wrap: anywhere;
+}
+
+.ui-formula-row-field .ui-input {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.ui-formula-row-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+  width: auto;
+  padding: 0;
+  margin: 0;
+  margin-left: auto;
+  box-sizing: border-box;
+}
+
+@media (max-width: 30rem) {
+  .ui-formula-row-field {
+    flex: 1 1 100%;
+  }
+
+  .ui-formula-row-actions {
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 100%;
+    margin-left: 0;
+    margin-right: 0;
+  }
+}
+
+/* Alça de arrastar: altura em dobro da base 2.5rem; fundo quase branco. */
+.ui-formula-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.75rem;
+  height: 5rem;
+  margin: 0;
+  padding: 0.25rem;
+  border: var(--border-width-default) solid #e6e8ec;
+  border-radius: 6px;
+  background-color: #f6f7f9;
+  box-sizing: border-box;
+  cursor: grab;
+}
+
+.ui-formula-drag-handle:focus-visible {
+  outline: none;
+  border-color: var(--color-focus-ring);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.ui-formula-drag-handle:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+/* Botão ícone de lixeira por passo: cinza claro; vermelho quando marcado para exclusão. */
+.ui-formula-trash-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: auto;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  padding: 0.35rem;
+  margin: 0;
+  border: var(--border-width-default) solid #dadce0;
+  border-radius: 6px;
+  background: #eceef2;
+  color: #5f6368;
+  cursor: pointer;
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease;
+}
+
+.ui-formula-trash-button:hover:not(:disabled) {
+  background: #e2e5ea;
+  border-color: #c8ccd4;
+}
+
+.ui-formula-trash-button--marked {
+  border-color: var(--color-danger-action);
+  background: var(--color-danger-action);
+  color: var(--color-danger-action-foreground);
+}
+
+.ui-formula-trash-button--marked:hover:not(:disabled) {
+  border-color: var(--color-danger-action-hover);
+  background: var(--color-danger-action-hover);
+  color: var(--color-danger-action-foreground);
+}
+
+.ui-formula-trash-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.ui-formula-trash-button:focus-visible {
+  outline: none;
+  border-color: var(--color-focus-ring);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+/* Linha de fórmula marcada para exclusão: fundo vermelho suave (sem esmaecer o conteúdo). */
+.ui-formula-sortable-row[data-delete-pending="true"] {
+  background: color-mix(in srgb, var(--color-danger-action) 10%, #ffffff);
+}
+
 .ui-button-primary:disabled,
 .ui-button-secondary:disabled,
 .ui-button-danger:disabled {

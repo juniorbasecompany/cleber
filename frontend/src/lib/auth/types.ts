@@ -145,6 +145,18 @@ export type TenantScopeActionDirectoryResponse = {
   item_list: TenantScopeActionRecord[];
 };
 
+export type ScopeFormulaRecord = {
+  id: number;
+  action_id: number;
+  step: number;
+  statement: string;
+};
+
+export type ScopeFormulaListResponse = {
+  can_edit: boolean;
+  item_list: ScopeFormulaRecord[];
+};
+
 export type AuditLogTableName =
   | "tenant"
   | "member"
