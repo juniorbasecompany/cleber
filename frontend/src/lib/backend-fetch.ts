@@ -5,8 +5,9 @@ import {
   authRememberMeMaxAgeSeconds,
   authTokenCookieName
 } from "@/lib/auth/session";
+import { getPublicApiUrl } from "@/lib/backend-api-url";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8003";
+const apiUrl = getPublicApiUrl();
 
 type BackendResult<T> =
   | { ok: true; data: T; response: Response }

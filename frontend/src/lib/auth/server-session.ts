@@ -4,6 +4,7 @@ import {
   authTokenCookieName,
   hasAuthSession
 } from "@/lib/auth/session";
+import { getPublicApiUrl } from "@/lib/backend-api-url";
 import type {
   AuthSessionResponse,
   TenantCurrentResponse,
@@ -14,7 +15,7 @@ import type {
   TenantUnityDirectoryResponse
 } from "@/lib/auth/types";
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8001";
+const apiUrl = getPublicApiUrl();
 
 export async function getAuthSession() {
   const cookieStore = await cookies();

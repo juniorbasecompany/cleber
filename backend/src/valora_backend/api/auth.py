@@ -1360,12 +1360,14 @@ def _validate_member_status_transition(target: Member, next_status: int) -> None
 
 
 def _validate_history_table_name(table_name: str) -> str:
-    if table_name not in HISTORY_TABLE_NAME_SET:
+    """Nomes canônicos em minúsculas; o path da URL pode variar o casing."""
+    normalized = table_name.strip().lower()
+    if normalized not in HISTORY_TABLE_NAME_SET:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="History table not found",
         )
-    return table_name
+    return normalized
 
 
 def _resolve_history_actor_name(
