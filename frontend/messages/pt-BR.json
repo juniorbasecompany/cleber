@@ -236,7 +236,7 @@
   },
   "FieldConfigurationPage": {
     "title": "Campos",
-    "description": "Edite as definições de campo do escopo ativo. Cada item descreve o tipo SQL lógico dos valores que o sistema armazenará para aquele identificador nas regras e eventos.",
+    "description": "Ajuste aqui o nome das informações que você mede ou registra nos eventos. Para cada nome (por exemplo quantidade ou valor), você indica como o sistema deve interpretar o conteúdo: número inteiro, valor com centavos, sim ou não, entre outras opções. Isso vale ao montar regras de cálculo e ao registrar eventos, para que nada seja misturado ou interpretado de forma errada.",
     "empty": "Nenhum campo foi encontrado para o escopo ativo e sua permissão atual não permite cadastrar novos.",
     "list": {
       "emptyScope": "Crie um escopo antes de editar campos.",

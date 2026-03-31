@@ -236,7 +236,7 @@
     },
     "FieldConfigurationPage": {
         "title": "Fields",
-        "description": "Edit field definitions for the active scope. Each item describes the logical SQL type of values the system stores for that identifier in rules and events.",
+        "description": "Adjust here the names of the information you measure or record in events. For every name (such as quantity or amount), you tell the system how to read the content: whole numbers, values with cents, yes or no, and similar choices. That applies when you build calculation rules and when you record events, so values stay consistent and are not misread.",
         "empty": "No fields were found for the active scope and your current permission does not allow creating new ones.",
         "list": {
             "emptyScope": "Create a scope before editing fields.",
