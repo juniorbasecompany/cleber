@@ -13,6 +13,7 @@ import { ConfigurationInfoSection } from "@/component/configuration/configuratio
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type { ConfigurationSelectionKey } from "@/lib/navigation/configuration-path";
@@ -990,14 +991,12 @@ export function MemberConfigurationClient({
         isSaving,
         dangerAction:
           !isCreateMode && selectedMember ? (
-            <button
-              type="button"
-              className="ui-button-danger"
-              onClick={handleToggleDelete}
+            <TrashIconButton
+              marked={isDeletePending}
+              ariaLabel={isDeletePending ? copy.undoDelete : copy.delete}
               disabled={isSaving}
-            >
-              {isDeletePending ? copy.undoDelete : copy.delete}
-            </button>
+              onClick={handleToggleDelete}
+            />
           ) : null
       }}
     />

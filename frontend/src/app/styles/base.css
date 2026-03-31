@@ -2,6 +2,7 @@
 @import "./horizontal-primitive.css";
 @import "./vertical-semantic-component.css";
 @import "./semantic-utility-extension.css";
+@import "../../component/ui/trash-icon-button.css";
 
 :root {
   color-scheme: light;

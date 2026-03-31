@@ -1,0 +1,7 @@
+/**
+ * Superfície única para estados “exclusão pendente” associados ao TrashIconButton
+ * (painel editor, linha de fórmula, etc.). Uma única mistura 28% garante paridade visual.
+ */
+:root {
+  --ui-delete-pending-surface: color-mix(in srgb, var(--color-danger-action) 28%, #ffffff);
+}

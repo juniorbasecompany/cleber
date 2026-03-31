@@ -1719,6 +1719,24 @@
   color: var(--color-danger-action-foreground);
 }
 
+/* Lista de fórmulas: espaço só entre itens (margem inferior), sem padding de stack. */
+.ui-formula-list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+.ui-formula-sortable-row {
+  margin-bottom: 0.75rem;
+  padding: 1.25rem;
+  box-sizing: border-box;
+}
+
+.ui-formula-list .ui-formula-sortable-row:last-child {
+  margin-bottom: 0;
+}
+
 /* Linha do item de fórmula: campo flexível à esquerda, ações compactas à direita. */
 .ui-formula-row-layout {
   display: flex;
@@ -1801,8 +1819,8 @@
   opacity: 0.58;
 }
 
-/* Botão ícone de lixeira por passo: cinza claro; vermelho quando marcado para exclusão. */
-.ui-formula-trash-button {
+/* Botão só com ícone de lixeira: cinza claro; vermelho quando marcado para exclusão. */
+.ui-trash-icon-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1822,37 +1840,37 @@
     color 0.16s ease;
 }
 
-.ui-formula-trash-button:hover:not(:disabled) {
+.ui-trash-icon-button:hover:not(:disabled) {
   background: #e2e5ea;
   border-color: #c8ccd4;
 }
 
-.ui-formula-trash-button--marked {
+.ui-trash-icon-button--marked {
   border-color: var(--color-danger-action);
   background: var(--color-danger-action);
   color: var(--color-danger-action-foreground);
 }
 
-.ui-formula-trash-button--marked:hover:not(:disabled) {
+.ui-trash-icon-button--marked:hover:not(:disabled) {
   border-color: var(--color-danger-action-hover);
   background: var(--color-danger-action-hover);
   color: var(--color-danger-action-foreground);
 }
 
-.ui-formula-trash-button:disabled {
+.ui-trash-icon-button:disabled {
   cursor: not-allowed;
   opacity: 0.58;
 }
 
-.ui-formula-trash-button:focus-visible {
+.ui-trash-icon-button:focus-visible {
   outline: none;
   border-color: var(--color-focus-ring);
   box-shadow: var(--shadow-focus-ring);
 }
 
-/* Linha de fórmula marcada para exclusão: fundo vermelho suave (sem esmaecer o conteúdo). */
+/* Linha de fórmula marcada para exclusão: mesma superfície que o painel (--ui-delete-pending-surface em trash-icon-button.css). */
 .ui-formula-sortable-row[data-delete-pending="true"] {
-  background: color-mix(in srgb, var(--color-danger-action) 10%, #ffffff);
+  background: var(--ui-delete-pending-surface);
 }
 
 .ui-button-primary:disabled,
@@ -1953,6 +1971,11 @@
 .ui-panel.is-delete-pending {
   border-color: var(--color-danger-border);
   background: var(--gradient-surface-delete-pending);
+}
+
+/* Painel principal do editor: mesma superfície que as linhas de fórmula (token no CSS do TrashIconButton). */
+.ui-panel.ui-panel-editor[data-delete-pending="true"] {
+  background: var(--ui-delete-pending-surface);
 }
 
 .ui-tone-construction {

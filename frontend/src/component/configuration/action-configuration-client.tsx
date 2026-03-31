@@ -15,6 +15,7 @@ import {
     ActionFormulaSection,
     type ActionFormulaDraftRow
 } from "@/component/configuration/action-formula-section";
+import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
@@ -774,7 +775,7 @@ export function ActionConfigurationClient({
                         ) : null}
 
                         {(isCreateMode && directory.can_edit) ||
-                        (!isCreateMode && selectedAction && !isDeletePending) ? (
+                        (!isCreateMode && selectedAction) ? (
                             <>
                                 {!isCreateMode && formulaLoadError ? (
                                     <div className="ui-notice-attention ui-notice-block">
@@ -785,7 +786,7 @@ export function ActionConfigurationClient({
                                     canEdit={
                                         isCreateMode ? Boolean(directory.can_edit) : formulasCanEdit
                                     }
-                                    disabled={isSaving}
+                                    disabled={isSaving || isDeletePending}
                                     isLoading={!isCreateMode && formulaLoading}
                                     rowList={formulaRowList}
                                     onChangeRowList={setFormulaRowList}
@@ -823,14 +824,12 @@ export function ActionConfigurationClient({
                 isSaving,
                 dangerAction:
                     directory && !isCreateMode && selectedAction ? (
-                        <button
-                            type="button"
-                            className="ui-button-danger"
-                            onClick={handleToggleDelete}
+                        <TrashIconButton
+                            marked={isDeletePending}
+                            ariaLabel={isDeletePending ? copy.undoDelete : copy.delete}
                             disabled={isSaving}
-                        >
-                            {isDeletePending ? copy.undoDelete : copy.delete}
-                        </button>
+                            onClick={handleToggleDelete}
+                        />
                     ) : null
             }}
         />

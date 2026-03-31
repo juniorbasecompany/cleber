@@ -17,7 +17,8 @@ import {
     verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { TrashIcon } from "@/component/ui/ui-icons";
+import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useTranslations } from "next-intl";
 import { useMemo, type CSSProperties } from "react";
 
@@ -74,7 +75,7 @@ function SortableFormulaRow({
         <div
             ref={setNodeRef}
             style={style}
-            className="ui-card ui-form-section ui-border-accent ui-card-stack ui-formula-sortable-row"
+            className="ui-card ui-border-accent ui-formula-sortable-row"
             data-dragging={isDragging ? "true" : undefined}
             data-delete-pending={row.pendingDelete ? "true" : undefined}
         >
@@ -105,21 +106,14 @@ function SortableFormulaRow({
                         <span aria-hidden>{"⋮⋮"}</span>
                     </button>
                     {canEdit ? (
-                        <button
-                            type="button"
-                            className={
-                                row.pendingDelete
-                                    ? "ui-formula-trash-button ui-formula-trash-button--marked"
-                                    : "ui-formula-trash-button"
-                            }
-                            aria-label={
+                        <TrashIconButton
+                            marked={row.pendingDelete}
+                            ariaLabel={
                                 row.pendingDelete ? copy.unmarkAriaLabel : copy.removeAriaLabel
                             }
                             disabled={disabled}
                             onClick={onToggleRemove}
-                        >
-                            <TrashIcon />
-                        </button>
+                        />
                     ) : null}
                 </div>
             </div>
@@ -182,6 +176,14 @@ export function ActionFormulaSection({
                 {t("description")}
             </div>
 
+            {canEdit ? (
+                <ConfigurationDirectoryCreateButton
+                    label={t("newFormula")}
+                    disabled={disabled || isLoading}
+                    onClick={onAdd}
+                />
+            ) : null}
+
             {isLoading ? (
                 <p className="ui-field-hint">{t("loading")}</p>
             ) : rowList.length === 0 ? (
@@ -189,7 +191,7 @@ export function ActionFormulaSection({
             ) : (
                 <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
                     <SortableContext items={sortableIdList} strategy={verticalListSortingStrategy}>
-                        <div className="ui-card-stack" style={{ gap: "0.75rem" }}>
+                        <div className="ui-formula-list">
                             {rowList.map((row) => (
                                 <SortableFormulaRow
                                     key={row.clientKey}
@@ -207,19 +209,6 @@ export function ActionFormulaSection({
                     </SortableContext>
                 </DndContext>
             )}
-
-            {canEdit ? (
-                <div style={{ marginTop: "0.75rem" }}>
-                    <button
-                        type="button"
-                        className="ui-button-secondary"
-                        disabled={disabled || isLoading}
-                        onClick={onAdd}
-                    >
-                        {t("newFormula")}
-                    </button>
-                </div>
-            ) : null}
         </section>
     );
 }

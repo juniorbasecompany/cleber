@@ -11,6 +11,7 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
@@ -832,14 +833,12 @@ export function FieldConfigurationClient({
                 isSaving,
                 dangerAction:
                     directory && !isCreateMode && selectedField ? (
-                        <button
-                            type="button"
-                            className="ui-button-danger"
-                            onClick={handleToggleDelete}
+                        <TrashIconButton
+                            marked={isDeletePending}
+                            ariaLabel={isDeletePending ? copy.undoDelete : copy.delete}
                             disabled={isSaving}
-                        >
-                            {isDeletePending ? copy.undoDelete : copy.delete}
-                        </button>
+                            onClick={handleToggleDelete}
+                        />
                     ) : null
             }}
         />

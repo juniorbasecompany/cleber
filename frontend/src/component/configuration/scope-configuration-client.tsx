@@ -11,6 +11,7 @@ import { ConfigurationDirectoryEditorShell } from "@/component/configuration/con
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type {
@@ -558,14 +559,12 @@ export function ScopeConfigurationClient({
                 isSaving,
                 dangerAction:
                     !isCreateMode && selectedScope ? (
-                        <button
-                            type="button"
-                            className="ui-button-danger"
-                            onClick={handleToggleDelete}
+                        <TrashIconButton
+                            marked={isDeletePending}
+                            ariaLabel={isDeletePending ? copy.undoDelete : copy.delete}
                             disabled={isSaving}
-                        >
-                            {isDeletePending ? copy.undoDelete : copy.delete}
-                        </button>
+                            onClick={handleToggleDelete}
+                        />
                     ) : null
             }}
         />

@@ -10,6 +10,7 @@ import {
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
+import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import type { TenantCurrentResponse } from "@/lib/auth/types";
@@ -417,14 +418,12 @@ export function TenantConfigurationClient({
                 isSaving,
                 dangerAction:
                     editorContext === "edit" && tenant.can_delete ? (
-                        <button
-                            type="button"
-                            className="ui-button-danger"
-                            onClick={handleToggleDelete}
+                        <TrashIconButton
+                            marked={isDeletePending}
+                            ariaLabel={isDeletePending ? copy.undoDelete : copy.delete}
                             disabled={isSaving}
-                        >
-                            {isDeletePending ? copy.undoDelete : copy.delete}
-                        </button>
+                            onClick={handleToggleDelete}
+                        />
                     ) : null
             }}
         />

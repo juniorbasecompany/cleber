@@ -206,32 +206,41 @@ export function WorkflowIcon({ className }: IconProps) {
     );
 }
 
-/** Marcos ao longo do fluxo: tipos de operação como etapas no escopo. */
+/** Marcos ao longo do fluxo: traçado espelhado; bandeira no canto superior direito com pano a abrir para a direita (vinco à direita). */
 export function MilestonePathIcon({ className }: IconProps) {
+    const sw = 2;
+    const nodeR = 1.2;
     return (
         <svg
             className={mergeClassName(className)}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
-            strokeWidth="1.75"
+            strokeWidth={sw}
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden
         >
-            <path d="M1.6 2.4C5.5 4 3.5 16 10.5 12C13 9 16.5 18 18 16l5.96 0.08" />
-            <circle cx="3.59" cy="4.98" r="1.2" fill="currentColor" stroke="none" />
-            <circle cx="5.22" cy="10.24" r="1.2" fill="currentColor" stroke="none" />
-            <circle cx="8.34" cy="12.79" r="1.2" fill="currentColor" stroke="none" />
-            <circle cx="12.1" cy="11.46" r="1.2" fill="currentColor" stroke="none" />
-            <circle cx="14.79" cy="13.82" r="1.2" fill="currentColor" stroke="none" />
-            <path d="M18 16V5.85" />
-            <path
-                d="M18 6.45C19.9 7.35 21.9 7.45 23.9 6.35L21.55 8.38 23.9 10.42C22.05 9.85 20.05 9.75 18 10.55z"
-                fill="currentColor"
-                stroke="none"
-            />
-            <circle cx="18" cy="16" r="1.2" fill="currentColor" stroke="none" />
+            <g transform="translate(24, 0) scale(-1, 1)">
+                {/*
+                  Só o caminho e os nós: espelho x→24−x. Segmento superior estendido (L 3.25 10) para, após o espelho,
+                  encontrar o mastro da bandeira. Níveis y=18 / 14 / 10; r=2; cúbicas com κ*r.
+                */}
+                <path d="M 20 18 L 5 18 A 2 2 0 0 1 3 16 A 2 2 0 0 1 5 14 L 20 14 C 21.105 14 22 13.105 22 12 C 22 10.895 21.105 10 20 10 L 3.25 10" />
+                <circle cx="20" cy="18" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="12.5" cy="18" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="5" cy="18" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="5" cy="14" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="12.5" cy="14" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="20" cy="14" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="20" cy="10" r={nodeR} fill="currentColor" stroke="none" />
+            </g>
+            {/*
+              Mesma geometria canónica do pano (vinco na borda direita), transladada para o canto superior direito;
+              não é espelho em x (antes o mastro à direita fazia o pano apontar para a esquerda).
+            */}
+            <path d="M 14.95 2.1 L 20.3 2.1 L 18.65 4.05 L 20.3 6 L 14.95 6 Z" />
+            <line x1="14.5" y1="10.35" x2="14.5" y2="1.65" />
         </svg>
     );
 }
