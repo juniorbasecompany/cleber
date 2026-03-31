@@ -5,7 +5,7 @@
  * O markup e o fluxo espelham um único padrão para evitar divergência de layout entre recursos.
  */
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 
 import {
@@ -16,6 +16,12 @@ import { ConfigurationDirectoryEditorShell } from "@/component/configuration/con
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel,
+  DirectoryFilterSelectField,
+  DirectoryFilterTextField
+} from "@/component/configuration/directory-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
@@ -86,6 +92,15 @@ function parseHierarchySelectionKey(raw: string | null): SelectedHierarchyKey {
   }
 
   const parsed = Number(raw);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+}
+
+function parseNumericFilter(raw: string): number | null {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return null;
+  }
+  const parsed = Number(trimmed);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
@@ -283,6 +298,9 @@ export function ScopeHierarchyConfigurationClient<
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [filterQuery, setFilterQuery] = useState("");
+  const [filterParentId, setFilterParentId] = useState<number | null>(null);
+  const didMountFilterRef = useRef(false);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const itemList = useMemo(() => directory?.item_list ?? [], [directory]);
   const childrenByParent = useMemo(() => {
@@ -333,6 +351,9 @@ export function ScopeHierarchyConfigurationClient<
 
   useReplaceConfigurationPath(basePath, searchParams, replacePath, queryParamKey, selectedKey);
 
+  const parentFilterQueryParam =
+    apiSegment === "locations" ? "parent_location_id" : "parent_unity_id";
+
   const editorFlashKey = useMemo(() => {
     if (!directory) {
       return null;
@@ -374,6 +395,68 @@ export function ScopeHierarchyConfigurationClient<
     },
     [getParentId]
   );
+
+  const loadHierarchyDirectory = useCallback(async () => {
+    if (scopeId == null) {
+      return;
+    }
+    const query = new URLSearchParams();
+    const normalizedQuery = filterQuery.trim();
+    if (normalizedQuery) {
+      query.set("q", normalizedQuery);
+    }
+    if (filterParentId != null) {
+      query.set(parentFilterQueryParam, String(filterParentId));
+    }
+
+    try {
+      const response = await fetch(
+        `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}?${query.toString()}`
+      );
+      const data: unknown = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        setRequestErrorMessage(parseErrorDetail(data, copy.loadError) ?? copy.loadError);
+        return;
+      }
+
+      const nextDirectory = data as TDirectory;
+      setDirectory(nextDirectory);
+
+      if (isCreateMode) {
+        syncEditor(null, true, null);
+        return;
+      }
+
+      const nextSelectedItem = nextDirectory.item_list.find(
+        (item) => item.id === selectedItem?.id
+      );
+      if (nextSelectedItem) {
+        syncEditor(nextSelectedItem, false, null);
+      } else {
+        syncEditor(null, true, null);
+      }
+    } catch {
+      setRequestErrorMessage(copy.loadError);
+    }
+  }, [
+    apiSegment,
+    copy.loadError,
+    filterParentId,
+    filterQuery,
+    isCreateMode,
+    parentFilterQueryParam,
+    scopeId,
+    selectedItem,
+    syncEditor
+  ]);
+
+  useEffect(() => {
+    if (!didMountFilterRef.current) {
+      didMountFilterRef.current = true;
+      return;
+    }
+    void loadHierarchyDirectory();
+  }, [loadHierarchyDirectory]);
 
   const isDirty =
     name.trim() !== baseline.name.trim() ||
@@ -494,11 +577,43 @@ export function ScopeHierarchyConfigurationClient<
   ]);
 
   const resolveLabel = useCallback((item: TItem) => resolveHierarchyLabel(item), []);
+  const parentFilterOptionList = useMemo(
+    () =>
+      itemList.map((item) => ({
+        value: String(item.id),
+        label: resolveHierarchyLabel(item),
+      })),
+    [itemList]
+  );
 
   return (
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
+      topContent={
+        directory ? (
+          <DirectoryFilterPanel>
+            <DirectoryFilterCard>
+              <DirectoryFilterTextField
+                id={`${apiSegment}-filter-search`}
+                label={copy.filterSearchLabel}
+                value={filterQuery}
+                onChange={setFilterQuery}
+              />
+            </DirectoryFilterCard>
+            <DirectoryFilterCard>
+              <DirectoryFilterSelectField
+                id={`${apiSegment}-filter-parent`}
+                label={copy.filterParentLabel}
+                value={filterParentId == null ? "" : String(filterParentId)}
+                onChange={(value) => setFilterParentId(parseNumericFilter(value))}
+                allAriaLabel={copy.filterAll}
+                optionList={parentFilterOptionList}
+              />
+            </DirectoryFilterCard>
+          </DirectoryFilterPanel>
+        ) : null
+      }
       directoryAsideEditorGrowRatio="4-3"
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}

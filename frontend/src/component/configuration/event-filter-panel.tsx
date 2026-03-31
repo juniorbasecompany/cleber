@@ -1,6 +1,11 @@
 "use client";
 
 import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel,
+  DirectoryFilterSelectField
+} from "@/component/configuration/directory-filter-panel";
 
 type EventFilterOption = {
   id: number;
@@ -52,101 +57,80 @@ export function EventFilterPanel({
   onFilterActionChange
 }: EventFilterPanelProps) {
   return (
-    <section className="ui-stack-md">
-      <div className="ui-history-filter-grid">
-        <article className="ui-card ui-form-section ui-event-filter-card">
-          <div className="ui-field">
-            <label className="ui-field-label" htmlFor="event-filter-moment-from">
-              {copy.momentFromLabel}
-            </label>
-            <TenantDateTimePicker
-              id="event-filter-moment-from"
-              value={filterMomentFromInput ? new Date(filterMomentFromInput) : null}
-              onChange={onFilterMomentFromChange}
-              locale={locale}
-              periodBoundary="start"
-            />
-          </div>
-        </article>
+    <DirectoryFilterPanel>
+      <DirectoryFilterCard>
+        <div className="ui-field">
+          <label className="ui-field-label" htmlFor="event-filter-moment-from">
+            {copy.momentFromLabel}
+          </label>
+          <TenantDateTimePicker
+            id="event-filter-moment-from"
+            value={filterMomentFromInput ? new Date(filterMomentFromInput) : null}
+            onChange={onFilterMomentFromChange}
+            locale={locale}
+            hidePlaceholder
+            periodBoundary="start"
+          />
+        </div>
+      </DirectoryFilterCard>
 
-        <article className="ui-card ui-form-section ui-event-filter-card">
-          <div className="ui-field">
-            <label className="ui-field-label" htmlFor="event-filter-moment-to">
-              {copy.momentToLabel}
-            </label>
-            <TenantDateTimePicker
-              id="event-filter-moment-to"
-              value={filterMomentToInput ? new Date(filterMomentToInput) : null}
-              onChange={onFilterMomentToChange}
-              locale={locale}
-              periodBoundary="end"
-            />
-          </div>
-        </article>
+      <DirectoryFilterCard>
+        <div className="ui-field">
+          <label className="ui-field-label" htmlFor="event-filter-moment-to">
+            {copy.momentToLabel}
+          </label>
+          <TenantDateTimePicker
+            id="event-filter-moment-to"
+            value={filterMomentToInput ? new Date(filterMomentToInput) : null}
+            onChange={onFilterMomentToChange}
+            locale={locale}
+            hidePlaceholder
+            periodBoundary="end"
+          />
+        </div>
+      </DirectoryFilterCard>
 
-        <article className="ui-card ui-form-section ui-event-filter-card">
-          <div className="ui-field">
-            <label className="ui-field-label" htmlFor="event-filter-location">
-              {copy.locationLabel}
-            </label>
-            <select
-              id="event-filter-location"
-              className="ui-input ui-input-select"
-              value={filterLocationId == null ? "" : String(filterLocationId)}
-              onChange={(event) => onFilterLocationChange(event.target.value)}
-            >
-              <option value="" aria-label={copy.allLabel}></option>
-              {locationOptionList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </article>
+      <DirectoryFilterCard>
+        <DirectoryFilterSelectField
+          id="event-filter-location"
+          label={copy.locationLabel}
+          value={filterLocationId == null ? "" : String(filterLocationId)}
+          onChange={onFilterLocationChange}
+          allAriaLabel={copy.allLabel}
+          optionList={locationOptionList.map((item) => ({
+            value: String(item.id),
+            label: item.label
+          }))}
+        />
+      </DirectoryFilterCard>
 
-        <article className="ui-card ui-form-section ui-event-filter-card">
-          <div className="ui-field">
-            <label className="ui-field-label" htmlFor="event-filter-unity">
-              {copy.unityLabel}
-            </label>
-            <select
-              id="event-filter-unity"
-              className="ui-input ui-input-select"
-              value={filterUnityId == null ? "" : String(filterUnityId)}
-              onChange={(event) => onFilterUnityChange(event.target.value)}
-            >
-              <option value="" aria-label={copy.allLabel}></option>
-              {unityOptionList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </article>
+      <DirectoryFilterCard>
+        <DirectoryFilterSelectField
+          id="event-filter-unity"
+          label={copy.unityLabel}
+          value={filterUnityId == null ? "" : String(filterUnityId)}
+          onChange={onFilterUnityChange}
+          allAriaLabel={copy.allLabel}
+          optionList={unityOptionList.map((item) => ({
+            value: String(item.id),
+            label: item.label
+          }))}
+        />
+      </DirectoryFilterCard>
 
-        <article className="ui-card ui-form-section ui-event-filter-card">
-          <div className="ui-field">
-            <label className="ui-field-label" htmlFor="event-filter-action">
-              {copy.actionLabel}
-            </label>
-            <select
-              id="event-filter-action"
-              className="ui-input ui-input-select"
-              value={filterActionId == null ? "" : String(filterActionId)}
-              onChange={(event) => onFilterActionChange(event.target.value)}
-            >
-              <option value="" aria-label={copy.allLabel}></option>
-              {actionOptionList.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-            </select>
-          </div>
-        </article>
-      </div>
-    </section>
+      <DirectoryFilterCard>
+        <DirectoryFilterSelectField
+          id="event-filter-action"
+          label={copy.actionLabel}
+          value={filterActionId == null ? "" : String(filterActionId)}
+          onChange={onFilterActionChange}
+          allAriaLabel={copy.allLabel}
+          optionList={actionOptionList.map((item) => ({
+            value: String(item.id),
+            label: item.label
+          }))}
+        />
+      </DirectoryFilterCard>
+    </DirectoryFilterPanel>
   );
 }

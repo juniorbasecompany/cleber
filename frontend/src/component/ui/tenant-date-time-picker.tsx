@@ -10,6 +10,7 @@ export interface TenantDateTimePickerProps {
   onChange: (value: Date | null) => void;
   label?: string;
   placeholder?: string;
+  hidePlaceholder?: boolean;
   disabled?: boolean;
   minDate?: Date;
   maxDate?: Date;
@@ -49,6 +50,7 @@ export function TenantDateTimePicker({
   onChange,
   label,
   placeholder,
+  hidePlaceholder = false,
   disabled = false,
   minDate,
   maxDate,
@@ -167,8 +169,9 @@ export function TenantDateTimePicker({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen]);
 
-  const displayPlaceholder =
-    placeholder || (locale.startsWith("pt") ? "dd/mm/aaaa --:--" : "mm/dd/yyyy --:--");
+  const displayPlaceholder = hidePlaceholder
+    ? undefined
+    : (placeholder || (locale.startsWith("pt") ? "dd/mm/aaaa --:--" : "mm/dd/yyyy --:--"));
   const displayValue = value ? formatDateTime(value, locale) : "";
 
   const getDateForSelectedDay = (day: number) => {

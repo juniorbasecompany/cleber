@@ -13,8 +13,9 @@ export async function GET(
   }
 
   const { scopeId } = await context.params;
+  const search = request.nextUrl.search || "";
   const result = await backendFetch<TenantLocationDirectoryResponse>(
-    `/auth/tenant/current/scopes/${scopeId}/locations`,
+    `/auth/tenant/current/scopes/${scopeId}/locations${search}`,
     {
       method: "GET",
       token: authResult.token

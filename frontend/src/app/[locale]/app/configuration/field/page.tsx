@@ -61,6 +61,7 @@ export default async function FieldConfigurationPage({ params }: FieldConfigurat
           loadError: t("list.loadError"),
           historyTitle: t("history.title"),
           historyDescription: t("history.description"),
+          filterSearchLabel: t("filter.searchLabel"),
           fieldNameLabel: t("section.fieldName.label"),
           fieldNameHint: t("section.fieldName.hint"),
           fieldNameRequired: t("error.fieldNameRequired"),

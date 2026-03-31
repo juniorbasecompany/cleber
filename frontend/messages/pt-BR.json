@@ -117,6 +117,13 @@
       "title": "Histórico de alterações",
       "description": "Consulte o histórico do cadastro de membros: quem alterou, quando e um resumo claro do que mudou."
     },
+    "filter": {
+      "searchLabel": "Nome ou e-mail",
+      "searchPlaceholder": "Nome ou e-mail",
+      "roleLabel": "Papel",
+      "statusLabel": "Situação",
+      "all": "Todos"
+    },
     "section": {
       "profile": {
         "displayNameLabel": "Nome de exibição",
@@ -203,6 +210,10 @@
       "title": "Histórico de alterações",
       "description": "Consulte o histórico dos escopos deste licenciado: quem alterou, quando e um resumo do que mudou."
     },
+    "filter": {
+      "searchLabel": "Nome ou descrição",
+      "searchPlaceholder": "Nome ou descrição"
+    },
     "section": {
       "identity": {
         "nameLabel": "Nome do escopo",
@@ -253,6 +264,10 @@
     "history": {
       "title": "Histórico de alterações",
       "description": "Consulte o histórico das definições de campo do escopo ativo: quem alterou, quando e um resumo do que mudou."
+    },
+    "filter": {
+      "searchLabel": "Nome do campo ou tipo",
+      "searchPlaceholder": "Nome do campo ou tipo"
     },
     "section": {
       "fieldName": {
@@ -333,6 +348,10 @@
     "history": {
       "title": "Histórico de alterações",
       "description": "Consulte o histórico das definições de ação do escopo ativo: quem alterou, quando e um resumo do que mudou."
+    },
+    "filter": {
+      "searchLabel": "Nome da ação",
+      "searchPlaceholder": "Nome da ação"
     },
     "section": {
       "actionName": {
@@ -471,6 +490,12 @@
       "title": "Histórico de alterações",
       "description": "Consulte o histórico da hierarquia de locais: quem alterou, quando e um resumo do que mudou."
     },
+    "filter": {
+      "searchLabel": "Nome ou descrição do local",
+      "searchPlaceholder": "Nome ou descrição do local",
+      "parentLabel": "Local pai",
+      "all": "Todos"
+    },
     "section": {
       "identity": {
         "nameLabel": "Nome do local",
@@ -530,6 +555,12 @@
       "title": "Histórico de alterações",
       "description": "Consulte o histórico das unidades produtivas: quem alterou, quando e um resumo do que mudou."
     },
+    "filter": {
+      "searchLabel": "Nome ou descrição da unidade",
+      "searchPlaceholder": "Nome ou descrição da unidade",
+      "parentLabel": "Unidade pai",
+      "all": "Todos"
+    },
     "section": {
       "identity": {
         "nameLabel": "Nome curto",
@@ -586,6 +617,11 @@
     "history": {
       "title": "Histórico de alterações",
       "description": "Consulte o histórico dos dados do licenciado ativo: quem alterou, quando e um resumo do que mudou."
+    },
+    "filter": {
+      "searchLabel": "Nome ou identificador",
+      "searchPlaceholder": "Nome ou identificador",
+      "empty": "Nenhum licenciado encontrado para o filtro atual."
     },
     "section": {
       "display": {

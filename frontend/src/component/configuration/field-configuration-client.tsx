@@ -11,6 +11,11 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel,
+  DirectoryFilterTextField
+} from "@/component/configuration/directory-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
@@ -44,6 +49,7 @@ export type FieldConfigurationCopy = {
   loadError: string;
   historyTitle: string;
   historyDescription: string;
+  filterSearchLabel: string;
   fieldNameLabel: string;
   fieldNameHint: string;
   sectionInfoTitle: string;
@@ -194,10 +200,12 @@ export function FieldConfigurationClient({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [filterQuery, setFilterQuery] = useState("");
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const initialSearchFieldKeyRef = useRef<FieldSelectionKey>(initialSearchFieldKey);
   const selectedFieldKeyRef = useRef<FieldSelectionKey>(initialSelectedFieldKey);
   const didResolveInitialUrlRef = useRef(false);
+  const didMountFilterRef = useRef(false);
 
   const parsedSqlType = useMemo(() => parseFieldSqlType(sqlType), [sqlType]);
 
@@ -359,6 +367,46 @@ export function FieldConfigurationClient({
     didResolveInitialUrlRef.current = true;
     syncFromDirectory(initialFieldDirectory, preferredKey);
   }, [initialFieldDirectory, syncFromDirectory]);
+
+  const loadFieldDirectory = useCallback(
+    async (preferredKey?: FieldSelectionKey) => {
+      if (currentScope?.id == null) {
+        return;
+      }
+      const query = new URLSearchParams({ label_lang: labelLang });
+      const normalizedQuery = filterQuery.trim();
+      if (normalizedQuery) {
+        query.set("q", normalizedQuery);
+      }
+      try {
+        const response = await fetch(
+          `/api/auth/tenant/current/scopes/${currentScope.id}/fields?${query.toString()}`
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setRequestErrorMessage(
+            parseErrorDetail(data, copy.loadError) ?? copy.loadError
+          );
+          return;
+        }
+        syncFromDirectory(
+          data as TenantScopeFieldDirectoryResponse,
+          preferredKey ?? selectedFieldKeyRef.current
+        );
+      } catch {
+        setRequestErrorMessage(copy.loadError);
+      }
+    },
+    [copy.loadError, currentScope, filterQuery, labelLang, syncFromDirectory]
+  );
+
+  useEffect(() => {
+    if (!didMountFilterRef.current) {
+      didMountFilterRef.current = true;
+      return;
+    }
+    void loadFieldDirectory(selectedFieldKeyRef.current);
+  }, [loadFieldDirectory]);
 
   const isDirty = useMemo(() => {
     return (
@@ -603,6 +651,20 @@ export function FieldConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
+      topContent={
+        directory ? (
+          <DirectoryFilterPanel>
+            <DirectoryFilterCard>
+              <DirectoryFilterTextField
+                id="field-filter-search"
+                label={copy.filterSearchLabel}
+                value={filterQuery}
+                onChange={setFilterQuery}
+              />
+            </DirectoryFilterCard>
+          </DirectoryFilterPanel>
+        ) : null
+      }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       directoryAside={

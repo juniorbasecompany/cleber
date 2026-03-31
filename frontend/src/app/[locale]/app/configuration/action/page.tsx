@@ -61,6 +61,7 @@ export default async function ActionConfigurationPage({ params }: ActionConfigur
           loadError: t("list.loadError"),
           historyTitle: t("history.title"),
           historyDescription: t("history.description"),
+          filterSearchLabel: t("filter.searchLabel"),
           actionNameLabel: t("section.actionName.label"),
           actionNameHint: t("section.actionName.hint"),
           actionNameRequired: t("error.actionNameRequired"),

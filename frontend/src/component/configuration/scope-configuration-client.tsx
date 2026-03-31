@@ -11,6 +11,11 @@ import { ConfigurationDirectoryEditorShell } from "@/component/configuration/con
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel,
+  DirectoryFilterTextField
+} from "@/component/configuration/directory-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
@@ -27,6 +32,7 @@ export type ScopeConfigurationCopy = {
   empty: string;
   historyTitle: string;
   historyDescription: string;
+  filterSearchLabel: string;
   nameLabel: string;
   nameHint: string;
   displayNameLabel: string;
@@ -153,10 +159,12 @@ export function ScopeConfigurationClient({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [filterQuery, setFilterQuery] = useState("");
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const initialSearchScopeKeyRef = useRef<ScopeSelectionKey>(initialSearchScopeKey);
   const selectedScopeKeyRef = useRef<ScopeSelectionKey>(initialSelectedScopeKey);
   const didResolveInitialUrlRef = useRef(false);
+  const didMountFilterRef = useRef(false);
 
   const selectedScope = useMemo(() => {
     if (isCreateMode) {
@@ -241,6 +249,42 @@ export function ScopeConfigurationClient({
     didResolveInitialUrlRef.current = true;
     syncFromDirectory(initialDirectory, preferredKey);
   }, [initialDirectory, syncFromDirectory]);
+
+  const loadScopeDirectory = useCallback(
+    async (preferredKey?: ScopeSelectionKey) => {
+      const query = new URLSearchParams();
+      const normalizedQuery = filterQuery.trim();
+      if (normalizedQuery) {
+        query.set("q", normalizedQuery);
+      }
+
+      try {
+        const response = await fetch(
+          `/api/auth/tenant/current/scopes?${query.toString()}`
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setRequestErrorMessage(parseErrorDetail(data, copy.saveError) ?? copy.saveError);
+          return;
+        }
+        syncFromDirectory(
+          data as TenantScopeDirectoryResponse,
+          preferredKey ?? selectedScopeKeyRef.current
+        );
+      } catch {
+        setRequestErrorMessage(copy.saveError);
+      }
+    },
+    [copy.saveError, filterQuery, syncFromDirectory]
+  );
+
+  useEffect(() => {
+    if (!didMountFilterRef.current) {
+      didMountFilterRef.current = true;
+      return;
+    }
+    void loadScopeDirectory(selectedScopeKeyRef.current);
+  }, [loadScopeDirectory]);
 
   const isDirty = useMemo(() => {
     return (
@@ -408,6 +452,18 @@ export function ScopeConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
+      topContent={
+        <DirectoryFilterPanel>
+          <DirectoryFilterCard>
+            <DirectoryFilterTextField
+              id="scope-filter-search"
+              label={copy.filterSearchLabel}
+              value={filterQuery}
+              onChange={setFilterQuery}
+            />
+          </DirectoryFilterCard>
+        </DirectoryFilterPanel>
+      }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       directoryAside={

@@ -117,6 +117,13 @@
       "title": "Historial de cambios",
       "description": "Consulta los cambios recientes en los miembros: quién modificó qué, cuándo y un resumen claro de cada cambio."
     },
+    "filter": {
+      "searchLabel": "Nombre o correo",
+      "searchPlaceholder": "Nombre o correo",
+      "roleLabel": "Rol",
+      "statusLabel": "Estado",
+      "all": "Todos"
+    },
     "section": {
       "profile": {
         "displayNameLabel": "Nombre para mostrar",
@@ -203,6 +210,10 @@
       "title": "Historial de cambios",
       "description": "Consulta los cambios recientes en los alcances de este licenciatario: quién cambió qué, cuándo y un resumen de lo modificado."
     },
+    "filter": {
+      "searchLabel": "Nombre o descripción",
+      "searchPlaceholder": "Nombre o descripción"
+    },
     "section": {
       "identity": {
         "nameLabel": "Nombre del alcance",
@@ -253,6 +264,10 @@
     "history": {
       "title": "Historial de cambios",
       "description": "Consulta el historial de definiciones de campo del alcance activo: quién cambió qué, cuándo y un resumen de lo modificado."
+    },
+    "filter": {
+      "searchLabel": "Nombre del campo o tipo",
+      "searchPlaceholder": "Nombre del campo o tipo"
     },
     "section": {
       "fieldName": {
@@ -333,6 +348,10 @@
     "history": {
       "title": "Historial de cambios",
       "description": "Consulta los cambios recientes en las definiciones de acción del alcance activo: quién cambió qué, cuándo y un resumen de cada actualización."
+    },
+    "filter": {
+      "searchLabel": "Nombre de la acción",
+      "searchPlaceholder": "Nombre de la acción"
     },
     "section": {
       "actionName": {
@@ -471,6 +490,12 @@
       "title": "Historial de cambios",
       "description": "Consulta los cambios recientes en la jerarquía de ubicaciones: quién modificó qué, cuándo y un resumen de cada cambio."
     },
+    "filter": {
+      "searchLabel": "Nombre o descripción de la ubicación",
+      "searchPlaceholder": "Nombre o descripción de la ubicación",
+      "parentLabel": "Ubicación padre",
+      "all": "Todos"
+    },
     "section": {
       "identity": {
         "nameLabel": "Nombre de la ubicación",
@@ -530,6 +555,12 @@
       "title": "Historial de cambios",
       "description": "Consulta los cambios recientes en las unidades productivas: quién modificó qué, cuándo y un resumen de cada cambio."
     },
+    "filter": {
+      "searchLabel": "Nombre o descripción de la unidad",
+      "searchPlaceholder": "Nombre o descripción de la unidad",
+      "parentLabel": "Unidad padre",
+      "all": "Todos"
+    },
     "section": {
       "identity": {
         "nameLabel": "Nombre corto",
@@ -586,6 +617,11 @@
     "history": {
       "title": "Historial de cambios",
       "description": "Consulta los cambios recientes en los datos del licenciatario activo: quién modificó qué, cuándo y un resumen de cada cambio."
+    },
+    "filter": {
+      "searchLabel": "Nombre o identificador",
+      "searchPlaceholder": "Nombre o identificador",
+      "empty": "Ningún licenciatario coincide con el filtro actual."
     },
     "section": {
       "display": {

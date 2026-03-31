@@ -245,6 +245,61 @@ export function MilestonePathIcon({ className }: IconProps) {
     );
 }
 
+/** Cópia do ícone de action para uso exclusivo de event. */
+export function EventPathIcon({ className }: IconProps) {
+    const sw = 2;
+    const nodeR = 1.2;
+    return (
+        <svg
+            className={mergeClassName(className)}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={sw}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+        >
+            <g transform="translate(24, 0) scale(-1, 1)">
+                <path d="M 20 18 L 5 18 A 2 2 0 0 1 3 16 A 2 2 0 0 1 5 14 L 20 14 C 21.105 14 22 13.105 22 12 C 22 10.895 21.105 10 20 10 L 3.25 10" />
+                <circle cx="20" cy="18" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="12.5" cy="18" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="5" cy="18" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="5" cy="14" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="12.5" cy="14" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="20" cy="14" r={nodeR} fill="currentColor" stroke="none" />
+                <circle cx="20" cy="10" r={nodeR} fill="currentColor" stroke="none" />
+            </g>
+            <path d="M 14.95 2.1 L 20.3 2.1 L 18.65 4.05 L 20.3 6 L 14.95 6 Z" />
+            <line x1="14.5" y1="10.35" x2="14.5" y2="1.65" />
+        </svg>
+    );
+}
+
+/** Checklist de ação: tarefas com marcação de conclusão. */
+export function ActionChecklistIcon({ className }: IconProps) {
+    return (
+        <svg
+            className={mergeClassName(className)}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+        >
+            <circle cx="6" cy="6.2" r="2.4" />
+            <path d="M10.9 6.2H20" />
+
+            <circle cx="6" cy="12.6" r="2.4" />
+            <path d="M10.9 12.6H20" />
+
+            <circle cx="6" cy="19" r="2.4" />
+            <path d="M10.9 19H20" />
+        </svg>
+    );
+}
+
 /** Régua horizontal compacta: metáfora de medida nos campos de regra. */
 export function RulerIcon({ className }: IconProps) {
     return (
@@ -436,9 +491,9 @@ export function NavigationIcon({
         case "field":
             return <RulerIcon className={className} />;
         case "action":
-            return <MilestonePathIcon className={className} />;
+            return <ActionChecklistIcon className={className} />;
         case "event":
-            return <ClockIcon className={className} />;
+            return <EventPathIcon className={className} />;
         default:
             return <DashboardIcon className={className} />;
     }

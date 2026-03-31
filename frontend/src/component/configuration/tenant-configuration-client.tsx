@@ -10,6 +10,11 @@ import {
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel,
+  DirectoryFilterTextField
+} from "@/component/configuration/directory-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
@@ -27,6 +32,8 @@ export type TenantConfigurationCopy = {
   createHint: string;
   historyTitle: string;
   historyDescription: string;
+  filterSearchLabel: string;
+  filterEmpty: string;
   legalNameLabel: string;
   legalNameHint: string;
   displayNameLabel: string;
@@ -94,6 +101,7 @@ export function TenantConfigurationClient({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [filterQuery, setFilterQuery] = useState("");
 
   useEffect(() => {
     setTenant(initialTenant);
@@ -300,11 +308,31 @@ export function TenantConfigurationClient({
 
   const asideTitle = resolveAsideTitle(tenant.display_name, tenant.name, tenant.id);
   const asideCaption = tenant.name.trim() || `#${tenant.id}`;
+  const tenantMatchesFilter = useMemo(() => {
+    const normalizedQuery = filterQuery.trim().toLowerCase();
+    if (!normalizedQuery) {
+      return true;
+    }
+    const candidateText = `${tenant.display_name} ${tenant.name} ${tenant.id}`.toLowerCase();
+    return candidateText.includes(normalizedQuery);
+  }, [filterQuery, tenant.display_name, tenant.id, tenant.name]);
 
   return (
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
+      topContent={
+        <DirectoryFilterPanel>
+          <DirectoryFilterCard>
+            <DirectoryFilterTextField
+              id="tenant-filter-search"
+              label={copy.filterSearchLabel}
+              value={filterQuery}
+              onChange={setFilterQuery}
+            />
+          </DirectoryFilterCard>
+        </DirectoryFilterPanel>
+      }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       editorVariant="emptyWhenNoContext"
@@ -328,20 +356,26 @@ export function TenantConfigurationClient({
               />
             ) : null}
 
-            <button
-              type="button"
-              className="ui-directory-item"
-              data-selected={editorContext === "edit" ? "true" : undefined}
-              data-delete-pending={isDeletePending ? "true" : undefined}
-              onClick={handleTenantRowClick}
-            >
-              <div className="ui-row-between">
-                <div className="ui-min-w-0">
-                  <p className="ui-directory-title">{asideTitle}</p>
-                  <p className="ui-directory-caption">{asideCaption}</p>
+            {tenantMatchesFilter ? (
+              <button
+                type="button"
+                className="ui-directory-item"
+                data-selected={editorContext === "edit" ? "true" : undefined}
+                data-delete-pending={isDeletePending ? "true" : undefined}
+                onClick={handleTenantRowClick}
+              >
+                <div className="ui-row-between">
+                  <div className="ui-min-w-0">
+                    <p className="ui-directory-title">{asideTitle}</p>
+                    <p className="ui-directory-caption">{asideCaption}</p>
+                  </div>
                 </div>
+              </button>
+            ) : (
+              <div className="ui-panel ui-empty-panel ui-panel-body-compact">
+                {copy.filterEmpty}
               </div>
-            </button>
+            )}
           </div>
         </>
       }

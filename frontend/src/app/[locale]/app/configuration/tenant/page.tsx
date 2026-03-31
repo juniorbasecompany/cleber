@@ -31,6 +31,8 @@ export default async function TenantConfigurationPage({
     createHint: t("metadata.createHint"),
     historyTitle: t("history.title"),
     historyDescription: t("history.description"),
+    filterSearchLabel: t("filter.searchLabel"),
+    filterEmpty: t("filter.empty"),
     legalNameLabel: t("section.legal.nameLabel"),
     legalNameHint: t("section.legal.nameHint"),
     displayNameLabel: t("section.display.nameLabel"),

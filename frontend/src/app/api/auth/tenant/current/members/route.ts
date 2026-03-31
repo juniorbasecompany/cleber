@@ -9,8 +9,9 @@ export async function GET(request: NextRequest) {
     return authResult.error;
   }
 
+  const search = request.nextUrl.search || "";
   const result = await backendFetch<TenantMemberDirectoryResponse>(
-    "/auth/tenant/current/members",
+    `/auth/tenant/current/members${search}`,
     {
       method: "GET",
       token: authResult.token

@@ -427,6 +427,7 @@ def list_scope_fields(
     label_lang: Literal["pt-BR", "en", "es"] | None = Query(default=None),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
+    q: str | None = Query(default=None),
 ):
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     rows = list(
@@ -461,6 +462,16 @@ def list_scope_fields(
                 label_name=pair.name if pair is not None else None,
             )
         )
+
+    if q:
+        normalized_q = q.strip().lower()
+        if normalized_q:
+            item_list = [
+                item
+                for item in item_list
+                if normalized_q in item.sql_type.lower()
+                or (item.label_name is not None and normalized_q in item.label_name.lower())
+            ]
 
     return ScopeFieldListResponse(
         can_edit=_member_can_edit_scope_rules(member),
@@ -627,6 +638,7 @@ def list_scope_actions(
     label_lang: Literal["pt-BR", "en", "es"] | None = Query(default=None),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
+    q: str | None = Query(default=None),
 ):
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     rows = list(
@@ -660,6 +672,15 @@ def list_scope_actions(
                 label_name=pair.name if pair is not None else None,
             )
         )
+
+    if q:
+        normalized_q = q.strip().lower()
+        if normalized_q:
+            item_list = [
+                item
+                for item in item_list
+                if item.label_name is not None and normalized_q in item.label_name.lower()
+            ]
 
     return ScopeActionListResponse(
         can_edit=_member_can_edit_scope_rules(member),

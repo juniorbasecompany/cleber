@@ -15,6 +15,11 @@ import {
   ActionFormulaSection,
   type ActionFormulaDraftRow
 } from "@/component/configuration/action-formula-section";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel,
+  DirectoryFilterTextField
+} from "@/component/configuration/directory-filter-panel";
 import type { FormulaFieldOption } from "@/component/configuration/formula-statement-editor";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
@@ -45,6 +50,7 @@ export type ActionConfigurationCopy = {
   loadError: string;
   historyTitle: string;
   historyDescription: string;
+  filterSearchLabel: string;
   actionNameLabel: string;
   actionNameHint: string;
   actionNameRequired: string;
@@ -270,6 +276,7 @@ export function ActionConfigurationClient({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [filterQuery, setFilterQuery] = useState("");
   const [formulaRowList, setFormulaRowList] = useState<ActionFormulaDraftRow[]>([]);
   const [formulaBaselineList, setFormulaBaselineList] = useState<ActionFormulaDraftRow[]>([]);
   const [formulasCanEdit, setFormulasCanEdit] = useState(false);
@@ -280,6 +287,7 @@ export function ActionConfigurationClient({
   const initialSearchActionKeyRef = useRef<ActionSelectionKey>(initialSearchActionKey);
   const selectedActionKeyRef = useRef<ActionSelectionKey>(initialSelectedActionKey);
   const didResolveInitialUrlRef = useRef(false);
+  const didMountFilterRef = useRef(false);
   /** Após falha ao gravar fórmulas (ex.: validação 422), evita um load imediato que sobrescreve o rascunho. */
   const skipNextFormulaAutoLoadRef = useRef(false);
 
@@ -399,6 +407,47 @@ export function ActionConfigurationClient({
   }, [initialActionDirectory, syncFromDirectory]);
 
   const scopeId = currentScope?.id;
+
+  const loadActionDirectory = useCallback(
+    async (preferredKey?: ActionSelectionKey) => {
+      if (scopeId == null) {
+        return;
+      }
+      const query = new URLSearchParams({ label_lang: labelLang });
+      const normalizedQuery = filterQuery.trim();
+      if (normalizedQuery) {
+        query.set("q", normalizedQuery);
+      }
+
+      try {
+        const response = await fetch(
+          `/api/auth/tenant/current/scopes/${scopeId}/actions?${query.toString()}`
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setRequestErrorMessage(
+            parseErrorDetail(data, copy.loadError) ?? copy.loadError
+          );
+          return;
+        }
+        syncFromDirectory(
+          data as TenantScopeActionDirectoryResponse,
+          preferredKey ?? selectedActionKeyRef.current
+        );
+      } catch {
+        setRequestErrorMessage(copy.loadError);
+      }
+    },
+    [copy.loadError, filterQuery, labelLang, scopeId, syncFromDirectory]
+  );
+
+  useEffect(() => {
+    if (!didMountFilterRef.current) {
+      didMountFilterRef.current = true;
+      return;
+    }
+    void loadActionDirectory(selectedActionKeyRef.current);
+  }, [loadActionDirectory]);
 
   const loadScopeFields = useCallback(async () => {
     if (scopeId == null) {
@@ -755,6 +804,20 @@ export function ActionConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
+      topContent={
+        directory ? (
+          <DirectoryFilterPanel>
+            <DirectoryFilterCard>
+              <DirectoryFilterTextField
+                id="action-filter-search"
+                label={copy.filterSearchLabel}
+                value={filterQuery}
+                onChange={setFilterQuery}
+              />
+            </DirectoryFilterCard>
+          </DirectoryFilterPanel>
+        ) : null
+      }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       directoryAside={

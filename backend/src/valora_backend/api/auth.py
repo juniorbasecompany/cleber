@@ -1040,11 +1040,48 @@ def _resolve_member_current_scope_id(
 
 
 def _build_tenant_member_directory(
-    session: Session, *, actor: Member
+    session: Session,
+    *,
+    actor: Member,
+    q: str | None = None,
+    role: str | None = None,
+    status_name: str | None = None,
 ) -> TenantMemberDirectoryResponse:
-    member_list = list(
-        session.scalars(select(Member).where(Member.tenant_id == actor.tenant_id))
-    )
+    query = select(Member).where(Member.tenant_id == actor.tenant_id)
+    role_map = {
+        "master": MASTER_ROLE,
+        "admin": ADMIN_ROLE,
+        "member": MEMBER_ROLE,
+    }
+    if role:
+        normalized_role = role.strip().lower()
+        role_value = role_map.get(normalized_role)
+        if role_value is not None:
+            query = query.where(Member.role == role_value)
+
+    status_map = {
+        "active": ACTIVE_STATUS,
+        "pending": PENDING_STATUS,
+        "disabled": DISABLED_STATUS,
+    }
+    if status_name:
+        normalized_status = status_name.strip().lower()
+        status_value = status_map.get(normalized_status)
+        if status_value is not None:
+            query = query.where(Member.status == status_value)
+
+    if q:
+        normalized_q = q.strip().lower()
+        if normalized_q:
+            query = query.where(
+                or_(
+                    func.lower(Member.name).contains(normalized_q),
+                    func.lower(Member.display_name).contains(normalized_q),
+                    func.lower(Member.email).contains(normalized_q),
+                )
+            )
+
+    member_list = list(session.scalars(query))
     member_list.sort(
         key=lambda item: (
             item.role,
@@ -1063,11 +1100,20 @@ def _build_tenant_member_directory(
 
 
 def _build_tenant_scope_directory(
-    session: Session, *, actor: Member
+    session: Session, *, actor: Member, q: str | None = None
 ) -> TenantScopeDirectoryResponse:
-    scope_list = list(
-        session.scalars(select(Scope).where(Scope.tenant_id == actor.tenant_id))
-    )
+    query = select(Scope).where(Scope.tenant_id == actor.tenant_id)
+    if q:
+        normalized_q = q.strip().lower()
+        if normalized_q:
+            query = query.where(
+                or_(
+                    func.lower(Scope.name).contains(normalized_q),
+                    func.lower(Scope.display_name).contains(normalized_q),
+                )
+            )
+
+    scope_list = list(session.scalars(query))
     scope_list.sort(
         key=lambda item: (item.name.lower(), item.display_name.lower(), item.id)
     )
@@ -1092,13 +1138,29 @@ def _get_tenant_scope_for_location(
     return target_scope
 
 
-def _get_scope_location_list(session: Session, *, scope_id: int) -> list[Location]:
+def _get_scope_location_list(
+    session: Session,
+    *,
+    scope_id: int,
+    q: str | None = None,
+    parent_location_id: int | None = None,
+) -> list[Location]:
+    query = select(Location).where(Location.scope_id == scope_id)
+    if parent_location_id is not None:
+        query = query.where(Location.parent_location_id == parent_location_id)
+
+    if q:
+        normalized_q = q.strip().lower()
+        if normalized_q:
+            query = query.where(
+                or_(
+                    func.lower(Location.name).contains(normalized_q),
+                    func.lower(Location.display_name).contains(normalized_q),
+                )
+            )
+
     return list(
-        session.scalars(
-            select(Location)
-            .where(Location.scope_id == scope_id)
-            .order_by(Location.sort_order, Location.name, Location.id)
-        )
+        session.scalars(query.order_by(Location.sort_order, Location.name, Location.id))
     )
 
 
@@ -1181,9 +1243,19 @@ def _normalize_scope_location_order(session: Session, *, scope_id: int) -> None:
 
 
 def _build_tenant_location_directory(
-    session: Session, *, actor: Member, scope: Scope
+    session: Session,
+    *,
+    actor: Member,
+    scope: Scope,
+    q: str | None = None,
+    parent_location_id: int | None = None,
 ) -> TenantLocationDirectoryResponse:
-    location_list = _get_scope_location_list(session, scope_id=scope.id)
+    location_list = _get_scope_location_list(
+        session,
+        scope_id=scope.id,
+        q=q,
+        parent_location_id=parent_location_id,
+    )
     child_list_by_parent_id: defaultdict[int | None, list[Location]] = defaultdict(list)
     for item in sorted(location_list, key=hierarchy_sort_key):
         child_list_by_parent_id[item.parent_location_id].append(item)
@@ -1241,13 +1313,29 @@ def _build_tenant_location_directory(
     )
 
 
-def _get_scope_unity_list(session: Session, *, scope_id: int) -> list[Unity]:
+def _get_scope_unity_list(
+    session: Session,
+    *,
+    scope_id: int,
+    q: str | None = None,
+    parent_unity_id: int | None = None,
+) -> list[Unity]:
+    query = select(Unity).where(Unity.scope_id == scope_id)
+    if parent_unity_id is not None:
+        query = query.where(Unity.parent_unity_id == parent_unity_id)
+
+    if q:
+        normalized_q = q.strip().lower()
+        if normalized_q:
+            query = query.where(
+                or_(
+                    func.lower(Unity.name).contains(normalized_q),
+                    func.lower(Unity.display_name).contains(normalized_q),
+                )
+            )
+
     return list(
-        session.scalars(
-            select(Unity)
-            .where(Unity.scope_id == scope_id)
-            .order_by(Unity.sort_order, Unity.name, Unity.id)
-        )
+        session.scalars(query.order_by(Unity.sort_order, Unity.name, Unity.id))
     )
 
 
@@ -1294,9 +1382,19 @@ def _normalize_scope_unity_order(session: Session, *, scope_id: int) -> None:
 
 
 def _build_tenant_unity_directory(
-    session: Session, *, actor: Member, scope: Scope
+    session: Session,
+    *,
+    actor: Member,
+    scope: Scope,
+    q: str | None = None,
+    parent_unity_id: int | None = None,
 ) -> TenantUnityDirectoryResponse:
-    unity_list = _get_scope_unity_list(session, scope_id=scope.id)
+    unity_list = _get_scope_unity_list(
+        session,
+        scope_id=scope.id,
+        q=q,
+        parent_unity_id=parent_unity_id,
+    )
     child_list_by_parent_id: defaultdict[int | None, list[Unity]] = defaultdict(list)
     for item in sorted(unity_list, key=hierarchy_sort_key):
         child_list_by_parent_id[item.parent_unity_id].append(item)
@@ -1638,10 +1736,19 @@ def get_current_tenant_detail(
 
 @router.get("/tenant/current/members", response_model=TenantMemberDirectoryResponse)
 def get_current_tenant_member_directory(
+    q: str | None = Query(default=None),
+    role: str | None = Query(default=None),
+    status_name: str | None = Query(default=None, alias="status"),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
-    return _build_tenant_member_directory(session, actor=member)
+    return _build_tenant_member_directory(
+        session,
+        actor=member,
+        q=q,
+        role=role,
+        status_name=status_name,
+    )
 
 
 @router.post("/tenant/current/members", response_model=TenantMemberDirectoryResponse)
@@ -1762,10 +1869,11 @@ def post_current_tenant_member_invite_email(
 
 @router.get("/tenant/current/scopes", response_model=TenantScopeDirectoryResponse)
 def get_current_tenant_scope_directory(
+    q: str | None = Query(default=None),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
-    return _build_tenant_scope_directory(session, actor=member)
+    return _build_tenant_scope_directory(session, actor=member, q=q)
 
 
 @router.get("/tenant/current/logs/{table_name}", response_model=TenantHistoryResponse)
@@ -2099,6 +2207,8 @@ def delete_current_tenant_scope(
 )
 def get_current_scope_location_directory(
     scope_id: int,
+    q: str | None = Query(default=None),
+    parent_location_id: int | None = Query(default=None),
     current_member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
@@ -2111,6 +2221,8 @@ def get_current_scope_location_directory(
         session,
         actor=current_member,
         scope=target_scope,
+        q=q,
+        parent_location_id=parent_location_id,
     )
 
 
@@ -2299,6 +2411,8 @@ def delete_current_scope_location(
 )
 def get_current_scope_unity_directory(
     scope_id: int,
+    q: str | None = Query(default=None),
+    parent_unity_id: int | None = Query(default=None),
     current_member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
@@ -2311,6 +2425,8 @@ def get_current_scope_unity_directory(
         session,
         actor=current_member,
         scope=target_scope,
+        q=q,
+        parent_unity_id=parent_unity_id,
     )
 
 

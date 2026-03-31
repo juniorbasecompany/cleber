@@ -13,6 +13,12 @@ import { ConfigurationInfoSection } from "@/component/configuration/configuratio
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel,
+  DirectoryFilterSelectField,
+  DirectoryFilterTextField
+} from "@/component/configuration/directory-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
@@ -38,6 +44,10 @@ export type MemberConfigurationCopy = {
   sectionIdleEmptyHint: string;
   historyTitle: string;
   historyDescription: string;
+  filterSearchLabel: string;
+  filterRoleLabel: string;
+  filterStatusLabel: string;
+  filterAll: string;
   displayNameLabel: string;
   displayNameHint: string;
   nameLabel: string;
@@ -261,6 +271,9 @@ export function MemberConfigurationClient({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [filterQuery, setFilterQuery] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const initialSearchMemberKeyRef = useRef<ConfigurationSelectionKey>(initialSearchMemberKey);
   const selectedMemberKeyRef = useRef<ConfigurationSelectionKey>(
@@ -269,6 +282,7 @@ export function MemberConfigurationClient({
       : initialSelection.selectedMemberId
   );
   const didResolveInitialUrlRef = useRef(false);
+  const didMountFilterRef = useRef(false);
 
   const selectedMemberKey: ConfigurationSelectionKey = isCreateMode
     ? "new"
@@ -384,6 +398,50 @@ export function MemberConfigurationClient({
     didResolveInitialUrlRef.current = true;
     syncFromDirectory(initialDirectory, preferredKey);
   }, [initialDirectory, syncFromDirectory]);
+
+  const loadMemberDirectory = useCallback(
+    async (preferredKey?: ConfigurationSelectionKey) => {
+      const query = new URLSearchParams();
+      const normalizedQuery = filterQuery.trim();
+      if (normalizedQuery) {
+        query.set("q", normalizedQuery);
+      }
+      if (filterRole) {
+        query.set("role", filterRole);
+      }
+      if (filterStatus) {
+        query.set("status", filterStatus);
+      }
+
+      try {
+        const response = await fetch(
+          `/api/auth/tenant/current/members?${query.toString()}`
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setRequestErrorMessage(
+            parseErrorDetail(data, copy.saveError) ?? copy.saveError
+          );
+          return;
+        }
+        syncFromDirectory(
+          data as TenantMemberDirectoryResponse,
+          preferredKey ?? selectedMemberKeyRef.current
+        );
+      } catch {
+        setRequestErrorMessage(copy.saveError);
+      }
+    },
+    [copy.saveError, filterQuery, filterRole, filterStatus, syncFromDirectory]
+  );
+
+  useEffect(() => {
+    if (!didMountFilterRef.current) {
+      didMountFilterRef.current = true;
+      return;
+    }
+    void loadMemberDirectory(selectedMemberKeyRef.current);
+  }, [loadMemberDirectory]);
 
   const isDirty = useMemo(() => {
     if (isCreateMode) {
@@ -710,6 +768,46 @@ export function MemberConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
+      topContent={
+        <DirectoryFilterPanel>
+          <DirectoryFilterCard>
+            <DirectoryFilterTextField
+              id="member-filter-search"
+              label={copy.filterSearchLabel}
+              value={filterQuery}
+              onChange={setFilterQuery}
+            />
+          </DirectoryFilterCard>
+          <DirectoryFilterCard>
+            <DirectoryFilterSelectField
+              id="member-filter-role"
+              label={copy.filterRoleLabel}
+              value={filterRole}
+              onChange={setFilterRole}
+              allAriaLabel={copy.filterAll}
+              optionList={[
+                { value: "master", label: copy.roleLabels.master },
+                { value: "admin", label: copy.roleLabels.admin },
+                { value: "member", label: copy.roleLabels.member }
+              ]}
+            />
+          </DirectoryFilterCard>
+          <DirectoryFilterCard>
+            <DirectoryFilterSelectField
+              id="member-filter-status"
+              label={copy.filterStatusLabel}
+              value={filterStatus}
+              onChange={setFilterStatus}
+              allAriaLabel={copy.filterAll}
+              optionList={[
+                { value: "active", label: copy.statusLabels.ACTIVE },
+                { value: "pending", label: copy.statusLabels.PENDING },
+                { value: "disabled", label: copy.statusLabels.DISABLED }
+              ]}
+            />
+          </DirectoryFilterCard>
+        </DirectoryFilterPanel>
+      }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       directoryAside={

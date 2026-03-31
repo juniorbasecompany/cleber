@@ -117,6 +117,13 @@
       "title": "Change history",
       "description": "Review recent changes to member records: who changed what, when, and a clear summary of each update."
     },
+    "filter": {
+      "searchLabel": "Name or email",
+      "searchPlaceholder": "Name or email",
+      "roleLabel": "Role",
+      "statusLabel": "Status",
+      "all": "All"
+    },
     "section": {
       "profile": {
         "displayNameLabel": "Display name",
@@ -203,6 +210,10 @@
       "title": "Change history",
       "description": "Review recent changes to scopes for this tenant: who made each change, when, and a summary of what changed."
     },
+    "filter": {
+      "searchLabel": "Name or description",
+      "searchPlaceholder": "Name or description"
+    },
     "section": {
       "identity": {
         "nameLabel": "Scope name",
@@ -253,6 +264,10 @@
     "history": {
       "title": "Change history",
       "description": "Review recent changes to field definitions for the active scope: who changed what, when, and a summary of each update."
+    },
+    "filter": {
+      "searchLabel": "Field name or type",
+      "searchPlaceholder": "Field name or type"
     },
     "section": {
       "fieldName": {
@@ -333,6 +348,10 @@
     "history": {
       "title": "Change history",
       "description": "Review recent changes to action definitions for the active scope: who changed what, when, and a summary of each update."
+    },
+    "filter": {
+      "searchLabel": "Action name",
+      "searchPlaceholder": "Action name"
     },
     "section": {
       "actionName": {
@@ -471,6 +490,12 @@
       "title": "Change history",
       "description": "Review recent changes to your location hierarchy: who changed what, when, and a summary of each update."
     },
+    "filter": {
+      "searchLabel": "Location name or description",
+      "searchPlaceholder": "Location name or description",
+      "parentLabel": "Parent location",
+      "all": "All"
+    },
     "section": {
       "identity": {
         "nameLabel": "Location name",
@@ -530,6 +555,12 @@
       "title": "Change history",
       "description": "Review recent changes to productive units: who changed what, when, and a summary of each update."
     },
+    "filter": {
+      "searchLabel": "Unit name or description",
+      "searchPlaceholder": "Unit name or description",
+      "parentLabel": "Parent unit",
+      "all": "All"
+    },
     "section": {
       "identity": {
         "nameLabel": "Short name",
@@ -586,6 +617,11 @@
     "history": {
       "title": "Change history",
       "description": "Review recent changes to the active tenant’s details: who changed what, when, and a summary of each update."
+    },
+    "filter": {
+      "searchLabel": "Name or identifier",
+      "searchPlaceholder": "Name or identifier",
+      "empty": "No tenant matches the current filter."
     },
     "section": {
       "display": {
