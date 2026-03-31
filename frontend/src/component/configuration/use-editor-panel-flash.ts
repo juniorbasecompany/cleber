@@ -101,6 +101,7 @@ export function useEditorPanelFlash(
 
         if (previousKeyRef.current === null) {
             previousKeyRef.current = flashKey;
+            triggerFlash();
             return;
         }
 

@@ -15,6 +15,7 @@ import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
+import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type { ConfigurationSelectionKey } from "@/lib/navigation/configuration-path";
 import type {
@@ -43,9 +44,9 @@ export type MemberConfigurationCopy = {
   nameHint: string;
   sectionAccessTitle: string;
   sectionAccessDescription: string;
-    emailLabel: string;
-    inviteEmailHint: string;
-    memberEmailHint: string;
+  emailLabel: string;
+  inviteEmailHint: string;
+  memberEmailHint: string;
   roleLabel: string;
   statusLabel: string;
   accountLinked: string;
@@ -140,12 +141,18 @@ function resolveSelectionFromPreferredKey(
     if (id != null) {
       return { isCreateMode: false, selectedMemberId: id };
     }
-    /* ID da URL inexistente ou removido: painel ocioso até nova escolha na lista. */
-    return { isCreateMode: false, selectedMemberId: null };
+    /* ID da URL inexistente/removido: volta para novo (quando permitido), sem seleção automática. */
+    return {
+      isCreateMode: Boolean(canCreate),
+      selectedMemberId: null
+    };
   }
 
-  /* Sem query explícita: painel de edição vazio (ocioso); convite só com ?member=new ou Novo. */
-  return { isCreateMode: false, selectedMemberId: null };
+  /* Sem query explícita: inicia pronto para novo registro, sem apontar item existente. */
+  return {
+    isCreateMode: Boolean(canCreate),
+    selectedMemberId: null
+  };
 }
 
 function resolveMemberInviteSendError(
@@ -309,6 +316,11 @@ export function MemberConfigurationClient({
   }, [isCreateMode, selectedMember]);
 
   const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
+  useFocusFirstEditorFieldAfterFlash(
+    editorPanelElementRef,
+    isEditorFlashActive,
+    isCreateMode || selectedMember != null
+  );
 
   const syncFromDirectory = useCallback(
     (
@@ -384,7 +396,7 @@ export function MemberConfigurationClient({
 
     return (
       memberEmail.trim().toLowerCase() !==
-        baseline.memberEmail.trim().toLowerCase() ||
+      baseline.memberEmail.trim().toLowerCase() ||
       displayName.trim() !== baseline.displayName.trim() ||
       name.trim() !== baseline.name.trim() ||
       isDeletePending
@@ -587,18 +599,18 @@ export function MemberConfigurationClient({
             method: "DELETE"
           }
           : {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: memberEmail.trim(),
-                display_name: displayName.trim(),
-                name: name.trim(),
-                role: selectedMember.role,
-                status: memberStatusValueByKey[
-                  normalizeStatusKey(selectedMember.status)
-                ]
-              })
-            }
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: memberEmail.trim(),
+              display_name: displayName.trim(),
+              name: name.trim(),
+              role: selectedMember.role,
+              status: memberStatusValueByKey[
+                normalizeStatusKey(selectedMember.status)
+              ]
+            })
+          }
       );
       const data: unknown = await response.json().catch(() => ({}));
 
