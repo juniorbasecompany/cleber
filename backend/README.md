@@ -73,6 +73,14 @@ Documentação interativa OpenAPI: ao subir o servidor, **`/docs`** (Swagger).
 
 Edição das regras por escopo exige papel **master** ou **admin** no `member`; leitura segue o acesso ao tenant.
 
+### Regra global para filtros textuais
+
+- Todo filtro textual de API deve comparar com normalização no banco, ignorando diferença de caixa e acentuação.
+- No PostgreSQL, usar padrão com normalização dos dois lados da comparação:
+  - `lower(unaccent(coluna)) = lower(unaccent(parametro))`
+  - `lower(unaccent(coluna)) LIKE '%' || lower(unaccent(parametro)) || '%'`
+- O mesmo comportamento deve ser mantido nos testes automatizados para evitar divergência entre ambiente de teste e produção.
+
 ---
 
 ## Objetivo desta pasta

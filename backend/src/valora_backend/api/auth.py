@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import json
-import unicodedata
 from collections.abc import Callable
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
@@ -9,7 +8,7 @@ from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field, field_validator
-from sqlalchemy import func, or_, select, text
+from sqlalchemy import func, literal, or_, select, text
 from sqlalchemy.orm import Session
 
 from valora_backend.auth.dependencies import (
@@ -77,47 +76,19 @@ HISTORY_TABLE_NAME_SET = {
 HISTORY_ACTION_TYPE_SET = {"I", "U", "D"}
 DEFAULT_HISTORY_PAGE_SIZE = 5
 MAX_HISTORY_PAGE_SIZE = 50
-SEARCH_TEXT_REPLACEMENT_LIST = (
-    ("á", "a"),
-    ("à", "a"),
-    ("â", "a"),
-    ("ã", "a"),
-    ("ä", "a"),
-    ("å", "a"),
-    ("é", "e"),
-    ("è", "e"),
-    ("ê", "e"),
-    ("ë", "e"),
-    ("í", "i"),
-    ("ì", "i"),
-    ("î", "i"),
-    ("ï", "i"),
-    ("ó", "o"),
-    ("ò", "o"),
-    ("ô", "o"),
-    ("õ", "o"),
-    ("ö", "o"),
-    ("ú", "u"),
-    ("ù", "u"),
-    ("û", "u"),
-    ("ü", "u"),
-    ("ç", "c"),
-    ("ñ", "n"),
-)
-
-
-def _normalize_text_for_search(value: str) -> str:
-    normalized = unicodedata.normalize("NFKD", value.strip().lower())
-    return "".join(
-        character for character in normalized if not unicodedata.combining(character)
-    )
 
 
 def _normalize_expression_for_search(value: Any):
-    normalized_expression = func.lower(value)
-    for source, target in SEARCH_TEXT_REPLACEMENT_LIST:
-        normalized_expression = func.replace(normalized_expression, source, target)
-    return normalized_expression
+    return func.lower(func.unaccent(value))
+
+
+def _query_term_expression_for_search(raw_value: str | None):
+    if raw_value is None:
+        return None
+    value = raw_value.strip()
+    if not value:
+        return None
+    return _normalize_expression_for_search(literal(value))
 
 
 class GoogleTokenRequest(BaseModel):
@@ -1137,14 +1108,15 @@ def _build_tenant_member_directory(
         if status_value is not None:
             query = query.where(Member.status == status_value)
 
-    if q:
-        normalized_q = q.strip().lower()
-        if normalized_q:
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None:
             query = query.where(
                 or_(
-                    func.lower(Member.name).contains(normalized_q),
-                    func.lower(Member.display_name).contains(normalized_q),
-                    func.lower(Member.email).contains(normalized_q),
+                    _normalize_expression_for_search(Member.name).contains(query_term_expression),
+                    _normalize_expression_for_search(Member.display_name).contains(
+                        query_term_expression
+                    ),
+                    _normalize_expression_for_search(Member.email).contains(query_term_expression),
                 )
             )
 
@@ -1170,13 +1142,14 @@ def _build_tenant_scope_directory(
     session: Session, *, actor: Member, q: str | None = None
 ) -> TenantScopeDirectoryResponse:
     query = select(Scope).where(Scope.tenant_id == actor.tenant_id)
-    if q:
-        normalized_q = q.strip().lower()
-        if normalized_q:
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None:
             query = query.where(
                 or_(
-                    func.lower(Scope.name).contains(normalized_q),
-                    func.lower(Scope.display_name).contains(normalized_q),
+                    _normalize_expression_for_search(Scope.name).contains(query_term_expression),
+                    _normalize_expression_for_search(Scope.display_name).contains(
+                        query_term_expression
+                    ),
                 )
             )
 
@@ -1216,14 +1189,13 @@ def _get_scope_location_list(
     if parent_location_id is not None:
         query = query.where(Location.parent_location_id == parent_location_id)
 
-    if q:
-        normalized_q = _normalize_text_for_search(q)
-        if normalized_q:
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None:
             query = query.where(
                 or_(
-                    _normalize_expression_for_search(Location.name).contains(normalized_q),
+                    _normalize_expression_for_search(Location.name).contains(query_term_expression),
                     _normalize_expression_for_search(Location.display_name).contains(
-                        normalized_q
+                        query_term_expression
                     ),
                 )
             )
@@ -1359,8 +1331,8 @@ def _build_tenant_location_directory(
         q=q,
         parent_location_id=parent_location_id,
     )
-    normalized_query = _normalize_text_for_search(q) if q else ""
-    if normalized_query and parent_location_id is None:
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None and parent_location_id is None:
         full_location_list = _get_scope_location_list(session, scope_id=scope.id)
         location_list = _include_hierarchy_ancestor_chain_for_filter(
             filtered_item_list=location_list,
@@ -1437,14 +1409,13 @@ def _get_scope_unity_list(
     if parent_unity_id is not None:
         query = query.where(Unity.parent_unity_id == parent_unity_id)
 
-    if q:
-        normalized_q = _normalize_text_for_search(q)
-        if normalized_q:
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None:
             query = query.where(
                 or_(
-                    _normalize_expression_for_search(Unity.name).contains(normalized_q),
+                    _normalize_expression_for_search(Unity.name).contains(query_term_expression),
                     _normalize_expression_for_search(Unity.display_name).contains(
-                        normalized_q
+                        query_term_expression
                     ),
                 )
             )
@@ -1510,8 +1481,8 @@ def _build_tenant_unity_directory(
         q=q,
         parent_unity_id=parent_unity_id,
     )
-    normalized_query = _normalize_text_for_search(q) if q else ""
-    if normalized_query and parent_unity_id is None:
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None and parent_unity_id is None:
         full_unity_list = _get_scope_unity_list(session, scope_id=scope.id)
         unity_list = _include_hierarchy_ancestor_chain_for_filter(
             filtered_item_list=unity_list,

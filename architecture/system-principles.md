@@ -26,6 +26,7 @@
 - País pode existir no escopo quando necessário, sem virar rigidez estrutural para todo fluxo.
 - Texto exibido ao usuário deve ser governado por metadado ou catálogo de mensagens com chave técnica estável e resolução contextual na exibição.
 - A resolução contextual de texto deve seguir a ordem oficial de fallback: país, local, usuário.
+- Todo filtro textual deve comparar valor digitado e valor persistido sem distinguir caixa e sem distinguir acentuação (ex.: `uniao`, `União` e `uNIAO` devem ser equivalentes para pesquisa), aplicando normalização nos dois lados da comparação no SQL (`lower(unaccent(coluna))` e `lower(unaccent(parametro))`).
 - Painel e visão por período devem nascer da base diária oficial, nunca de número paralelo sem proveniência.
 - Previsão base, realizado, previsão corrigida e simulação são camadas distintas do sistema.
 

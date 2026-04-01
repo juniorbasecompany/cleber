@@ -9,7 +9,7 @@ from typing import Literal
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field as PydanticField, model_validator
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -26,7 +26,11 @@ from valora_backend.model.rules import (
     Label,
     Result,
 )
-from valora_backend.api.auth import _apply_member_audit_context
+from valora_backend.api.auth import (
+    _apply_member_audit_context,
+    _normalize_expression_for_search,
+    _query_term_expression_for_search,
+)
 from valora_backend.config import Settings
 from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
 from valora_backend.rules.formula_statement_validate import (
@@ -430,9 +434,39 @@ def list_scope_fields(
     q: str | None = Query(default=None),
 ):
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
+    field_query = select(Field).where(Field.scope_id == scope_id)
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None:
+            if label_lang is None:
+                field_query = field_query.where(
+                    _normalize_expression_for_search(Field.type).contains(
+                        query_term_expression
+                    )
+                )
+            else:
+                label_match_exists = (
+                    select(Label.id)
+                    .where(
+                        Label.field_id == Field.id,
+                        Label.lang == label_lang,
+                        _normalize_expression_for_search(Label.name).contains(
+                            query_term_expression
+                        ),
+                    )
+                    .exists()
+                )
+                field_query = field_query.where(
+                    or_(
+                        _normalize_expression_for_search(Field.type).contains(
+                            query_term_expression
+                        ),
+                        label_match_exists,
+                    )
+                )
+
     rows = list(
         session.scalars(
-            select(Field).where(Field.scope_id == scope_id).order_by(Field.id)
+            field_query.order_by(Field.id)
         )
     )
     label_by_field_id: dict[int, Label] = {}
@@ -462,16 +496,6 @@ def list_scope_fields(
                 label_name=pair.name if pair is not None else None,
             )
         )
-
-    if q:
-        normalized_q = q.strip().lower()
-        if normalized_q:
-            item_list = [
-                item
-                for item in item_list
-                if normalized_q in item.sql_type.lower()
-                or (item.label_name is not None and normalized_q in item.label_name.lower())
-            ]
 
     return ScopeFieldListResponse(
         can_edit=_member_can_edit_scope_rules(member),
@@ -510,7 +534,7 @@ def create_scope_field(
         )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_fields(scope_id, body.label_lang, member, session)
+    return list_scope_fields(scope_id, body.label_lang, member, session, None)
 
 
 @router.get(
@@ -560,7 +584,7 @@ def patch_scope_field(
         )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_fields(scope_id, body.label_lang, member, session)
+    return list_scope_fields(scope_id, body.label_lang, member, session, None)
 
 
 @router.delete(
@@ -589,7 +613,7 @@ def delete_scope_field(
     session.delete(row)
     _apply_member_audit_context(session, member)
     session.commit()
-    return list_scope_fields(scope_id, None, member, session)
+    return list_scope_fields(scope_id, None, member, session, None)
 
 
 # --- action ---
@@ -641,9 +665,28 @@ def list_scope_actions(
     q: str | None = Query(default=None),
 ):
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
+    action_query = select(Action).where(Action.scope_id == scope_id)
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None:
+            if label_lang is None:
+                action_query = action_query.where(text("1=0"))
+            else:
+                label_match_exists = (
+                    select(Label.id)
+                    .where(
+                        Label.action_id == Action.id,
+                        Label.lang == label_lang,
+                        _normalize_expression_for_search(Label.name).contains(
+                            query_term_expression
+                        ),
+                    )
+                    .exists()
+                )
+                action_query = action_query.where(label_match_exists)
+
     rows = list(
         session.scalars(
-            select(Action).where(Action.scope_id == scope_id).order_by(Action.id)
+            action_query.order_by(Action.id)
         )
     )
     label_by_action_id: dict[int, Label] = {}
@@ -672,15 +715,6 @@ def list_scope_actions(
                 label_name=pair.name if pair is not None else None,
             )
         )
-
-    if q:
-        normalized_q = q.strip().lower()
-        if normalized_q:
-            item_list = [
-                item
-                for item in item_list
-                if item.label_name is not None and normalized_q in item.label_name.lower()
-            ]
 
     return ScopeActionListResponse(
         can_edit=_member_can_edit_scope_rules(member),
@@ -718,7 +752,7 @@ def create_scope_action(
         )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_actions(scope_id, body.label_lang, member, session)
+    return list_scope_actions(scope_id, body.label_lang, member, session, None)
 
 
 @router.get(
@@ -765,7 +799,7 @@ def patch_scope_action(
         )
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_actions(scope_id, body.label_lang, member, session)
+    return list_scope_actions(scope_id, body.label_lang, member, session, None)
 
 
 @router.delete(
@@ -789,7 +823,7 @@ def delete_scope_action(
     session.delete(row)
     _apply_member_audit_context(session, member)
     session.commit()
-    return list_scope_actions(scope_id, None, member, session)
+    return list_scope_actions(scope_id, None, member, session, None)
 
 
 # --- formula ---

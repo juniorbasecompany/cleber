@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import unicodedata
 from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
@@ -41,6 +42,17 @@ def build_test_client(
 
     @event.listens_for(engine, "connect")
     def _enable_sqlite_foreign_keys(dbapi_connection, _connection_record) -> None:
+        def _sqlite_unaccent(value: str | None) -> str:
+            if value is None:
+                return ""
+            normalized = unicodedata.normalize("NFKD", str(value))
+            return "".join(
+                character
+                for character in normalized
+                if not unicodedata.combining(character)
+            )
+
+        dbapi_connection.create_function("unaccent", 1, _sqlite_unaccent)
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
         cursor.close()
@@ -232,6 +244,39 @@ def test_get_current_tenant_member_directory_member_role_cannot_create() -> None
     payload = response.json()
     assert payload["can_edit"] is False
     assert payload["can_create"] is False
+
+
+def test_member_directory_q_filter_ignores_case_and_accent() -> None:
+    with build_test_client(current_member_key="master") as (client, session, _):
+        create_response = client.post(
+            "/auth/tenant/current/members",
+            json={
+                "email": "uniao.member@example.com",
+                "name": "União Cadastro",
+                "display_name": "União Cadastro",
+            },
+        )
+        assert create_response.status_code == 200
+        session.expire_all()
+        created = session.scalar(
+            select(Member).where(Member.email == "uniao.member@example.com")
+        )
+        assert created is not None
+
+        response_plain = client.get("/auth/tenant/current/members", params={"q": "uniao"})
+        response_accent = client.get("/auth/tenant/current/members", params={"q": "União"})
+        response_case = client.get("/auth/tenant/current/members", params={"q": "uNIAO"})
+
+    assert response_plain.status_code == 200
+    assert response_accent.status_code == 200
+    assert response_case.status_code == 200
+
+    id_set_plain = {item["id"] for item in response_plain.json()["item_list"]}
+    id_set_accent = {item["id"] for item in response_accent.json()["item_list"]}
+    id_set_case = {item["id"] for item in response_case.json()["item_list"]}
+
+    assert created.id in id_set_plain
+    assert id_set_plain == id_set_accent == id_set_case
 
 
 def test_master_can_invite_member_by_email() -> None:
@@ -642,6 +687,36 @@ def test_admin_can_list_create_update_and_delete_scope_directory() -> None:
     assert deleted_scope is None
 
 
+def test_scope_directory_q_filter_ignores_case_and_accent() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        create_response = client.post(
+            "/auth/tenant/current/scopes",
+            json={
+                "name": "União",
+                "display_name": "União Produtiva",
+            },
+        )
+        assert create_response.status_code == 200
+        session.expire_all()
+        created = session.scalar(select(Scope).where(Scope.name == "União"))
+        assert created is not None
+
+        response_plain = client.get("/auth/tenant/current/scopes", params={"q": "uniao"})
+        response_accent = client.get("/auth/tenant/current/scopes", params={"q": "União"})
+        response_case = client.get("/auth/tenant/current/scopes", params={"q": "uNIAO"})
+
+    assert response_plain.status_code == 200
+    assert response_accent.status_code == 200
+    assert response_case.status_code == 200
+
+    id_set_plain = {item["id"] for item in response_plain.json()["item_list"]}
+    id_set_accent = {item["id"] for item in response_accent.json()["item_list"]}
+    id_set_case = {item["id"] for item in response_case.json()["item_list"]}
+
+    assert created.id in id_set_plain
+    assert id_set_plain == id_set_accent == id_set_case
+
+
 def test_member_cannot_create_scope() -> None:
     with build_test_client(current_member_key="member") as (client, _, _):
         response = client.post(
@@ -772,20 +847,27 @@ def test_location_directory_q_filter_matches_accent_and_partial_text() -> None:
             f"/auth/tenant/current/scopes/{scope_id}/locations",
             params={"q": "nia"},
         )
+        response_case = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            params={"q": "uNIAO"},
+        )
 
     assert response_with_accent.status_code == 200
     assert response_without_accent.status_code == 200
     assert response_partial.status_code == 200
+    assert response_case.status_code == 200
 
     name_list_with_accent = [item["name"] for item in response_with_accent.json()["item_list"]]
     name_list_without_accent = [
         item["name"] for item in response_without_accent.json()["item_list"]
     ]
     name_list_partial = [item["name"] for item in response_partial.json()["item_list"]]
+    name_list_case = [item["name"] for item in response_case.json()["item_list"]]
 
     assert "União" in name_list_with_accent
     assert "União" in name_list_without_accent
     assert "União" in name_list_partial
+    assert "União" in name_list_case
 
 
 def test_location_directory_q_filter_keeps_ancestor_context_for_child_match() -> None:
@@ -1129,20 +1211,27 @@ def test_unity_directory_q_filter_matches_accent_and_partial_text() -> None:
             f"/auth/tenant/current/scopes/{scope_id}/unities",
             params={"q": "nia"},
         )
+        response_case = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            params={"q": "uNIAO"},
+        )
 
     assert response_with_accent.status_code == 200
     assert response_without_accent.status_code == 200
     assert response_partial.status_code == 200
+    assert response_case.status_code == 200
 
     name_list_with_accent = [item["name"] for item in response_with_accent.json()["item_list"]]
     name_list_without_accent = [
         item["name"] for item in response_without_accent.json()["item_list"]
     ]
     name_list_partial = [item["name"] for item in response_partial.json()["item_list"]]
+    name_list_case = [item["name"] for item in response_case.json()["item_list"]]
 
     assert "União" in name_list_with_accent
     assert "União" in name_list_without_accent
     assert "União" in name_list_partial
+    assert "União" in name_list_case
 
 
 def test_unity_directory_q_filter_keeps_ancestor_context_for_child_match() -> None:
@@ -1312,6 +1401,88 @@ def test_member_cannot_create_unity() -> None:
 
     assert response.status_code == 403
     assert response.json()["detail"] == "Insufficient permissions to create unity"
+
+
+def test_scope_field_and_action_q_filter_ignores_case_and_accent() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        field_create_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/fields",
+            json={
+                "sql_type": "VARCHAR",
+                "label_lang": "pt-BR",
+                "label_name": "Campo União",
+            },
+        )
+        assert field_create_response.status_code == 200
+
+        action_create_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/actions",
+            json={
+                "label_lang": "pt-BR",
+                "label_name": "Ação União",
+            },
+        )
+        assert action_create_response.status_code == 200
+
+        field_plain_response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/fields",
+            params={"label_lang": "pt-BR", "q": "uniao"},
+        )
+        field_accent_response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/fields",
+            params={"label_lang": "pt-BR", "q": "União"},
+        )
+        field_case_response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/fields",
+            params={"label_lang": "pt-BR", "q": "uNIAO"},
+        )
+
+        action_plain_response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/actions",
+            params={"label_lang": "pt-BR", "q": "uniao"},
+        )
+        action_accent_response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/actions",
+            params={"label_lang": "pt-BR", "q": "União"},
+        )
+        action_case_response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/actions",
+            params={"label_lang": "pt-BR", "q": "uNIAO"},
+        )
+
+    assert field_plain_response.status_code == 200
+    assert field_accent_response.status_code == 200
+    assert field_case_response.status_code == 200
+    assert action_plain_response.status_code == 200
+    assert action_accent_response.status_code == 200
+    assert action_case_response.status_code == 200
+
+    field_name_set_plain = {
+        item["label_name"] for item in field_plain_response.json()["item_list"] if item["label_name"]
+    }
+    field_name_set_accent = {
+        item["label_name"] for item in field_accent_response.json()["item_list"] if item["label_name"]
+    }
+    field_name_set_case = {
+        item["label_name"] for item in field_case_response.json()["item_list"] if item["label_name"]
+    }
+    assert "Campo União" in field_name_set_plain
+    assert field_name_set_plain == field_name_set_accent == field_name_set_case
+
+    action_name_set_plain = {
+        item["label_name"] for item in action_plain_response.json()["item_list"] if item["label_name"]
+    }
+    action_name_set_accent = {
+        item["label_name"] for item in action_accent_response.json()["item_list"] if item["label_name"]
+    }
+    action_name_set_case = {
+        item["label_name"] for item in action_case_response.json()["item_list"] if item["label_name"]
+    }
+    assert "Ação União" in action_name_set_plain
+    assert action_name_set_plain == action_name_set_accent == action_name_set_case
 
 
 def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
