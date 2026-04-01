@@ -205,7 +205,7 @@
   border: var(--border-width-default) solid var(--color-positive-border-soft);
   border-color: var(--color-positive-border-soft);
   background: var(--gradient-surface-card);
-  border-left: 4px solid var(--color-positive-border);
+  border-left: 4px solid var(--color-filter-vertical-border);
 }
 
 .ui-form-fields {
@@ -2035,6 +2035,72 @@
 .ui-input[aria-invalid="true"] {
   border-color: var(--color-danger-border-strong);
   box-shadow: var(--shadow-focus-ring-danger);
+}
+
+.ui-filter-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ui-filter-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  border: var(--border-width-default) solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  padding: 0.4rem 0.75rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 600;
+  transition:
+    border-color 0.16s ease,
+    background-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.ui-filter-chip:hover {
+  border-color: var(--color-border-strong);
+  background: var(--color-background-muted);
+  color: var(--color-text);
+}
+
+.ui-filter-chip:focus-visible {
+  outline: none;
+  border-color: var(--color-focus-ring);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.ui-filter-chip[data-selected="true"] {
+  border-color: var(--color-accent-border-emphasis);
+  background: var(--color-accent-surface-default);
+  color: var(--color-accent-text, var(--color-text));
+}
+
+.ui-filter-chip-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border: var(--border-width-default) solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-surface);
+  color: var(--color-primary-foreground);
+  font-size: 0.75rem;
+  line-height: 1;
+}
+
+.ui-filter-chip-check[data-selected="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+}
+
+.ui-filter-chip-label {
+  line-height: 1.1;
 }
 
 .ui-notice-attention {

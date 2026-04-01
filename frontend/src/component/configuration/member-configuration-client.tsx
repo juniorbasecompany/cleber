@@ -15,8 +15,8 @@ import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import {
   DirectoryFilterCard,
+  DirectoryFilterMultiSelectField,
   DirectoryFilterPanel,
-  DirectoryFilterSelectField,
   DirectoryFilterTextField
 } from "@/component/configuration/directory-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
@@ -99,6 +99,8 @@ const memberStatusValueByKey: Record<MemberStatusKey, number> = {
   PENDING: 2,
   DISABLED: 3
 };
+const memberRoleFilterValueList = ["master", "admin", "member"] as const;
+const memberStatusFilterValueList = ["active", "pending", "disabled"] as const;
 
 function resolveMemberLabel(member: TenantMemberRecord) {
   return member.display_name?.trim() || member.name?.trim() || member.email;
@@ -272,8 +274,12 @@ export function MemberConfigurationClient({
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [filterQuery, setFilterQuery] = useState("");
-  const [filterRole, setFilterRole] = useState("");
-  const [filterStatus, setFilterStatus] = useState("");
+  const [filterRoleValueList, setFilterRoleValueList] = useState<string[]>([
+    ...memberRoleFilterValueList
+  ]);
+  const [filterStatusValueList, setFilterStatusValueList] = useState<string[]>([
+    ...memberStatusFilterValueList
+  ]);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const initialSearchMemberKeyRef = useRef<ConfigurationSelectionKey>(initialSearchMemberKey);
   const selectedMemberKeyRef = useRef<ConfigurationSelectionKey>(
@@ -399,6 +405,38 @@ export function MemberConfigurationClient({
     syncFromDirectory(initialDirectory, preferredKey);
   }, [initialDirectory, syncFromDirectory]);
 
+  const handleToggleFilterRole = useCallback((value: string) => {
+    setFilterRoleValueList((previous) =>
+      previous.includes(value)
+        ? previous.filter((item) => item !== value)
+        : [...previous, value]
+    );
+  }, []);
+
+  const handleToggleAllFilterRole = useCallback(() => {
+    setFilterRoleValueList((previous) =>
+      previous.length === memberRoleFilterValueList.length
+        ? []
+        : [...memberRoleFilterValueList]
+    );
+  }, []);
+
+  const handleToggleFilterStatus = useCallback((value: string) => {
+    setFilterStatusValueList((previous) =>
+      previous.includes(value)
+        ? previous.filter((item) => item !== value)
+        : [...previous, value]
+    );
+  }, []);
+
+  const handleToggleAllFilterStatus = useCallback(() => {
+    setFilterStatusValueList((previous) =>
+      previous.length === memberStatusFilterValueList.length
+        ? []
+        : [...memberStatusFilterValueList]
+    );
+  }, []);
+
   const loadMemberDirectory = useCallback(
     async (preferredKey?: ConfigurationSelectionKey) => {
       const query = new URLSearchParams();
@@ -406,11 +444,19 @@ export function MemberConfigurationClient({
       if (normalizedQuery) {
         query.set("q", normalizedQuery);
       }
-      if (filterRole) {
-        query.set("role", filterRole);
+      if (filterRoleValueList.length !== memberRoleFilterValueList.length) {
+        query.set(
+          "role_list",
+          filterRoleValueList.length > 0 ? filterRoleValueList.join(",") : "__none__"
+        );
       }
-      if (filterStatus) {
-        query.set("status", filterStatus);
+      if (filterStatusValueList.length !== memberStatusFilterValueList.length) {
+        query.set(
+          "status_list",
+          filterStatusValueList.length > 0
+            ? filterStatusValueList.join(",")
+            : "__none__"
+        );
       }
 
       try {
@@ -432,7 +478,13 @@ export function MemberConfigurationClient({
         setRequestErrorMessage(copy.saveError);
       }
     },
-    [copy.saveError, filterQuery, filterRole, filterStatus, syncFromDirectory]
+    [
+      copy.saveError,
+      filterQuery,
+      filterRoleValueList,
+      filterStatusValueList,
+      syncFromDirectory
+    ]
   );
 
   useEffect(() => {
@@ -779,12 +831,13 @@ export function MemberConfigurationClient({
             />
           </DirectoryFilterCard>
           <DirectoryFilterCard>
-            <DirectoryFilterSelectField
+            <DirectoryFilterMultiSelectField
               id="member-filter-role"
               label={copy.filterRoleLabel}
-              value={filterRole}
-              onChange={setFilterRole}
-              allAriaLabel={copy.filterAll}
+              selectedValueList={filterRoleValueList}
+              onToggle={handleToggleFilterRole}
+              onToggleAll={handleToggleAllFilterRole}
+              allLabel={copy.filterAll}
               optionList={[
                 { value: "master", label: copy.roleLabels.master },
                 { value: "admin", label: copy.roleLabels.admin },
@@ -793,12 +846,13 @@ export function MemberConfigurationClient({
             />
           </DirectoryFilterCard>
           <DirectoryFilterCard>
-            <DirectoryFilterSelectField
+            <DirectoryFilterMultiSelectField
               id="member-filter-status"
               label={copy.filterStatusLabel}
-              value={filterStatus}
-              onChange={setFilterStatus}
-              allAriaLabel={copy.filterAll}
+              selectedValueList={filterStatusValueList}
+              onToggle={handleToggleFilterStatus}
+              onToggleAll={handleToggleAllFilterStatus}
+              allLabel={copy.filterAll}
               optionList={[
                 { value: "active", label: copy.statusLabels.ACTIVE },
                 { value: "pending", label: copy.statusLabels.PENDING },

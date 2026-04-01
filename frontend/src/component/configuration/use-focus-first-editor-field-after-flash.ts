@@ -7,11 +7,9 @@ function isTextLikeInput(element: HTMLInputElement) {
   const textLikeTypeList = new Set([
     "text",
     "search",
-    "email",
     "url",
     "tel",
-    "password",
-    "number"
+    "password"
   ]);
   return textLikeTypeList.has(element.type);
 }
@@ -56,7 +54,11 @@ export function useFocusFirstEditorFieldAfterFlash(
 
       if (firstField instanceof HTMLInputElement && isTextLikeInput(firstField)) {
         const caretPosition = firstField.value.length;
-        firstField.setSelectionRange(caretPosition, caretPosition);
+        try {
+          firstField.setSelectionRange(caretPosition, caretPosition);
+        } catch {
+          // Alguns tipos de input podem não suportar seleção programática.
+        }
       }
 
       if (firstField instanceof HTMLTextAreaElement) {

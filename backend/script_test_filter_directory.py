@@ -127,6 +127,28 @@ def _assert_member_filters(ctx: TestContext) -> None:
     else:
         _print_skip("member role sem role_name")
 
+    role_name_list = sorted(
+        {str(row.get("role_name") or "").lower() for row in item_list if row.get("role_name")}
+    )
+    if role_name_list:
+        selected_role_list = role_name_list[:2]
+        filtered = _get_item_list(
+            _request_json(ctx, path, {"role_list": ",".join(selected_role_list)}), path
+        )
+        for row in filtered:
+            if str(row.get("role_name") or "").lower() not in selected_role_list:
+                raise AssertionError("member role_list retornou item fora do papel")
+        _print_ok("member role_list")
+
+        filtered_empty = _get_item_list(
+            _request_json(ctx, path, {"role_list": "__none__"}), path
+        )
+        if filtered_empty:
+            raise AssertionError("member role_list vazio deveria retornar zero itens")
+        _print_ok("member role_list vazio")
+    else:
+        _print_skip("member role_list sem role_name")
+
     if status_name:
         filtered = _get_item_list(_request_json(ctx, path, {"status": status_name}), path)
         for row in filtered:
@@ -135,6 +157,28 @@ def _assert_member_filters(ctx: TestContext) -> None:
         _print_ok("member status")
     else:
         _print_skip("member status sem status")
+
+    status_name_list = sorted(
+        {str(row.get("status") or "").lower() for row in item_list if row.get("status")}
+    )
+    if status_name_list:
+        selected_status_list = status_name_list[:2]
+        filtered = _get_item_list(
+            _request_json(ctx, path, {"status_list": ",".join(selected_status_list)}), path
+        )
+        for row in filtered:
+            if str(row.get("status") or "").lower() not in selected_status_list:
+                raise AssertionError("member status_list retornou item fora da situação")
+        _print_ok("member status_list")
+
+        filtered_empty = _get_item_list(
+            _request_json(ctx, path, {"status_list": "__none__"}), path
+        )
+        if filtered_empty:
+            raise AssertionError("member status_list vazio deveria retornar zero itens")
+        _print_ok("member status_list vazio")
+    else:
+        _print_skip("member status_list sem status")
 
 
 def _assert_scope_filters(ctx: TestContext) -> dict[str, Any] | None:

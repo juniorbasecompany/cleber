@@ -1039,6 +1039,12 @@ def _resolve_member_current_scope_id(
     return selected_scope.id
 
 
+def _parse_query_name_list(raw_value: str | None) -> list[str] | None:
+    if raw_value is None:
+        return None
+    return [item.strip().lower() for item in raw_value.split(",") if item.strip()]
+
+
 def _build_tenant_member_directory(
     session: Session,
     *,
@@ -1046,6 +1052,8 @@ def _build_tenant_member_directory(
     q: str | None = None,
     role: str | None = None,
     status_name: str | None = None,
+    role_name_list: list[str] | None = None,
+    status_name_list: list[str] | None = None,
 ) -> TenantMemberDirectoryResponse:
     query = select(Member).where(Member.tenant_id == actor.tenant_id)
     role_map = {
@@ -1053,7 +1061,15 @@ def _build_tenant_member_directory(
         "admin": ADMIN_ROLE,
         "member": MEMBER_ROLE,
     }
-    if role:
+    if role_name_list is not None:
+        role_value_list = sorted(
+            {role_map[item] for item in role_name_list if item in role_map}
+        )
+        if not role_value_list:
+            query = query.where(text("1=0"))
+        else:
+            query = query.where(Member.role.in_(role_value_list))
+    elif role:
         normalized_role = role.strip().lower()
         role_value = role_map.get(normalized_role)
         if role_value is not None:
@@ -1064,7 +1080,15 @@ def _build_tenant_member_directory(
         "pending": PENDING_STATUS,
         "disabled": DISABLED_STATUS,
     }
-    if status_name:
+    if status_name_list is not None:
+        status_value_list = sorted(
+            {status_map[item] for item in status_name_list if item in status_map}
+        )
+        if not status_value_list:
+            query = query.where(text("1=0"))
+        else:
+            query = query.where(Member.status.in_(status_value_list))
+    elif status_name:
         normalized_status = status_name.strip().lower()
         status_value = status_map.get(normalized_status)
         if status_value is not None:
@@ -1739,15 +1763,21 @@ def get_current_tenant_member_directory(
     q: str | None = Query(default=None),
     role: str | None = Query(default=None),
     status_name: str | None = Query(default=None, alias="status"),
+    role_name_list_raw: str | None = Query(default=None, alias="role_list"),
+    status_name_list_raw: str | None = Query(default=None, alias="status_list"),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
+    role_name_list = _parse_query_name_list(role_name_list_raw)
+    status_name_list = _parse_query_name_list(status_name_list_raw)
     return _build_tenant_member_directory(
         session,
         actor=member,
         q=q,
         role=role,
         status_name=status_name,
+        role_name_list=role_name_list,
+        status_name_list=status_name_list,
     )
 
 

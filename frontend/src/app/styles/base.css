@@ -31,7 +31,8 @@
   --color-accent-strong: #0f549f;
   --color-accent-soft: #e8f1ff;
   --color-accent-vertical-border: hsla(240, 50%, 50%, 50%);
-  --color-editor-vertical-border: hsla(32, 100%, 50%, 75%);
+  --color-filter-vertical-border: hsla(32, 100%, 50%, 75%);
+  --color-editor-vertical-border: hsla(141, 39%, 48%, 0.75);
   --color-location-nest-start: lch(94.55% 8.75 290.86);
   --color-location-nest-end: #bbbbff;
   --color-location-nest-border-start: rgba(92, 142, 216, 0.18);
@@ -43,7 +44,7 @@
   --color-attention-border: #efc572;
   --color-attention-text: #8b5a09;
   --color-positive-surface: #afe6c5;
-  --color-positive-border: #8ad0a2;
+  --color-positive-border: hsl(141, 43%, 68%);
   --color-positive-text: #1b6a42;
   --color-danger-action: #cf5b54;
   --color-danger-action-hover: #bb4a43;
