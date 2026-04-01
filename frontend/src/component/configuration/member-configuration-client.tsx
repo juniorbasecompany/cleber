@@ -99,8 +99,6 @@ const memberStatusValueByKey: Record<MemberStatusKey, number> = {
   PENDING: 2,
   DISABLED: 3
 };
-const memberRoleFilterValueList = ["master", "admin", "member"] as const;
-const memberStatusFilterValueList = ["active", "pending", "disabled"] as const;
 
 function resolveMemberLabel(member: TenantMemberRecord) {
   return member.display_name?.trim() || member.name?.trim() || member.email;
@@ -274,12 +272,10 @@ export function MemberConfigurationClient({
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [filterQuery, setFilterQuery] = useState("");
-  const [filterRoleValueList, setFilterRoleValueList] = useState<string[]>([
-    ...memberRoleFilterValueList
-  ]);
-  const [filterStatusValueList, setFilterStatusValueList] = useState<string[]>([
-    ...memberStatusFilterValueList
-  ]);
+  const [filterRoleAllIsSelected, setFilterRoleAllIsSelected] = useState(true);
+  const [filterRoleValueList, setFilterRoleValueList] = useState<string[]>([]);
+  const [filterStatusAllIsSelected, setFilterStatusAllIsSelected] = useState(true);
+  const [filterStatusValueList, setFilterStatusValueList] = useState<string[]>([]);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const initialSearchMemberKeyRef = useRef<ConfigurationSelectionKey>(initialSearchMemberKey);
   const selectedMemberKeyRef = useRef<ConfigurationSelectionKey>(
@@ -405,36 +401,20 @@ export function MemberConfigurationClient({
     syncFromDirectory(initialDirectory, preferredKey);
   }, [initialDirectory, syncFromDirectory]);
 
-  const handleToggleFilterRole = useCallback((value: string) => {
-    setFilterRoleValueList((previous) =>
-      previous.includes(value)
-        ? previous.filter((item) => item !== value)
-        : [...previous, value]
-    );
+  const handleChangeFilterRole = useCallback((next: {
+    allIsSelected: boolean;
+    selectedValueList: string[];
+  }) => {
+    setFilterRoleAllIsSelected(next.allIsSelected);
+    setFilterRoleValueList(next.selectedValueList);
   }, []);
 
-  const handleToggleAllFilterRole = useCallback(() => {
-    setFilterRoleValueList((previous) =>
-      previous.length === memberRoleFilterValueList.length
-        ? []
-        : [...memberRoleFilterValueList]
-    );
-  }, []);
-
-  const handleToggleFilterStatus = useCallback((value: string) => {
-    setFilterStatusValueList((previous) =>
-      previous.includes(value)
-        ? previous.filter((item) => item !== value)
-        : [...previous, value]
-    );
-  }, []);
-
-  const handleToggleAllFilterStatus = useCallback(() => {
-    setFilterStatusValueList((previous) =>
-      previous.length === memberStatusFilterValueList.length
-        ? []
-        : [...memberStatusFilterValueList]
-    );
+  const handleChangeFilterStatus = useCallback((next: {
+    allIsSelected: boolean;
+    selectedValueList: string[];
+  }) => {
+    setFilterStatusAllIsSelected(next.allIsSelected);
+    setFilterStatusValueList(next.selectedValueList);
   }, []);
 
   const loadMemberDirectory = useCallback(
@@ -444,13 +424,13 @@ export function MemberConfigurationClient({
       if (normalizedQuery) {
         query.set("q", normalizedQuery);
       }
-      if (filterRoleValueList.length !== memberRoleFilterValueList.length) {
+      if (!filterRoleAllIsSelected) {
         query.set(
           "role_list",
           filterRoleValueList.length > 0 ? filterRoleValueList.join(",") : "__none__"
         );
       }
-      if (filterStatusValueList.length !== memberStatusFilterValueList.length) {
+      if (!filterStatusAllIsSelected) {
         query.set(
           "status_list",
           filterStatusValueList.length > 0
@@ -481,7 +461,9 @@ export function MemberConfigurationClient({
     [
       copy.saveError,
       filterQuery,
+      filterRoleAllIsSelected,
       filterRoleValueList,
+      filterStatusAllIsSelected,
       filterStatusValueList,
       syncFromDirectory
     ]
@@ -834,9 +816,9 @@ export function MemberConfigurationClient({
             <DirectoryFilterMultiSelectField
               id="member-filter-role"
               label={copy.filterRoleLabel}
+              allIsSelected={filterRoleAllIsSelected}
               selectedValueList={filterRoleValueList}
-              onToggle={handleToggleFilterRole}
-              onToggleAll={handleToggleAllFilterRole}
+              onChange={handleChangeFilterRole}
               allLabel={copy.filterAll}
               optionList={[
                 { value: "master", label: copy.roleLabels.master },
@@ -849,9 +831,9 @@ export function MemberConfigurationClient({
             <DirectoryFilterMultiSelectField
               id="member-filter-status"
               label={copy.filterStatusLabel}
+              allIsSelected={filterStatusAllIsSelected}
               selectedValueList={filterStatusValueList}
-              onToggle={handleToggleFilterStatus}
-              onToggleAll={handleToggleAllFilterStatus}
+              onChange={handleChangeFilterStatus}
               allLabel={copy.filterAll}
               optionList={[
                 { value: "active", label: copy.statusLabels.ACTIVE },

@@ -35,9 +35,12 @@ type DirectoryFilterMultiSelectFieldProps = {
   id: string;
   label: string;
   optionList: DirectoryFilterOption[];
+  allIsSelected: boolean;
   selectedValueList: string[];
-  onToggle: (value: string) => void;
-  onToggleAll: () => void;
+  onChange: (next: {
+    allIsSelected: boolean;
+    selectedValueList: string[];
+  }) => void;
   allLabel?: string;
 };
 
@@ -110,17 +113,40 @@ export function DirectoryFilterMultiSelectField({
   id,
   label,
   optionList,
+  allIsSelected,
   selectedValueList,
-  onToggle,
-  onToggleAll,
+  onChange,
   allLabel,
 }: DirectoryFilterMultiSelectFieldProps) {
   const sortedOptionList = [...optionList].sort((left, right) =>
     left.label.localeCompare(right.label, "pt-BR")
   );
-  const allIsSelected =
-    sortedOptionList.length > 0 &&
-    sortedOptionList.every((item) => selectedValueList.includes(item.value));
+
+  function handleToggleAll() {
+    onChange({
+      allIsSelected: !allIsSelected,
+      selectedValueList: []
+    });
+  }
+
+  function handleToggleValue(value: string) {
+    if (allIsSelected) {
+      onChange({
+        allIsSelected: false,
+        selectedValueList: [value]
+      });
+      return;
+    }
+
+    const nextSelectedValueList = selectedValueList.includes(value)
+      ? selectedValueList.filter((item) => item !== value)
+      : [...selectedValueList, value];
+
+    onChange({
+      allIsSelected: false,
+      selectedValueList: nextSelectedValueList
+    });
+  }
 
   return (
     <div className="ui-field">
@@ -132,7 +158,7 @@ export function DirectoryFilterMultiSelectField({
           type="button"
           className="ui-filter-chip"
           data-selected={allIsSelected ? "true" : undefined}
-          onClick={onToggleAll}
+          onClick={handleToggleAll}
         >
           <span className="ui-filter-chip-check" aria-hidden data-selected={allIsSelected ? "true" : undefined}>
             {allIsSelected ? "✓" : ""}
@@ -147,7 +173,7 @@ export function DirectoryFilterMultiSelectField({
               type="button"
               className="ui-filter-chip"
               data-selected={isSelected ? "true" : undefined}
-              onClick={() => onToggle(item.value)}
+              onClick={() => handleToggleValue(item.value)}
             >
               <span className="ui-filter-chip-check" aria-hidden data-selected={isSelected ? "true" : undefined}>
                 {isSelected ? "✓" : ""}

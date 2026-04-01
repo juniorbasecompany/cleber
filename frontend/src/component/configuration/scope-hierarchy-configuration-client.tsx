@@ -19,7 +19,6 @@ import { ConfigurationDirectoryCreateButton } from "@/component/configuration/co
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel,
-  DirectoryFilterSelectField,
   DirectoryFilterTextField
 } from "@/component/configuration/directory-filter-panel";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
@@ -92,15 +91,6 @@ function parseHierarchySelectionKey(raw: string | null): SelectedHierarchyKey {
   }
 
   const parsed = Number(raw);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
-}
-
-function parseNumericFilter(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (!trimmed) {
-    return null;
-  }
-  const parsed = Number(trimmed);
   return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
 }
 
@@ -299,7 +289,6 @@ export function ScopeHierarchyConfigurationClient<
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [filterQuery, setFilterQuery] = useState("");
-  const [filterParentId, setFilterParentId] = useState<number | null>(null);
   const didMountFilterRef = useRef(false);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const itemList = useMemo(() => directory?.item_list ?? [], [directory]);
@@ -350,9 +339,6 @@ export function ScopeHierarchyConfigurationClient<
   const selectedKey: SelectedHierarchyKey = isCreateMode ? "new" : (selectedItem?.id ?? null);
 
   useReplaceConfigurationPath(basePath, searchParams, replacePath, queryParamKey, selectedKey);
-
-  const parentFilterQueryParam =
-    apiSegment === "locations" ? "parent_location_id" : "parent_unity_id";
 
   const editorFlashKey = useMemo(() => {
     if (!directory) {
@@ -405,9 +391,6 @@ export function ScopeHierarchyConfigurationClient<
     if (normalizedQuery) {
       query.set("q", normalizedQuery);
     }
-    if (filterParentId != null) {
-      query.set(parentFilterQueryParam, String(filterParentId));
-    }
 
     try {
       const response = await fetch(
@@ -441,10 +424,8 @@ export function ScopeHierarchyConfigurationClient<
   }, [
     apiSegment,
     copy.loadError,
-    filterParentId,
     filterQuery,
     isCreateMode,
-    parentFilterQueryParam,
     scopeId,
     selectedItem,
     syncEditor
@@ -577,20 +558,6 @@ export function ScopeHierarchyConfigurationClient<
   ]);
 
   const resolveLabel = useCallback((item: TItem) => resolveHierarchyLabel(item), []);
-  const parentFilterOptionList = useMemo(() => {
-    const optionMap = new Map<string, { value: string; label: string }>();
-    for (const item of itemList) {
-      const value = String(item.id);
-      if (!optionMap.has(value)) {
-        optionMap.set(value, {
-          value,
-          label: resolveHierarchyLabel(item),
-        });
-      }
-    }
-    return [...optionMap.values()];
-  }, [itemList]);
-
   return (
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
@@ -604,16 +571,6 @@ export function ScopeHierarchyConfigurationClient<
                 label={copy.filterSearchLabel}
                 value={filterQuery}
                 onChange={setFilterQuery}
-              />
-            </DirectoryFilterCard>
-            <DirectoryFilterCard>
-              <DirectoryFilterSelectField
-                id={`${apiSegment}-filter-parent`}
-                label={copy.filterParentLabel}
-                value={filterParentId == null ? "" : String(filterParentId)}
-                onChange={(value) => setFilterParentId(parseNumericFilter(value))}
-                allAriaLabel={copy.filterAll}
-                optionList={parentFilterOptionList}
               />
             </DirectoryFilterCard>
           </DirectoryFilterPanel>
