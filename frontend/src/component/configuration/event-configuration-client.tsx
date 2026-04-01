@@ -790,11 +790,41 @@ export function EventConfigurationClient({
     [actionMap, copy.fallbackAction]
   );
 
-  const buildEventSummary = useCallback(
-    (item: TenantScopeEventRecord) =>
-      `${resolveActionLabel(item.action_id)} | ${resolveLocationLabel(item.location_id)} | ${resolveUnityLabel(item.unity_id)}`,
+  const buildEventSummaryLineList = useCallback(
+    (item: TenantScopeEventRecord, inputSummary?: string | null) => [
+      resolveActionLabel(item.action_id),
+      inputSummary ?? "-",
+      resolveLocationLabel(item.location_id),
+      resolveUnityLabel(item.unity_id)
+    ],
     [resolveActionLabel, resolveLocationLabel, resolveUnityLabel]
   );
+
+  const renderEventSummaryLineBlock = useCallback(
+    (item: TenantScopeEventRecord, inputSummary?: string | null) =>
+      buildEventSummaryLineList(item, inputSummary).map((line, index, lineList) => (
+        <span key={`${item.id}-summary-${index}`}>
+          {line}
+          {index < lineList.length - 1 ? <br /> : null}
+        </span>
+      )),
+    [buildEventSummaryLineList]
+  );
+
+  const selectedEventInputSummary = useMemo(() => {
+    const valueSummaryList = eventActionInputDraftList
+      .map((item) => ({
+        label: item.label.trim(),
+        value: item.value.trim()
+      }))
+      .filter((item) => item.value.length > 0)
+      .map((item) => `${item.label || "-"}: ${item.value}`);
+
+    if (valueSummaryList.length === 0) {
+      return null;
+    }
+    return valueSummaryList.join(" | ");
+  }, [eventActionInputDraftList]);
 
   const eventActionInputDirty = useMemo(
     () =>
@@ -1219,7 +1249,12 @@ export function EventConfigurationClient({
                 }
               >
                 <p className="ui-directory-title">{formatMomentCompact(item.moment_utc)}</p>
-                <p className="ui-directory-caption-wrap">{buildEventSummary(item)}</p>
+                <p className="ui-directory-caption-wrap">
+                  {renderEventSummaryLineBlock(
+                    item,
+                    item.id === selectedEvent?.id ? selectedEventInputSummary : null
+                  )}
+                </p>
               </button>
             ))}
 
@@ -1358,7 +1393,7 @@ export function EventConfigurationClient({
                       <span className="ui-info-topic-label">{copy.infoSummaryLabel}</span>
                       {": "}
                       <span className="ui-info-topic-value">
-                        {buildEventSummary(selectedEvent)}
+                        {renderEventSummaryLineBlock(selectedEvent, selectedEventInputSummary)}
                       </span>
                     </p>
                   </li>

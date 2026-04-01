@@ -103,7 +103,6 @@ export function EventActionField({
         <section className="ui-card ui-form-section ui-border-accent">
           <div className="ui-field">
             <p className="ui-field-label">{copy.inputSectionTitle}</p>
-            <p className="ui-field-hint">{copy.inputSectionHint}</p>
           </div>
 
           {inputLoading ? (
@@ -130,6 +129,8 @@ export function EventActionField({
               </div>
             ))
           )}
+
+          <p className="ui-field-hint">{copy.inputSectionHint}</p>
         </section>
       ) : null}
     </>

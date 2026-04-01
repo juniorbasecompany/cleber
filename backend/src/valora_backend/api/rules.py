@@ -1369,7 +1369,16 @@ def create_scope_event(
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_events(scope_id=scope_id, member=member, session=session)
+    return list_scope_events(
+        scope_id=scope_id,
+        moment_from_utc=None,
+        moment_to_utc=None,
+        location_id=None,
+        unity_id=None,
+        action_id=None,
+        member=member,
+        session=session,
+    )
 
 
 @router.patch(
@@ -1405,7 +1414,16 @@ def patch_scope_event(
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_events(scope_id=scope_id, member=member, session=session)
+    return list_scope_events(
+        scope_id=scope_id,
+        moment_from_utc=None,
+        moment_to_utc=None,
+        location_id=None,
+        unity_id=None,
+        action_id=None,
+        member=member,
+        session=session,
+    )
 
 
 @router.delete(
@@ -1429,7 +1447,16 @@ def delete_scope_event(
     session.delete(row)
     _apply_member_audit_context(session, member)
     session.commit()
-    return list_scope_events(scope_id=scope_id, member=member, session=session)
+    return list_scope_events(
+        scope_id=scope_id,
+        moment_from_utc=None,
+        moment_to_utc=None,
+        location_id=None,
+        unity_id=None,
+        action_id=None,
+        member=member,
+        session=session,
+    )
 
 
 # --- input ---
