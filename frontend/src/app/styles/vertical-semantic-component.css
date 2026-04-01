@@ -565,7 +565,7 @@
 }
 
 /* Espaço entre caixas irmãs e entre cabeçalho do pai e primeira caixa: um único mecanismo (`margin-top`). */
-.ui-location-nest-children > .ui-location-nest-box {
+.ui-location-nest-children>.ui-location-nest-box {
   margin-top: var(--ui-location-nest-box-stack-gap);
 }
 
@@ -619,7 +619,7 @@
   padding-left: var(--ui-hierarchy-dropdown-nest-child-offset);
 }
 
-.ui-hierarchy-dropdown-nest-children > .ui-hierarchy-dropdown-nest-box {
+.ui-hierarchy-dropdown-nest-children>.ui-hierarchy-dropdown-nest-box {
   margin-top: var(--ui-hierarchy-dropdown-nest-box-stack-gap);
 }
 
@@ -747,13 +747,13 @@
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 0.4rem;
-  max-height: min(52vh, 22rem);
+  max-height: min(50vh, 40rem);
   border: var(--border-width-default) solid var(--color-border);
   border-radius: var(--radius-panel);
   background: var(--gradient-surface-menu-panel);
   box-shadow: var(--shadow-menu-panel);
   backdrop-filter: blur(var(--blur-overlay-medium));
-  padding: 0.5625rem;
+  padding: 0.9375rem;
   overflow: hidden;
 }
 
@@ -794,7 +794,6 @@
   flex: 0 0 auto;
   justify-content: flex-end;
   padding-top: 0.3rem;
-  border-top: var(--border-width-default) solid var(--color-border);
 }
 
 .ui-location-nest-create {
@@ -2275,6 +2274,16 @@
 .ui-input[aria-invalid="true"] {
   border-color: var(--color-danger-border-strong);
   box-shadow: var(--shadow-focus-ring-danger);
+}
+
+/*
+ * Controles de uma linha: altura canônica em --density-control-min-height (base.css).
+ * Não usar padding ou altura ad-hoc (ex.: utilitários Tailwind) no input; usar .ui-input
+ * para alinhar com botões e triggers (.ui-hierarchy-dropdown-trigger, etc.).
+ */
+.ui-input.ui-input-datetime {
+  padding-right: 5rem;
+  cursor: pointer;
 }
 
 /* Ícones à direita de inputs (data/hora, hierárquico, etc.): mesma cor base que o rótulo `.ui-field-label`. */

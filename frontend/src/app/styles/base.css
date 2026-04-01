@@ -89,6 +89,7 @@
   --space-control-x: 1rem;
   --space-control-y: 0.82rem;
   --space-directory-indent-step: 1.1rem;
+  /* Altura mínima compartilhada por .ui-input, botões e triggers de uma linha; ver skill interface-product-direction. */
   --density-control-min-height: 2.75rem;
 
   --measure-copy: 40rem;

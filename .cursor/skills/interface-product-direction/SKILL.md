@@ -137,6 +137,7 @@ Usar esta ordem mental ao priorizar informação:
 - Usar validação inline e resumo de erro quando necessário.
 - Evitar wizard, exceto em onboarding/configuração complexa ou processos multi-etapa.
 - Ações destrutivas ou de grande impacto devem ter preview ou confirmação contextual.
+- **Altura dos campos de uma linha:** o token `--density-control-min-height` em `frontend/src/app/styles/base.css` define a altura mínima canônica dos controles densos (inputs, botões, triggers). Campos de formulário que ocupam uma única linha devem usar a classe `ui-input` em `vertical-semantic-component.css` (e modificadores como `ui-input-datetime` ou `ui-hierarchy-dropdown-trigger` quando aplicável), em vez de padding ou borda próprios via utilitários isolados, para manter a mesma altura visual entre `input`, select, data/hora e dropdowns customizados.
 
 ### Importação
 
