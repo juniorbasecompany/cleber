@@ -492,9 +492,7 @@
     },
     "filter": {
       "searchLabel": "Nombre o descripción de la ubicación",
-      "searchPlaceholder": "Nombre o descripción de la ubicación",
-      "parentLabel": "Ubicación padre",
-      "all": "Todos"
+      "searchPlaceholder": "Nombre o descripción de la ubicación"
     },
     "section": {
       "identity": {
@@ -557,9 +555,7 @@
     },
     "filter": {
       "searchLabel": "Nombre o descripción de la unidad",
-      "searchPlaceholder": "Nombre o descripción de la unidad",
-      "parentLabel": "Unidad padre",
-      "all": "Todos"
+      "searchPlaceholder": "Nombre o descripción de la unidad"
     },
     "section": {
       "identity": {

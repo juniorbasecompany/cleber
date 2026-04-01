@@ -59,8 +59,6 @@ export default async function LocationConfigurationPage({
           historyTitle: t("history.title"),
           historyDescription: t("history.description"),
           filterSearchLabel: t("filter.searchLabel"),
-          filterParentLabel: t("filter.parentLabel"),
-          filterAll: t("filter.all"),
           sectionStructureTitle: t("section.structure.title"),
           sectionStructureDescription: t("section.structure.description"),
           sectionStructureLevelLabel: t("section.structure.levelLabel"),

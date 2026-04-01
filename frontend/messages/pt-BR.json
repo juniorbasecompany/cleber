@@ -492,9 +492,7 @@
     },
     "filter": {
       "searchLabel": "Nome ou descrição do local",
-      "searchPlaceholder": "Nome ou descrição do local",
-      "parentLabel": "Local pai",
-      "all": "Todos"
+      "searchPlaceholder": "Nome ou descrição do local"
     },
     "section": {
       "identity": {
@@ -557,9 +555,7 @@
     },
     "filter": {
       "searchLabel": "Nome ou descrição da unidade",
-      "searchPlaceholder": "Nome ou descrição da unidade",
-      "parentLabel": "Unidade pai",
-      "all": "Todos"
+      "searchPlaceholder": "Nome ou descrição da unidade"
     },
     "section": {
       "identity": {
