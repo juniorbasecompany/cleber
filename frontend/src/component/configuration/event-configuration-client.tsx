@@ -893,50 +893,6 @@ export function EventConfigurationClient({
             </section>
 
             <section className="ui-card ui-form-section ui-border-accent">
-              <HierarchySingleSelectField
-                id="event-location"
-                label={copy.locationLabel}
-                itemList={initialLocationDirectory?.item_list ?? []}
-                value={locationId}
-                onChange={(nextValue) => {
-                  setLocationId(nextValue);
-                  setFieldError((previous) => ({ ...previous, location: undefined }));
-                  setRequestErrorMessage(null);
-                }}
-                getParentId={(item) => item.parent_location_id ?? null}
-                allLabel={copy.filterAll}
-                disabled={isDeletePending || !canEditForm}
-                ariaInvalid={Boolean(fieldError.location)}
-              />
-              <p className="ui-field-hint">{copy.locationHint}</p>
-              {fieldError.location ? (
-                <p className="ui-field-error">{fieldError.location}</p>
-              ) : null}
-            </section>
-
-            <section className="ui-card ui-form-section ui-border-accent">
-              <HierarchySingleSelectField
-                id="event-unity"
-                label={copy.unityLabel}
-                itemList={initialUnityDirectory?.item_list ?? []}
-                value={unityId}
-                onChange={(nextValue) => {
-                  setUnityId(nextValue);
-                  setFieldError((previous) => ({ ...previous, unity: undefined }));
-                  setRequestErrorMessage(null);
-                }}
-                getParentId={(item) => item.parent_unity_id ?? null}
-                allLabel={copy.filterAll}
-                disabled={isDeletePending || !canEditForm}
-                ariaInvalid={Boolean(fieldError.unity)}
-              />
-              <p className="ui-field-hint">{copy.unityHint}</p>
-              {fieldError.unity ? (
-                <p className="ui-field-error">{fieldError.unity}</p>
-              ) : null}
-            </section>
-
-            <section className="ui-card ui-form-section ui-border-accent">
               <div className="ui-field">
                 <label className="ui-field-label" htmlFor="event-action">
                   {copy.actionLabel}
@@ -965,6 +921,50 @@ export function EventConfigurationClient({
                   <p className="ui-field-error">{fieldError.action}</p>
                 ) : null}
               </div>
+            </section>
+
+            <section className="ui-card ui-form-section ui-border-accent">
+              <HierarchySingleSelectField
+                id="event-unity"
+                label={copy.unityLabel}
+                itemList={initialUnityDirectory?.item_list ?? []}
+                value={unityId}
+                onChange={(nextValue) => {
+                  setUnityId(nextValue);
+                  setFieldError((previous) => ({ ...previous, unity: undefined }));
+                  setRequestErrorMessage(null);
+                }}
+                getParentId={(item) => item.parent_unity_id ?? null}
+                allLabel={copy.filterAll}
+                disabled={isDeletePending || !canEditForm}
+                ariaInvalid={Boolean(fieldError.unity)}
+              />
+              <p className="ui-field-hint">{copy.unityHint}</p>
+              {fieldError.unity ? (
+                <p className="ui-field-error">{fieldError.unity}</p>
+              ) : null}
+            </section>
+
+            <section className="ui-card ui-form-section ui-border-accent">
+              <HierarchySingleSelectField
+                id="event-location"
+                label={copy.locationLabel}
+                itemList={initialLocationDirectory?.item_list ?? []}
+                value={locationId}
+                onChange={(nextValue) => {
+                  setLocationId(nextValue);
+                  setFieldError((previous) => ({ ...previous, location: undefined }));
+                  setRequestErrorMessage(null);
+                }}
+                getParentId={(item) => item.parent_location_id ?? null}
+                allLabel={copy.filterAll}
+                disabled={isDeletePending || !canEditForm}
+                ariaInvalid={Boolean(fieldError.location)}
+              />
+              <p className="ui-field-hint">{copy.locationHint}</p>
+              {fieldError.location ? (
+                <p className="ui-field-error">{fieldError.location}</p>
+              ) : null}
             </section>
 
             {isCreateMode ? (
