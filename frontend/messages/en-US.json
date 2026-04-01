@@ -455,7 +455,8 @@
       "locationLabel": "Location",
       "unityLabel": "Unit",
       "actionLabel": "Action",
-      "all": "All"
+      "all": "All",
+      "confirm": "Ok"
     },
     "buttons": {
       "cancel": "Cancel",

@@ -1215,12 +1215,15 @@ def list_scope_events(
     scope_id: int,
     moment_from_utc: datetime | None = Query(default=None),
     moment_to_utc: datetime | None = Query(default=None),
-    location_id: int | None = Query(default=None),
-    unity_id: int | None = Query(default=None),
+    location_id: list[int] | None = Query(default=None),
+    unity_id: list[int] | None = Query(default=None),
     action_id: int | None = Query(default=None),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
+    location_id_list = location_id or []
+    unity_id_list = unity_id or []
+
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     if moment_from_utc is not None and moment_from_utc.tzinfo is not None:
         moment_from_utc = moment_from_utc.astimezone(UTC).replace(tzinfo=None)
@@ -1235,10 +1238,12 @@ def list_scope_events(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid event period",
         )
-    if location_id is not None:
-        _location_in_scope_or_404(session, scope_id=scope_id, location_id=location_id)
-    if unity_id is not None:
-        _unity_in_scope_or_404(session, scope_id=scope_id, unity_id=unity_id)
+    for location_id_item in location_id_list:
+        _location_in_scope_or_404(
+            session, scope_id=scope_id, location_id=location_id_item
+        )
+    for unity_id_item in unity_id_list:
+        _unity_in_scope_or_404(session, scope_id=scope_id, unity_id=unity_id_item)
     if action_id is not None:
         _action_in_scope_or_404(session, scope_id=scope_id, action_id=action_id)
     action_id_list = list(
@@ -1254,10 +1259,10 @@ def list_scope_events(
         query = query.where(Event.moment_utc >= moment_from_utc)
     if moment_to_utc is not None:
         query = query.where(Event.moment_utc <= moment_to_utc)
-    if location_id is not None:
-        query = query.where(Event.location_id == location_id)
-    if unity_id is not None:
-        query = query.where(Event.unity_id == unity_id)
+    if location_id_list:
+        query = query.where(Event.location_id.in_(location_id_list))
+    if unity_id_list:
+        query = query.where(Event.unity_id.in_(unity_id_list))
     if action_id is not None:
         query = query.where(Event.action_id == action_id)
     rows = list(session.scalars(query.order_by(Event.moment_utc.desc(), Event.id.desc())))
@@ -1305,7 +1310,7 @@ def create_scope_event(
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_events(scope_id, member, session)
+    return list_scope_events(scope_id=scope_id, member=member, session=session)
 
 
 @router.patch(
@@ -1341,7 +1346,7 @@ def patch_scope_event(
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
-    return list_scope_events(scope_id, member, session)
+    return list_scope_events(scope_id=scope_id, member=member, session=session)
 
 
 @router.delete(
@@ -1365,7 +1370,7 @@ def delete_scope_event(
     session.delete(row)
     _apply_member_audit_context(session, member)
     session.commit()
-    return list_scope_events(scope_id, member, session)
+    return list_scope_events(scope_id=scope_id, member=member, session=session)
 
 
 # --- input ---

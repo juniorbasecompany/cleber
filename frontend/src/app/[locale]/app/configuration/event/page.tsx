@@ -87,6 +87,7 @@ export default async function EventConfigurationPage({ params }: EventConfigurat
           filterUnityLabel: t("filter.unityLabel"),
           filterActionLabel: t("filter.actionLabel"),
           filterAll: t("filter.all"),
+          filterConfirm: t("filter.confirm"),
           sectionInfoTitle: t("section.info.title"),
           sectionInfoDescription: t("section.info.description"),
           infoSummaryLabel: t("section.info.summaryLabel"),

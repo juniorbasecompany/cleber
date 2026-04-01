@@ -51,6 +51,7 @@ export type EventConfigurationCopy = {
   filterUnityLabel: string;
   filterActionLabel: string;
   filterAll: string;
+  filterConfirm: string;
   sectionInfoTitle: string;
   sectionInfoDescription: string;
   infoSummaryLabel: string;
@@ -355,8 +356,8 @@ export function EventConfigurationClient({
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [filterMomentFromInput, setFilterMomentFromInput] = useState("");
   const [filterMomentToInput, setFilterMomentToInput] = useState("");
-  const [filterLocationId, setFilterLocationId] = useState<number | null>(null);
-  const [filterUnityId, setFilterUnityId] = useState<number | null>(null);
+  const [filterLocationIdList, setFilterLocationIdList] = useState<number[]>([]);
+  const [filterUnityIdList, setFilterUnityIdList] = useState<number[]>([]);
   const [filterActionId, setFilterActionId] = useState<number | null>(null);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const initialSearchEventKeyRef = useRef<EventSelectionKey>(initialSearchEventKey);
@@ -501,11 +502,11 @@ export function EventConfigurationClient({
       if (filterMomentToUtc) {
         query.set("moment_to_utc", filterMomentToUtc);
       }
-      if (filterLocationId != null) {
-        query.set("location_id", String(filterLocationId));
+      for (const locationId of filterLocationIdList) {
+        query.append("location_id", String(locationId));
       }
-      if (filterUnityId != null) {
-        query.set("unity_id", String(filterUnityId));
+      for (const unityId of filterUnityIdList) {
+        query.append("unity_id", String(unityId));
       }
       if (filterActionId != null) {
         query.set("action_id", String(filterActionId));
@@ -534,10 +535,10 @@ export function EventConfigurationClient({
     [
       copy.loadError,
       filterActionId,
-      filterLocationId,
+      filterLocationIdList,
       filterMomentFromInput,
       filterMomentToInput,
-      filterUnityId,
+      filterUnityIdList,
       scopeId,
       syncFromDirectory
     ]
@@ -809,15 +810,16 @@ export function EventConfigurationClient({
               locationLabel: copy.filterLocationLabel,
               unityLabel: copy.filterUnityLabel,
               actionLabel: copy.filterActionLabel,
-              allLabel: copy.filterAll
+              allLabel: copy.filterAll,
+              confirmLabel: copy.filterConfirm
             }}
             filterMomentFromInput={filterMomentFromInput}
             filterMomentToInput={filterMomentToInput}
-            filterLocationId={filterLocationId}
-            filterUnityId={filterUnityId}
+            filterLocationIdList={filterLocationIdList}
+            filterUnityIdList={filterUnityIdList}
             filterActionId={filterActionId}
-            locationOptionList={locationOptionList}
-            unityOptionList={unityOptionList}
+            locationItemList={initialLocationDirectory?.item_list ?? []}
+            unityItemList={initialUnityDirectory?.item_list ?? []}
             actionOptionList={actionOptionList}
             onFilterMomentFromChange={(value) => {
               setFilterMomentFromInput(value ? toLocalMomentInputValue(value) : "");
@@ -825,12 +827,8 @@ export function EventConfigurationClient({
             onFilterMomentToChange={(value) => {
               setFilterMomentToInput(value ? toLocalMomentInputValue(value) : "");
             }}
-            onFilterLocationChange={(value) => {
-              setFilterLocationId(parseNumericFilter(value));
-            }}
-            onFilterUnityChange={(value) => {
-              setFilterUnityId(parseNumericFilter(value));
-            }}
+            onFilterLocationChange={setFilterLocationIdList}
+            onFilterUnityChange={setFilterUnityIdList}
             onFilterActionChange={(value) => {
               setFilterActionId(parseNumericFilter(value));
             }}

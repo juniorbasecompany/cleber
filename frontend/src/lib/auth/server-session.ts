@@ -254,8 +254,8 @@ export async function getTenantScopeEventDirectory(
   filter: {
     moment_from_utc?: string;
     moment_to_utc?: string;
-    location_id?: number;
-    unity_id?: number;
+    location_id?: number | number[];
+    unity_id?: number | number[];
     action_id?: number;
   } = {}
 ) {
@@ -272,10 +272,18 @@ export async function getTenantScopeEventDirectory(
   if (filter.moment_to_utc) {
     query.set("moment_to_utc", filter.moment_to_utc);
   }
-  if (filter.location_id != null) {
+  if (Array.isArray(filter.location_id)) {
+    for (const locationId of filter.location_id) {
+      query.append("location_id", String(locationId));
+    }
+  } else if (filter.location_id != null) {
     query.set("location_id", String(filter.location_id));
   }
-  if (filter.unity_id != null) {
+  if (Array.isArray(filter.unity_id)) {
+    for (const unityId of filter.unity_id) {
+      query.append("unity_id", String(unityId));
+    }
+  } else if (filter.unity_id != null) {
     query.set("unity_id", String(filter.unity_id));
   }
   if (filter.action_id != null) {

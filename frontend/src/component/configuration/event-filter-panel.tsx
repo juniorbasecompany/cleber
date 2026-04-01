@@ -1,11 +1,13 @@
 "use client";
 
+import { HierarchyDropdownField } from "@/component/configuration/hierarchy-dropdown-field";
 import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel,
   DirectoryFilterSelectField
 } from "@/component/configuration/directory-filter-panel";
+import type { TenantLocationRecord, TenantUnityRecord } from "@/lib/auth/types";
 
 type EventFilterOption = {
   id: number;
@@ -19,6 +21,7 @@ type EventFilterPanelCopy = {
   unityLabel: string;
   actionLabel: string;
   allLabel: string;
+  confirmLabel: string;
 };
 
 type EventFilterPanelProps = {
@@ -26,16 +29,16 @@ type EventFilterPanelProps = {
   copy: EventFilterPanelCopy;
   filterMomentFromInput: string;
   filterMomentToInput: string;
-  filterLocationId: number | null;
-  filterUnityId: number | null;
+  filterLocationIdList: number[];
+  filterUnityIdList: number[];
   filterActionId: number | null;
-  locationOptionList: EventFilterOption[];
-  unityOptionList: EventFilterOption[];
+  locationItemList: TenantLocationRecord[];
+  unityItemList: TenantUnityRecord[];
   actionOptionList: EventFilterOption[];
   onFilterMomentFromChange: (value: Date | null) => void;
   onFilterMomentToChange: (value: Date | null) => void;
-  onFilterLocationChange: (value: string) => void;
-  onFilterUnityChange: (value: string) => void;
+  onFilterLocationChange: (valueList: number[]) => void;
+  onFilterUnityChange: (valueList: number[]) => void;
   onFilterActionChange: (value: string) => void;
 };
 
@@ -44,11 +47,11 @@ export function EventFilterPanel({
   copy,
   filterMomentFromInput,
   filterMomentToInput,
-  filterLocationId,
-  filterUnityId,
+  filterLocationIdList,
+  filterUnityIdList,
   filterActionId,
-  locationOptionList,
-  unityOptionList,
+  locationItemList,
+  unityItemList,
   actionOptionList,
   onFilterMomentFromChange,
   onFilterMomentToChange,
@@ -91,30 +94,28 @@ export function EventFilterPanel({
       </DirectoryFilterCard>
 
       <DirectoryFilterCard>
-        <DirectoryFilterSelectField
+        <HierarchyDropdownField
           id="event-filter-location"
           label={copy.locationLabel}
-          value={filterLocationId == null ? "" : String(filterLocationId)}
+          itemList={locationItemList}
+          selectedValueList={filterLocationIdList}
           onChange={onFilterLocationChange}
-          allAriaLabel={copy.allLabel}
-          optionList={locationOptionList.map((item) => ({
-            value: String(item.id),
-            label: item.label
-          }))}
+          getParentId={(item) => item.parent_location_id ?? null}
+          allLabel={copy.allLabel}
+          confirmLabel={copy.confirmLabel}
         />
       </DirectoryFilterCard>
 
       <DirectoryFilterCard>
-        <DirectoryFilterSelectField
+        <HierarchyDropdownField
           id="event-filter-unity"
           label={copy.unityLabel}
-          value={filterUnityId == null ? "" : String(filterUnityId)}
+          itemList={unityItemList}
+          selectedValueList={filterUnityIdList}
           onChange={onFilterUnityChange}
-          allAriaLabel={copy.allLabel}
-          optionList={unityOptionList.map((item) => ({
-            value: String(item.id),
-            label: item.label
-          }))}
+          getParentId={(item) => item.parent_unity_id ?? null}
+          allLabel={copy.allLabel}
+          confirmLabel={copy.confirmLabel}
         />
       </DirectoryFilterCard>
 
