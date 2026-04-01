@@ -1291,10 +1291,12 @@ export function EventConfigurationClient({
         directory ? (
           <>
             <section className="ui-card ui-form-section ui-border-accent">
+              <EditorPanelFlashOverlay active={isEditorFlashActive} />
               <HierarchySingleSelectField
                 id="event-location"
                 label={copy.locationLabel}
                 itemList={initialLocationDirectory?.item_list ?? []}
+                primaryField
                 value={locationId}
                 onChange={(nextValue) => {
                   setLocationId(nextValue);
@@ -1335,7 +1337,6 @@ export function EventConfigurationClient({
             </section>
 
             <section className="ui-card ui-form-section ui-border-accent">
-              <EditorPanelFlashOverlay active={isEditorFlashActive} />
               <EventActionField
                 copy={{
                   actionLabel: copy.actionLabel,

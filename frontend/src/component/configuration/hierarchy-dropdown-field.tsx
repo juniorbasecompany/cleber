@@ -20,6 +20,7 @@ type HierarchyDropdownSharedProps<TItem extends HierarchyDropdownFieldItemBase> 
   itemList: TItem[];
   getParentId: (item: TItem) => number | null;
   disabled?: boolean;
+  primaryField?: boolean;
 };
 
 type HierarchyDropdownFieldProps<TItem extends HierarchyDropdownFieldItemBase> =
@@ -307,7 +308,8 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
   getParentId,
   allLabel,
   confirmLabel,
-  disabled = false
+  disabled = false,
+  primaryField = false
 }: HierarchyDropdownFieldProps<TItem>) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -430,6 +432,7 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
           id={id}
           role="combobox"
           tabIndex={disabled ? -1 : 0}
+          data-editor-primary-field={primaryField ? "true" : undefined}
           className="ui-input ui-hierarchy-dropdown-trigger"
           data-open={isOpen ? "true" : undefined}
           data-disabled={disabled ? "true" : undefined}
@@ -597,7 +600,8 @@ export function HierarchySingleSelectField<TItem extends HierarchyDropdownFieldI
   getParentId,
   allLabel,
   ariaInvalid = false,
-  disabled = false
+  disabled = false,
+  primaryField = false
 }: HierarchySingleSelectFieldProps<TItem>) {
   const rootRef = useRef<HTMLDivElement | null>(null);
   const triggerRef = useRef<HTMLDivElement | null>(null);
@@ -675,6 +679,7 @@ export function HierarchySingleSelectField<TItem extends HierarchyDropdownFieldI
           id={id}
           role="combobox"
           tabIndex={disabled ? -1 : 0}
+          data-editor-primary-field={primaryField ? "true" : undefined}
           className="ui-input ui-hierarchy-dropdown-trigger"
           data-open={isOpen ? "true" : undefined}
           data-disabled={disabled ? "true" : undefined}

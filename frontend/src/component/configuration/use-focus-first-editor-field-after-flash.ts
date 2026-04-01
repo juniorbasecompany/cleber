@@ -1,7 +1,20 @@
 import { useEffect, useRef } from "react";
 import type { RefObject } from "react";
 
-type FocusableEditorField = HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+type FocusableEditorField =
+  | HTMLInputElement
+  | HTMLTextAreaElement
+  | HTMLSelectElement
+  | HTMLElement;
+
+const PRIMARY_FIELD_SELECTOR = "[data-editor-primary-field='true']";
+const DEFAULT_FOCUS_CANDIDATE_SELECTOR = [
+  "input:not([type='hidden'])",
+  "textarea",
+  "select",
+  "[role='combobox'][tabindex]:not([tabindex='-1'])",
+  "[tabindex]:not([tabindex='-1'])"
+].join(", ");
 
 function isTextLikeInput(element: HTMLInputElement) {
   const textLikeTypeList = new Set([
@@ -12,6 +25,59 @@ function isTextLikeInput(element: HTMLInputElement) {
     "password"
   ]);
   return textLikeTypeList.has(element.type);
+}
+
+function isElementVisible(element: HTMLElement): boolean {
+  if (element.getClientRects().length === 0) {
+    return false;
+  }
+  const style = window.getComputedStyle(element);
+  return style.display !== "none" && style.visibility !== "hidden";
+}
+
+function hasDisabledSemantic(element: HTMLElement): boolean {
+  if (element.matches("[disabled], [aria-disabled='true'], [hidden], [inert]")) {
+    return true;
+  }
+  const disabledContainer = element.closest("[aria-disabled='true'], [hidden], [inert]");
+  if (disabledContainer) {
+    return true;
+  }
+  if (
+    element instanceof HTMLInputElement
+    || element instanceof HTMLTextAreaElement
+    || element instanceof HTMLSelectElement
+  ) {
+    return element.disabled || element.readOnly;
+  }
+  return false;
+}
+
+function isEligibleFocusableField(element: HTMLElement): boolean {
+  if (!isElementVisible(element) || hasDisabledSemantic(element)) {
+    return false;
+  }
+  if (element.tabIndex < 0 && !(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement)) {
+    return false;
+  }
+  return true;
+}
+
+function findFirstFocusableField(panel: HTMLElement): FocusableEditorField | null {
+  const primaryCandidateList = panel.querySelectorAll<HTMLElement>(PRIMARY_FIELD_SELECTOR);
+  for (const candidate of primaryCandidateList) {
+    if (isEligibleFocusableField(candidate)) {
+      return candidate;
+    }
+  }
+
+  const fallbackCandidateList = panel.querySelectorAll<HTMLElement>(DEFAULT_FOCUS_CANDIDATE_SELECTOR);
+  for (const candidate of fallbackCandidateList) {
+    if (isEligibleFocusableField(candidate)) {
+      return candidate;
+    }
+  }
+  return null;
 }
 
 /**
@@ -43,9 +109,7 @@ export function useFocusFirstEditorFieldAfterFlash(
         return;
       }
 
-      const firstField = panel.querySelector<FocusableEditorField>(
-        "input:not([type='hidden']):not([disabled]), textarea:not([disabled]), select:not([disabled])"
-      );
+      const firstField = findFirstFocusableField(panel);
       if (!firstField) {
         return;
       }

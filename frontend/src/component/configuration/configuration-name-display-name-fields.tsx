@@ -56,6 +56,7 @@ export function ConfigurationNameDisplayNameFields({
                         <input
                             id={nameInputId}
                             className="ui-input"
+                            data-editor-primary-field="true"
                             value={name}
                             onChange={(event) => {
                                 setName(event.target.value);
