@@ -67,7 +67,7 @@ function HierarchyDropdownNode<TItem extends HierarchyDropdownFieldItemBase>({
 
   return (
     <section
-      className="ui-location-nest-box ui-hierarchy-dropdown-node"
+      className="ui-hierarchy-dropdown-nest-box"
       data-selected={isSelected ? "true" : undefined}
       style={buildHierarchyToneStyle(item.depth, maxDepth)}
     >
@@ -79,14 +79,14 @@ function HierarchyDropdownNode<TItem extends HierarchyDropdownFieldItemBase>({
             checked={isSelected}
             onChange={() => onToggle(item.id)}
           />
-          <div className="ui-location-nest-copy">
-            <p className="ui-location-nest-label">{label}</p>
+          <div className="ui-hierarchy-dropdown-nest-copy">
+            <p className="ui-hierarchy-dropdown-nest-label">{label}</p>
           </div>
         </label>
       </div>
 
       {childList.length > 0 ? (
-        <div className="ui-location-nest-children">
+        <div className="ui-hierarchy-dropdown-nest-children">
           {childList.map((child) => (
             <HierarchyDropdownNode
               key={child.id}
@@ -393,7 +393,7 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
             aria-labelledby={`${id}-label`}
           >
             <div className="ui-hierarchy-dropdown-panel-body">
-              <div className="ui-location-nest-list ui-hierarchy-dropdown-tree">
+              <div className="ui-hierarchy-dropdown-tree">
                 {rootItemList.map((item) => (
                   <HierarchyDropdownNode
                     key={item.id}

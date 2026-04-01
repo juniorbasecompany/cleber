@@ -569,6 +569,69 @@
   margin-top: var(--ui-location-nest-box-stack-gap);
 }
 
+/*
+ * Hierarquia só no filtro (dropdown): classes próprias.
+ * Não reutilizar `ui-location-nest-*` do painel de locais/unidades (espaçamento e escala distintos).
+ */
+.ui-hierarchy-dropdown-nest-box {
+  --ui-hierarchy-dropdown-nest-child-offset: 0.5rem;
+  position: relative;
+  display: grid;
+  gap: 0.3rem;
+  border: var(--border-width-default) solid color-mix(in srgb,
+      var(--color-location-nest-border-start) var(--ui-location-tone-light-share),
+      var(--color-location-nest-border-end) var(--ui-location-tone-dark-share));
+  border-radius: calc(var(--radius-card) + 0.125rem);
+  background: color-mix(in srgb,
+      var(--color-location-nest-start) var(--ui-location-tone-light-share),
+      var(--color-location-nest-end) var(--ui-location-tone-dark-share));
+  overflow: hidden;
+  padding: 0.4rem;
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.42), var(--shadow-xs);
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease,
+    box-shadow 0.16s ease,
+    transform 0.16s ease;
+}
+
+.ui-hierarchy-dropdown-nest-box[data-selected="true"] {
+  border-color: var(--color-accent-border-emphasis);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.42),
+    0 0 0 1px color-mix(in srgb, var(--color-accent-border-emphasis) 28%, transparent),
+    var(--shadow-sm);
+}
+
+.ui-hierarchy-dropdown-nest-children {
+  --ui-hierarchy-dropdown-nest-box-stack-gap: 0.35rem;
+  display: grid;
+  gap: 0;
+  padding-left: var(--ui-hierarchy-dropdown-nest-child-offset);
+}
+
+.ui-hierarchy-dropdown-nest-children > .ui-hierarchy-dropdown-nest-box {
+  margin-top: var(--ui-hierarchy-dropdown-nest-box-stack-gap);
+}
+
+.ui-hierarchy-dropdown-nest-copy {
+  display: grid;
+  gap: 0.05rem;
+}
+
+.ui-hierarchy-dropdown-nest-label {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--color-text);
+  transition: color 0.16s ease;
+}
+
+.ui-hierarchy-dropdown-toggle:hover .ui-hierarchy-dropdown-nest-label,
+.ui-hierarchy-dropdown-toggle:focus-visible .ui-hierarchy-dropdown-nest-label {
+  color: var(--color-accent-text);
+}
+
 .ui-hierarchy-dropdown {
   position: relative;
 }
@@ -693,11 +756,8 @@
 }
 
 .ui-hierarchy-dropdown-tree {
+  display: grid;
   gap: 0.4rem;
-}
-
-.ui-hierarchy-dropdown-node {
-  gap: 0.3rem;
 }
 
 .ui-hierarchy-dropdown-head {
