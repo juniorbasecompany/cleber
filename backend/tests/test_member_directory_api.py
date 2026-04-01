@@ -745,6 +745,91 @@ def test_admin_can_create_move_update_and_delete_locations() -> None:
     assert deleted_root is None
 
 
+def test_location_directory_q_filter_matches_accent_and_partial_text() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        create_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            json={
+                "name": "União",
+                "display_name": "Granja União",
+                "parent_location_id": None,
+            },
+        )
+        assert create_response.status_code == 200
+
+        response_with_accent = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            params={"q": "União"},
+        )
+        response_without_accent = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            params={"q": "Uniao"},
+        )
+        response_partial = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            params={"q": "nia"},
+        )
+
+    assert response_with_accent.status_code == 200
+    assert response_without_accent.status_code == 200
+    assert response_partial.status_code == 200
+
+    name_list_with_accent = [item["name"] for item in response_with_accent.json()["item_list"]]
+    name_list_without_accent = [
+        item["name"] for item in response_without_accent.json()["item_list"]
+    ]
+    name_list_partial = [item["name"] for item in response_partial.json()["item_list"]]
+
+    assert "União" in name_list_with_accent
+    assert "União" in name_list_without_accent
+    assert "União" in name_list_partial
+
+
+def test_location_directory_q_filter_keeps_ancestor_context_for_child_match() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        root_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            json={
+                "name": "BR",
+                "display_name": "Brasil",
+                "parent_location_id": None,
+            },
+        )
+        assert root_response.status_code == 200
+        session.expire_all()
+        root_location = session.scalar(select(Location).where(Location.name == "BR"))
+        assert root_location is not None
+
+        child_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            json={
+                "name": "União",
+                "display_name": "Granja União",
+                "parent_location_id": root_location.id,
+            },
+        )
+        assert child_response.status_code == 200
+
+        response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/locations",
+            params={"q": "União"},
+        )
+
+    assert response.status_code == 200
+    item_list = response.json()["item_list"]
+    item_by_name = {item["name"]: item for item in item_list}
+    assert "BR" in item_by_name
+    assert "União" in item_by_name
+    assert item_by_name["União"]["parent_location_id"] == item_by_name["BR"]["id"]
+    assert item_by_name["União"]["path_labels"] == ["BR", "União"]
+
+
 def test_location_delete_cascades_to_descendant_list() -> None:
     """Alinhado ao ERD: FK location.parent_location_id com delete Cascade."""
     with build_test_client(current_member_key="admin") as (client, session, _):
@@ -1015,6 +1100,91 @@ def test_admin_can_create_move_update_and_delete_unities() -> None:
 
     assert delete_response.status_code == 200
     assert deleted_root is None
+
+
+def test_unity_directory_q_filter_matches_accent_and_partial_text() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        create_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            json={
+                "name": "União",
+                "display_name": "Núcleo União",
+                "parent_unity_id": None,
+            },
+        )
+        assert create_response.status_code == 200
+
+        response_with_accent = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            params={"q": "União"},
+        )
+        response_without_accent = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            params={"q": "Uniao"},
+        )
+        response_partial = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            params={"q": "nia"},
+        )
+
+    assert response_with_accent.status_code == 200
+    assert response_without_accent.status_code == 200
+    assert response_partial.status_code == 200
+
+    name_list_with_accent = [item["name"] for item in response_with_accent.json()["item_list"]]
+    name_list_without_accent = [
+        item["name"] for item in response_without_accent.json()["item_list"]
+    ]
+    name_list_partial = [item["name"] for item in response_partial.json()["item_list"]]
+
+    assert "União" in name_list_with_accent
+    assert "União" in name_list_without_accent
+    assert "União" in name_list_partial
+
+
+def test_unity_directory_q_filter_keeps_ancestor_context_for_child_match() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        root_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            json={
+                "name": "BR",
+                "display_name": "Brasil",
+                "parent_unity_id": None,
+            },
+        )
+        assert root_response.status_code == 200
+        session.expire_all()
+        root_unity = session.scalar(select(Unity).where(Unity.name == "BR"))
+        assert root_unity is not None
+
+        child_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            json={
+                "name": "União",
+                "display_name": "Núcleo União",
+                "parent_unity_id": root_unity.id,
+            },
+        )
+        assert child_response.status_code == 200
+
+        response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/unities",
+            params={"q": "União"},
+        )
+
+    assert response.status_code == 200
+    item_list = response.json()["item_list"]
+    item_by_name = {item["name"]: item for item in item_list}
+    assert "BR" in item_by_name
+    assert "União" in item_by_name
+    assert item_by_name["União"]["parent_unity_id"] == item_by_name["BR"]["id"]
+    assert item_by_name["União"]["path_labels"] == ["BR", "União"]
 
 
 def test_unity_delete_cascades_to_descendant_list() -> None:

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import json
+import unicodedata
+from collections.abc import Callable
 from collections import defaultdict
 from datetime import date, datetime, time, timedelta
 from typing import Any
@@ -75,6 +77,47 @@ HISTORY_TABLE_NAME_SET = {
 HISTORY_ACTION_TYPE_SET = {"I", "U", "D"}
 DEFAULT_HISTORY_PAGE_SIZE = 5
 MAX_HISTORY_PAGE_SIZE = 50
+SEARCH_TEXT_REPLACEMENT_LIST = (
+    ("á", "a"),
+    ("à", "a"),
+    ("â", "a"),
+    ("ã", "a"),
+    ("ä", "a"),
+    ("å", "a"),
+    ("é", "e"),
+    ("è", "e"),
+    ("ê", "e"),
+    ("ë", "e"),
+    ("í", "i"),
+    ("ì", "i"),
+    ("î", "i"),
+    ("ï", "i"),
+    ("ó", "o"),
+    ("ò", "o"),
+    ("ô", "o"),
+    ("õ", "o"),
+    ("ö", "o"),
+    ("ú", "u"),
+    ("ù", "u"),
+    ("û", "u"),
+    ("ü", "u"),
+    ("ç", "c"),
+    ("ñ", "n"),
+)
+
+
+def _normalize_text_for_search(value: str) -> str:
+    normalized = unicodedata.normalize("NFKD", value.strip().lower())
+    return "".join(
+        character for character in normalized if not unicodedata.combining(character)
+    )
+
+
+def _normalize_expression_for_search(value: Any):
+    normalized_expression = func.lower(value)
+    for source, target in SEARCH_TEXT_REPLACEMENT_LIST:
+        normalized_expression = func.replace(normalized_expression, source, target)
+    return normalized_expression
 
 
 class GoogleTokenRequest(BaseModel):
@@ -1174,18 +1217,54 @@ def _get_scope_location_list(
         query = query.where(Location.parent_location_id == parent_location_id)
 
     if q:
-        normalized_q = q.strip().lower()
+        normalized_q = _normalize_text_for_search(q)
         if normalized_q:
             query = query.where(
                 or_(
-                    func.lower(Location.name).contains(normalized_q),
-                    func.lower(Location.display_name).contains(normalized_q),
+                    _normalize_expression_for_search(Location.name).contains(normalized_q),
+                    _normalize_expression_for_search(Location.display_name).contains(
+                        normalized_q
+                    ),
                 )
             )
 
     return list(
         session.scalars(query.order_by(Location.sort_order, Location.name, Location.id))
     )
+
+
+def _include_hierarchy_ancestor_chain_for_filter(
+    *,
+    filtered_item_list: list[Any],
+    full_item_list: list[Any],
+    get_id: Callable[[Any], int],
+    get_parent_id: Callable[[Any], int | None],
+) -> list[Any]:
+    if not filtered_item_list:
+        return []
+
+    item_by_id = {get_id(item): item for item in full_item_list}
+    selected_id_set: set[int] = set()
+
+    for item in filtered_item_list:
+        current = item
+        while current is not None:
+            current_id = get_id(current)
+            if current_id in selected_id_set:
+                break
+
+            selected_id_set.add(current_id)
+            parent_id = get_parent_id(current)
+            if parent_id is None:
+                break
+
+            current = item_by_id.get(parent_id)
+
+    return [
+        item
+        for item in sorted(full_item_list, key=hierarchy_sort_key)
+        if get_id(item) in selected_id_set
+    ]
 
 
 def _get_scope_location_or_404(
@@ -1280,6 +1359,16 @@ def _build_tenant_location_directory(
         q=q,
         parent_location_id=parent_location_id,
     )
+    normalized_query = _normalize_text_for_search(q) if q else ""
+    if normalized_query and parent_location_id is None:
+        full_location_list = _get_scope_location_list(session, scope_id=scope.id)
+        location_list = _include_hierarchy_ancestor_chain_for_filter(
+            filtered_item_list=location_list,
+            full_item_list=full_location_list,
+            get_id=lambda item: item.id,
+            get_parent_id=lambda item: item.parent_location_id,
+        )
+
     child_list_by_parent_id: defaultdict[int | None, list[Location]] = defaultdict(list)
     for item in sorted(location_list, key=hierarchy_sort_key):
         child_list_by_parent_id[item.parent_location_id].append(item)
@@ -1349,12 +1438,14 @@ def _get_scope_unity_list(
         query = query.where(Unity.parent_unity_id == parent_unity_id)
 
     if q:
-        normalized_q = q.strip().lower()
+        normalized_q = _normalize_text_for_search(q)
         if normalized_q:
             query = query.where(
                 or_(
-                    func.lower(Unity.name).contains(normalized_q),
-                    func.lower(Unity.display_name).contains(normalized_q),
+                    _normalize_expression_for_search(Unity.name).contains(normalized_q),
+                    _normalize_expression_for_search(Unity.display_name).contains(
+                        normalized_q
+                    ),
                 )
             )
 
@@ -1419,6 +1510,16 @@ def _build_tenant_unity_directory(
         q=q,
         parent_unity_id=parent_unity_id,
     )
+    normalized_query = _normalize_text_for_search(q) if q else ""
+    if normalized_query and parent_unity_id is None:
+        full_unity_list = _get_scope_unity_list(session, scope_id=scope.id)
+        unity_list = _include_hierarchy_ancestor_chain_for_filter(
+            filtered_item_list=unity_list,
+            full_item_list=full_unity_list,
+            get_id=lambda item: item.id,
+            get_parent_id=lambda item: item.parent_unity_id,
+        )
+
     child_list_by_parent_id: defaultdict[int | None, list[Unity]] = defaultdict(list)
     for item in sorted(unity_list, key=hierarchy_sort_key):
         child_list_by_parent_id[item.parent_unity_id].append(item)
