@@ -1,4 +1,4 @@
-﻿# Modelo de auditoria: alteracoes em tabelas principais.
+# Modelo de auditoria: alteracoes em tabelas principais.
 
 from __future__ import annotations
 

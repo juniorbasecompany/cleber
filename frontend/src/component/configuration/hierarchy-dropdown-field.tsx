@@ -4,6 +4,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { createPortal } from "react-dom";
 
+const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
+
 export type HierarchyDropdownFieldItemBase = {
   id: number;
   name: string;
@@ -78,7 +80,7 @@ function resolveItemLabel(item: HierarchyDropdownFieldItemBase) {
 
 function resolveItemPathLabel(item: HierarchyDropdownFieldItemBase) {
   if (item.path_labels && item.path_labels.length > 0) {
-    return item.path_labels.join(" / ");
+    return item.path_labels.join(UI_TEXT_SEPARATOR);
   }
   return resolveItemLabel(item);
 }

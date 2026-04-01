@@ -33,6 +33,8 @@ import type {
 import { parseErrorDetail } from "@/lib/api/parse-error-detail";
 import type { LabelLang } from "@/lib/i18n/label-lang";
 
+const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
+
 export type EventConfigurationCopy = {
   title: string;
   description: string;
@@ -128,8 +130,10 @@ function resolveSelectedEventKey(
   preferredKey: EventSelectionKey,
   canCreate: boolean
 ): EventSelectionKey {
+  const firstEventId = itemList[0]?.id ?? null;
+
   if (preferredKey === "new") {
-    return canCreate ? "new" : null;
+    return canCreate ? "new" : firstEventId;
   }
 
   if (typeof preferredKey === "number") {
@@ -137,10 +141,10 @@ function resolveSelectedEventKey(
     if (found != null) {
       return found;
     }
-    return canCreate ? "new" : null;
+    return firstEventId ?? (canCreate ? "new" : null);
   }
 
-  return canCreate ? "new" : null;
+  return firstEventId ?? (canCreate ? "new" : null);
 }
 
 function normalizeUtcMomentInput(value: string): string {
@@ -334,7 +338,7 @@ export function EventConfigurationClient({
     const map = new Map<number, string>();
     for (const item of initialLocationDirectory?.item_list ?? []) {
       const label = item.path_labels.length > 0
-        ? item.path_labels.join(" / ")
+        ? item.path_labels.join(UI_TEXT_SEPARATOR)
         : item.name.trim() || item.display_name.trim() || `#${item.id}`;
       map.set(item.id, label);
     }
@@ -345,7 +349,7 @@ export function EventConfigurationClient({
     const map = new Map<number, string>();
     for (const item of initialUnityDirectory?.item_list ?? []) {
       const label = item.path_labels.length > 0
-        ? item.path_labels.join(" / ")
+        ? item.path_labels.join(UI_TEXT_SEPARATOR)
         : item.name.trim() || item.display_name.trim() || `#${item.id}`;
       map.set(item.id, label);
     }
@@ -823,7 +827,7 @@ export function EventConfigurationClient({
     if (valueSummaryList.length === 0) {
       return null;
     }
-    return valueSummaryList.join(" | ");
+    return valueSummaryList.join(UI_TEXT_SEPARATOR);
   }, [eventActionInputDraftList]);
 
   const eventActionInputDirty = useMemo(
