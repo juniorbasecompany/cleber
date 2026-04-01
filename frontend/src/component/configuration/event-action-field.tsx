@@ -29,6 +29,9 @@ type EventActionFieldProps = {
   onChangeActionId: (value: string) => void;
   actionErrorMessage?: string;
   disabled: boolean;
+  embedded?: boolean;
+  showActionSection?: boolean;
+  showInputSection?: boolean;
   generatedInputFieldList: EventActionInputField[];
   inputLoading: boolean;
   inputErrorMessage: string | null;
@@ -63,74 +66,94 @@ export function EventActionField({
   onChangeActionId,
   actionErrorMessage,
   disabled,
+  embedded = false,
+  showActionSection = true,
+  showInputSection,
   generatedInputFieldList,
   inputLoading,
   inputErrorMessage,
   onChangeInputValue
 }: EventActionFieldProps) {
-  const showInputSection = actionId != null;
+  const shouldShowInputSection = showInputSection ?? (actionId != null);
+
+  const actionField = (
+    <div className="ui-field">
+      <label className="ui-field-label" htmlFor="event-action">
+        {copy.actionLabel}
+      </label>
+      <select
+        id="event-action"
+        className="ui-input ui-input-select"
+        value={actionId == null ? "" : String(actionId)}
+        onChange={(event) => onChangeActionId(event.target.value)}
+        disabled={disabled}
+        aria-invalid={Boolean(actionErrorMessage)}
+      >
+        <option value="" aria-label={copy.actionEmptyAriaLabel}></option>
+        {actionOptionList.map((item) => (
+          <option key={item.id} value={item.id}>
+            {item.label}
+          </option>
+        ))}
+      </select>
+      <p className="ui-field-hint">{copy.actionHint}</p>
+      {actionErrorMessage ? (
+        <p className="ui-field-error">{actionErrorMessage}</p>
+      ) : null}
+    </div>
+  );
+
+  const inputFieldSection = shouldShowInputSection ? (
+    <>
+      {inputLoading ? (
+        <p className="ui-field-hint">{copy.inputLoading}</p>
+      ) : inputErrorMessage ? (
+        <p className="ui-field-error">{inputErrorMessage}</p>
+      ) : generatedInputFieldList.length === 0 ? (
+        <p className="ui-field-hint">{copy.inputEmpty}</p>
+      ) : (
+        generatedInputFieldList.map((item) => (
+          <div className="ui-field" key={item.fieldId}>
+            <label className="ui-field-label" htmlFor={`event-action-input-${item.fieldId}`}>
+              {item.label}
+            </label>
+            <input
+              id={`event-action-input-${item.fieldId}`}
+              type={resolveInputType(item.sqlType)}
+              className="ui-input"
+              value={item.value}
+              onChange={(event) => onChangeInputValue(item.fieldId, event.target.value)}
+              disabled={disabled}
+              autoComplete="off"
+            />
+          </div>
+        ))
+      )}
+
+      <p className="ui-field-hint">{copy.inputSectionHint}</p>
+    </>
+  ) : null;
+
+  if (embedded) {
+    return (
+      <>
+        {showActionSection ? actionField : null}
+        {inputFieldSection}
+      </>
+    );
+  }
 
   return (
     <>
-      <section className="ui-card ui-form-section ui-border-accent">
-        <div className="ui-field">
-          <label className="ui-field-label" htmlFor="event-action">
-            {copy.actionLabel}
-          </label>
-          <select
-            id="event-action"
-            className="ui-input ui-input-select"
-            value={actionId == null ? "" : String(actionId)}
-            onChange={(event) => onChangeActionId(event.target.value)}
-            disabled={disabled}
-            aria-invalid={Boolean(actionErrorMessage)}
-          >
-            <option value="" aria-label={copy.actionEmptyAriaLabel}></option>
-            {actionOptionList.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-          <p className="ui-field-hint">{copy.actionHint}</p>
-          {actionErrorMessage ? (
-            <p className="ui-field-error">{actionErrorMessage}</p>
-          ) : null}
-        </div>
-      </section>
-
-      {showInputSection ? (
+      {showActionSection ? (
         <section className="ui-card ui-form-section ui-border-accent">
-          <div className="ui-field">
-            <p className="ui-field-label">{copy.inputSectionTitle}</p>
-          </div>
+          {actionField}
+        </section>
+      ) : null}
 
-          {inputLoading ? (
-            <p className="ui-field-hint">{copy.inputLoading}</p>
-          ) : inputErrorMessage ? (
-            <p className="ui-field-error">{inputErrorMessage}</p>
-          ) : generatedInputFieldList.length === 0 ? (
-            <p className="ui-field-hint">{copy.inputEmpty}</p>
-          ) : (
-            generatedInputFieldList.map((item) => (
-              <div className="ui-field" key={item.fieldId}>
-                <label className="ui-field-label" htmlFor={`event-action-input-${item.fieldId}`}>
-                  {item.label}
-                </label>
-                <input
-                  id={`event-action-input-${item.fieldId}`}
-                  type={resolveInputType(item.sqlType)}
-                  className="ui-input"
-                  value={item.value}
-                  onChange={(event) => onChangeInputValue(item.fieldId, event.target.value)}
-                  disabled={disabled}
-                  autoComplete="off"
-                />
-              </div>
-            ))
-          )}
-
-          <p className="ui-field-hint">{copy.inputSectionHint}</p>
+      {shouldShowInputSection ? (
+        <section className="ui-card ui-form-section ui-border-accent">
+          {inputFieldSection}
         </section>
       ) : null}
     </>

@@ -797,9 +797,9 @@ export function EventConfigurationClient({
   const buildEventSummaryLineList = useCallback(
     (item: TenantScopeEventRecord, inputSummary?: string | null) => [
       resolveActionLabel(item.action_id),
-      inputSummary ?? "-",
       resolveLocationLabel(item.location_id),
-      resolveUnityLabel(item.unity_id)
+      resolveUnityLabel(item.unity_id),
+      inputSummary ?? "-"
     ],
     [resolveActionLabel, resolveLocationLabel, resolveUnityLabel]
   );
@@ -813,6 +813,18 @@ export function EventConfigurationClient({
         </span>
       )),
     [buildEventSummaryLineList]
+  );
+
+  const renderEventAsideDetailLineBlock = useCallback(
+    (item: TenantScopeEventRecord, inputSummary?: string | null) =>
+      [resolveLocationLabel(item.location_id), resolveUnityLabel(item.unity_id), inputSummary ?? "-"]
+        .map((line, index, lineList) => (
+          <span key={`${item.id}-aside-detail-${index}`}>
+            {line}
+            {index < lineList.length - 1 ? <br /> : null}
+          </span>
+        )),
+    [resolveLocationLabel, resolveUnityLabel]
   );
 
   const selectedEventInputSummary = useMemo(() => {
@@ -1252,9 +1264,14 @@ export function EventConfigurationClient({
                     : undefined
                 }
               >
-                <p className="ui-directory-title">{formatMomentCompact(item.moment_utc)}</p>
+                <div className="ui-directory-title-row">
+                  <p className="ui-directory-title ui-directory-title-emphasis">
+                    {resolveActionLabel(item.action_id)}
+                  </p>
+                  <p className="ui-directory-date">{formatMomentCompact(item.moment_utc)}</p>
+                </div>
                 <p className="ui-directory-caption-wrap">
-                  {renderEventSummaryLineBlock(
+                  {renderEventAsideDetailLineBlock(
                     item,
                     item.id === selectedEvent?.id ? selectedEventInputSummary : null
                   )}
@@ -1274,59 +1291,26 @@ export function EventConfigurationClient({
         directory ? (
           <>
             <section className="ui-card ui-form-section ui-border-accent">
-              <EditorPanelFlashOverlay active={isEditorFlashActive} />
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-moment">
-                  {copy.momentLabel}
-                </label>
-                <TenantDateTimePicker
-                  id="event-moment"
-                  value={momentInput ? new Date(momentInput) : null}
-                  onChange={(value) => {
-                    setMomentInput(value ? toLocalMomentInputValue(value) : "");
-                    setFieldError((previous) => ({ ...previous, moment: undefined }));
-                    setRequestErrorMessage(null);
-                  }}
-                  disabled={isDeletePending || !canEditForm}
-                  showFlash={Boolean(fieldError.moment)}
-                  locale={locale}
-                />
-                <p className="ui-field-hint">{copy.momentHint}</p>
-                {fieldError.moment ? (
-                  <p className="ui-field-error">{fieldError.moment}</p>
-                ) : null}
-              </div>
+              <HierarchySingleSelectField
+                id="event-location"
+                label={copy.locationLabel}
+                itemList={initialLocationDirectory?.item_list ?? []}
+                value={locationId}
+                onChange={(nextValue) => {
+                  setLocationId(nextValue);
+                  setFieldError((previous) => ({ ...previous, location: undefined }));
+                  setRequestErrorMessage(null);
+                }}
+                getParentId={(item) => item.parent_location_id ?? null}
+                allLabel={copy.filterAll}
+                disabled={isDeletePending || !canEditForm}
+                ariaInvalid={Boolean(fieldError.location)}
+              />
+              <p className="ui-field-hint">{copy.locationHint}</p>
+              {fieldError.location ? (
+                <p className="ui-field-error">{fieldError.location}</p>
+              ) : null}
             </section>
-
-            <EventActionField
-              copy={{
-                actionLabel: copy.actionLabel,
-                actionHint: copy.actionHint,
-                actionEmptyAriaLabel: copy.filterAllAria,
-                inputSectionTitle: copy.actionInputSectionTitle,
-                inputSectionHint: copy.actionInputSectionHint,
-                inputEmpty: copy.actionInputEmpty,
-                inputLoading: copy.actionInputLoading
-              }}
-              actionId={actionId}
-              actionOptionList={actionOptionList}
-              onChangeActionId={(value) => {
-                setActionId(parseNumericFilter(value));
-                setFieldError((previous) => ({ ...previous, action: undefined }));
-                setRequestErrorMessage(null);
-              }}
-              actionErrorMessage={fieldError.action}
-              disabled={isDeletePending || !canEditForm}
-              generatedInputFieldList={eventActionInputDraftList.map((item) => ({
-                fieldId: item.fieldId,
-                label: item.label,
-                sqlType: item.sqlType,
-                value: item.value
-              }))}
-              inputLoading={actionInputLoading}
-              inputErrorMessage={actionInputErrorMessage}
-              onChangeInputValue={handleChangeActionInputValue}
-            />
 
             <section className="ui-card ui-form-section ui-border-accent">
               <HierarchySingleSelectField
@@ -1351,26 +1335,97 @@ export function EventConfigurationClient({
             </section>
 
             <section className="ui-card ui-form-section ui-border-accent">
-              <HierarchySingleSelectField
-                id="event-location"
-                label={copy.locationLabel}
-                itemList={initialLocationDirectory?.item_list ?? []}
-                value={locationId}
-                onChange={(nextValue) => {
-                  setLocationId(nextValue);
-                  setFieldError((previous) => ({ ...previous, location: undefined }));
+              <EditorPanelFlashOverlay active={isEditorFlashActive} />
+              <EventActionField
+                copy={{
+                  actionLabel: copy.actionLabel,
+                  actionHint: copy.actionHint,
+                  actionEmptyAriaLabel: copy.filterAllAria,
+                  inputSectionTitle: copy.actionInputSectionTitle,
+                  inputSectionHint: copy.actionInputSectionHint,
+                  inputEmpty: copy.actionInputEmpty,
+                  inputLoading: copy.actionInputLoading
+                }}
+                actionId={actionId}
+                actionOptionList={actionOptionList}
+                onChangeActionId={(value) => {
+                  setActionId(parseNumericFilter(value));
+                  setFieldError((previous) => ({ ...previous, action: undefined }));
                   setRequestErrorMessage(null);
                 }}
-                getParentId={(item) => item.parent_location_id ?? null}
-                allLabel={copy.filterAll}
+                actionErrorMessage={fieldError.action}
                 disabled={isDeletePending || !canEditForm}
-                ariaInvalid={Boolean(fieldError.location)}
+                embedded
+                showInputSection={false}
+                generatedInputFieldList={eventActionInputDraftList.map((item) => ({
+                  fieldId: item.fieldId,
+                  label: item.label,
+                  sqlType: item.sqlType,
+                  value: item.value
+                }))}
+                inputLoading={actionInputLoading}
+                inputErrorMessage={actionInputErrorMessage}
+                onChangeInputValue={handleChangeActionInputValue}
               />
-              <p className="ui-field-hint">{copy.locationHint}</p>
-              {fieldError.location ? (
-                <p className="ui-field-error">{fieldError.location}</p>
-              ) : null}
+
+              <div className="ui-field">
+                <label className="ui-field-label" htmlFor="event-moment">
+                  {copy.momentLabel}
+                </label>
+                <TenantDateTimePicker
+                  id="event-moment"
+                  value={momentInput ? new Date(momentInput) : null}
+                  onChange={(value) => {
+                    setMomentInput(value ? toLocalMomentInputValue(value) : "");
+                    setFieldError((previous) => ({ ...previous, moment: undefined }));
+                    setRequestErrorMessage(null);
+                  }}
+                  disabled={isDeletePending || !canEditForm}
+                  showFlash={Boolean(fieldError.moment)}
+                  locale={locale}
+                />
+                <p className="ui-field-hint">{copy.momentHint}</p>
+                {fieldError.moment ? (
+                  <p className="ui-field-error">{fieldError.moment}</p>
+                ) : null}
+              </div>
             </section>
+
+            {actionId != null ? (
+              <section className="ui-card ui-form-section ui-border-accent">
+                <EventActionField
+                  copy={{
+                    actionLabel: copy.actionLabel,
+                    actionHint: copy.actionHint,
+                    actionEmptyAriaLabel: copy.filterAllAria,
+                    inputSectionTitle: copy.actionInputSectionTitle,
+                    inputSectionHint: copy.actionInputSectionHint,
+                    inputEmpty: copy.actionInputEmpty,
+                    inputLoading: copy.actionInputLoading
+                  }}
+                  actionId={actionId}
+                  actionOptionList={actionOptionList}
+                  onChangeActionId={(value) => {
+                    setActionId(parseNumericFilter(value));
+                    setFieldError((previous) => ({ ...previous, action: undefined }));
+                    setRequestErrorMessage(null);
+                  }}
+                  actionErrorMessage={fieldError.action}
+                  disabled={isDeletePending || !canEditForm}
+                  embedded
+                  showActionSection={false}
+                  generatedInputFieldList={eventActionInputDraftList.map((item) => ({
+                    fieldId: item.fieldId,
+                    label: item.label,
+                    sqlType: item.sqlType,
+                    value: item.value
+                  }))}
+                  inputLoading={actionInputLoading}
+                  inputErrorMessage={actionInputErrorMessage}
+                  onChangeInputValue={handleChangeActionInputValue}
+                />
+              </section>
+            ) : null}
 
             {isCreateMode ? (
               <ConfigurationInfoSection
