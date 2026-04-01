@@ -577,14 +577,19 @@ export function ScopeHierarchyConfigurationClient<
   ]);
 
   const resolveLabel = useCallback((item: TItem) => resolveHierarchyLabel(item), []);
-  const parentFilterOptionList = useMemo(
-    () =>
-      itemList.map((item) => ({
-        value: String(item.id),
-        label: resolveHierarchyLabel(item),
-      })),
-    [itemList]
-  );
+  const parentFilterOptionList = useMemo(() => {
+    const optionMap = new Map<string, { value: string; label: string }>();
+    for (const item of itemList) {
+      const value = String(item.id);
+      if (!optionMap.has(value)) {
+        optionMap.set(value, {
+          value,
+          label: resolveHierarchyLabel(item),
+        });
+      }
+    }
+    return [...optionMap.values()];
+  }, [itemList]);
 
   return (
     <ConfigurationDirectoryEditorShell
