@@ -1731,13 +1731,19 @@ def _build_tenant_history_response(
     if action_type is not None:
         history_query = history_query.where(Log.action_type == action_type)
 
-    if actor_query and actor_query.strip():
-        like_pattern = f"%{actor_query.strip()}%"
+    actor_query_term_expression = _query_term_expression_for_search(actor_query)
+    if actor_query_term_expression is not None:
         history_query = history_query.where(
             or_(
-                Account.display_name.ilike(like_pattern),
-                Account.name.ilike(like_pattern),
-                Account.email.ilike(like_pattern),
+                _normalize_expression_for_search(Account.display_name).contains(
+                    actor_query_term_expression
+                ),
+                _normalize_expression_for_search(Account.name).contains(
+                    actor_query_term_expression
+                ),
+                _normalize_expression_for_search(Account.email).contains(
+                    actor_query_term_expression
+                ),
             )
         )
 

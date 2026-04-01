@@ -73,6 +73,14 @@ function resolveAsideTitle(displayName: string, legalName: string, tenantId: num
   return `#${tenantId}`;
 }
 
+function normalizeTextForFilter(value: string) {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
 export function TenantConfigurationClient({
   locale,
   initialTenant,
@@ -309,11 +317,13 @@ export function TenantConfigurationClient({
   const asideTitle = resolveAsideTitle(tenant.display_name, tenant.name, tenant.id);
   const asideCaption = tenant.name.trim() || `#${tenant.id}`;
   const tenantMatchesFilter = useMemo(() => {
-    const normalizedQuery = filterQuery.trim().toLowerCase();
+    const normalizedQuery = normalizeTextForFilter(filterQuery);
     if (!normalizedQuery) {
       return true;
     }
-    const candidateText = `${tenant.display_name} ${tenant.name} ${tenant.id}`.toLowerCase();
+    const candidateText = normalizeTextForFilter(
+      `${tenant.display_name} ${tenant.name} ${String(tenant.id)}`
+    );
     return candidateText.includes(normalizedQuery);
   }, [filterQuery, tenant.display_name, tenant.id, tenant.name]);
 
