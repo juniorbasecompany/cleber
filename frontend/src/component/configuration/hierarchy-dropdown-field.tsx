@@ -28,6 +28,7 @@ type HierarchyDropdownNodeProps<TItem extends HierarchyDropdownFieldItemBase> = 
   minDepth: number;
   maxDepth: number;
   selectedIdSet: Set<number>;
+  disabled: boolean;
   onToggle: (id: number) => void;
 };
 
@@ -66,25 +67,45 @@ function HierarchyDropdownNode<TItem extends HierarchyDropdownFieldItemBase>({
   minDepth,
   maxDepth,
   selectedIdSet,
+  disabled,
   onToggle
 }: HierarchyDropdownNodeProps<TItem>) {
   const childList = childrenByParent.get(item.id) ?? [];
   const label = resolveItemLabel(item);
   const isSelected = selectedIdSet.has(item.id);
 
+  function handleBoxClick(event: React.MouseEvent<HTMLElement>) {
+    if (disabled) {
+      return;
+    }
+    const self = event.currentTarget;
+    const hit = (event.target as HTMLElement).closest(".ui-hierarchy-dropdown-nest-box");
+    if (hit !== self) {
+      return;
+    }
+    onToggle(item.id);
+  }
+
   return (
     <section
       className="ui-hierarchy-dropdown-nest-box"
       data-selected={isSelected ? "true" : undefined}
+      data-disabled={disabled ? "true" : undefined}
       style={buildFilterHierarchyToneStyle(item.depth, minDepth, maxDepth)}
+      onClick={handleBoxClick}
     >
       <div className="ui-hierarchy-dropdown-head">
-        <label className="ui-hierarchy-dropdown-toggle">
+        <label
+          className="ui-hierarchy-dropdown-toggle"
+          onClick={(event) => event.stopPropagation()}
+        >
           <input
             type="checkbox"
             className="ui-hierarchy-dropdown-checkbox"
             checked={isSelected}
+            disabled={disabled}
             onChange={() => onToggle(item.id)}
+            onClick={(event) => event.stopPropagation()}
           />
           <div className="ui-hierarchy-dropdown-nest-copy">
             <p className="ui-hierarchy-dropdown-nest-label">{label}</p>
@@ -102,6 +123,7 @@ function HierarchyDropdownNode<TItem extends HierarchyDropdownFieldItemBase>({
               minDepth={minDepth}
               maxDepth={maxDepth}
               selectedIdSet={selectedIdSet}
+              disabled={disabled}
               onToggle={onToggle}
             />
           ))}
@@ -417,6 +439,7 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
                     minDepth={minDepth}
                     maxDepth={maxDepth}
                     selectedIdSet={draftSelectedIdSet}
+                    disabled={disabled}
                     onToggle={handleToggleDraftValue}
                   />
                 ))}
