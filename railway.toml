@@ -1,7 +1,10 @@
-# Monorepo: build a partir da raiz com Docker (backend em ./backend).
-# Garante que o Railway não tenta o Railpack só com a árvore da raiz.
+# Monorepo: uma imagem Docker na raiz (FastAPI + Next.js). Usar builder DOCKERFILE neste serviço;
+# podes remover o serviço separado de frontend (Railpack/Node) para um único deploy e uma URL.
 #
-# Variáveis no serviço "valora" (obrigatório para o processo subir e o healthcheck passar):
+# Build do Next (ARG no Dockerfile): no Railway, define as mesmas variáveis que no frontend local,
+# por exemplo NEXT_PUBLIC_GOOGLE_CLIENT_ID (e opcionalmente NEXT_PUBLIC_API_URL=http://127.0.0.1:8003).
+#
+# Variáveis no serviço (obrigatório para o processo subir e o healthcheck passar):
 # - Liga o plugin Postgres ao backend com UMA destas opções:
 #   (A) DATABASE_URL = referência ${{ NomeDoTeuPostgres.DATABASE_URL }} (usa o nome exato do serviço Postgres no canvas).
 #   (B) Ou referencia PGHOST, PGPORT, PGUSER, PGPASSWORD, PGDATABASE do Postgres (o backend aceita estes nomes).
@@ -18,6 +21,6 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# Usa o CMD do Dockerfile (Alembic + sh -c + ${PORT:-8000}). Um startCommand aqui sem shell pode
-# deixar $PORT literal e o Uvicorn nunca escuta na porta que o healthcheck usa.
+# ENTRYPOINT: Alembic + supervisord (Uvicorn em 127.0.0.1:8003 + Next na PORT).
+# O healthcheck bate em /health no Next, que faz rewrite para o FastAPI.
 healthcheckPath = "/health"

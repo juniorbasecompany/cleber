@@ -43,11 +43,10 @@ function hasDisabledSemantic(element: HTMLElement): boolean {
   if (disabledContainer) {
     return true;
   }
-  if (
-    element instanceof HTMLInputElement
-    || element instanceof HTMLTextAreaElement
-    || element instanceof HTMLSelectElement
-  ) {
+  if (element instanceof HTMLSelectElement) {
+    return element.disabled;
+  }
+  if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
     return element.disabled || element.readOnly;
   }
   return false;
