@@ -142,7 +142,7 @@
   --color-accent-border-strong: var(--color-selection-surface);
   --color-accent-border-active: var(--color-selection-surface);
   --color-accent-border-focus: hsla(var(--base-accent-color), 70%, 50%, 0.32);
-  --color-accent-border-flash: var(--color-accent-border-focus);
+  --color-accent-border-flash: hsla(var(--base-editor-color), 39%, 48%, 0.32);
   --color-accent-surface-soft: hsla(var(--base-accent-color), 100%, 95%, 0.62);
   --color-accent-surface-muted: var(--color-accent-surface-soft);
   --color-accent-surface-default: var(--color-accent-surface-soft);
@@ -235,9 +235,9 @@
   --gradient-accent-emphasis: linear-gradient(180deg, var(--color-accent), var(--color-accent-strong));
   --gradient-editor-flash-fill:
     linear-gradient(180deg,
-      hsla(var(--base-accent-color), 70%, 50%, 0.18),
-      hsla(var(--base-accent-color), 70%, 50%, 0.07) 45%,
-      hsla(var(--base-accent-color), 70%, 50%, 0.01) 100%);
+      hsla(var(--base-editor-color), 39%, 48%, 0.18),
+      hsla(var(--base-editor-color), 39%, 48%, 0.07) 45%,
+      hsla(var(--base-editor-color), 39%, 48%, 0.01) 100%);
   --gradient-surface-badge: var(--gradient-tone-neutral);
   --gradient-surface-badge-neutral: var(--gradient-tone-neutral);
   --gradient-surface-brandmark: linear-gradient(180deg, hsla(var(--base-accent-color), 78%, 62%, 1) 0%, hsla(var(--base-accent-color), 62%, 45%, 1) 100%);
