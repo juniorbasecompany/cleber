@@ -409,7 +409,6 @@
   "EventConfigurationPage": {
     "title": "Eventos",
     "description": "Registra y ajusta eventos del alcance activo. La lista permite filtrar por período, ubicación, unidad y acción, manteniendo edición e historial en el mismo flujo.",
-    "empty": "No se encontraron eventos para los filtros aplicados.",
     "list": {
       "emptyScope": "Crea un alcance antes de registrar eventos.",
       "missingCurrentScope": "Define un alcance activo en el encabezado antes de registrar eventos.",
@@ -492,7 +491,6 @@
     "title": "Ubicaciones",
     "description": "En este panel ves tu árbol de ubicaciones. A la izquierda aparece la jerarquía; al lado, el formulario para editar el nombre y otra información sobre la ubicación, además del panel de historial. Selecciona una ubicación en el árbol para editarla o haz clic en el botón Nueva para crear una nueva subdivisión en esa ubicación.",
     "list": {
-      "empty": "No se encontraron ubicaciones para el alcance seleccionado.",
       "emptyScope": "Crea un alcance antes de editar la jerarquía de ubicaciones.",
       "missingCurrentScope": "Define un alcance activo en el selector del encabezado antes de editar la jerarquía de ubicaciones."
     },
@@ -555,7 +553,6 @@
     "title": "Unidades productivas",
     "description": "En este panel ves el árbol de unidades productivas del alcance. A la izquierda está la jerarquía; al lado, el formulario para editar nombre y descripción, además del panel de historial. Selecciona un ítem en el árbol para editarlo o usa el botón Nueva para crear otro nivel bajo el ítem elegido.",
     "list": {
-      "empty": "No se encontraron unidades productivas para el alcance seleccionado.",
       "emptyScope": "Crea un alcance antes de editar unidades productivas.",
       "missingCurrentScope": "Define un alcance activo en el selector del encabezado antes de editar unidades productivas."
     },

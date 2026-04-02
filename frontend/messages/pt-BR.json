@@ -409,7 +409,6 @@
   "EventConfigurationPage": {
     "title": "Eventos",
     "description": "Registre e ajuste os eventos do escopo ativo. A lista permite filtrar por período, local, unidade e ação, mantendo edição e histórico no mesmo fluxo.",
-    "empty": "Nenhum evento foi encontrado para os filtros aplicados.",
     "list": {
       "emptyScope": "Crie um escopo antes de registrar eventos.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de registrar eventos.",
@@ -492,7 +491,6 @@
     "title": "Locais",
     "description": "Neste painel você vê sua árvore de locais. À esquerda aparece a hierarquia; ao lado, o formulário para editar o nome e outras informações sobre o local, além do painel de histórico. Selecione um local na árvore para editá-lo ou clique no botão Novo para criar uma nova divisão naquele local.",
     "list": {
-      "empty": "Nenhum local foi encontrado para o escopo selecionado.",
       "emptyScope": "Crie um escopo antes de editar a hierarquia de locais.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar a hierarquia de locais."
     },
@@ -555,7 +553,6 @@
     "title": "Unidades produtivas",
     "description": "Neste painel você vê a árvore de unidades produtivas do escopo. À esquerda está a hierarquia; ao lado, o formulário para editar nome e descrição, além do painel de histórico. Selecione um item na árvore para editá-lo ou use o botão Nova para criar outro nível abaixo do item escolhido.",
     "list": {
-      "empty": "Nenhuma unidade produtiva foi encontrada para o escopo selecionado.",
       "emptyScope": "Crie um escopo antes de editar unidades produtivas.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar unidades produtivas."
     },

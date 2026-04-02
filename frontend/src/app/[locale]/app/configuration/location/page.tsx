@@ -53,7 +53,6 @@ export default async function LocationConfigurationPage({
         copy={{
           title: t("title"),
           description: t("description"),
-          empty: t("list.empty"),
           emptyScope: t("list.emptyScope"),
           missingCurrentScope: t("list.missingCurrentScope"),
           historyTitle: t("history.title"),

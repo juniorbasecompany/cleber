@@ -618,10 +618,6 @@ export function ScopeHierarchyConfigurationClient<
                 onCreate={(draftParentId) => handleStartCreate(draftParentId)}
               />
             ))}
-
-            {directory && itemList.length === 0 ? (
-              <div className="ui-panel ui-empty-panel">{copy.empty}</div>
-            ) : null}
           </div>
         </>
       }

@@ -67,7 +67,6 @@ export default async function EventConfigurationPage({ params }: EventConfigurat
         copy={{
           title: t("title"),
           description: t("description"),
-          empty: t("empty"),
           emptyScope: t("list.emptyScope"),
           missingCurrentScope: t("list.missingCurrentScope"),
           loadError: t("list.loadError"),

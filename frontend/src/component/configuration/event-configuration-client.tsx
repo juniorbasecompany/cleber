@@ -38,7 +38,6 @@ const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
 export type EventConfigurationCopy = {
   title: string;
   description: string;
-  empty: string;
   emptyScope: string;
   missingCurrentScope: string;
   loadError: string;
@@ -391,7 +390,6 @@ export function EventConfigurationClient({
   const [directory, setDirectory] = useState<TenantScopeEventDirectoryResponse | null>(
     initialEventDirectory
   );
-  const [isLoadingDirectory, setIsLoadingDirectory] = useState(false);
 
   const initialSelectedEventKey =
     initialEventDirectory != null
@@ -645,7 +643,6 @@ export function EventConfigurationClient({
         query.set("action_id", String(filterActionId));
       }
 
-      setIsLoadingDirectory(true);
       try {
         const response = await fetch(
           `/api/auth/tenant/current/scopes/${scopeId}/events?${query.toString()}`
@@ -661,8 +658,6 @@ export function EventConfigurationClient({
         );
       } catch {
         setRequestErrorMessage(copy.loadError);
-      } finally {
-        setIsLoadingDirectory(false);
       }
     },
     [
@@ -1298,12 +1293,6 @@ export function EventConfigurationClient({
                 </p>
               </button>
             ))}
-
-            {directory && directory.item_list.length === 0 && !isLoadingDirectory ? (
-              <div className="ui-panel ui-empty-panel ui-panel-body-compact">
-                {copy.empty}
-              </div>
-            ) : null}
           </div>
         </>
       }

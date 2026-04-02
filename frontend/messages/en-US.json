@@ -409,7 +409,6 @@
   "EventConfigurationPage": {
     "title": "Events",
     "description": "Record and adjust events for the active scope. The list can be filtered by period, location, unit, and action while keeping edit and history in one flow.",
-    "empty": "No events were found for the current filters.",
     "list": {
       "emptyScope": "Create a scope before recording events.",
       "missingCurrentScope": "Select an active scope in the header before recording events.",
@@ -492,7 +491,6 @@
     "title": "Locations",
     "description": "In this panel you see your location tree. The hierarchy appears on the left; beside it is the form to edit the name and other information about the location, plus the history panel. Select a location in the tree to edit it, or click the New button to create a new subdivision at that location.",
     "list": {
-      "empty": "No locations were found for the selected scope.",
       "emptyScope": "Create a scope first before editing the location hierarchy.",
       "missingCurrentScope": "Set an active scope from the header selector before editing the location hierarchy."
     },
@@ -557,7 +555,6 @@
     "title": "Productive units",
     "description": "This panel shows the productive-unit tree for the scope. The hierarchy is on the left; beside it is the form to edit the name and description, plus the history panel. Select an item in the tree to edit it, or use the New button to add a child under the chosen item.",
     "list": {
-      "empty": "No productive units were found for the selected scope.",
       "emptyScope": "Create a scope before editing productive units.",
       "missingCurrentScope": "Set an active scope from the header selector before editing productive units."
     },

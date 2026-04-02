@@ -53,7 +53,6 @@ export default async function UnityConfigurationPage({
         copy={{
           title: t("title"),
           description: t("description"),
-          empty: t("list.empty"),
           emptyScope: t("list.emptyScope"),
           missingCurrentScope: t("list.missingCurrentScope"),
           historyTitle: t("history.title"),
