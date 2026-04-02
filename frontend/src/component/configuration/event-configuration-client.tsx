@@ -125,15 +125,30 @@ function parseSelectedEventKey(raw: string | null): EventSelectionKey {
   return parsed;
 }
 
+/** Lista do diretório: mais antigo primeiro (mesma regra da API `list_scope_events`). */
+function sortEventDirectoryItemListOldestFirst(
+  itemList: TenantScopeEventRecord[]
+): TenantScopeEventRecord[] {
+  return [...itemList].sort((left, right) => {
+    const byMoment = left.moment_utc.localeCompare(right.moment_utc);
+    if (byMoment !== 0) {
+      return byMoment;
+    }
+    return left.id - right.id;
+  });
+}
+
 function resolveSelectedEventKey(
   itemList: TenantScopeEventRecord[],
   preferredKey: EventSelectionKey,
   canCreate: boolean
 ): EventSelectionKey {
-  const firstEventId = itemList[0]?.id ?? null;
+  /* Lista em ordem crescente de momento: padrão sem URL continua sendo o evento mais recente. */
+  const defaultEventId =
+    itemList.length > 0 ? itemList[itemList.length - 1]?.id ?? null : null;
 
   if (preferredKey === "new") {
-    return canCreate ? "new" : firstEventId;
+    return canCreate ? "new" : defaultEventId;
   }
 
   if (typeof preferredKey === "number") {
@@ -141,10 +156,10 @@ function resolveSelectedEventKey(
     if (found != null) {
       return found;
     }
-    return firstEventId ?? (canCreate ? "new" : null);
+    return defaultEventId ?? (canCreate ? "new" : null);
   }
 
-  return firstEventId ?? (canCreate ? "new" : null);
+  return defaultEventId ?? (canCreate ? "new" : null);
 }
 
 function normalizeUtcMomentInput(value: string): string {
@@ -522,14 +537,19 @@ export function EventConfigurationClient({
         return null;
       }
 
+      const directoryWithSortedList: TenantScopeEventDirectoryResponse = {
+        ...nextDirectory,
+        item_list: sortEventDirectoryItemListOldestFirst(nextDirectory.item_list)
+      };
+
       const nextKey = resolveSelectedEventKey(
-        nextDirectory.item_list,
+        directoryWithSortedList.item_list,
         preferredKey ?? null,
-        nextDirectory.can_edit
+        directoryWithSortedList.can_edit
       );
       const nextSelectedEvent =
         typeof nextKey === "number"
-          ? nextDirectory.item_list.find((item) => item.id === nextKey) ?? null
+          ? directoryWithSortedList.item_list.find((item) => item.id === nextKey) ?? null
           : null;
 
       const nextMomentInput = nextSelectedEvent
@@ -539,7 +559,7 @@ export function EventConfigurationClient({
       const nextUnityId = nextSelectedEvent?.unity_id ?? null;
       const nextActionId = nextSelectedEvent?.action_id ?? null;
 
-      setDirectory(nextDirectory);
+      setDirectory(directoryWithSortedList);
       setIsCreateMode(nextKey === "new");
       setSelectedEventId(typeof nextKey === "number" ? nextKey : null);
       setMomentInput(nextMomentInput);

@@ -1324,7 +1324,7 @@ def list_scope_events(
         query = query.where(Event.unity_id.in_(expanded_unity_id_list))
     if action_id is not None:
         query = query.where(Event.action_id == action_id)
-    rows = list(session.scalars(query.order_by(Event.moment_utc.desc(), Event.id.desc())))
+    rows = list(session.scalars(query.order_by(Event.moment_utc.asc(), Event.id.asc())))
     return ScopeEventListResponse(
         can_edit=_member_can_edit_scope_rules(member),
         item_list=[
