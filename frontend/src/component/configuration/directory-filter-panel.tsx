@@ -46,7 +46,7 @@ type DirectoryFilterMultiSelectFieldProps = {
 
 export function DirectoryFilterPanel({ children }: DirectoryFilterPanelProps) {
   return (
-    <section className="ui-stack-md">
+    <section className="ui-panel ui-panel-body ui-panel-filter">
       <div className="ui-history-filter-grid">{children}</div>
     </section>
   );

@@ -1544,6 +1544,9 @@
 .ui-directory-item {
   border-color: var(--color-accent-vertical-border);
   border-left: 4px solid var(--color-accent-vertical-border);
+}
+
+.ui-directory-item {
   background: var(--gradient-surface-card);
 }
 
@@ -1551,6 +1554,18 @@
 .ui-panel-editor {
   border-color: var(--color-editor-vertical-border);
   border-left: 4px solid var(--color-editor-vertical-border);
+}
+
+/* Painel externo do filtro: barra vertical laranja + bordas laranja. */
+.ui-panel-filter {
+  border-color: var(--color-filter-vertical-border);
+  border-left: 4px solid var(--color-filter-vertical-border);
+}
+
+/* Painéis externos (diretório, edição e filtro): mesma superfície visual. */
+.ui-panel-context-card,
+.ui-panel-editor,
+.ui-panel-filter {
   background: var(--gradient-surface-card);
 }
 
