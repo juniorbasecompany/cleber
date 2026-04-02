@@ -21,6 +21,8 @@ builder = "DOCKERFILE"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# ENTRYPOINT: Alembic + supervisord (Uvicorn em 127.0.0.1:8003 + Next na PORT).
-# O healthcheck bate em /health no Next, que faz rewrite para o FastAPI.
+# O Dockerfile define ENTRYPOINT com Alembic + supervisord (Next na PORT + Uvicorn em 127.0.0.1:8003).
+# Se no painel existir "Custom Start Command" com só uvicorn, apaga-o: caso contrário o Next nunca sobe e vês {"detail":"Not Found"} em / e /pt-BR/...
+# Isto fixa no repositório o processo de arranque e evita ficar preso a um start antigo só API.
+startCommand = "/app/docker-entrypoint.sh"
 healthcheckPath = "/health"
