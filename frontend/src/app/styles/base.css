@@ -39,7 +39,7 @@
   --color-accent: hsla(var(--base-accent-color), 70%, 50%, 1);
   --color-accent-strong: hsla(var(--base-accent-color), 82%, 34%, 1);
   --color-accent-soft: hsla(var(--base-accent-color), 100%, 95%, 1);
-  --color-accent-vertical-border: hsla(var(--base-accent-color), 70%, 50%, 0.5);
+  --color-accent-vertical-border: hsla(var(--base-accent-color), 70%, 50%, 0.75);
   --color-filter-vertical-border: hsla(var(--base-filter-color), 100%, 50%, 0.75);
   --color-editor-vertical-border: hsla(var(--base-editor-color), 39%, 48%, 0.75);
   --color-location-nest-start: hsla(var(--base-background-color), 62%, 97%, 1);

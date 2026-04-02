@@ -516,8 +516,8 @@
   top: 0;
   left: 0;
   bottom: 0;
-  width: 4px;
-  background: var(--color-editor-vertical-border);
+  width: 0;
+  background: transparent;
 }
 
 .ui-editor-card-flow>.ui-form-section .ui-field {
