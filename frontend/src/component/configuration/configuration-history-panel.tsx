@@ -351,12 +351,6 @@ export function ConfigurationHistoryPanel({
         </div>
       ) : null}
 
-      {!isLoading && !errorMessage && itemList.length === 0 ? (
-        <div className="ui-panel ui-empty-panel ui-panel-body-compact">
-          {t("empty")}
-        </div>
-      ) : null}
-
       {!isLoading && !errorMessage && itemList.length > 0 ? (
         <ul className="ui-history-log-list">
           {itemList.map((item) => {
