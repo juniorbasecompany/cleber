@@ -124,6 +124,7 @@ export type TenantScopeFieldRecord = {
   id: number;
   scope_id: number;
   sql_type: string;
+  sort_order: number;
   label_id?: number | null;
   label_name?: string | null;
 };
@@ -136,6 +137,7 @@ export type TenantScopeFieldDirectoryResponse = {
 export type TenantScopeActionRecord = {
   id: number;
   scope_id: number;
+  sort_order: number;
   label_id?: number | null;
   label_name?: string | null;
 };

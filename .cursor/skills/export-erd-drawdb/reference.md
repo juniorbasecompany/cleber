@@ -156,6 +156,10 @@ Regras de coerência:
 - Não gerar metadado de `nullIfEmpty` no código quando o field for FK.
 - A definição do que é "vazio" por tipo deve ficar centralizada no código da aplicação para revisão e ajuste posteriores.
 
+### Ordenação: `sort_order` nas tabelas `field` e `action`
+
+Colunas `sort_order` (INTEGER, NOT NULL) definem a ordem de apresentação e de listagem **dentro do mesmo `scope_id`**: campos configuráveis por escopo e ações por escopo. Valores são reindexados de forma contínua (`0..n-1`) na API ao reordenar, criar ou eliminar itens, quando aplicável. A UI de configuração permite arrastar itens no diretório (mesmo padrão `@dnd-kit` das fórmulas). Endpoints de reordenação: `POST .../scopes/{scope_id}/fields/reorder` com `field_id_list` e `POST .../scopes/{scope_id}/actions/reorder` com `action_id_list` (permutação exata dos IDs do escopo).
+
 ## Relacionamento (`relationships[]`)
 
 | Campo              | Obrigatório | Tipo   | Descrição |

@@ -50,6 +50,11 @@ class Field(Base):
             "para tipo SQL completo como INTEGER, NUMERIC( 15, 2 ), BOOLEAN, etc."
         ),
     )
+    sort_order: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Ordem do campo em relação às demais no mesmo escopo.",
+    )
 
 
 class Action(Base):
@@ -71,6 +76,11 @@ class Action(Base):
         ForeignKey("scope.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
         comment="Ligação com o escopo.",
+    )
+    sort_order: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Ordem da ação em relação às demais no mesmo escopo.",
     )
 
 

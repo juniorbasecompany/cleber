@@ -10,7 +10,7 @@ from typing import Literal
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field as PydanticField, model_validator
-from sqlalchemy import or_, select, text
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -438,10 +438,53 @@ def _fill_other_action_labels_via_deepl(
 # --- field ---
 
 
+def _resequence_fields_in_scope(session: Session, *, scope_id: int) -> None:
+    rows = list(
+        session.scalars(
+            select(Field)
+            .where(Field.scope_id == scope_id)
+            .order_by(Field.sort_order, Field.id)
+        )
+    )
+    for index, row in enumerate(rows):
+        row.sort_order = index
+
+
+def _resequence_actions_in_scope(session: Session, *, scope_id: int) -> None:
+    rows = list(
+        session.scalars(
+            select(Action)
+            .where(Action.scope_id == scope_id)
+            .order_by(Action.sort_order, Action.id)
+        )
+    )
+    for index, row in enumerate(rows):
+        row.sort_order = index
+
+
+def _next_field_sort_order(session: Session, *, scope_id: int) -> int:
+    current_max = session.scalar(
+        select(func.coalesce(func.max(Field.sort_order), -1)).where(
+            Field.scope_id == scope_id
+        )
+    )
+    return int(current_max) + 1
+
+
+def _next_action_sort_order(session: Session, *, scope_id: int) -> int:
+    current_max = session.scalar(
+        select(func.coalesce(func.max(Action.sort_order), -1)).where(
+            Action.scope_id == scope_id
+        )
+    )
+    return int(current_max) + 1
+
+
 class ScopeFieldRecord(BaseModel):
     id: int
     scope_id: int
     sql_type: str
+    sort_order: int
     label_id: int | None = None
     label_name: str | None = None
 
@@ -519,7 +562,7 @@ def list_scope_fields(
 
     rows = list(
         session.scalars(
-            field_query.order_by(Field.id)
+            field_query.order_by(Field.sort_order, Field.id)
         )
     )
     label_by_field_id: dict[int, Label] = {}
@@ -545,6 +588,7 @@ def list_scope_fields(
                 id=r.id,
                 scope_id=r.scope_id,
                 sql_type=r.type,
+                sort_order=r.sort_order,
                 label_id=pair.id if pair is not None else None,
                 label_name=pair.name if pair is not None else None,
             )
@@ -569,7 +613,11 @@ def create_scope_field(
 ):
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
-    row = Field(scope_id=scope_id, type=body.sql_type.strip())
+    row = Field(
+        scope_id=scope_id,
+        type=body.sql_type.strip(),
+        sort_order=_next_field_sort_order(session, scope_id=scope_id),
+    )
     session.add(row)
     session.flush()
     if body.label_lang is not None and body.label_name is not None:
@@ -602,7 +650,12 @@ def get_scope_field(
 ):
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = _field_in_scope_or_404(session, scope_id=scope_id, field_id=field_id)
-    return ScopeFieldRecord(id=row.id, scope_id=row.scope_id, sql_type=row.type)
+    return ScopeFieldRecord(
+        id=row.id,
+        scope_id=row.scope_id,
+        sql_type=row.type,
+        sort_order=row.sort_order,
+    )
 
 
 @router.patch(
@@ -664,9 +717,50 @@ def delete_scope_field(
             detail="Cannot delete field while results reference it",
         )
     session.delete(row)
+    session.flush()
+    _resequence_fields_in_scope(session, scope_id=scope_id)
     _apply_member_audit_context(session, member)
     session.commit()
     return list_scope_fields(scope_id, None, member, session, None)
+
+
+class ScopeFieldReorderRequest(BaseModel):
+    field_id_list: list[int]
+
+
+@router.post(
+    "/scopes/{scope_id}/fields/reorder",
+    response_model=ScopeFieldListResponse,
+)
+def reorder_scope_fields(
+    scope_id: int,
+    body: ScopeFieldReorderRequest,
+    member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+    label_lang: Literal["pt-BR", "en", "es"] | None = Query(default=None),
+):
+    _require_scope_rules_editor(member)
+    _get_tenant_scope(session, actor=member, scope_id=scope_id)
+    expected_id_set = set(
+        session.scalars(select(Field.id).where(Field.scope_id == scope_id)).all()
+    )
+    received = body.field_id_list
+    if len(received) != len(expected_id_set) or set(received) != expected_id_set:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="field_id_list must list every field in this scope exactly once",
+        )
+    for index, fid in enumerate(received):
+        row = session.get(Field, fid)
+        if row is None or row.scope_id != scope_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid field id in reorder list",
+            )
+        row.sort_order = index
+    _apply_member_audit_context(session, member)
+    commit_session_with_null_if_empty(session)
+    return list_scope_fields(scope_id, label_lang, member, session, None)
 
 
 # --- action ---
@@ -675,6 +769,7 @@ def delete_scope_field(
 class ScopeActionRecord(BaseModel):
     id: int
     scope_id: int
+    sort_order: int
     label_id: int | None = None
     label_name: str | None = None
 
@@ -739,7 +834,7 @@ def list_scope_actions(
 
     rows = list(
         session.scalars(
-            action_query.order_by(Action.id)
+            action_query.order_by(Action.sort_order, Action.id)
         )
     )
     label_by_action_id: dict[int, Label] = {}
@@ -764,6 +859,7 @@ def list_scope_actions(
             ScopeActionRecord(
                 id=r.id,
                 scope_id=r.scope_id,
+                sort_order=r.sort_order,
                 label_id=pair.id if pair is not None else None,
                 label_name=pair.name if pair is not None else None,
             )
@@ -787,7 +883,10 @@ def create_scope_action(
 ):
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
-    row = Action(scope_id=scope_id)
+    row = Action(
+        scope_id=scope_id,
+        sort_order=_next_action_sort_order(session, scope_id=scope_id),
+    )
     session.add(row)
     session.flush()
     if body.label_lang is not None and body.label_name is not None:
@@ -820,7 +919,11 @@ def get_scope_action(
 ):
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = _action_in_scope_or_404(session, scope_id=scope_id, action_id=action_id)
-    return ScopeActionRecord(id=row.id, scope_id=row.scope_id)
+    return ScopeActionRecord(
+        id=row.id,
+        scope_id=row.scope_id,
+        sort_order=row.sort_order,
+    )
 
 
 @router.patch(
@@ -874,9 +977,50 @@ def delete_scope_action(
             detail="Cannot delete action while events reference it",
         )
     session.delete(row)
+    session.flush()
+    _resequence_actions_in_scope(session, scope_id=scope_id)
     _apply_member_audit_context(session, member)
     session.commit()
     return list_scope_actions(scope_id, None, member, session, None)
+
+
+class ScopeActionReorderRequest(BaseModel):
+    action_id_list: list[int]
+
+
+@router.post(
+    "/scopes/{scope_id}/actions/reorder",
+    response_model=ScopeActionListResponse,
+)
+def reorder_scope_actions(
+    scope_id: int,
+    body: ScopeActionReorderRequest,
+    member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+    label_lang: Literal["pt-BR", "en", "es"] | None = Query(default=None),
+):
+    _require_scope_rules_editor(member)
+    _get_tenant_scope(session, actor=member, scope_id=scope_id)
+    expected_id_set = set(
+        session.scalars(select(Action.id).where(Action.scope_id == scope_id)).all()
+    )
+    received = body.action_id_list
+    if len(received) != len(expected_id_set) or set(received) != expected_id_set:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="action_id_list must list every action in this scope exactly once",
+        )
+    for index, aid in enumerate(received):
+        row = session.get(Action, aid)
+        if row is None or row.scope_id != scope_id:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid action id in reorder list",
+            )
+        row.sort_order = index
+    _apply_member_audit_context(session, member)
+    commit_session_with_null_if_empty(session)
+    return list_scope_actions(scope_id, label_lang, member, session, None)
 
 
 # --- formula ---

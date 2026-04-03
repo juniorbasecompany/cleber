@@ -2,7 +2,15 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from "react";
 
 import {
   directoryEditorCanSubmitForDirectoryEditor,
@@ -10,6 +18,7 @@ import {
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
+import { ScopeRulesDirectorySortableList } from "@/component/configuration/configuration-scope-rules-directory-sortable";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import {
   ActionFormulaSection,
@@ -278,6 +287,7 @@ export function ActionConfigurationClient({
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [filterQuery, setFilterQuery] = useState("");
+  const [isDirectoryReorderBusy, setIsDirectoryReorderBusy] = useState(false);
   const [formulaRowList, setFormulaRowList] = useState<ActionFormulaDraftRow[]>([]);
   const [formulaBaselineList, setFormulaBaselineList] = useState<ActionFormulaDraftRow[]>([]);
   const [formulasCanEdit, setFormulasCanEdit] = useState(false);
@@ -450,6 +460,59 @@ export function ActionConfigurationClient({
     }
     void loadActionDirectory(selectedActionKeyRef.current);
   }, [loadActionDirectory]);
+
+  const handleActionDirectoryReorder = useCallback(
+    async (nextList: TenantScopeActionRecord[]) => {
+      if (scopeId == null) {
+        return;
+      }
+      const snapshot = directory;
+      if (snapshot == null) {
+        return;
+      }
+      // Evita snap visual ao soltar: alinha o estado com o drop antes da resposta da API.
+      const optimisticList = nextList.map((row, index) => ({
+        ...row,
+        sort_order: index
+      }));
+      setDirectory({
+        ...snapshot,
+        item_list: optimisticList
+      });
+      setIsDirectoryReorderBusy(true);
+      setRequestErrorMessage(null);
+      try {
+        const query = new URLSearchParams({ label_lang: labelLang });
+        const response = await fetch(
+          `/api/auth/tenant/current/scopes/${scopeId}/actions/reorder?${query.toString()}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action_id_list: nextList.map((row) => row.id) })
+          }
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setRequestErrorMessage(
+            parseErrorDetail(data, tPage("directory.reorderError")) ??
+              tPage("directory.reorderError")
+          );
+          setDirectory(snapshot);
+          void loadActionDirectory(selectedActionKeyRef.current);
+          return;
+        }
+        setDirectory(data as TenantScopeActionDirectoryResponse);
+        setHistoryRefreshKey((previous) => previous + 1);
+      } catch {
+        setRequestErrorMessage(tPage("directory.reorderError"));
+        setDirectory(snapshot);
+        void loadActionDirectory(selectedActionKeyRef.current);
+      } finally {
+        setIsDirectoryReorderBusy(false);
+      }
+    },
+    [directory, labelLang, loadActionDirectory, scopeId, tPage]
+  );
 
   const loadScopeFields = useCallback(async () => {
     if (scopeId == null) {
@@ -793,6 +856,53 @@ export function ActionConfigurationClient({
       : copy.emptyScope
     : copy.loadError;
 
+  /** Lista com mesmo aspecto (alças visíveis); o arrastar só fica desativo durante save/reorder. */
+  const directorySortableLayout =
+    Boolean(directory?.can_edit) && !filterQuery.trim();
+
+  const directoryDragDisabled = isSaving || isDirectoryReorderBusy;
+
+  const renderActionDirectoryButton = useCallback(
+    (item: TenantScopeActionRecord) => (
+      <button
+        type="button"
+        onClick={() => handleSelectAction(item)}
+        className="ui-directory-item"
+        data-selected={item.id === selectedAction?.id ? "true" : undefined}
+        data-delete-pending={
+          item.id === selectedAction?.id && isDeletePending ? "true" : undefined
+        }
+      >
+        <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
+      </button>
+    ),
+    [handleSelectAction, isDeletePending, resolveDirectoryTitle, selectedAction?.id]
+  );
+
+  const renderActionDirectorySortableItem = useCallback(
+    (item: TenantScopeActionRecord, dragHandle: ReactNode) => (
+      <div
+        className="ui-directory-item"
+        data-selected={item.id === selectedAction?.id ? "true" : undefined}
+        data-delete-pending={
+          item.id === selectedAction?.id && isDeletePending ? "true" : undefined
+        }
+      >
+        <div className="ui-scope-rules-directory-item-layout">
+          <button
+            type="button"
+            className="ui-scope-rules-directory-item-main"
+            onClick={() => handleSelectAction(item)}
+          >
+            <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
+          </button>
+          {dragHandle}
+        </div>
+      </div>
+    ),
+    [handleSelectAction, isDeletePending, resolveDirectoryTitle, selectedAction?.id]
+  );
+
   return (
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
@@ -830,27 +940,26 @@ export function ActionConfigurationClient({
               <ConfigurationDirectoryCreateButton
                 label={copy.directoryCreateLabel}
                 active={isCreateMode}
-                disabled={isSaving}
+                disabled={isSaving || isDirectoryReorderBusy}
                 onClick={handleStartCreate}
               />
             ) : null}
 
-            {directory?.item_list.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleSelectAction(item)}
-                className="ui-directory-item"
-                data-selected={item.id === selectedAction?.id ? "true" : undefined}
-                data-delete-pending={
-                  item.id === selectedAction?.id && isDeletePending
-                    ? "true"
-                    : undefined
-                }
-              >
-                <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
-              </button>
-            ))}
+            {directory && directory.item_list.length > 0 ? (
+              directorySortableLayout ? (
+                <ScopeRulesDirectorySortableList
+                  itemList={directory.item_list}
+                  dragDisabled={directoryDragDisabled}
+                  dragHandleAriaLabel={tPage("directory.dragHandleAria")}
+                  onReorder={handleActionDirectoryReorder}
+                  renderItem={renderActionDirectorySortableItem}
+                />
+              ) : (
+                directory.item_list.map((item) => (
+                  <Fragment key={item.id}>{renderActionDirectoryButton(item)}</Fragment>
+                ))
+              )
+            ) : null}
 
             {directory && directory.item_list.length === 0 && !directory.can_edit ? (
               <div className="ui-panel ui-empty-panel ui-panel-body-compact">

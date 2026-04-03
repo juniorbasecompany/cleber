@@ -2,7 +2,15 @@
 
 import { useTranslations } from "next-intl";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode
+} from "react";
 
 import {
   directoryEditorCanSubmitForDirectoryEditor,
@@ -10,6 +18,7 @@ import {
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
+import { ScopeRulesDirectorySortableList } from "@/component/configuration/configuration-scope-rules-directory-sortable";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import {
   DirectoryFilterCard,
@@ -202,6 +211,7 @@ export function FieldConfigurationClient({
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
   const [filterQuery, setFilterQuery] = useState("");
+  const [isDirectoryReorderBusy, setIsDirectoryReorderBusy] = useState(false);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
   const initialSearchFieldKeyRef = useRef<FieldSelectionKey>(initialSearchFieldKey);
@@ -409,6 +419,58 @@ export function FieldConfigurationClient({
     }
     void loadFieldDirectory(selectedFieldKeyRef.current);
   }, [loadFieldDirectory]);
+
+  const handleFieldDirectoryReorder = useCallback(
+    async (nextList: TenantScopeFieldRecord[]) => {
+      if (currentScope?.id == null) {
+        return;
+      }
+      const snapshot = directory;
+      if (snapshot == null) {
+        return;
+      }
+      // Evita snap visual ao soltar: alinha o estado com o drop antes da resposta da API.
+      const optimisticList = nextList.map((row, index) => ({
+        ...row,
+        sort_order: index
+      }));
+      setDirectory({
+        ...snapshot,
+        item_list: optimisticList
+      });
+      setIsDirectoryReorderBusy(true);
+      setRequestErrorMessage(null);
+      try {
+        const query = new URLSearchParams({ label_lang: labelLang });
+        const response = await fetch(
+          `/api/auth/tenant/current/scopes/${currentScope.id}/fields/reorder?${query.toString()}`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ field_id_list: nextList.map((row) => row.id) })
+          }
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setRequestErrorMessage(
+            parseErrorDetail(data, t("directory.reorderError")) ?? t("directory.reorderError")
+          );
+          setDirectory(snapshot);
+          void loadFieldDirectory(selectedFieldKeyRef.current);
+          return;
+        }
+        setDirectory(data as TenantScopeFieldDirectoryResponse);
+        setHistoryRefreshKey((previous) => previous + 1);
+      } catch {
+        setRequestErrorMessage(t("directory.reorderError"));
+        setDirectory(snapshot);
+        void loadFieldDirectory(selectedFieldKeyRef.current);
+      } finally {
+        setIsDirectoryReorderBusy(false);
+      }
+    },
+    [currentScope?.id, directory, labelLang, loadFieldDirectory, t]
+  );
 
   const isDirty = useMemo(() => {
     return (
@@ -640,6 +702,75 @@ export function FieldConfigurationClient({
   const scaleInputValue =
     parsedSqlType.kind === "number" ? String(parsedSqlType.scale ?? 0) : "0";
 
+  /** Lista com mesmo aspecto (alças visíveis); o arrastar só fica desativo durante save/reorder. */
+  const directorySortableLayout =
+    Boolean(directory?.can_edit) && !filterQuery.trim();
+
+  const directoryDragDisabled = isSaving || isDirectoryReorderBusy;
+
+  const renderFieldDirectoryButton = useCallback(
+    (item: TenantScopeFieldRecord) => (
+      <button
+        type="button"
+        onClick={() => handleSelectField(item)}
+        className="ui-directory-item"
+        data-selected={item.id === selectedField?.id ? "true" : undefined}
+        data-delete-pending={
+          item.id === selectedField?.id && isDeletePending ? "true" : undefined
+        }
+      >
+        <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
+        {item.label_name?.trim() ? (
+          <p className="ui-directory-caption-wrap">
+            {infoSqlTypeSummary(item.sql_type)}
+          </p>
+        ) : null}
+      </button>
+    ),
+    [
+      handleSelectField,
+      infoSqlTypeSummary,
+      isDeletePending,
+      resolveDirectoryTitle,
+      selectedField?.id
+    ]
+  );
+
+  const renderFieldDirectorySortableItem = useCallback(
+    (item: TenantScopeFieldRecord, dragHandle: ReactNode) => (
+      <div
+        className="ui-directory-item"
+        data-selected={item.id === selectedField?.id ? "true" : undefined}
+        data-delete-pending={
+          item.id === selectedField?.id && isDeletePending ? "true" : undefined
+        }
+      >
+        <div className="ui-scope-rules-directory-item-layout">
+          <button
+            type="button"
+            className="ui-scope-rules-directory-item-main"
+            onClick={() => handleSelectField(item)}
+          >
+            <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
+            {item.label_name?.trim() ? (
+              <p className="ui-directory-caption-wrap">
+                {infoSqlTypeSummary(item.sql_type)}
+              </p>
+            ) : null}
+          </button>
+          {dragHandle}
+        </div>
+      </div>
+    ),
+    [
+      handleSelectField,
+      infoSqlTypeSummary,
+      isDeletePending,
+      resolveDirectoryTitle,
+      selectedField?.id
+    ]
+  );
+
   return (
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
@@ -677,32 +808,26 @@ export function FieldConfigurationClient({
               <ConfigurationDirectoryCreateButton
                 label={copy.directoryCreateLabel}
                 active={isCreateMode}
-                disabled={isSaving}
+                disabled={isSaving || isDirectoryReorderBusy}
                 onClick={handleStartCreate}
               />
             ) : null}
 
-            {directory?.item_list.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => handleSelectField(item)}
-                className="ui-directory-item"
-                data-selected={item.id === selectedField?.id ? "true" : undefined}
-                data-delete-pending={
-                  item.id === selectedField?.id && isDeletePending
-                    ? "true"
-                    : undefined
-                }
-              >
-                <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
-                {item.label_name?.trim() ? (
-                  <p className="ui-directory-caption-wrap">
-                    {infoSqlTypeSummary(item.sql_type)}
-                  </p>
-                ) : null}
-              </button>
-            ))}
+            {directory && directory.item_list.length > 0 ? (
+              directorySortableLayout ? (
+                <ScopeRulesDirectorySortableList
+                  itemList={directory.item_list}
+                  dragDisabled={directoryDragDisabled}
+                  dragHandleAriaLabel={t("directory.dragHandleAria")}
+                  onReorder={handleFieldDirectoryReorder}
+                  renderItem={renderFieldDirectorySortableItem}
+                />
+              ) : (
+                directory.item_list.map((item) => (
+                  <Fragment key={item.id}>{renderFieldDirectoryButton(item)}</Fragment>
+                ))
+              )
+            ) : null}
 
             {directory && directory.item_list.length === 0 && !directory.can_edit ? (
               <div className="ui-panel ui-empty-panel ui-panel-body-compact">

@@ -269,6 +269,10 @@
       "searchLabel": "Nome do campo ou tipo",
       "searchPlaceholder": "Nome do campo ou tipo"
     },
+    "directory": {
+      "dragHandleAria": "Arrastar para reordenar",
+      "reorderError": "Não foi possível salvar a ordem. Tente novamente."
+    },
     "section": {
       "fieldName": {
         "label": "Nome do campo",
@@ -352,6 +356,10 @@
     "filter": {
       "searchLabel": "Nome da ação",
       "searchPlaceholder": "Nome da ação"
+    },
+    "directory": {
+      "dragHandleAria": "Arrastar para reordenar",
+      "reorderError": "Não foi possível salvar a ordem. Tente novamente."
     },
     "section": {
       "actionName": {

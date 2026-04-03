@@ -406,6 +406,68 @@
   gap: 0.5rem;
 }
 
+/* Wrapper só para sortable (ref dnd-kit): sem cartão; o grid de `ui-directory-list` define o espaço. */
+.ui-scope-rules-directory-sortable-row {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  width: 100%;
+  min-width: 0;
+}
+
+/* Linha dentro do cartão: texto à esquerda, alça à direita. */
+.ui-scope-rules-directory-item-layout {
+  display: flex;
+  align-items: stretch;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
+}
+
+.ui-scope-rules-directory-item-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  display: block;
+}
+
+.ui-scope-rules-directory-drag-handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: 2.25rem;
+  min-height: 2.25rem;
+  align-self: center;
+  margin: 0;
+  padding: 0.2rem;
+  border: var(--border-width-default) solid var(--color-border);
+  border-radius: 6px;
+  background-color: var(--color-surface-muted);
+  box-sizing: border-box;
+  cursor: grab;
+}
+
+.ui-scope-rules-directory-drag-handle:focus-visible {
+  outline: none;
+  border-color: var(--color-focus-ring);
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.ui-scope-rules-directory-drag-handle:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
 .ui-directory-item-frame {
   display: flex;
   flex: 1 1 auto;

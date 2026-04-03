@@ -1485,6 +1485,88 @@ def test_scope_field_and_action_q_filter_ignores_case_and_accent() -> None:
     assert action_name_set_plain == action_name_set_accent == action_name_set_case
 
 
+def test_scope_field_reorder_and_reject_invalid_list() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        field_id_list: list[int] = []
+        for name in ("OrdA", "OrdB", "OrdC"):
+            resp = client.post(
+                f"/auth/tenant/current/scopes/{scope_id}/fields",
+                json={
+                    "sql_type": "INTEGER",
+                    "label_lang": "pt-BR",
+                    "label_name": name,
+                },
+            )
+            assert resp.status_code == 200
+            for item in resp.json()["item_list"]:
+                if item.get("label_name") == name:
+                    field_id_list.append(item["id"])
+                    break
+
+        assert len(field_id_list) == 3
+        assert sorted(field_id_list) == field_id_list
+
+        bad = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/fields/reorder",
+            json={"field_id_list": field_id_list[:2]},
+        )
+        assert bad.status_code == 400
+
+        reversed_ids = list(reversed(field_id_list))
+        ok = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/fields/reorder",
+            params={"label_lang": "pt-BR"},
+            json={"field_id_list": reversed_ids},
+        )
+        assert ok.status_code == 200
+        items = ok.json()["item_list"]
+        assert [item["id"] for item in items] == reversed_ids
+        assert [item["sort_order"] for item in items] == [0, 1, 2]
+
+
+def test_scope_action_reorder_and_reject_invalid_list() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        action_id_list: list[int] = []
+        for name in ("ActA", "ActB", "ActC"):
+            resp = client.post(
+                f"/auth/tenant/current/scopes/{scope_id}/actions",
+                json={
+                    "label_lang": "pt-BR",
+                    "label_name": name,
+                },
+            )
+            assert resp.status_code == 200
+            for item in resp.json()["item_list"]:
+                if item.get("label_name") == name:
+                    action_id_list.append(item["id"])
+                    break
+
+        assert len(action_id_list) == 3
+
+        bad = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/actions/reorder",
+            json={"action_id_list": action_id_list[:2]},
+        )
+        assert bad.status_code == 400
+
+        reversed_ids = list(reversed(action_id_list))
+        ok = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/actions/reorder",
+            params={"label_lang": "pt-BR"},
+            json={"action_id_list": reversed_ids},
+        )
+        assert ok.status_code == 200
+        items = ok.json()["item_list"]
+        assert [item["id"] for item in items] == reversed_ids
+        assert [item["sort_order"] for item in items] == [0, 1, 2]
+
+
 def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
     tenant_id_value: int | None = None
     with build_test_client(current_member_key="admin") as (client, session, _):

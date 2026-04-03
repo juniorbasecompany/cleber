@@ -53,9 +53,10 @@ O drawDB espera um objeto com:
 
 **Extensões do projeto:**
 - em cada objeto de `tables[]`, campo opcional `constraints` (lista de objetos com `name` e `constraint`);
-- em cada objeto de `tables[].fields[]`, campo opcional `nullIfEmpty` (`boolean`).
+- em cada objeto de `tables[].fields[]`, campo opcional `nullIfEmpty` (`boolean`);
+- colunas `sort_order` nas tabelas `field` e `action` (ordem por escopo; ver [reference.md](reference.md)).
 
-Onde colocar, formato e coerência: ver secções *Extensão do projeto: constraints* e *Extensão do projeto: fields[].nullIfEmpty* em [reference.md](reference.md).
+Onde colocar, formato e coerência: ver secções *Extensão do projeto: constraints*, *Extensão do projeto: fields[].nullIfEmpty* e *Ordenação: sort_order nas tabelas field e action* em [reference.md](reference.md).
 
 Cada **field** em `tables[].fields` deve ter: `id`, `name`, `type`, `default`, `check`, `primary`, `unique`, `notNull`, `increment`, `comment`. Pode também ter extensões do projeto como `nullIfEmpty`.  
 Cada **relationship** deve ter: `id`, `name`, `startTableId`, `startFieldId`, `endTableId`, `endFieldId`, `cardinality`, `updateConstraint`, `deleteConstraint`.
