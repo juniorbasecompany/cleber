@@ -1,7 +1,7 @@
 /**
  * Atalho "Novo" / "Nova" canônico nos painéis diretório + editor de Configuração.
- * Estilo único em `vertical-semantic-component.css` (`ui-configuration-directory-create-*`),
- * alinhado a `ui-directory-item` (sem tokens da árvore de locais).
+ * Mesmas regras que o «+» de novo filho (`ui-location-nest-create`): `vertical-semantic-component.css`;
+ * referência cromática `--color-editor-vertical-border` e tokens `--color-editor-create-button-*` em `base.css`.
  */
 export type ConfigurationDirectoryCreateButtonProps = {
     /** Texto curto conforme o gênero do substantivo cadastrado (ex.: Novo / Nova). */

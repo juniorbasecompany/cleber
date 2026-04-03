@@ -42,6 +42,71 @@
   --color-accent-vertical-border: hsla(var(--base-accent-color), 70%, 50%, 0.75);
   --color-filter-vertical-border: hsla(var(--base-filter-color), 100%, 50%, 0.75);
   --color-editor-vertical-border: hsla(var(--base-editor-color), 39%, 48%, 0.75);
+  /*
+   * Atalhos Novo/Nova/+ na configuração: todas as cores visíveis derivam da barra vertical do editor.
+   * Mistura com --color-surface deixa o tom estável no aside e no cartão branco (evita “dois verdes”).
+   * Borda: mistura com --color-border aproxima o filete ao peso visual das bordas do painel de edição (mais suave que verde puro).
+   */
+  --color-editor-create-button-border: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 42%,
+    var(--color-border) 58%
+  );
+  --color-editor-create-button-surface: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 20%,
+    var(--color-surface) 80%
+  );
+  --color-editor-create-button-surface-hover: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 30%,
+    var(--color-surface) 70%
+  );
+  --color-editor-create-button-surface-active: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 38%,
+    var(--color-surface) 62%
+  );
+  --color-editor-create-button-surface-active-hover: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 46%,
+    var(--color-surface) 54%
+  );
+  --color-editor-create-button-border-hover: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 54%,
+    var(--color-border) 46%
+  );
+  --color-editor-create-button-border-active: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 66%,
+    var(--color-border) 34%
+  );
+  --color-editor-create-button-foreground: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 32%,
+    var(--color-text) 68%
+  );
+  --color-editor-create-button-foreground-hover: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 26%,
+    var(--color-text) 74%
+  );
+  --color-editor-create-button-foreground-active: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 22%,
+    var(--color-text) 78%
+  );
+  --color-editor-create-button-foreground-active-hover: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 18%,
+    var(--color-text) 82%
+  );
+  --color-editor-create-slot-surface: color-mix(
+    in srgb,
+    var(--color-editor-vertical-border) 14%,
+    var(--color-surface) 86%
+  );
   --color-location-nest-start: hsla(var(--base-background-color), 62%, 97%, 1);
   --color-location-nest-end: hsla(var(--base-background-color), 58%, 90%, 1);
   --color-location-nest-border-start: hsla(var(--base-color), 30%, 84%, 0.35);

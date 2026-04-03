@@ -194,7 +194,12 @@ export function ActionFormulaSection({
       {isLoading ? (
         <p className="ui-field-hint">{t("loading")}</p>
       ) : rowList.length > 0 ? (
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+        <DndContext
+          id="action-configuration-formula-list"
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
           <SortableContext items={sortableIdList} strategy={verticalListSortingStrategy}>
             <div className="ui-formula-list">
               {rowList.map((row) => (

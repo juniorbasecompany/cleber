@@ -859,6 +859,7 @@ export function ScopeHierarchyConfigurationClient<
 
           {directory ? (
             <DndContext
+              id="scope-hierarchy-configuration-tree"
               sensors={sensors}
               collisionDetection={pointerWithin}
               onDragStart={handleDragStart}

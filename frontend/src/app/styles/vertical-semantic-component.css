@@ -365,9 +365,10 @@
   box-shadow: var(--shadow-xs);
 }
 
+/* Slot de criação no diretório (se usado): mesma família cromática que a barra vertical do editor. */
 .ui-directory-create {
-  border: var(--border-width-default) dashed var(--color-accent-border-emphasis);
-  background: var(--color-accent-surface-soft);
+  border: var(--border-width-default) dashed var(--color-editor-create-button-border);
+  background: var(--color-editor-create-slot-surface);
   padding: 1rem;
   text-align: left;
   box-shadow: var(--shadow-xs);
@@ -483,6 +484,28 @@
   transform: translate(calc(2.25rem - 0.95rem - 0.25rem), -50%);
 }
 
+/* Painel de filtros (topo): unfold suave; conteúdo com overflow oculto na linha 0fr. */
+.ui-directory-filter-top-slot {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.38s ease;
+}
+
+.ui-directory-filter-top-slot[data-expanded="true"] {
+  grid-template-rows: 1fr;
+}
+
+.ui-directory-filter-top-slot-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ui-directory-filter-top-slot {
+    transition-duration: 0.01ms;
+  }
+}
+
 /* Atalho "Novo" / "Nova" nos painéis Configuração: cor verde alinhada ao painel de edição. */
 .ui-configuration-directory-create-toolbar {
   display: flex;
@@ -496,17 +519,20 @@
 }
 
 /*
- * Superfície verde visível no aside e nos cartões claros (preflight do Tailwind zera `background` em `button`;
- * `button.class` reforça a especificidade).
+ * Atalhos de criação (texto «Novo» / «Nova» e «+» na hierarquia): superfície e texto ligados ao verde do editor;
+ * borda em `--color-editor-create-button-border*` (mix com --color-border, filete mais suave que o verde puro).
+ * Preflight do Tailwind zera `background` em `button`; `button.class` reforça a especificidade.
  */
 .ui-configuration-directory-create-button,
-button.ui-configuration-directory-create-button {
+button.ui-configuration-directory-create-button,
+.ui-location-nest-create,
+button.ui-location-nest-create {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: var(--border-width-default) solid var(--color-editor-vertical-border);
+  border: var(--border-width-default) solid var(--color-editor-create-button-border);
   border-radius: var(--radius-control);
-  background-color: hsla(var(--base-editor-color), 38%, 44%, 0.26);
+  background-color: var(--color-editor-create-button-surface);
   background-image: none;
   padding: 0.25rem 0.625rem;
   min-height: 0;
@@ -514,7 +540,7 @@ button.ui-configuration-directory-create-button {
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: hsla(var(--base-editor-color), 36%, 22%, 1);
+  color: var(--color-editor-create-button-foreground);
   box-shadow: var(--shadow-xs);
   transition:
     border-color 0.16s ease,
@@ -524,35 +550,45 @@ button.ui-configuration-directory-create-button {
 }
 
 .ui-configuration-directory-create-button:hover,
-button.ui-configuration-directory-create-button:hover {
-  border-color: hsla(var(--base-editor-color), 36%, 38%, 1);
-  background-color: hsla(var(--base-editor-color), 36%, 40%, 0.34);
-  color: hsla(var(--base-editor-color), 34%, 18%, 1);
+button.ui-configuration-directory-create-button:hover,
+.ui-location-nest-create:hover,
+button.ui-location-nest-create:hover {
+  border-color: var(--color-editor-create-button-border-hover);
+  background-color: var(--color-editor-create-button-surface-hover);
+  color: var(--color-editor-create-button-foreground-hover);
 }
 
 .ui-configuration-directory-create-button[data-active="true"],
-button.ui-configuration-directory-create-button[data-active="true"] {
-  border-color: hsla(var(--base-editor-color), 34%, 34%, 1);
-  background-color: hsla(var(--base-editor-color), 34%, 38%, 0.4);
-  color: hsla(var(--base-editor-color), 32%, 16%, 1);
+button.ui-configuration-directory-create-button[data-active="true"],
+.ui-location-nest-create[data-active="true"],
+button.ui-location-nest-create[data-active="true"] {
+  border-color: var(--color-editor-create-button-border-active);
+  background-color: var(--color-editor-create-button-surface-active);
+  color: var(--color-editor-create-button-foreground-active);
   box-shadow: var(--shadow-xs);
 }
 
 .ui-configuration-directory-create-button[data-active="true"]:hover,
-button.ui-configuration-directory-create-button[data-active="true"]:hover {
-  border-color: hsla(var(--base-editor-color), 32%, 32%, 1);
-  background-color: hsla(var(--base-editor-color), 32%, 36%, 0.44);
-  color: hsla(var(--base-editor-color), 30%, 14%, 1);
+button.ui-configuration-directory-create-button[data-active="true"]:hover,
+.ui-location-nest-create[data-active="true"]:hover,
+button.ui-location-nest-create[data-active="true"]:hover {
+  border-color: var(--color-editor-create-button-border-active);
+  background-color: var(--color-editor-create-button-surface-active-hover);
+  color: var(--color-editor-create-button-foreground-active-hover);
 }
 
 .ui-configuration-directory-create-button:focus-visible,
-button.ui-configuration-directory-create-button:focus-visible {
+button.ui-configuration-directory-create-button:focus-visible,
+.ui-location-nest-create:focus-visible,
+button.ui-location-nest-create:focus-visible {
   outline: none;
   box-shadow: var(--shadow-focus-ring);
 }
 
 .ui-configuration-directory-create-button:disabled,
-button.ui-configuration-directory-create-button:disabled {
+button.ui-configuration-directory-create-button:disabled,
+.ui-location-nest-create:disabled,
+button.ui-location-nest-create:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -760,8 +796,7 @@ button.ui-configuration-directory-create-button:disabled {
   color: var(--color-accent-text);
 }
 
-.ui-location-nest-body:focus-visible,
-.ui-location-nest-create:focus-visible {
+.ui-location-nest-body:focus-visible {
   outline: none;
   box-shadow: var(--shadow-focus-ring);
 }
@@ -1029,42 +1064,7 @@ button.ui-configuration-directory-create-button:disabled {
   padding-top: 0.3rem;
 }
 
-.ui-location-nest-create {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  border: var(--border-width-default) solid color-mix(in srgb,
-      var(--color-location-nest-border-start) var(--ui-location-tone-light-share),
-      var(--color-location-nest-border-end) var(--ui-location-tone-dark-share));
-  border-radius: var(--radius-control);
-  background: transparent;
-  padding: 0.25rem 0.5rem;
-  min-height: 0;
-  width: fit-content;
-  font-weight: 600;
-  color: var(--color-text-muted);
-  transition:
-    border-color 0.16s ease,
-    background-color 0.16s ease,
-    color 0.16s ease,
-    box-shadow 0.16s ease;
-}
-
-.ui-location-nest-create:hover {
-  border-color: var(--color-accent-border-focus);
-  background: transparent;
-  color: var(--color-accent-text);
-}
-
-.ui-location-nest-create[data-active="true"] {
-  border-style: dashed;
-  border-color: var(--color-accent-border-focus);
-  background: transparent;
-  color: var(--color-accent-text);
-}
-
-.ui-location-nest-body:disabled,
-.ui-location-nest-create:disabled {
+.ui-location-nest-body:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }

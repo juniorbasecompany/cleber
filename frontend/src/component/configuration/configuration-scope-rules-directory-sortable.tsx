@@ -104,8 +104,14 @@ export function ScopeRulesDirectorySortableList<T extends { id: number }>(
     void onReorder(arrayMove(itemList, oldIndex, newIndex));
   };
 
+  /* `id` fixo no DndContext: o @dnd-kit usa contador global para DndDescribedBy; sem `id`, SSR e cliente divergem com vários contextos na página. */
   return (
-    <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+    <DndContext
+      id="configuration-scope-rules-directory"
+      sensors={sensors}
+      collisionDetection={closestCenter}
+      onDragEnd={handleDragEnd}
+    >
       <SortableContext items={sortableIdList} strategy={verticalListSortingStrategy}>
         {itemList.map((item) => (
           <SortableDirectoryRow
