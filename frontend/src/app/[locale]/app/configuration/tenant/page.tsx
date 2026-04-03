@@ -32,6 +32,8 @@ export default async function TenantConfigurationPage({
     historyTitle: t("history.title"),
     historyDescription: t("history.description"),
     filterSearchLabel: t("filter.searchLabel"),
+    filterToggleAriaLabel: t("filter.toggleAriaLabel"),
+    filterToggleLabel: t("filter.toggleLabel"),
     filterEmpty: t("filter.empty"),
     legalNameLabel: t("section.legal.nameLabel"),
     legalNameHint: t("section.legal.nameHint"),

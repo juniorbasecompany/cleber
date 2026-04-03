@@ -8,6 +8,7 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import {
@@ -34,6 +35,8 @@ export type TenantConfigurationCopy = {
   historyTitle: string;
   historyDescription: string;
   filterSearchLabel: string;
+  filterToggleAriaLabel: string;
+  filterToggleLabel: string;
   filterEmpty: string;
   legalNameLabel: string;
   legalNameHint: string;
@@ -322,18 +325,21 @@ export function TenantConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
-      topContent={
-        <DirectoryFilterPanel>
-          <DirectoryFilterCard>
-            <DirectoryFilterTextField
-              id="tenant-filter-search"
-              label={copy.filterSearchLabel}
-              value={filterQuery}
-              onChange={setFilterQuery}
-            />
-          </DirectoryFilterCard>
-        </DirectoryFilterPanel>
-      }
+      filter={{
+        panel: (
+          <DirectoryFilterPanel>
+            <DirectoryFilterCard>
+              <DirectoryFilterTextField
+                id="tenant-filter-search"
+                label={copy.filterSearchLabel}
+                value={filterQuery}
+                onChange={setFilterQuery}
+              />
+            </DirectoryFilterCard>
+          </DirectoryFilterPanel>
+        ),
+        storageSegment: "tenant"
+      }}
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       editorVariant="emptyWhenNoContext"
@@ -348,14 +354,23 @@ export function TenantConfigurationClient({
           ) : null}
 
           <div className="ui-directory-list">
-            {tenant.can_edit ? (
-              <ConfigurationDirectoryCreateButton
-                label={copy.directoryCreateLabel}
-                active={editorContext === "new"}
-                disabled={isSaving}
-                onClick={handleStartCreate}
-              />
-            ) : null}
+            <ConfigurationDirectoryListToolbarRow
+              showFilterToggle
+              filterSegment="tenant"
+              filterToggleAriaLabel={copy.filterToggleAriaLabel}
+              filterToggleLabel={copy.filterToggleLabel}
+              end={
+                tenant.can_edit ? (
+                  <ConfigurationDirectoryCreateButton
+                    label={copy.directoryCreateLabel}
+                    active={editorContext === "new"}
+                    disabled={isSaving}
+                    onClick={handleStartCreate}
+                    wrapInToolbar={false}
+                  />
+                ) : null
+              }
+            />
 
             {tenantMatchesFilter ? (
               <button

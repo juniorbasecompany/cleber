@@ -3,19 +3,25 @@
 import type { ReactNode } from "react";
 
 import {
+    ConfigurationDirectoryFilterTopSlot,
+    type DirectoryFilterConfig
+} from "@/component/configuration/configuration-directory-filter-top-slot";
+import {
     ConfigurationDirectoryEditorLayout,
     type ConfigurationDirectoryEditorLayoutProps
 } from "@/component/configuration/configuration-directory-editor-layout";
 
 type LayoutPropsWithoutEditorBody = Omit<
     ConfigurationDirectoryEditorLayoutProps,
-    "editorBody"
+    "editorBody" | "topContent"
 >;
 
 type ShellAlwaysShowFormProps = LayoutPropsWithoutEditorBody & {
     /** Padrão: formulário sempre dentro de `ui-editor-card-flow` (diretórios hierárquicos por escopo). */
     editorVariant?: "alwaysShowForm";
     editorForm: ReactNode;
+    /** Painel laranja de filtros; visibilidade controlada por estado persistido e pelo switch na lista. */
+    filter?: DirectoryFilterConfig;
 };
 
 type ShellEmptyWhenNoContextProps = LayoutPropsWithoutEditorBody & {
@@ -23,6 +29,7 @@ type ShellEmptyWhenNoContextProps = LayoutPropsWithoutEditorBody & {
     hasEditorContext: boolean;
     emptyEditorMessage: ReactNode;
     editorForm: ReactNode;
+    filter?: DirectoryFilterConfig;
 };
 
 export type ConfigurationDirectoryEditorShellProps =
@@ -43,7 +50,7 @@ export function ConfigurationDirectoryEditorShell(
         editorForm,
         headerTitle,
         headerDescription,
-        topContent,
+        filter,
         directoryAside,
         editorPanelRef,
         isDeletePending,
@@ -63,7 +70,7 @@ export function ConfigurationDirectoryEditorShell(
         <ConfigurationDirectoryEditorLayout
             headerTitle={headerTitle}
             headerDescription={headerDescription}
-            topContent={topContent}
+            topContent={<ConfigurationDirectoryFilterTopSlot filter={filter} />}
             directoryAside={directoryAside}
             editorPanelRef={editorPanelRef}
             isDeletePending={isDeletePending}

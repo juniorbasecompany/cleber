@@ -10,6 +10,7 @@ import {
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import { EventActionField } from "@/component/configuration/event-action-field";
 import { EventFilterPanel } from "@/component/configuration/event-filter-panel";
 import { HierarchySingleSelectField } from "@/component/configuration/hierarchy-dropdown-field";
@@ -59,6 +60,8 @@ export type EventConfigurationCopy = {
   actionInputLoadError: string;
   actionInputSaveError: string;
   filterTitle: string;
+  filterToggleAriaLabel: string;
+  filterToggleLabel: string;
   filterMomentFromLabel: string;
   filterMomentToLabel: string;
   filterLocationLabel: string;
@@ -1208,41 +1211,46 @@ export function EventConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
-      topContent={
-        directory ? (
-          <EventFilterPanel
-            locale={locale}
-            copy={{
-              momentFromLabel: copy.filterMomentFromLabel,
-              momentToLabel: copy.filterMomentToLabel,
-              locationLabel: copy.filterLocationLabel,
-              unityLabel: copy.filterUnityLabel,
-              actionLabel: copy.filterActionLabel,
-              allLabel: copy.filterAll,
-              allAriaLabel: copy.filterAllAria,
-              confirmLabel: copy.filterConfirm
-            }}
-            filterMomentFromInput={filterMomentFromInput}
-            filterMomentToInput={filterMomentToInput}
-            filterLocationIdList={filterLocationIdList}
-            filterUnityIdList={filterUnityIdList}
-            filterActionId={filterActionId}
-            locationItemList={initialLocationDirectory?.item_list ?? []}
-            unityItemList={initialUnityDirectory?.item_list ?? []}
-            actionOptionList={actionOptionList}
-            onFilterMomentFromChange={(value) => {
-              setFilterMomentFromInput(value ? toLocalMomentInputValue(value) : "");
-            }}
-            onFilterMomentToChange={(value) => {
-              setFilterMomentToInput(value ? toLocalMomentInputValue(value) : "");
-            }}
-            onFilterLocationChange={setFilterLocationIdList}
-            onFilterUnityChange={setFilterUnityIdList}
-            onFilterActionChange={(value) => {
-              setFilterActionId(parseNumericFilter(value));
-            }}
-          />
-        ) : null
+      filter={
+        directory
+          ? {
+              panel: (
+                <EventFilterPanel
+                  locale={locale}
+                  copy={{
+                    momentFromLabel: copy.filterMomentFromLabel,
+                    momentToLabel: copy.filterMomentToLabel,
+                    locationLabel: copy.filterLocationLabel,
+                    unityLabel: copy.filterUnityLabel,
+                    actionLabel: copy.filterActionLabel,
+                    allLabel: copy.filterAll,
+                    allAriaLabel: copy.filterAllAria,
+                    confirmLabel: copy.filterConfirm
+                  }}
+                  filterMomentFromInput={filterMomentFromInput}
+                  filterMomentToInput={filterMomentToInput}
+                  filterLocationIdList={filterLocationIdList}
+                  filterUnityIdList={filterUnityIdList}
+                  filterActionId={filterActionId}
+                  locationItemList={initialLocationDirectory?.item_list ?? []}
+                  unityItemList={initialUnityDirectory?.item_list ?? []}
+                  actionOptionList={actionOptionList}
+                  onFilterMomentFromChange={(value) => {
+                    setFilterMomentFromInput(value ? toLocalMomentInputValue(value) : "");
+                  }}
+                  onFilterMomentToChange={(value) => {
+                    setFilterMomentToInput(value ? toLocalMomentInputValue(value) : "");
+                  }}
+                  onFilterLocationChange={setFilterLocationIdList}
+                  onFilterUnityChange={setFilterUnityIdList}
+                  onFilterActionChange={(value) => {
+                    setFilterActionId(parseNumericFilter(value));
+                  }}
+                />
+              ),
+              storageSegment: "event"
+            }
+          : undefined
       }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
@@ -1259,14 +1267,23 @@ export function EventConfigurationClient({
           ) : null}
 
           <div className="ui-directory-list">
-            {directory?.can_edit ? (
-              <ConfigurationDirectoryCreateButton
-                label={copy.directoryCreateLabel}
-                active={isCreateMode}
-                disabled={isSaving}
-                onClick={handleStartCreate}
-              />
-            ) : null}
+            <ConfigurationDirectoryListToolbarRow
+              showFilterToggle={directory != null}
+              filterSegment="event"
+              filterToggleAriaLabel={copy.filterToggleAriaLabel}
+              filterToggleLabel={copy.filterToggleLabel}
+              end={
+                directory?.can_edit ? (
+                  <ConfigurationDirectoryCreateButton
+                    label={copy.directoryCreateLabel}
+                    active={isCreateMode}
+                    disabled={isSaving}
+                    onClick={handleStartCreate}
+                    wrapInToolbar={false}
+                  />
+                ) : null
+              }
+            />
 
             {directory?.item_list.map((item) => (
               <button

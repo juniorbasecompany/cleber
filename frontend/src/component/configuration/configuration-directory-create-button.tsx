@@ -9,27 +9,35 @@ export type ConfigurationDirectoryCreateButtonProps = {
     active?: boolean;
     disabled?: boolean;
     onClick: () => void;
+    /**
+     * Quando falso, devolve só o botão (para compor a linha com o switch de filtros).
+     * Padrão: envolve em `ui-configuration-directory-create-toolbar`.
+     */
+    wrapInToolbar?: boolean;
 };
 
 export function ConfigurationDirectoryCreateButton({
     label,
     active,
     disabled,
-    onClick
+    onClick,
+    wrapInToolbar = true
 }: ConfigurationDirectoryCreateButtonProps) {
-    return (
-        <div className="ui-configuration-directory-create-toolbar">
-            <button
-                type="button"
-                className="ui-configuration-directory-create-button"
-                aria-label={label}
-                title={label}
-                data-active={active ? "true" : undefined}
-                onClick={onClick}
-                disabled={disabled}
-            >
-                <span aria-hidden>{label}</span>
-            </button>
-        </div>
+    const button = (
+        <button
+            type="button"
+            className="ui-configuration-directory-create-button"
+            aria-label={label}
+            title={label}
+            data-active={active ? "true" : undefined}
+            onClick={onClick}
+            disabled={disabled}
+        >
+            <span aria-hidden>{label}</span>
+        </button>
     );
+    if (!wrapInToolbar) {
+        return button;
+    }
+    return <div className="ui-configuration-directory-create-toolbar">{button}</div>;
 }

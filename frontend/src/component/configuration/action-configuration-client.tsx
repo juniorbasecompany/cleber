@@ -20,6 +20,7 @@ import { ConfigurationDirectoryEditorShell } from "@/component/configuration/con
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ScopeRulesDirectorySortableList } from "@/component/configuration/configuration-scope-rules-directory-sortable";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import {
   ActionFormulaSection,
   type ActionFormulaDraftRow
@@ -61,6 +62,8 @@ export type ActionConfigurationCopy = {
   historyTitle: string;
   historyDescription: string;
   filterSearchLabel: string;
+  filterToggleAriaLabel: string;
+  filterToggleLabel: string;
   actionNameLabel: string;
   actionNameHint: string;
   actionNameRequired: string;
@@ -574,9 +577,8 @@ export function ActionConfigurationClient({
 
   useEffect(() => {
     if (isCreateMode || scopeId == null || selectedActionId == null) {
-      const initialCreateFormulaRowList = isCreateMode ? [createEmptyFormulaDraftRow()] : [];
-      setFormulaRowList(initialCreateFormulaRowList);
-      setFormulaBaselineList(cloneFormulaRowList(initialCreateFormulaRowList));
+      setFormulaRowList([]);
+      setFormulaBaselineList([]);
       setFormulasCanEdit(false);
       setFormulaLoadError(null);
       setFormulaLoading(false);
@@ -856,11 +858,13 @@ export function ActionConfigurationClient({
       : copy.emptyScope
     : copy.loadError;
 
-  /** Lista com mesmo aspecto (alças visíveis); o arrastar só fica desativo durante save/reorder. */
-  const directorySortableLayout =
-    Boolean(directory?.can_edit) && !filterQuery.trim();
+  /** Lista com alças sempre visíveis quando pode editar; filtro ou save apenas desativam o arrastar. */
+  const directorySortableLayout = Boolean(directory?.can_edit);
 
-  const directoryDragDisabled = isSaving || isDirectoryReorderBusy;
+  const directoryDragDisabled =
+    isSaving ||
+    isDirectoryReorderBusy ||
+    Boolean(filterQuery.trim());
 
   const renderActionDirectoryButton = useCallback(
     (item: TenantScopeActionRecord) => (
@@ -907,19 +911,24 @@ export function ActionConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
-      topContent={
-        directory ? (
-          <DirectoryFilterPanel>
-            <DirectoryFilterCard>
-              <DirectoryFilterTextField
-                id="action-filter-search"
-                label={copy.filterSearchLabel}
-                value={filterQuery}
-                onChange={setFilterQuery}
-              />
-            </DirectoryFilterCard>
-          </DirectoryFilterPanel>
-        ) : null
+      filter={
+        directory
+          ? {
+              panel: (
+                <DirectoryFilterPanel>
+                  <DirectoryFilterCard>
+                    <DirectoryFilterTextField
+                      id="action-filter-search"
+                      label={copy.filterSearchLabel}
+                      value={filterQuery}
+                      onChange={setFilterQuery}
+                    />
+                  </DirectoryFilterCard>
+                </DirectoryFilterPanel>
+              ),
+              storageSegment: "action"
+            }
+          : undefined
       }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
@@ -936,14 +945,23 @@ export function ActionConfigurationClient({
           ) : null}
 
           <div className="ui-directory-list">
-            {directory?.can_edit ? (
-              <ConfigurationDirectoryCreateButton
-                label={copy.directoryCreateLabel}
-                active={isCreateMode}
-                disabled={isSaving || isDirectoryReorderBusy}
-                onClick={handleStartCreate}
-              />
-            ) : null}
+            <ConfigurationDirectoryListToolbarRow
+              showFilterToggle={directory != null}
+              filterSegment="action"
+              filterToggleAriaLabel={copy.filterToggleAriaLabel}
+              filterToggleLabel={copy.filterToggleLabel}
+              end={
+                directory?.can_edit ? (
+                  <ConfigurationDirectoryCreateButton
+                    label={copy.directoryCreateLabel}
+                    active={isCreateMode}
+                    disabled={isSaving || isDirectoryReorderBusy}
+                    onClick={handleStartCreate}
+                    wrapInToolbar={false}
+                  />
+                ) : null
+              }
+            />
 
             {directory && directory.item_list.length > 0 ? (
               directorySortableLayout ? (

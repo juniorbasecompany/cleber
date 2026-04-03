@@ -29,6 +29,8 @@ export default async function ScopeConfigurationPage({
     historyTitle: t("history.title"),
     historyDescription: t("history.description"),
     filterSearchLabel: t("filter.searchLabel"),
+    filterToggleAriaLabel: t("filter.toggleAriaLabel"),
+    filterToggleLabel: t("filter.toggleLabel"),
     nameLabel: t("section.identity.nameLabel"),
     nameHint: t("section.identity.nameHint"),
     displayNameLabel: t("section.identity.displayNameLabel"),

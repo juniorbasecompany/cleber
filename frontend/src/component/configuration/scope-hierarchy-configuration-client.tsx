@@ -39,6 +39,8 @@ import { ConfigurationDirectoryEditorShell } from "@/component/configuration/con
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
+import type { DirectoryFilterStorageSegment } from "@/component/configuration/directory-filter-visibility";
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel,
@@ -268,7 +270,9 @@ function HierarchyNestNode<TItem extends TenantScopeHierarchyItemBase>({
   const description = item.display_name.trim();
   const isSelected = !isCreateMode && item.id === selectedItemId;
   const isCreateContext = isCreateMode && createParentId === item.id;
-  const showDndChrome = dndEnabled && item.can_move;
+  /** Alça visível quando o item pode mover; desativa com filtro, save ou movimento em curso. */
+  const showDndChrome = item.can_move;
+  const dragInteractionDisabled = isBusy || !dndEnabled;
 
   const containerClassName =
     item.depth === 0 ? "ui-directory-item" : "ui-location-nest-box";
@@ -315,7 +319,7 @@ function HierarchyNestNode<TItem extends TenantScopeHierarchyItemBase>({
         data-has-create={showDndChrome && item.can_create_child ? "true" : undefined}
       >
         {showDndChrome ? (
-          <HierarchyIntoWrap itemId={item.id} disabled={isBusy}>
+          <HierarchyIntoWrap itemId={item.id} disabled={dragInteractionDisabled}>
             {bodyButton}
           </HierarchyIntoWrap>
         ) : (
@@ -325,7 +329,7 @@ function HierarchyNestNode<TItem extends TenantScopeHierarchyItemBase>({
         {showDndChrome ? (
           <HierarchyDragHandle
             itemId={item.id}
-            disabled={isBusy}
+            disabled={dragInteractionDisabled}
             ariaLabel={dragHandleAriaLabel}
           />
         ) : null}
@@ -740,6 +744,9 @@ export function ScopeHierarchyConfigurationClient<
   const handleDragEnd = useCallback(
     async (event: DragEndEvent) => {
       setActiveDragId(null);
+      if (!dndEnabled) {
+        return;
+      }
       const dragId = parseDragId(String(event.active.id));
       const overRaw = event.over?.id;
       const overId = overRaw != null ? String(overRaw) : null;
@@ -800,6 +807,7 @@ export function ScopeHierarchyConfigurationClient<
       apiSegment,
       childrenByParent,
       copy.moveError,
+      dndEnabled,
       isCreateMode,
       parentField,
       scopeId,
@@ -813,19 +821,24 @@ export function ScopeHierarchyConfigurationClient<
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
-      topContent={
-        directory ? (
-          <DirectoryFilterPanel>
-            <DirectoryFilterCard>
-              <DirectoryFilterTextField
-                id={`${apiSegment}-filter-search`}
-                label={copy.filterSearchLabel}
-                value={filterQuery}
-                onChange={setFilterQuery}
-              />
-            </DirectoryFilterCard>
-          </DirectoryFilterPanel>
-        ) : null
+      filter={
+        directory
+          ? {
+              panel: (
+                <DirectoryFilterPanel>
+                  <DirectoryFilterCard>
+                    <DirectoryFilterTextField
+                      id={`${apiSegment}-filter-search`}
+                      label={copy.filterSearchLabel}
+                      value={filterQuery}
+                      onChange={setFilterQuery}
+                    />
+                  </DirectoryFilterCard>
+                </DirectoryFilterPanel>
+              ),
+              storageSegment: configurationSegment as DirectoryFilterStorageSegment
+            }
+          : undefined
       }
       directoryAsideEditorGrowRatio="4-3"
       editorPanelRef={editorPanelElementRef}
@@ -844,12 +857,6 @@ export function ScopeHierarchyConfigurationClient<
             </div>
           ) : null}
 
-          {directory && directory.can_edit && filterActive ? (
-            <p className="ui-location-nest-dnd-filter-note">
-              {copy.dragDropDisabledWhileFilterHint}
-            </p>
-          ) : null}
-
           {directory ? (
             <DndContext
               sensors={sensors}
@@ -859,14 +866,23 @@ export function ScopeHierarchyConfigurationClient<
               onDragCancel={handleDragCancel}
             >
               <div className="ui-directory-list ui-location-nest-list">
-                {directory.can_create ? (
-                  <ConfigurationDirectoryCreateButton
-                    label={copy.directoryCreateLabel}
-                    active={isCreateMode && parentId == null}
-                    disabled={isSaving || isMoving}
-                    onClick={() => handleStartCreate(null)}
-                  />
-                ) : null}
+                <ConfigurationDirectoryListToolbarRow
+                  showFilterToggle
+                  filterSegment={configurationSegment as DirectoryFilterStorageSegment}
+                  filterToggleAriaLabel={copy.filterToggleAriaLabel}
+                  filterToggleLabel={copy.filterToggleLabel}
+                  end={
+                    directory.can_create ? (
+                      <ConfigurationDirectoryCreateButton
+                        label={copy.directoryCreateLabel}
+                        active={isCreateMode && parentId == null}
+                        disabled={isSaving || isMoving}
+                        onClick={() => handleStartCreate(null)}
+                        wrapInToolbar={false}
+                      />
+                    ) : null
+                  }
+                />
 
                 <HierarchySiblingList
                   parentId={null}

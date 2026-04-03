@@ -87,6 +87,8 @@ export default async function EventConfigurationPage({ params }: EventConfigurat
           actionInputLoadError: t("section.actionInput.loadError"),
           actionInputSaveError: t("section.actionInput.saveError"),
           filterTitle: t("filter.title"),
+          filterToggleAriaLabel: t("filter.toggleAriaLabel"),
+          filterToggleLabel: t("filter.toggleLabel"),
           filterMomentFromLabel: t("filter.momentFromLabel"),
           filterMomentToLabel: t("filter.momentToLabel"),
           filterLocationLabel: t("filter.locationLabel"),

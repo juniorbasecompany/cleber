@@ -20,6 +20,7 @@ import { ConfigurationDirectoryEditorShell } from "@/component/configuration/con
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ScopeRulesDirectorySortableList } from "@/component/configuration/configuration-scope-rules-directory-sortable";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel,
@@ -60,6 +61,8 @@ export type FieldConfigurationCopy = {
   historyTitle: string;
   historyDescription: string;
   filterSearchLabel: string;
+  filterToggleAriaLabel: string;
+  filterToggleLabel: string;
   fieldNameLabel: string;
   fieldNameHint: string;
   sectionInfoTitle: string;
@@ -702,11 +705,13 @@ export function FieldConfigurationClient({
   const scaleInputValue =
     parsedSqlType.kind === "number" ? String(parsedSqlType.scale ?? 0) : "0";
 
-  /** Lista com mesmo aspecto (alças visíveis); o arrastar só fica desativo durante save/reorder. */
-  const directorySortableLayout =
-    Boolean(directory?.can_edit) && !filterQuery.trim();
+  /** Lista com alças sempre visíveis quando pode editar; filtro ou save apenas desativam o arrastar. */
+  const directorySortableLayout = Boolean(directory?.can_edit);
 
-  const directoryDragDisabled = isSaving || isDirectoryReorderBusy;
+  const directoryDragDisabled =
+    isSaving ||
+    isDirectoryReorderBusy ||
+    Boolean(filterQuery.trim());
 
   const renderFieldDirectoryButton = useCallback(
     (item: TenantScopeFieldRecord) => (
@@ -775,19 +780,24 @@ export function FieldConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
-      topContent={
-        directory ? (
-          <DirectoryFilterPanel>
-            <DirectoryFilterCard>
-              <DirectoryFilterTextField
-                id="field-filter-search"
-                label={copy.filterSearchLabel}
-                value={filterQuery}
-                onChange={setFilterQuery}
-              />
-            </DirectoryFilterCard>
-          </DirectoryFilterPanel>
-        ) : null
+      filter={
+        directory
+          ? {
+              panel: (
+                <DirectoryFilterPanel>
+                  <DirectoryFilterCard>
+                    <DirectoryFilterTextField
+                      id="field-filter-search"
+                      label={copy.filterSearchLabel}
+                      value={filterQuery}
+                      onChange={setFilterQuery}
+                    />
+                  </DirectoryFilterCard>
+                </DirectoryFilterPanel>
+              ),
+              storageSegment: "field"
+            }
+          : undefined
       }
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
@@ -804,14 +814,23 @@ export function FieldConfigurationClient({
           ) : null}
 
           <div className="ui-directory-list">
-            {directory?.can_edit ? (
-              <ConfigurationDirectoryCreateButton
-                label={copy.directoryCreateLabel}
-                active={isCreateMode}
-                disabled={isSaving || isDirectoryReorderBusy}
-                onClick={handleStartCreate}
-              />
-            ) : null}
+            <ConfigurationDirectoryListToolbarRow
+              showFilterToggle={directory != null}
+              filterSegment="field"
+              filterToggleAriaLabel={copy.filterToggleAriaLabel}
+              filterToggleLabel={copy.filterToggleLabel}
+              end={
+                directory?.can_edit ? (
+                  <ConfigurationDirectoryCreateButton
+                    label={copy.directoryCreateLabel}
+                    active={isCreateMode}
+                    disabled={isSaving || isDirectoryReorderBusy}
+                    onClick={handleStartCreate}
+                    wrapInToolbar={false}
+                  />
+                ) : null
+              }
+            />
 
             {directory && directory.item_list.length > 0 ? (
               directorySortableLayout ? (

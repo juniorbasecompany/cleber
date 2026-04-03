@@ -187,14 +187,13 @@ export function ActionFormulaSection({
           label={t("newFormula")}
           disabled={disabled || isLoading}
           onClick={onAdd}
+          wrapInToolbar={false}
         />
       ) : null}
 
       {isLoading ? (
         <p className="ui-field-hint">{t("loading")}</p>
-      ) : rowList.length === 0 ? (
-        <p className="ui-field-hint">{t("empty")}</p>
-      ) : (
+      ) : rowList.length > 0 ? (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={sortableIdList} strategy={verticalListSortingStrategy}>
             <div className="ui-formula-list">
@@ -216,7 +215,7 @@ export function ActionFormulaSection({
             </div>
           </SortableContext>
         </DndContext>
-      )}
+      ) : null}
       <div
         className="ui-field-hint"
         style={{ marginTop: "0.75rem", whiteSpace: "pre-line" }}

@@ -35,6 +35,8 @@ export default async function MemberConfigurationPage({
     historyTitle: t("history.title"),
     historyDescription: t("history.description"),
     filterSearchLabel: t("filter.searchLabel"),
+    filterToggleAriaLabel: t("filter.toggleAriaLabel"),
+    filterToggleLabel: t("filter.toggleLabel"),
     filterRoleLabel: t("filter.roleLabel"),
     filterStatusLabel: t("filter.statusLabel"),
     filterAll: t("filter.all"),

@@ -118,6 +118,8 @@
       "description": "Review recent changes to member records: who changed what, when, and a clear summary of each update."
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "searchLabel": "Name or email",
       "searchPlaceholder": "Name or email",
       "roleLabel": "Role",
@@ -211,6 +213,8 @@
       "description": "Review recent changes to scopes for this tenant: who made each change, when, and a summary of what changed."
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "searchLabel": "Name or description",
       "searchPlaceholder": "Name or description"
     },
@@ -266,6 +270,8 @@
       "description": "Review recent changes to field definitions for the active scope: who changed what, when, and a summary of each update."
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "searchLabel": "Field name or type",
       "searchPlaceholder": "Field name or type"
     },
@@ -354,6 +360,8 @@
       "description": "Review recent changes to action definitions for the active scope: who changed what, when, and a summary of each update."
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "searchLabel": "Action name",
       "searchPlaceholder": "Action name"
     },
@@ -396,12 +404,11 @@
       "exampleList": "Math examples:\nAddition: x + y\nSubtraction: x - y\nMultiplication: x * y\nDivision: x / y\nInteger division: x // y\nModulo: x % y\nPower: x ** 2\nParentheses: (x + y) * z\nRounding: round((x * y) / z, 2)\nMinimum: min(x, y, z)\nMaximum: max(x, y, z)\nAbsolute value: abs(x - y)\nDecimal: Decimal(\"0.2\") * x\n\nConditional examples:\nSimple condition: x if y > 0 else 0\nEquality condition: x + 10 if y == 1 else x - 10\nMax/min condition: max(x, y) if z > 100 else min(x, y)\nSafe division condition: round(x / y, 2) if y != 0 else 0\nAnd condition: x if (y > 0 and z > 0) else 0\n\nOther supported features:\nComparisons: x == y, x != y, x > y, x >= y, x < y, x <= y\nLogical: x > 0 and y > 0, x > 0 or y > 0, not (x > y)\nDate: x if data_ref > date(2026, 1, 1) else y\nFunctions: abs, min, max, round, Decimal, and date",
       "unknownFieldLabel": "Information unavailable",
       "loading": "Loading formulas…",
-      "newFormula": "new",
+      "newFormula": "New",
       "removeAriaLabel": "Mark formula for removal on save",
       "unmarkAriaLabel": "Unmark removal for this formula",
       "statementLabel": "Statement",
       "dragHandleAria": "Drag to reorder",
-      "empty": "No formulas yet. Use new to add one.",
       "loadError": "Could not load formulas. Try again.",
       "statementRequired": "Each active formula needs a non-empty statement.",
       "validationError": {
@@ -464,6 +471,8 @@
       }
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "title": "List filters",
       "momentFromLabel": "Start period",
       "momentToLabel": "End period",
@@ -507,6 +516,8 @@
       "description": "Review recent changes to your location hierarchy: who changed what, when, and a summary of each update."
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "searchLabel": "Location name or description",
       "searchPlaceholder": "Location name or description",
       "parentLabel": "Parent location",
@@ -534,7 +545,6 @@
     },
     "dragHandleAria": "Drag to reorder or reparent",
     "dragSubtreeNote": "Includes {count} nested items below this one.",
-    "dragDropDisabledWhileFilterHint": "Clear the search filter to drag and drop items in the tree.",
     "action": {
       "cancel": "Cancel",
       "new": "New",
@@ -572,6 +582,8 @@
       "description": "Review recent changes to productive units: who changed what, when, and a summary of each update."
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "searchLabel": "Unit name or description",
       "searchPlaceholder": "Unit name or description",
       "parentLabel": "Parent unit",
@@ -599,7 +611,6 @@
     },
     "dragHandleAria": "Drag to reorder or reparent",
     "dragSubtreeNote": "Includes {count} nested items below this one.",
-    "dragDropDisabledWhileFilterHint": "Clear the search filter to drag and drop items in the tree.",
     "action": {
       "cancel": "Cancel",
       "new": "New",
@@ -636,6 +647,8 @@
       "description": "Review recent changes to the active tenant’s details: who changed what, when, and a summary of each update."
     },
     "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
       "searchLabel": "Name or identifier",
       "searchPlaceholder": "Name or identifier",
       "empty": "No tenant matches the current filter."

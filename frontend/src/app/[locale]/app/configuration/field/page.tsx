@@ -62,6 +62,8 @@ export default async function FieldConfigurationPage({ params }: FieldConfigurat
           historyTitle: t("history.title"),
           historyDescription: t("history.description"),
           filterSearchLabel: t("filter.searchLabel"),
+          filterToggleAriaLabel: t("filter.toggleAriaLabel"),
+          filterToggleLabel: t("filter.toggleLabel"),
           fieldNameLabel: t("section.fieldName.label"),
           fieldNameHint: t("section.fieldName.hint"),
           fieldNameRequired: t("error.fieldNameRequired"),

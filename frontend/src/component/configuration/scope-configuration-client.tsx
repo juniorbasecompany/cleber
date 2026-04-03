@@ -11,6 +11,7 @@ import { ConfigurationDirectoryEditorShell } from "@/component/configuration/con
 import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel,
@@ -34,6 +35,8 @@ export type ScopeConfigurationCopy = {
   historyTitle: string;
   historyDescription: string;
   filterSearchLabel: string;
+  filterToggleAriaLabel: string;
+  filterToggleLabel: string;
   nameLabel: string;
   nameHint: string;
   displayNameLabel: string;
@@ -446,18 +449,21 @@ export function ScopeConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
-      topContent={
-        <DirectoryFilterPanel>
-          <DirectoryFilterCard>
-            <DirectoryFilterTextField
-              id="scope-filter-search"
-              label={copy.filterSearchLabel}
-              value={filterQuery}
-              onChange={setFilterQuery}
-            />
-          </DirectoryFilterCard>
-        </DirectoryFilterPanel>
-      }
+      filter={{
+        panel: (
+          <DirectoryFilterPanel>
+            <DirectoryFilterCard>
+              <DirectoryFilterTextField
+                id="scope-filter-search"
+                label={copy.filterSearchLabel}
+                value={filterQuery}
+                onChange={setFilterQuery}
+              />
+            </DirectoryFilterCard>
+          </DirectoryFilterPanel>
+        ),
+        storageSegment: "scope"
+      }}
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       directoryAside={
@@ -469,14 +475,23 @@ export function ScopeConfigurationClient({
           ) : null}
 
           <div className="ui-directory-list">
-            {directory.can_create ? (
-              <ConfigurationDirectoryCreateButton
-                label={copy.directoryCreateLabel}
-                active={isCreateMode}
-                disabled={isSaving}
-                onClick={handleStartCreate}
-              />
-            ) : null}
+            <ConfigurationDirectoryListToolbarRow
+              showFilterToggle
+              filterSegment="scope"
+              filterToggleAriaLabel={copy.filterToggleAriaLabel}
+              filterToggleLabel={copy.filterToggleLabel}
+              end={
+                directory.can_create ? (
+                  <ConfigurationDirectoryCreateButton
+                    label={copy.directoryCreateLabel}
+                    active={isCreateMode}
+                    disabled={isSaving}
+                    onClick={handleStartCreate}
+                    wrapInToolbar={false}
+                  />
+                ) : null
+              }
+            />
 
             {directory.item_list.map((item) => (
               <button

@@ -385,27 +385,137 @@
   color: var(--color-text-subtle);
 }
 
-/* Atalho "Novo" / "Nova" nos painéis Configuração (diretório + editor). */
+/* Linha do aside: switch + rótulo «Filtro» à esquerda; atalho «Novo» à direita. */
+.ui-configuration-directory-list-toolbar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.ui-configuration-directory-list-toolbar-leading {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.ui-configuration-directory-list-toolbar-filter-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  letter-spacing: -0.01em;
+  user-select: none;
+}
+
+.ui-configuration-directory-list-toolbar-end {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+  flex: 0 0 auto;
+  min-width: 0;
+}
+
+/* Switch laranja (mesma família cromática do painel de filtro). */
+.ui-directory-filter-visibility-switch {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  border: none;
+  border-radius: var(--radius-indicator);
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
+.ui-directory-filter-visibility-switch:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+}
+
+.ui-directory-filter-visibility-switch-track {
+  position: relative;
+  width: 2.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-indicator);
+  border: var(--border-width-default) solid var(--color-filter-vertical-border);
+  background: linear-gradient(
+    180deg,
+    hsla(var(--base-background-color), 55%, 96%, 0.98),
+    hsla(var(--base-filter-color), 85%, 94%, 0.35)
+  );
+  box-shadow: inset 0 1px 0 hsla(var(--base-background-color), 100%, 100%, 0.45);
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+
+.ui-directory-filter-visibility-switch-track[data-on="true"] {
+  border-color: hsla(var(--base-filter-color), 88%, 42%, 0.85);
+  background: linear-gradient(
+    180deg,
+    hsla(var(--base-filter-color), 90%, 58%, 0.35),
+    hsla(var(--base-filter-color), 82%, 48%, 0.2)
+  );
+}
+
+.ui-directory-filter-visibility-switch-thumb {
+  position: absolute;
+  top: 50%;
+  left: 0.125rem;
+  width: 0.95rem;
+  height: 0.95rem;
+  border-radius: var(--radius-indicator);
+  background: hsla(var(--base-background-color), 100%, 100%, 0.98);
+  border: var(--border-width-default) solid hsla(var(--base-filter-color), 70%, 52%, 0.45);
+  box-shadow: 0 1px 2px hsla(var(--base-color), 46%, 14%, 0.12);
+  transform: translate(0, -50%);
+  transition: transform 0.16s ease;
+}
+
+.ui-directory-filter-visibility-switch-track[data-on="true"] .ui-directory-filter-visibility-switch-thumb {
+  transform: translate(calc(2.25rem - 0.95rem - 0.25rem), -50%);
+}
+
+/* Atalho "Novo" / "Nova" nos painéis Configuração: cor verde alinhada ao painel de edição. */
 .ui-configuration-directory-create-toolbar {
   display: flex;
   justify-content: flex-start;
 }
 
-/* Mesma linguagem de borda e hover que `ui-directory-item` (lista do aside). */
-.ui-configuration-directory-create-button {
+/* Em cartões de formulário (`flex` em coluna), não esticar o atalhe à largura total, como no aside. */
+.ui-card.ui-form-section > .ui-configuration-directory-create-toolbar,
+.ui-card.ui-form-section > .ui-configuration-directory-create-button {
+  align-self: flex-start;
+}
+
+/*
+ * Superfície verde visível no aside e nos cartões claros (preflight do Tailwind zera `background` em `button`;
+ * `button.class` reforça a especificidade).
+ */
+.ui-configuration-directory-create-button,
+button.ui-configuration-directory-create-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: var(--border-width-default) solid var(--color-border);
+  border: var(--border-width-default) solid var(--color-editor-vertical-border);
   border-radius: var(--radius-control);
-  background: transparent;
+  background-color: hsla(var(--base-editor-color), 38%, 44%, 0.26);
+  background-image: none;
   padding: 0.25rem 0.625rem;
   min-height: 0;
   width: fit-content;
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: -0.01em;
-  color: var(--color-text-muted);
+  color: hsla(var(--base-editor-color), 36%, 22%, 1);
+  box-shadow: var(--shadow-xs);
   transition:
     border-color 0.16s ease,
     background-color 0.16s ease,
@@ -413,32 +523,36 @@
     box-shadow 0.16s ease;
 }
 
-.ui-configuration-directory-create-button:hover {
-  border-color: var(--color-border-strong);
-  background: var(--color-background-muted);
-  color: var(--color-accent-text);
+.ui-configuration-directory-create-button:hover,
+button.ui-configuration-directory-create-button:hover {
+  border-color: hsla(var(--base-editor-color), 36%, 38%, 1);
+  background-color: hsla(var(--base-editor-color), 36%, 40%, 0.34);
+  color: hsla(var(--base-editor-color), 34%, 18%, 1);
 }
 
-/* Ativo: mesmo tipo de borda que o estado inativo (sólida), alinhado a `ui-directory-item[data-selected]`. */
-.ui-configuration-directory-create-button[data-active="true"] {
-  border-color: var(--color-accent-border-emphasis);
-  background: var(--color-accent-surface-default);
-  color: var(--color-accent-text);
+.ui-configuration-directory-create-button[data-active="true"],
+button.ui-configuration-directory-create-button[data-active="true"] {
+  border-color: hsla(var(--base-editor-color), 34%, 34%, 1);
+  background-color: hsla(var(--base-editor-color), 34%, 38%, 0.4);
+  color: hsla(var(--base-editor-color), 32%, 16%, 1);
   box-shadow: var(--shadow-xs);
 }
 
-.ui-configuration-directory-create-button[data-active="true"]:hover {
-  border-color: var(--color-accent-border-emphasis);
-  background: var(--color-accent-surface-strong);
-  color: var(--color-accent-text);
+.ui-configuration-directory-create-button[data-active="true"]:hover,
+button.ui-configuration-directory-create-button[data-active="true"]:hover {
+  border-color: hsla(var(--base-editor-color), 32%, 32%, 1);
+  background-color: hsla(var(--base-editor-color), 32%, 36%, 0.44);
+  color: hsla(var(--base-editor-color), 30%, 14%, 1);
 }
 
-.ui-configuration-directory-create-button:focus-visible {
+.ui-configuration-directory-create-button:focus-visible,
+button.ui-configuration-directory-create-button:focus-visible {
   outline: none;
   box-shadow: var(--shadow-focus-ring);
 }
 
-.ui-configuration-directory-create-button:disabled {
+.ui-configuration-directory-create-button:disabled,
+button.ui-configuration-directory-create-button:disabled {
   cursor: not-allowed;
   opacity: 0.6;
 }
@@ -624,12 +738,6 @@
 /* Só a pilha raiz no aside: recupera o espaço de 1rem entre cartões de topo (antes: um filho por item na grelha). */
 .ui-location-nest-list > .ui-location-nest-sibling-stack > .ui-directory-item ~ .ui-directory-item {
   margin-top: 1rem;
-}
-
-.ui-location-nest-dnd-filter-note {
-  font-size: 0.75rem;
-  line-height: 1.45;
-  color: var(--color-text-muted);
 }
 
 .ui-location-nest-body {

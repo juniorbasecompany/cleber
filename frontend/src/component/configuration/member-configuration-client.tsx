@@ -13,6 +13,7 @@ import { ConfigurationInfoSection } from "@/component/configuration/configuratio
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
+import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import {
   DirectoryFilterCard,
   DirectoryFilterMultiSelectField,
@@ -46,6 +47,8 @@ export type MemberConfigurationCopy = {
   historyTitle: string;
   historyDescription: string;
   filterSearchLabel: string;
+  filterToggleAriaLabel: string;
+  filterToggleLabel: string;
   filterRoleLabel: string;
   filterStatusLabel: string;
   filterAll: string;
@@ -793,48 +796,51 @@ export function MemberConfigurationClient({
     <ConfigurationDirectoryEditorShell
       headerTitle={copy.title}
       headerDescription={copy.description}
-      topContent={
-        <DirectoryFilterPanel>
-          <DirectoryFilterCard>
-            <DirectoryFilterTextField
-              id="member-filter-search"
-              label={copy.filterSearchLabel}
-              value={filterQuery}
-              onChange={setFilterQuery}
-            />
-          </DirectoryFilterCard>
-          <DirectoryFilterCard>
-            <DirectoryFilterMultiSelectField
-              id="member-filter-role"
-              label={copy.filterRoleLabel}
-              allIsSelected={filterRoleAllIsSelected}
-              selectedValueList={filterRoleValueList}
-              onChange={handleChangeFilterRole}
-              allLabel={copy.filterAll}
-              optionList={[
-                { value: "master", label: copy.roleLabels.master },
-                { value: "admin", label: copy.roleLabels.admin },
-                { value: "member", label: copy.roleLabels.member }
-              ]}
-            />
-          </DirectoryFilterCard>
-          <DirectoryFilterCard>
-            <DirectoryFilterMultiSelectField
-              id="member-filter-status"
-              label={copy.filterStatusLabel}
-              allIsSelected={filterStatusAllIsSelected}
-              selectedValueList={filterStatusValueList}
-              onChange={handleChangeFilterStatus}
-              allLabel={copy.filterAll}
-              optionList={[
-                { value: "active", label: copy.statusLabels.ACTIVE },
-                { value: "pending", label: copy.statusLabels.PENDING },
-                { value: "disabled", label: copy.statusLabels.DISABLED }
-              ]}
-            />
-          </DirectoryFilterCard>
-        </DirectoryFilterPanel>
-      }
+      filter={{
+        panel: (
+          <DirectoryFilterPanel>
+            <DirectoryFilterCard>
+              <DirectoryFilterTextField
+                id="member-filter-search"
+                label={copy.filterSearchLabel}
+                value={filterQuery}
+                onChange={setFilterQuery}
+              />
+            </DirectoryFilterCard>
+            <DirectoryFilterCard>
+              <DirectoryFilterMultiSelectField
+                id="member-filter-role"
+                label={copy.filterRoleLabel}
+                allIsSelected={filterRoleAllIsSelected}
+                selectedValueList={filterRoleValueList}
+                onChange={handleChangeFilterRole}
+                allLabel={copy.filterAll}
+                optionList={[
+                  { value: "master", label: copy.roleLabels.master },
+                  { value: "admin", label: copy.roleLabels.admin },
+                  { value: "member", label: copy.roleLabels.member }
+                ]}
+              />
+            </DirectoryFilterCard>
+            <DirectoryFilterCard>
+              <DirectoryFilterMultiSelectField
+                id="member-filter-status"
+                label={copy.filterStatusLabel}
+                allIsSelected={filterStatusAllIsSelected}
+                selectedValueList={filterStatusValueList}
+                onChange={handleChangeFilterStatus}
+                allLabel={copy.filterAll}
+                optionList={[
+                  { value: "active", label: copy.statusLabels.ACTIVE },
+                  { value: "pending", label: copy.statusLabels.PENDING },
+                  { value: "disabled", label: copy.statusLabels.DISABLED }
+                ]}
+              />
+            </DirectoryFilterCard>
+          </DirectoryFilterPanel>
+        ),
+        storageSegment: "member"
+      }}
       editorPanelRef={editorPanelElementRef}
       isDeletePending={isDeletePending}
       directoryAside={
@@ -846,14 +852,23 @@ export function MemberConfigurationClient({
           ) : null}
 
           <div className="ui-directory-list">
-            {canInviteMember ? (
-              <ConfigurationDirectoryCreateButton
-                label={copy.directoryCreateLabel}
-                active={isCreateMode}
-                disabled={isSaving}
-                onClick={handleStartCreate}
-              />
-            ) : null}
+            <ConfigurationDirectoryListToolbarRow
+              showFilterToggle
+              filterSegment="member"
+              filterToggleAriaLabel={copy.filterToggleAriaLabel}
+              filterToggleLabel={copy.filterToggleLabel}
+              end={
+                canInviteMember ? (
+                  <ConfigurationDirectoryCreateButton
+                    label={copy.directoryCreateLabel}
+                    active={isCreateMode}
+                    disabled={isSaving}
+                    onClick={handleStartCreate}
+                    wrapInToolbar={false}
+                  />
+                ) : null
+              }
+            />
 
             {directory.item_list.map((item) => {
               const showInviteSendAction =
