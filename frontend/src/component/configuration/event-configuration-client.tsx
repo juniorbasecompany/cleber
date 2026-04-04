@@ -146,12 +146,9 @@ function resolveSelectedEventKey(
   preferredKey: EventSelectionKey,
   canCreate: boolean
 ): EventSelectionKey {
-  /* Lista em ordem crescente de momento: padrão sem URL continua sendo o evento mais recente. */
-  const defaultEventId =
-    itemList.length > 0 ? itemList[itemList.length - 1]?.id ?? null : null;
-
+  /* Sem `?event=` na URL: mesmo padrão que campo/ação/hierarquia — formulário vazio (novo). */
   if (preferredKey === "new") {
-    return canCreate ? "new" : defaultEventId;
+    return canCreate ? "new" : null;
   }
 
   if (typeof preferredKey === "number") {
@@ -159,10 +156,10 @@ function resolveSelectedEventKey(
     if (found != null) {
       return found;
     }
-    return defaultEventId ?? (canCreate ? "new" : null);
+    return canCreate ? "new" : null;
   }
 
-  return defaultEventId ?? (canCreate ? "new" : null);
+  return canCreate ? "new" : null;
 }
 
 function normalizeUtcMomentInput(value: string): string {
@@ -647,6 +644,7 @@ export function EventConfigurationClient({
       if (filterActionId != null) {
         query.set("action_id", String(filterActionId));
       }
+      query.set("label_lang", labelLang);
 
       try {
         const response = await fetch(
@@ -672,6 +670,7 @@ export function EventConfigurationClient({
       filterMomentFromInput,
       filterMomentToInput,
       filterItemIdList,
+      labelLang,
       scopeId,
       syncFromDirectory
     ]
@@ -869,6 +868,28 @@ export function EventConfigurationClient({
         eventActionInputBaselineList
       ),
     [eventActionInputBaselineList, eventActionInputDraftList]
+  );
+
+  const resolveEventListInputSummary = useCallback(
+    (item: TenantScopeEventRecord): string | null => {
+      const isSelected = item.id === selectedEvent?.id;
+      if (isSelected && eventActionInputDirty) {
+        return selectedEventInputSummary;
+      }
+      if (isSelected && actionInputLoading) {
+        return item.input_summary ?? null;
+      }
+      if (isSelected) {
+        return selectedEventInputSummary ?? item.input_summary ?? null;
+      }
+      return item.input_summary ?? null;
+    },
+    [
+      actionInputLoading,
+      eventActionInputDirty,
+      selectedEvent?.id,
+      selectedEventInputSummary
+    ]
   );
 
   const isDirty = useMemo(
@@ -1307,7 +1328,7 @@ export function EventConfigurationClient({
                 <p className="ui-directory-caption-wrap">
                   {renderEventAsideDetailLineBlock(
                     item,
-                    item.id === selectedEvent?.id ? selectedEventInputSummary : null
+                    resolveEventListInputSummary(item)
                   )}
                 </p>
               </button>

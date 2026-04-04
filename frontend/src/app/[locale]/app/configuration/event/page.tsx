@@ -37,7 +37,7 @@ export default async function EventConfigurationPage({ params }: EventConfigurat
   const [eventDirectory, locationDirectory, itemDirectory, actionDirectory] =
     currentScope != null
       ? await Promise.all([
-        getTenantScopeEventDirectory(currentScope.id),
+        getTenantScopeEventDirectory(currentScope.id, { label_lang: labelLang }),
         getTenantLocationDirectory(currentScope.id),
         getTenantItemDirectory(currentScope.id),
         getTenantScopeActionDirectory(currentScope.id, labelLang)

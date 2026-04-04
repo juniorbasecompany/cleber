@@ -1376,6 +1376,60 @@ def delete_scope_label(
 
 # --- event ---
 
+# Mesmo separador que `UI_TEXT_SEPARATOR` no painel de eventos (frontend).
+_EVENT_INPUT_SUMMARY_SEPARATOR = "\u00a0\u00a0●\u00a0\u00a0"
+
+
+def _event_input_summary_by_event_id(
+    session: Session,
+    *,
+    event_id_list: list[int],
+    label_lang: Literal["pt-BR", "en", "es"],
+) -> dict[int, str | None]:
+    """Monta o texto de resumo dos inputs por evento (rótulo de campo + valor)."""
+    if not event_id_list:
+        return {}
+    input_rows = list(
+        session.scalars(
+            select(Input)
+            .where(Input.event_id.in_(event_id_list))
+            .order_by(Input.event_id, Input.id)
+        )
+    )
+    if not input_rows:
+        return {eid: None for eid in event_id_list}
+
+    field_id_set = {row.field_id for row in input_rows}
+    label_rows = list(
+        session.scalars(
+            select(Label).where(
+                Label.field_id.in_(field_id_set),
+                Label.lang == label_lang,
+            )
+        )
+    )
+    label_by_field_id: dict[int, str] = {}
+    for label_row in label_rows:
+        if label_row.field_id is not None:
+            label_by_field_id[label_row.field_id] = label_row.name
+
+    segments_by_event: dict[int, list[str]] = defaultdict(list)
+    for inp in input_rows:
+        value_stripped = inp.value.strip()
+        if not value_stripped:
+            continue
+        label = label_by_field_id.get(inp.field_id) or f"#{inp.field_id}"
+        segments_by_event[inp.event_id].append(f"{label}: {value_stripped}")
+
+    result: dict[int, str | None] = {}
+    for eid in event_id_list:
+        segments = segments_by_event.get(eid)
+        if not segments:
+            result[eid] = None
+        else:
+            result[eid] = _EVENT_INPUT_SUMMARY_SEPARATOR.join(segments)
+    return result
+
 
 class ScopeEventRecord(BaseModel):
     id: int
@@ -1383,6 +1437,7 @@ class ScopeEventRecord(BaseModel):
     item_id: int
     action_id: int
     moment_utc: datetime
+    input_summary: str | None = None
 
 
 class ScopeEventListResponse(BaseModel):
@@ -1415,6 +1470,7 @@ def list_scope_events(
     location_id: list[int] | None = Query(default=None),
     item_id: list[int] | None = Query(default=None),
     action_id: int | None = Query(default=None),
+    label_lang: Literal["pt-BR", "en", "es"] = Query(default="pt-BR"),
     member: Member = Depends(get_current_member),
     session: Session = Depends(get_session),
 ):
@@ -1469,6 +1525,11 @@ def list_scope_events(
     if action_id is not None:
         query = query.where(Event.action_id == action_id)
     rows = list(session.scalars(query.order_by(Event.moment_utc.asc(), Event.id.asc())))
+    summary_by_event_id = _event_input_summary_by_event_id(
+        session,
+        event_id_list=[r.id for r in rows],
+        label_lang=label_lang,
+    )
     return ScopeEventListResponse(
         can_edit=_member_can_edit_scope_rules(member),
         item_list=[
@@ -1478,6 +1539,7 @@ def list_scope_events(
                 item_id=r.item_id,
                 action_id=r.action_id,
                 moment_utc=r.moment_utc,
+                input_summary=summary_by_event_id.get(r.id),
             )
             for r in rows
         ],

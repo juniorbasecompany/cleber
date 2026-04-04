@@ -257,6 +257,7 @@ export async function getTenantScopeEventDirectory(
     location_id?: number | number[];
     item_id?: number | number[];
     action_id?: number;
+    label_lang?: "pt-BR" | "en" | "es";
   } = {}
 ) {
   const cookieStore = await cookies();
@@ -288,6 +289,9 @@ export async function getTenantScopeEventDirectory(
   }
   if (filter.action_id != null) {
     query.set("action_id", String(filter.action_id));
+  }
+  if (filter.label_lang != null) {
+    query.set("label_lang", filter.label_lang);
   }
   const suffix = query.toString();
 
