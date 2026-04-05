@@ -51,6 +51,10 @@ import type {
 } from "@/lib/auth/types";
 import type { LabelLang } from "@/lib/i18n/label-lang";
 import { parseErrorDetail } from "@/lib/api/parse-error-detail";
+import {
+  applyConfigurationSelectionToWindowHistory,
+  preferredSelectionKeyAfterEditSave
+} from "@/lib/navigation/configuration-path";
 
 export type ActionConfigurationCopy = {
   title: string;
@@ -299,10 +303,10 @@ export function ActionConfigurationClient({
   const [scopeFieldList, setScopeFieldList] = useState<FormulaFieldOption[]>([]);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
-  const initialSearchActionKeyRef = useRef<ActionSelectionKey>(initialSearchActionKey);
   const selectedActionKeyRef = useRef<ActionSelectionKey>(initialSelectedActionKey);
-  const didResolveInitialUrlRef = useRef(false);
   const didMountFilterRef = useRef(false);
+  /** Invalida conclusões de `loadActionDirectory` iniciadas antes de um `applySyncFromHandlers` (corrida save vs GET). */
+  const directoryFetchGenerationRef = useRef(0);
   /** Após falha ao gravar fórmulas (ex.: validação 422), evita um load imediato que sobrescreve o rascunho. */
   const skipNextFormulaAutoLoadRef = useRef(false);
 
@@ -362,10 +366,6 @@ export function ActionConfigurationClient({
     Boolean(directory)
   );
 
-  useEffect(() => {
-    selectedActionKeyRef.current = isCreateMode ? "new" : selectedAction?.id ?? null;
-  }, [isCreateMode, selectedAction]);
-
   const syncFromDirectory = useCallback(
     (
       nextDirectory: TenantScopeActionDirectoryResponse | null,
@@ -380,6 +380,7 @@ export function ActionConfigurationClient({
         setFieldError({});
         setRequestErrorMessage(null);
         setIsDeletePending(false);
+        selectedActionKeyRef.current = null;
         return null;
       }
 
@@ -407,27 +408,35 @@ export function ActionConfigurationClient({
       setRequestErrorMessage(null);
       setIsDeletePending(false);
 
+      selectedActionKeyRef.current =
+        nextKey === "new" ? "new" : typeof nextKey === "number" ? nextKey : null;
+
       return nextKey;
     },
     []
   );
 
-  useEffect(() => {
-    const preferredKey = didResolveInitialUrlRef.current
-      ? selectedActionKeyRef.current
-      : initialSearchActionKeyRef.current;
-
-    didResolveInitialUrlRef.current = true;
-    syncFromDirectory(initialActionDirectory, preferredKey);
-  }, [initialActionDirectory, syncFromDirectory]);
+  const applySyncFromHandlers = useCallback(
+    (
+      nextDirectory: TenantScopeActionDirectoryResponse | null,
+      preferredKey?: ActionSelectionKey
+    ) => {
+      const keyForUrl: ActionSelectionKey =
+        preferredKey ?? selectedActionKeyRef.current;
+      applyConfigurationSelectionToWindowHistory(actionPath, "action", keyForUrl);
+      syncFromDirectory(nextDirectory, preferredKey);
+      directoryFetchGenerationRef.current += 1;
+    },
+    [syncFromDirectory]
+  );
 
   const scopeId = currentScope?.id;
 
-  const loadActionDirectory = useCallback(
-    async (preferredKey?: ActionSelectionKey) => {
+  const loadActionDirectory = useCallback(async () => {
       if (scopeId == null) {
         return;
       }
+      const fetchGenerationAtStart = directoryFetchGenerationRef.current;
       const query = new URLSearchParams({ label_lang: labelLang });
       const normalizedQuery = filterQuery.trim();
       if (normalizedQuery) {
@@ -445,9 +454,12 @@ export function ActionConfigurationClient({
           );
           return;
         }
+        if (fetchGenerationAtStart !== directoryFetchGenerationRef.current) {
+          return;
+        }
         syncFromDirectory(
           data as TenantScopeActionDirectoryResponse,
-          preferredKey ?? selectedActionKeyRef.current
+          selectedActionKeyRef.current
         );
       } catch {
         setRequestErrorMessage(copy.loadError);
@@ -461,7 +473,7 @@ export function ActionConfigurationClient({
       didMountFilterRef.current = true;
       return;
     }
-    void loadActionDirectory(selectedActionKeyRef.current);
+    void loadActionDirectory();
   }, [loadActionDirectory]);
 
   const handleActionDirectoryReorder = useCallback(
@@ -501,7 +513,7 @@ export function ActionConfigurationClient({
             tPage("directory.reorderError")
           );
           setDirectory(snapshot);
-          void loadActionDirectory(selectedActionKeyRef.current);
+          void loadActionDirectory();
           return;
         }
         setDirectory(data as TenantScopeActionDirectoryResponse);
@@ -509,7 +521,7 @@ export function ActionConfigurationClient({
       } catch {
         setRequestErrorMessage(tPage("directory.reorderError"));
         setDirectory(snapshot);
-        void loadActionDirectory(selectedActionKeyRef.current);
+        void loadActionDirectory();
       } finally {
         setIsDirectoryReorderBusy(false);
       }
@@ -633,9 +645,9 @@ export function ActionConfigurationClient({
 
     bumpNewIntent();
     if (!isCreateMode) {
-      syncFromDirectory(directory, "new");
+      applySyncFromHandlers(directory, "new");
     }
-  }, [bumpNewIntent, directory, isCreateMode, isSaving, syncFromDirectory]);
+  }, [applySyncFromHandlers, bumpNewIntent, directory, isCreateMode, isSaving]);
 
   const handleSelectAction = useCallback(
     (item: TenantScopeActionRecord) => {
@@ -647,9 +659,9 @@ export function ActionConfigurationClient({
         return;
       }
 
-      syncFromDirectory(directory, item.id);
+      applySyncFromHandlers(directory, item.id);
     },
-    [directory, isCreateMode, selectedAction, syncFromDirectory]
+    [applySyncFromHandlers, directory, isCreateMode, selectedAction]
   );
 
   const handleToggleDelete = useCallback(() => {
@@ -718,7 +730,7 @@ export function ActionConfigurationClient({
             });
           } catch (error) {
             skipNextFormulaAutoLoadRef.current = true;
-            syncFromDirectory(updatedDirectory, created.id);
+            applySyncFromHandlers(updatedDirectory, created.id);
             setFormulasCanEdit(updatedDirectory.can_edit);
             setRequestErrorMessage(
               userMessageForFormulaPersistFailure(error, tPage, copy.saveError)
@@ -728,7 +740,8 @@ export function ActionConfigurationClient({
           }
         }
 
-        syncFromDirectory(updatedDirectory, created?.id ?? "new");
+        bumpNewIntent();
+        applySyncFromHandlers(updatedDirectory, "new");
         setHistoryRefreshKey((previous) => previous + 1);
         return;
       }
@@ -757,7 +770,7 @@ export function ActionConfigurationClient({
         const updatedDirectory = data as TenantScopeActionDirectoryResponse;
         const nextKeyAfterMutation: ActionSelectionKey =
           updatedDirectory.can_edit ? "new" : null;
-        syncFromDirectory(updatedDirectory, nextKeyAfterMutation);
+        applySyncFromHandlers(updatedDirectory, nextKeyAfterMutation);
         setHistoryRefreshKey((previous) => previous + 1);
         return;
       }
@@ -806,7 +819,11 @@ export function ActionConfigurationClient({
         await loadFormulas();
       }
 
-      syncFromDirectory(latestDirectory, selectedAction.id);
+      bumpNewIntent();
+      applySyncFromHandlers(
+        latestDirectory,
+        preferredSelectionKeyAfterEditSave(latestDirectory.can_edit, selectedAction.id)
+      );
       setHistoryRefreshKey((previous) => previous + 1);
     } catch {
       setRequestErrorMessage(
@@ -820,7 +837,9 @@ export function ActionConfigurationClient({
       setIsSaving(false);
     }
   }, [
+    applySyncFromHandlers,
     baseline.actionName,
+    bumpNewIntent,
     copy.createError,
     copy.deleteBlockedDetail,
     copy.deleteError,
@@ -837,7 +856,6 @@ export function ActionConfigurationClient({
     loadFormulas,
     scopeId,
     selectedAction,
-    syncFromDirectory,
     tPage,
     validate
   ]);

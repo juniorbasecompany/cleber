@@ -271,14 +271,22 @@ export function TenantConfigurationClient({
       }
       const updated = data as TenantCurrentResponse;
       setTenant(updated);
-      setDisplayName(updated.display_name);
-      setLegalName(updated.name);
-      setBaseline({
-        displayName: updated.display_name,
-        legalName: updated.name
-      });
       setIsDeletePending(false);
-      setEditorContext("edit");
+      if (updated.can_edit) {
+        bumpNewIntent();
+        setDisplayName("");
+        setLegalName("");
+        setBaseline({ displayName: "", legalName: "" });
+        setEditorContext("new");
+      } else {
+        setDisplayName(updated.display_name);
+        setLegalName(updated.name);
+        setBaseline({
+          displayName: updated.display_name,
+          legalName: updated.name
+        });
+        setEditorContext("edit");
+      }
       setHistoryRefreshKey((previous) => previous + 1);
       router.refresh();
     } catch {
@@ -287,6 +295,7 @@ export function TenantConfigurationClient({
       setIsSaving(false);
     }
   }, [
+    bumpNewIntent,
     copy.deleteError,
     copy.saveError,
     displayName,

@@ -25,7 +25,11 @@ import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-
 import { useEditorNewIntentGeneration } from "@/component/configuration/use-editor-new-intent-generation";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
-import type { ConfigurationSelectionKey } from "@/lib/navigation/configuration-path";
+import {
+  applyConfigurationSelectionToWindowHistory,
+  preferredSelectionKeyAfterEditSave,
+  type ConfigurationSelectionKey
+} from "@/lib/navigation/configuration-path";
 import type {
   TenantMemberDirectoryResponse,
   TenantMemberRecord
@@ -198,23 +202,6 @@ function resolveMemberInviteSendError(
   return detailMessage ?? copy.inviteSendErrorGeneric;
 }
 
-function findMemberIdByEmailNormalized(
-  itemList: TenantMemberRecord[],
-  emailNormalized: string
-): number | null {
-  const target = emailNormalized.trim().toLowerCase();
-  let best: TenantMemberRecord | null = null;
-  for (const item of itemList) {
-    if (item.email.trim().toLowerCase() !== target) {
-      continue;
-    }
-    if (best == null || item.id > best.id) {
-      best = item;
-    }
-  }
-  return best?.id ?? null;
-}
-
 export function MemberConfigurationClient({
   locale,
   initialDirectory,
@@ -282,14 +269,14 @@ export function MemberConfigurationClient({
   const [filterStatusValueList, setFilterStatusValueList] = useState<string[]>([]);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
-  const initialSearchMemberKeyRef = useRef<ConfigurationSelectionKey>(initialSearchMemberKey);
   const selectedMemberKeyRef = useRef<ConfigurationSelectionKey>(
     initialSelection.isCreateMode
       ? "new"
       : initialSelection.selectedMemberId
   );
-  const didResolveInitialUrlRef = useRef(false);
   const didMountFilterRef = useRef(false);
+  /** Invalida conclusões de `loadMemberDirectory` iniciadas antes de um `applySyncFromHandlers` (corrida save vs GET). */
+  const directoryFetchGenerationRef = useRef(0);
 
   const selectedMemberKey: ConfigurationSelectionKey = isCreateMode
     ? "new"
@@ -312,10 +299,6 @@ export function MemberConfigurationClient({
     }, 5000);
     return () => window.clearTimeout(timerId);
   }, [footerNoticeMessage]);
-
-  useEffect(() => {
-    selectedMemberKeyRef.current = selectedMemberKey;
-  }, [selectedMemberKey]);
 
   const selectedMember = useMemo(() => {
     if (selectedMemberId == null) {
@@ -397,14 +380,33 @@ export function MemberConfigurationClient({
     []
   );
 
-  useEffect(() => {
-    const preferredKey = didResolveInitialUrlRef.current
-      ? selectedMemberKeyRef.current
-      : initialSearchMemberKeyRef.current;
-
-    didResolveInitialUrlRef.current = true;
-    syncFromDirectory(initialDirectory, preferredKey);
-  }, [initialDirectory, syncFromDirectory]);
+  const applySyncFromHandlers = useCallback(
+    (nextDirectory: TenantMemberDirectoryResponse, preferredKey?: ConfigurationSelectionKey) => {
+      const keyForUrl: ConfigurationSelectionKey =
+        preferredKey ?? selectedMemberKeyRef.current;
+      applyConfigurationSelectionToWindowHistory(memberPath, "member", keyForUrl);
+      syncFromDirectory(nextDirectory, preferredKey);
+      directoryFetchGenerationRef.current += 1;
+      // #region agent log
+      fetch("http://127.0.0.1:7676/ingest/16fbe7b6-e3ca-4fb0-80d1-7c696df7a955", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Debug-Session-Id": "d2e8da"
+        },
+        body: JSON.stringify({
+          sessionId: "d2e8da",
+          location: "member-configuration-client.tsx:applySyncFromHandlers",
+          message: "applySync bump generation",
+          data: { generation: directoryFetchGenerationRef.current },
+          timestamp: Date.now(),
+          hypothesisId: "H-apply-bump"
+        })
+      }).catch(() => {});
+      // #endregion
+    },
+    [syncFromDirectory]
+  );
 
   const handleChangeFilterRole = useCallback((next: {
     allIsSelected: boolean;
@@ -422,8 +424,8 @@ export function MemberConfigurationClient({
     setFilterStatusValueList(next.selectedValueList);
   }, []);
 
-  const loadMemberDirectory = useCallback(
-    async (preferredKey?: ConfigurationSelectionKey) => {
+  const loadMemberDirectory = useCallback(async () => {
+      const fetchGenerationAtStart = directoryFetchGenerationRef.current;
       const query = new URLSearchParams();
       const normalizedQuery = filterQuery.trim();
       if (normalizedQuery) {
@@ -455,9 +457,32 @@ export function MemberConfigurationClient({
           );
           return;
         }
+        if (fetchGenerationAtStart !== directoryFetchGenerationRef.current) {
+          // #region agent log
+          fetch("http://127.0.0.1:7676/ingest/16fbe7b6-e3ca-4fb0-80d1-7c696df7a955", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-Debug-Session-Id": "d2e8da"
+            },
+            body: JSON.stringify({
+              sessionId: "d2e8da",
+              location: "member-configuration-client.tsx:loadMemberDirectory",
+              message: "skip stale directory GET result",
+              data: {
+                atStart: fetchGenerationAtStart,
+                current: directoryFetchGenerationRef.current
+              },
+              timestamp: Date.now(),
+              hypothesisId: "H-stale-fetch-skip"
+            })
+          }).catch(() => {});
+          // #endregion
+          return;
+        }
         syncFromDirectory(
           data as TenantMemberDirectoryResponse,
-          preferredKey ?? selectedMemberKeyRef.current
+          selectedMemberKeyRef.current
         );
       } catch {
         setRequestErrorMessage(copy.saveError);
@@ -479,7 +504,7 @@ export function MemberConfigurationClient({
       didMountFilterRef.current = true;
       return;
     }
-    void loadMemberDirectory(selectedMemberKeyRef.current);
+    void loadMemberDirectory();
   }, [loadMemberDirectory]);
 
   const isDirty = useMemo(() => {
@@ -548,9 +573,9 @@ export function MemberConfigurationClient({
     if (!isCreateMode) {
       setFooterNoticeMessage(null);
       setRequestErrorMessage(null);
-      syncFromDirectory(directory, "new");
+      applySyncFromHandlers(directory, "new");
     }
-  }, [bumpNewIntent, directory, isCreateMode, isSaving, syncFromDirectory]);
+  }, [applySyncFromHandlers, bumpNewIntent, directory, isCreateMode, isSaving]);
 
   const handleSendMemberInvite = useCallback(
     async (item: TenantMemberRecord) => {
@@ -609,13 +634,13 @@ export function MemberConfigurationClient({
 
       setFooterNoticeMessage(null);
       setRequestErrorMessage(null);
-      syncFromDirectory(directory, member.id);
+      applySyncFromHandlers(directory, member.id);
     },
     [
+      applySyncFromHandlers,
       directory,
       isCreateMode,
-      selectedMemberId,
-      syncFromDirectory
+      selectedMemberId
     ]
   );
 
@@ -639,7 +664,6 @@ export function MemberConfigurationClient({
     setIsSaving(true);
     try {
       if (isCreateMode) {
-        const emailNormalized = inviteEmail.trim().toLowerCase();
         const response = await fetch("/api/auth/tenant/current/members", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -659,11 +683,8 @@ export function MemberConfigurationClient({
         }
 
         const updatedDirectory = data as TenantMemberDirectoryResponse;
-        const createdId = findMemberIdByEmailNormalized(
-          updatedDirectory.item_list,
-          emailNormalized
-        );
-        syncFromDirectory(updatedDirectory, createdId);
+        bumpNewIntent();
+        applySyncFromHandlers(updatedDirectory, "new");
         setHistoryRefreshKey((previous) => previous + 1);
         return;
       }
@@ -709,7 +730,40 @@ export function MemberConfigurationClient({
       }
 
       const updatedDirectory = data as TenantMemberDirectoryResponse;
-      syncFromDirectory(updatedDirectory, selectedMember.id);
+      if (isDeletePending) {
+        const nextKey: ConfigurationSelectionKey = updatedDirectory.can_edit
+          ? "new"
+          : null;
+        applySyncFromHandlers(updatedDirectory, nextKey);
+      } else {
+        bumpNewIntent();
+        const nextPreferred = preferredSelectionKeyAfterEditSave(
+          updatedDirectory.can_edit,
+          selectedMember.id
+        );
+        applySyncFromHandlers(updatedDirectory, nextPreferred);
+        // #region agent log
+        fetch("http://127.0.0.1:7676/ingest/16fbe7b6-e3ca-4fb0-80d1-7c696df7a955", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Debug-Session-Id": "d2e8da"
+          },
+          body: JSON.stringify({
+            sessionId: "d2e8da",
+            location: "member-configuration-client.tsx:handleSave",
+            message: "PATCH ok after applySyncFromHandlers",
+            data: {
+              nextPreferred,
+              refAfterSync: selectedMemberKeyRef.current,
+              directoryCanEdit: updatedDirectory.can_edit
+            },
+            timestamp: Date.now(),
+            hypothesisId: "H-patch-sync"
+          })
+        }).catch(() => {});
+        // #endregion
+      }
       setHistoryRefreshKey((previous) => previous + 1);
     } catch {
       setRequestErrorMessage(
@@ -723,6 +777,8 @@ export function MemberConfigurationClient({
       setIsSaving(false);
     }
   }, [
+    applySyncFromHandlers,
+    bumpNewIntent,
     copy.createError,
     copy.deleteError,
     copy.saveError,
@@ -733,7 +789,6 @@ export function MemberConfigurationClient({
     memberEmail,
     name,
     selectedMember,
-    syncFromDirectory,
     validate
   ]);
 

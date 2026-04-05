@@ -47,6 +47,7 @@ import type {
 } from "@/lib/auth/types";
 import type { LabelLang } from "@/lib/i18n/label-lang";
 import { parseErrorDetail } from "@/lib/api/parse-error-detail";
+import { preferredSelectionKeyAfterEditSave } from "@/lib/navigation/configuration-path";
 
 /** Valor inicial de `field.type` ao criar um campo novo (NUMERIC com zero decimais). */
 const defaultNewFieldSqlType = buildFieldSqlType({ kind: "number", scale: 0 });
@@ -652,7 +653,7 @@ export function FieldConfigurationClient({
         bumpNewIntent();
         syncFromDirectory(
           updatedDirectory,
-          updatedDirectory.can_edit ? "new" : selectedField.id
+          preferredSelectionKeyAfterEditSave(updatedDirectory.can_edit, selectedField.id)
         );
       }
       setHistoryRefreshKey((previous) => previous + 1);

@@ -34,6 +34,10 @@ import type {
 } from "@/lib/auth/types";
 import { parseErrorDetail } from "@/lib/api/parse-error-detail";
 import type { LabelLang } from "@/lib/i18n/label-lang";
+import {
+  applyConfigurationSelectionToWindowHistory,
+  preferredSelectionKeyAfterEditSave
+} from "@/lib/navigation/configuration-path";
 
 const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
 
@@ -388,8 +392,13 @@ export function EventConfigurationClient({
     [initialActionDirectory?.item_list]
   );
 
-  const [directory, setDirectory] = useState<TenantScopeEventDirectoryResponse | null>(
-    initialEventDirectory
+  const [directory, setDirectory] = useState<TenantScopeEventDirectoryResponse | null>(() =>
+    initialEventDirectory == null
+      ? null
+      : {
+          ...initialEventDirectory,
+          item_list: sortEventDirectoryItemListOldestFirst(initialEventDirectory.item_list)
+        }
   );
 
   const initialSelectedEventKey =
@@ -460,10 +469,10 @@ export function EventConfigurationClient({
   const [actionInputErrorMessage, setActionInputErrorMessage] = useState<string | null>(null);
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
-  const initialSearchEventKeyRef = useRef<EventSelectionKey>(initialSearchEventKey);
   const selectedEventKeyRef = useRef<EventSelectionKey>(initialSelectedEventKey);
-  const didResolveInitialUrlRef = useRef(false);
   const didMountFilterRef = useRef(false);
+  /** Invalida conclusões de `loadEventDirectory` iniciadas antes de um `applySyncFromHandlers` (corrida save vs GET). */
+  const directoryFetchGenerationRef = useRef(0);
 
   const selectedEvent = useMemo(() => {
     if (isCreateMode) {
@@ -507,10 +516,6 @@ export function EventConfigurationClient({
     Boolean(directory)
   );
 
-  useEffect(() => {
-    selectedEventKeyRef.current = isCreateMode ? "new" : selectedEvent?.id ?? null;
-  }, [isCreateMode, selectedEvent]);
-
   const syncFromDirectory = useCallback(
     (
       nextDirectory: TenantScopeEventDirectoryResponse | null,
@@ -534,6 +539,7 @@ export function EventConfigurationClient({
         setFieldError({});
         setRequestErrorMessage(null);
         setIsDeletePending(false);
+        selectedEventKeyRef.current = null;
         return null;
       }
 
@@ -576,18 +582,27 @@ export function EventConfigurationClient({
       setRequestErrorMessage(null);
       setIsDeletePending(false);
 
+      selectedEventKeyRef.current =
+        nextKey === "new" ? "new" : typeof nextKey === "number" ? nextKey : null;
+
       return nextKey;
     },
     []
   );
 
-  useEffect(() => {
-    const preferredKey = didResolveInitialUrlRef.current
-      ? selectedEventKeyRef.current
-      : initialSearchEventKeyRef.current;
-    didResolveInitialUrlRef.current = true;
-    syncFromDirectory(initialEventDirectory, preferredKey);
-  }, [initialEventDirectory, syncFromDirectory]);
+  const applySyncFromHandlers = useCallback(
+    (
+      nextDirectory: TenantScopeEventDirectoryResponse | null,
+      preferredKey?: EventSelectionKey
+    ) => {
+      const keyForUrl: EventSelectionKey =
+        preferredKey ?? selectedEventKeyRef.current;
+      applyConfigurationSelectionToWindowHistory(eventPath, "event", keyForUrl);
+      syncFromDirectory(nextDirectory, preferredKey);
+      directoryFetchGenerationRef.current += 1;
+    },
+    [syncFromDirectory]
+  );
 
   const scopeId = currentScope?.id;
 
@@ -619,13 +634,13 @@ export function EventConfigurationClient({
     void loadScopeFieldOptionList();
   }, [loadScopeFieldOptionList]);
 
-  const loadEventDirectory = useCallback(
-    async (preferredKey?: EventSelectionKey) => {
+  const loadEventDirectory = useCallback(async () => {
       if (scopeId == null) {
         syncFromDirectory(null, null);
         return;
       }
 
+      const fetchGenerationAtStart = directoryFetchGenerationRef.current;
       const query = new URLSearchParams();
       const filterMomentFromUtc = toUtcIsoFromLocalInput(filterMomentFromInput);
       const filterMomentToUtc = toUtcIsoFromLocalInput(filterMomentToInput);
@@ -655,9 +670,12 @@ export function EventConfigurationClient({
           setRequestErrorMessage(parseErrorDetail(data, copy.loadError) ?? copy.loadError);
           return;
         }
+        if (fetchGenerationAtStart !== directoryFetchGenerationRef.current) {
+          return;
+        }
         syncFromDirectory(
           data as TenantScopeEventDirectoryResponse,
-          preferredKey ?? selectedEventKeyRef.current
+          selectedEventKeyRef.current
         );
       } catch {
         setRequestErrorMessage(copy.loadError);
@@ -681,7 +699,7 @@ export function EventConfigurationClient({
       didMountFilterRef.current = true;
       return;
     }
-    void loadEventDirectory(selectedEventKeyRef.current);
+    void loadEventDirectory();
   }, [loadEventDirectory]);
 
   useEffect(() => {
@@ -1058,9 +1076,9 @@ export function EventConfigurationClient({
     }
     bumpNewIntent();
     if (!isCreateMode) {
-      syncFromDirectory(directory, "new");
+      applySyncFromHandlers(directory, "new");
     }
-  }, [bumpNewIntent, directory, isCreateMode, isSaving, syncFromDirectory]);
+  }, [applySyncFromHandlers, bumpNewIntent, directory, isCreateMode, isSaving]);
 
   const handleSelectEvent = useCallback(
     (item: TenantScopeEventRecord) => {
@@ -1070,9 +1088,9 @@ export function EventConfigurationClient({
       if (!isCreateMode && item.id === selectedEvent?.id) {
         return;
       }
-      syncFromDirectory(directory, item.id);
+      applySyncFromHandlers(directory, item.id);
     },
-    [directory, isCreateMode, selectedEvent, syncFromDirectory]
+    [applySyncFromHandlers, directory, isCreateMode, selectedEvent]
   );
 
   const handleToggleDelete = useCallback(() => {
@@ -1125,7 +1143,8 @@ export function EventConfigurationClient({
         if (created && eventActionInputDirty) {
           await persistEventActionInputDraftList(created.id);
         }
-        await loadEventDirectory(created?.id ?? "new");
+        bumpNewIntent();
+        applySyncFromHandlers(updatedDirectory, "new");
         setHistoryRefreshKey((previous) => previous + 1);
         return;
       }
@@ -1162,13 +1181,20 @@ export function EventConfigurationClient({
         return;
       }
 
-      const nextKeyAfterMutation: EventSelectionKey = isDeletePending
-        ? (directory.can_edit ? "new" : null)
-        : selectedEvent.id;
-      if (!isDeletePending && eventActionInputDirty) {
-        await persistEventActionInputDraftList(selectedEvent.id);
+      const updatedDirectory = data as TenantScopeEventDirectoryResponse;
+      if (isDeletePending) {
+        const nextKey: EventSelectionKey = updatedDirectory.can_edit ? "new" : null;
+        applySyncFromHandlers(updatedDirectory, nextKey);
+      } else {
+        if (eventActionInputDirty) {
+          await persistEventActionInputDraftList(selectedEvent.id);
+        }
+        bumpNewIntent();
+        applySyncFromHandlers(
+          updatedDirectory,
+          preferredSelectionKeyAfterEditSave(updatedDirectory.can_edit, selectedEvent.id)
+        );
       }
-      await loadEventDirectory(nextKeyAfterMutation);
       setHistoryRefreshKey((previous) => previous + 1);
     } catch (error) {
       if (error instanceof Error && error.message.trim()) {
@@ -1187,6 +1213,8 @@ export function EventConfigurationClient({
     }
   }, [
     actionId,
+    applySyncFromHandlers,
+    bumpNewIntent,
     copy.createError,
     copy.deleteBlockedDetail,
     copy.deleteError,
@@ -1197,7 +1225,6 @@ export function EventConfigurationClient({
     isCreateMode,
     isDeletePending,
     eventActionInputDirty,
-    loadEventDirectory,
     locationId,
     momentInput,
     scopeId,
