@@ -4,8 +4,8 @@
       "id": "tenant",
       "name": "tenant",
       "comment": "Este é o licenciado que está contratando o sistema.",
-      "x": -599.6422436676634,
-      "y": -218.45865158756794,
+      "x": -517.1606002399863,
+      "y": -227.88512512215965,
       "locked": false,
       "fields": [
         {
@@ -58,8 +58,8 @@
       "id": "account",
       "name": "account",
       "comment": "Esta é a conta do usuário do sistema.",
-      "x": 389.6479338496674,
-      "y": -183.33747689393726,
+      "x": 859.6949651648515,
+      "y": -184.78423615319653,
       "locked": false,
       "fields": [
         {
@@ -164,8 +164,8 @@
       "id": "member",
       "name": "member",
       "comment": "Usuário do sistema em um determinado licenciado.",
-      "x": -81.47387490923484,
-      "y": -364.4327648486604,
+      "x": 125.90854285178216,
+      "y": -367.9676924241322,
       "locked": false,
       "fields": [
         {
@@ -370,8 +370,8 @@
           "values": []
         }
       ],
-      "x": -680.9582181240327,
-      "y": 290.60076147272224
+      "x": -920.3968755314401,
+      "y": 279.0266873986481
     },
     {
       "id": "location",
@@ -465,8 +465,8 @@
           "values": []
         }
       ],
-      "x": -83.23652412756303,
-      "y": 131.98117626059718
+      "x": 65.0337615971049,
+      "y": 118.15499272495794
     },
     {
       "id": "item",
@@ -486,34 +486,6 @@
           "unique": true,
           "notNull": true,
           "increment": true,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "name",
-          "name": "name",
-          "comment": "Nome curto do item.",
-          "type": "TEXT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "display_name",
-          "name": "display_name",
-          "comment": "Descrição do item.",
-          "type": "TEXT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
           "size": "",
           "values": []
         },
@@ -558,17 +530,31 @@
           "increment": false,
           "size": "",
           "values": []
+        },
+        {
+          "id": "kind_id",
+          "name": "kind_id",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "",
+          "size": "",
+          "values": []
         }
       ],
-      "x": -1.4396816870482212,
-      "y": 510.82134408336117
+      "x": -92.51991009760508,
+      "y": 774.2257029170571
     },
     {
       "id": "field",
       "name": "field",
       "comment": "Definição do campo. Ex: quantidade, mortes, valor",
-      "x": -152.55051937152876,
-      "y": 1413.775393481917,
+      "x": -325.7619705696507,
+      "y": 1480.9390174158823,
       "locked": false,
       "fields": [
         {
@@ -635,8 +621,8 @@
       "id": "event",
       "name": "event",
       "comment": "É o momento em que determinada fórmula é aplicada.",
-      "x": 473.1705048074481,
-      "y": 439.6040187669232,
+      "x": 501.718375478658,
+      "y": 702.4714774657488,
       "locked": false,
       "fields": [
         {
@@ -717,8 +703,8 @@
       "id": "formula",
       "name": "formula",
       "comment": "Fórmula que deve ser aplicada aos eventos da ação.",
-      "x": 427.6825789619935,
-      "y": 864.4909368329262,
+      "x": 366.41050098714834,
+      "y": 1065.9818086348232,
       "locked": false,
       "fields": [
         {
@@ -750,9 +736,9 @@
           "values": []
         },
         {
-          "id": "step",
-          "name": "step",
-          "comment": "Ordem que as fórmulas devem ser executadas. UNIQUE por action_id + step.",
+          "id": "sort_order",
+          "name": "sort_order",
+          "comment": "Ordem que as fórmulas devem ser executadas. UNIQUE por action_id + sort_order.",
           "type": "INTEGER",
           "default": "",
           "check": "",
@@ -785,8 +771,8 @@
       "id": "action",
       "name": "action",
       "comment": "Tabela para definir as ações. Ex: Alojamento, Mortalidade, etc...",
-      "x": -81.27556345178834,
-      "y": 899.0078003292905,
+      "x": -210.68055670825845,
+      "y": 1103.6606407171412,
       "locked": false,
       "fields": [
         {
@@ -839,8 +825,8 @@
       "id": "input",
       "name": "input",
       "comment": "Aqui ficam registrados os valores dos parâmetros de entrada das ações aplicadas aos eventos em cada dia.",
-      "x": 490.2227727276779,
-      "y": 1183.4176625952002,
+      "x": 550.3165415107001,
+      "y": 1376.6603700543296,
       "locked": false,
       "fields": [
         {
@@ -907,8 +893,8 @@
       "id": "result",
       "name": "result",
       "comment": "Aqui ficam registrados os resultados das fórmulas aplicadas aos eventos em cada dia.",
-      "x": 933.120169232245,
-      "y": 1220.2710971046238,
+      "x": 1016.7801218517461,
+      "y": 1453.5763170857679,
       "locked": false,
       "fields": [
         {
@@ -1003,8 +989,8 @@
       "id": "label",
       "name": "label",
       "comment": "Serve basicamente para dar um nome amigável para o campo ou para a ação. Exatamente um entre field_id e action_id deve estar preenchido.\nunique por (lang, field_id) e por (lang, action_id)",
-      "x": -919.4009264802504,
-      "y": 1075.5541042315704,
+      "x": -921.2513659033838,
+      "y": 960.3338979758006,
       "locked": false,
       "fields": [
         {
@@ -1050,9 +1036,9 @@
           "values": []
         },
         {
-          "id": "field_id",
-          "name": "field_id",
-          "comment": "LIgação com o campo. Nem sempre está informado, pois pode estar ligado à ação.",
+          "id": "action_id",
+          "name": "action_id",
+          "comment": "LIgação com a ação. Nem sempre está informado, pois pode estar ligado ao campo.",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -1064,9 +1050,9 @@
           "values": []
         },
         {
-          "id": "action_id",
-          "name": "action_id",
-          "comment": "LIgação com a ação. Nem sempre está informado, pois pode estar ligado ao campo.",
+          "id": "field_id",
+          "name": "field_id",
+          "comment": "LIgação com o campo. Nem sempre está informado, pois pode estar ligado à ação.",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -1201,8 +1187,77 @@
           "values": []
         }
       ],
-      "x": -917.6948279343994,
-      "y": 615.340856673818
+      "x": -921.4162350046307,
+      "y": 1363.2024173174634
+    },
+    {
+      "id": "kind",
+      "name": "kind",
+      "x": 15.85337690316851,
+      "y": 483.40530257166415,
+      "locked": false,
+      "fields": [
+        {
+          "id": "id",
+          "name": "id",
+          "comment": "Identificador do tipo de item.",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "unsigned": true,
+          "notNull": true,
+          "increment": true,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "scope_id",
+          "name": "scope_id",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "comment": "Escopo a qual pertence este tipo de item.",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "name",
+          "name": "name",
+          "comment": "Nome do tipo de item. Pode ser um nome mais descritívo.",
+          "type": "TEXT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "display_name",
+          "name": "display_name",
+          "comment": "Nome amigável do tipo de item. Pode ser um nome mais abreviado.",
+          "type": "TEXT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        }
+      ],
+      "comment": "Aqui são guardados os tipos de itens. Exemplo: galinha, cobb, fêmea. Nome deve ser único por escopo.",
+      "indices": [],
+      "color": "#ff0000"
     }
   ],
   "relationships": [
@@ -1427,7 +1482,7 @@
       "deleteConstraint": "Restrict"
     },
     {
-      "id": "7gzMh6oILIYpEsoxWvnTx",
+      "id": "action.scope_id",
       "name": "action.scope_id",
       "startTableId": "scope",
       "startFieldId": "id",
@@ -1436,13 +1491,35 @@
       "cardinality": "one_to_many",
       "updateConstraint": "Cascade",
       "deleteConstraint": "Restrict"
+    },
+    {
+      "id": "item.kind_id",
+      "name": "item.kind_id",
+      "startTableId": "kind",
+      "startFieldId": "id",
+      "endTableId": "item",
+      "endFieldId": "kind_id",
+      "cardinality": "one_to_many",
+      "updateConstraint": "Cascade",
+      "deleteConstraint": "Cascade"
+    },
+    {
+      "id": "kind.scope_id",
+      "name": "kind.scope_id",
+      "startTableId": "scope",
+      "startFieldId": "id",
+      "endTableId": "kind",
+      "endFieldId": "scope_id",
+      "cardinality": "one_to_many",
+      "updateConstraint": "Cascade",
+      "deleteConstraint": "Cascade"
     }
   ],
   "notes": [
     {
       "id": 0,
-      "x": 926.4351999261188,
-      "y": 441.00045572927445,
+      "x": 1000.6686790110286,
+      "y": 600.0721966255089,
       "title": "formula.statement e field.id",
       "content": "Os tokens ${field:X} e ${input:X} mantêm um vínculo lógico com field.id = X.\nEssa relação não é uma FK explícita, pois está embutida na instrução textual, exigindo validação por parsing.\nA integridade deve ser garantida na aplicação (ou via validação prévia), assegurando que todo X referenciado exista em field.",
       "locked": false,
@@ -1452,8 +1529,8 @@
     },
     {
       "id": 1,
-      "x": 920.1669905943709,
-      "y": 775.5661288113066,
+      "x": 992.0438512956323,
+      "y": 982.9485465723236,
       "title": "formula.statement e tokens",
       "content": "Os tokens `${field:X}` e `${input:X}` são identificadores estruturados usados para resolver valores durante a execução da fórmula.\nEles codificam dois aspectos: o `field_id` (X) e a origem do valor (`field` = estado, `input` = evento).\nDevem seguir um padrão rígido e ser validados por parsing, garantindo que sejam reconhecíveis e semanticamente consistentes.",
       "locked": false,
@@ -1463,8 +1540,8 @@
     },
     {
       "id": 2,
-      "x": -906.3368598347091,
-      "y": 1433.8343132127152,
+      "x": -928.7247344793642,
+      "y": 831.7183161906721,
       "title": "label.field_id e label.action_id",
       "content": "field_id, action_id, ao menos 1 e no máximo 1 deve estar preenchido.",
       "locked": false,
