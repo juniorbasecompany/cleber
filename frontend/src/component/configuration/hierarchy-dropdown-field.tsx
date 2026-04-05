@@ -3,6 +3,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import {
+  expandSelectedIdsWithAncestors,
+  toggleIndependentHierarchySelection
+} from "@/lib/configuration/hierarchy-dropdown-selection";
 
 const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
 
@@ -324,22 +328,55 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
 
   const { childrenByParent, itemById, rootItemList, minDepth, maxDepth } =
     useHierarchyDropdownStructure(itemList, getParentId);
-  const draftSelectedIdSet = useMemo(
-    () => new Set(draftSelectedValueList),
-    [draftSelectedValueList]
-  );
+  const draftSelectedIdSet = useMemo(() => {
+    if (multiToggleMode === "independent") {
+      return expandSelectedIdsWithAncestors(draftSelectedValueList, (currentId) => {
+        const currentItem = itemById.get(currentId);
+        return currentItem ? getParentId(currentItem) : null;
+      });
+    }
+
+    return new Set(draftSelectedValueList);
+  }, [draftSelectedValueList, getParentId, itemById, multiToggleMode]);
   const selectedSummary = useMemo(() => {
     if (selectedValueList.length === 0) {
       return allLabel;
     }
 
-    const selectedIdSet = new Set(selectedValueList);
+    if (multiToggleMode !== "independent") {
+      const selectedIdSet = new Set(selectedValueList);
+      const selectedLabelList = itemList
+        .filter((item) => selectedIdSet.has(item.id))
+        .map((item) => resolveItemLabel(item));
+
+      return selectedLabelList.length > 0 ? selectedLabelList.join(", ") : allLabel;
+    }
+
+    const selectedIdSet = expandSelectedIdsWithAncestors(selectedValueList, (currentId) => {
+      const currentItem = itemById.get(currentId);
+      return currentItem ? getParentId(currentItem) : null;
+    });
+    const itemOrderById = new Map(itemList.map((item, index) => [item.id, index]));
+    const seenSummaryKeySet = new Set<string>();
     const selectedLabelList = itemList
       .filter((item) => selectedIdSet.has(item.id))
-      .map((item) => resolveItemLabel(item));
+      .sort(
+        (left, right) =>
+          left.depth - right.depth ||
+          (itemOrderById.get(left.id) ?? 0) - (itemOrderById.get(right.id) ?? 0)
+      )
+      .flatMap((item) => {
+        const summaryKey =
+          "kind_id" in item ? `kind:${String(item.kind_id)}` : `id:${String(item.id)}`;
+        if (seenSummaryKeySet.has(summaryKey)) {
+          return [];
+        }
+        seenSummaryKeySet.add(summaryKey);
+        return [resolveItemLabel(item)];
+      });
 
     return selectedLabelList.length > 0 ? selectedLabelList.join(", ") : allLabel;
-  }, [allLabel, itemList, selectedValueList]);
+  }, [allLabel, getParentId, itemById, itemList, multiToggleMode, selectedValueList]);
 
   const portalPanelStyle = useHierarchyDropdownPortalStyle(isOpen, triggerRef);
 
@@ -351,9 +388,15 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
   function handleToggleDraftValue(id: number) {
     setDraftSelectedValueList((previous) => {
       if (multiToggleMode === "independent") {
-        return previous.includes(id)
-          ? previous.filter((item) => item !== id)
-          : [...previous, id];
+        return toggleIndependentHierarchySelection(
+          previous,
+          id,
+          (currentId) => {
+            const currentItem = itemById.get(currentId);
+            return currentItem ? getParentId(currentItem) : null;
+          },
+          (parentId) => (childrenByParent.get(parentId) ?? []).map((child) => child.id)
+        );
       }
 
       const relatedIdSet = new Set<number>();

@@ -38,6 +38,8 @@ import {
 } from "@/lib/configuration/item-id-ancestry";
 import { preferredSelectionKeyAfterEditSave } from "@/lib/navigation/configuration-path";
 
+const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
+
 export type UnityConfigurationCopy = {
   title: string;
   description: string;
@@ -166,6 +168,20 @@ export function UnityConfigurationClient({
   const [isCreateMode, setIsCreateMode] = useState(initialSelectedUnityKey === "new");
 
   const itemById = useMemo(() => buildItemByIdMap(itemRecordList), [itemRecordList]);
+  const itemOrderById = useMemo(
+    () => new Map(itemRecordList.map((item, index) => [item.id, index])),
+    [itemRecordList]
+  );
+  const locationPathById = useMemo(() => {
+    const next = new Map<number, string>();
+    for (const item of locationDirectory?.item_list ?? []) {
+      const label = item.path_labels.length > 0
+        ? item.path_labels.join(UI_TEXT_SEPARATOR)
+        : item.name.trim() || item.display_name.trim() || `#${item.id}`;
+      next.set(item.id, label);
+    }
+    return next;
+  }, [locationDirectory?.item_list]);
 
   const selectedUnity = useMemo(() => {
     if (isCreateMode) {
@@ -565,9 +581,51 @@ export function UnityConfigurationClient({
       : copy.emptyScope
     : copy.loadError;
 
-  const resolveDirectoryTitle = useCallback((item: TenantUnityRecord) => {
-    return `${item.location_display_name} · ${item.initial_age}–${item.final_age}`;
-  }, []);
+  const formatCreationDate = useCallback(
+    (value: string) => {
+      const parsed = new Date(value);
+      if (Number.isNaN(parsed.getTime())) {
+        return value;
+      }
+      return new Intl.DateTimeFormat(locale, {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric"
+      }).format(parsed);
+    },
+    [locale]
+  );
+  const resolveUnityLocationPath = useCallback(
+    (item: TenantUnityRecord) =>
+      locationPathById.get(item.location_id) ?? item.location_display_name,
+    [locationPathById]
+  );
+  const resolveUnityItemSummary = useCallback(
+    (item: TenantUnityRecord) => {
+      const seenKindIdSet = new Set<number>();
+      const labelList = item.item_id_list
+        .map((id) => itemById.get(id))
+        .filter((row): row is TenantItemRecord => row != null)
+        .sort(
+          (left, right) =>
+            left.depth - right.depth ||
+            (itemOrderById.get(left.id) ?? 0) - (itemOrderById.get(right.id) ?? 0)
+        )
+        .flatMap((row) => {
+          if (seenKindIdSet.has(row.kind_id)) {
+            return [];
+          }
+          seenKindIdSet.add(row.kind_id);
+          const label = row.name.trim() || row.display_name.trim() || `#${row.id}`;
+          return [label];
+        });
+
+      return labelList.length > 0
+        ? labelList.join(", ")
+        : item.item_display_label_list.join(", ");
+    },
+    [itemById, itemOrderById]
+  );
 
   return (
     <ConfigurationDirectoryEditorShell
@@ -635,9 +693,14 @@ export function UnityConfigurationClient({
                       item.id === selectedUnity?.id && isDeletePending ? "true" : undefined
                     }
                   >
-                    <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
-                    <p className="ui-directory-caption-wrap">
-                      {item.item_display_label_list.join(", ")}
+                    <p className="ui-directory-title-wrap ui-directory-title-emphasis">
+                      {resolveUnityLocationPath(item)}
+                    </p>
+                    <p className="ui-directory-title-wrap ui-directory-title-emphasis">
+                      {resolveUnityItemSummary(item)}
+                    </p>
+                    <p className="ui-directory-caption">
+                      {formatCreationDate(item.creation_utc)}
                     </p>
                   </button>
                 </Fragment>

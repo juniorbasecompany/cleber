@@ -504,6 +504,19 @@
   color: var(--color-accent-text);
 }
 
+.ui-directory-title-wrap {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--color-text);
+  white-space: normal;
+  word-break: break-word;
+}
+
+.ui-directory-title-wrap + .ui-directory-title-wrap {
+  margin-top: 0.25rem;
+}
+
 .ui-directory-date {
   flex: 0 0 auto;
   margin-inline-start: auto;
