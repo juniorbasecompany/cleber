@@ -9,6 +9,7 @@
       "item": "Items",
       "field": "Fields",
       "action": "Actions",
+      "unity": "Units",
       "event": "Events",
       "configuration": "Configuration",
       "comingSoon": "coming soon"
@@ -418,6 +419,61 @@
         "formula_unknown_field_id": "The formula references information that does not exist in this scope. Adjust the chosen items or the text.",
         "formula_expression_invalid": "The calculation to the right of the equals sign could not be validated. Check parentheses, operators, and allowed functions (such as abs, min, max, round, Decimal, and date)."
       }
+    },
+    "discardConfirm": "Discard unsaved changes?"
+  },
+  "UnityConfigurationPage": {
+    "title": "Units",
+    "description": "Register allocated units (lots) for the active scope: pick the location, catalog items that make up the unit, and the age range. Use the list on the left to find records and the panel beside it to edit or create.",
+    "list": {
+      "emptyScope": "Create a scope before editing units.",
+      "missingCurrentScope": "Choose an active scope in the header selector before editing units.",
+      "loadError": "Could not load units for this scope. Try again."
+    },
+    "history": {
+      "title": "Change history",
+      "description": "Review changes to units for the active scope: who changed what, when, and a short summary."
+    },
+    "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
+      "searchLabel": "Location or items",
+      "all": "",
+      "confirm": "Ok"
+    },
+    "section": {
+      "location": {
+        "label": "Location",
+        "hint": "Operational location where this unit is allocated."
+      },
+      "item": {
+        "label": "Item",
+        "hint": "Open the picker, check one or more items in the tree, and tap Ok. On save, each selected item and its ancestors in the hierarchy are stored."
+      },
+      "age": {
+        "initialLabel": "Initial age",
+        "finalLabel": "Final age",
+        "hint": "Initial age cannot be greater than final age."
+      }
+    },
+    "action": {
+      "cancel": "Cancel",
+      "new": "New",
+      "delete": "Delete",
+      "undoDelete": "Undo delete",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "readOnlyNotice": "You can browse units for the active scope, but only master or administrator members can create or edit records.",
+    "error": {
+      "save": "Could not save the unit. Try again.",
+      "create": "Could not create the unit. Try again.",
+      "delete": "Could not delete the unit. Try again.",
+      "validationItem": "Select at least one catalog item.",
+      "validationAge": "Initial age cannot be greater than final age.",
+      "validationAgeRequired": "Enter initial age and final age.",
+      "validationLocation": "Add a location to the scope before creating a unit.",
+      "validationLocationSelect": "Select a location."
     },
     "discardConfirm": "Discard unsaved changes?"
   },

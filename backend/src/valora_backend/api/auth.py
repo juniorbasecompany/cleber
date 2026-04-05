@@ -7,7 +7,7 @@ from datetime import date, datetime, time, timedelta
 from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import func, literal, or_, select, text
 from sqlalchemy.orm import Session, contains_eager, joinedload
 
@@ -51,6 +51,7 @@ from valora_backend.model.identity import (
     Member,
     Scope,
     Tenant,
+    Unity,
 )
 from valora_backend.model.rules import Action as ScopeAction, Field as ScopeField
 from valora_backend.model.log import Log
@@ -70,6 +71,7 @@ HISTORY_TABLE_NAME_SET = {
     "scope",
     "location",
     "item",
+    "unity",
     "field",
     "action",
     "event",
@@ -486,6 +488,58 @@ class TenantItemMoveRequest(BaseModel):
         if value < 0:
             raise ValueError("target index must be non-negative")
         return value
+
+
+class TenantUnityRecord(BaseModel):
+    id: int
+    location_id: int
+    location_display_name: str
+    item_id_list: list[int]
+    item_display_label_list: list[str]
+    creation_utc: datetime
+    initial_age: int
+    final_age: int
+    can_edit: bool
+    can_delete: bool
+
+
+class TenantUnityDirectoryResponse(BaseModel):
+    scope_id: int
+    scope_name: str
+    scope_display_name: str
+    can_edit: bool
+    can_create: bool
+    item_list: list[TenantUnityRecord] = Field(default_factory=list)
+
+
+class TenantUnityUpsertRequest(BaseModel):
+    location_id: int
+    item_id_list: list[int]
+    initial_age: int
+    final_age: int
+
+    @field_validator("location_id")
+    @classmethod
+    def validate_unity_location_id(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("invalid location id")
+        return value
+
+    @field_validator("item_id_list")
+    @classmethod
+    def validate_unity_item_id_list(cls, value: list[int]) -> list[int]:
+        if not value:
+            raise ValueError("item_id_list must not be empty")
+        for iid in value:
+            if iid < 1:
+                raise ValueError("invalid item id")
+        return value
+
+    @model_validator(mode="after")
+    def validate_unity_age_range(self) -> TenantUnityUpsertRequest:
+        if self.initial_age > self.final_age:
+            raise ValueError("initial_age must be less than or equal to final_age")
+        return self
 
 
 class AuthSessionResponse(BaseModel):
@@ -1632,6 +1686,118 @@ def _build_tenant_item_directory(
         can_edit=can_edit_hierarchy,
         can_create=can_edit_hierarchy,
         kind_list=kind_list,
+        item_list=out_list,
+    )
+
+
+def _validate_item_id_list_for_scope(
+    session: Session, *, scope_id: int, item_id_list: list[int]
+) -> None:
+    unique_ids = sorted({iid for iid in item_id_list})
+    rows = session.scalars(
+        select(Item.id).where(Item.scope_id == scope_id, Item.id.in_(unique_ids))
+    ).all()
+    if len(rows) != len(unique_ids):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid item id for current scope",
+        )
+
+
+def _item_display_label_list_for_scope(
+    session: Session, *, scope_id: int, item_id_list: list[int]
+) -> list[str]:
+    if not item_id_list:
+        return []
+    id_set = set(item_id_list)
+    rows = session.scalars(
+        select(Item)
+        .options(joinedload(Item.kind))
+        .where(Item.scope_id == scope_id, Item.id.in_(id_set))
+    ).all()
+    by_id = {row.id: row for row in rows}
+    return [
+        hierarchy_item_label(by_id[iid])
+        for iid in item_id_list
+        if iid in by_id
+    ]
+
+
+def _get_scope_unity_or_404(
+    session: Session, *, scope_id: int, unity_id: int
+) -> Unity:
+    row = session.get(Unity, unity_id)
+    if row is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unity not found",
+        )
+    location_row = session.get(Location, row.location_id)
+    if location_row is None or location_row.scope_id != scope_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Unity not found for current scope",
+        )
+    return row
+
+
+def _build_tenant_unity_directory(
+    session: Session,
+    *,
+    actor: Member,
+    scope: Scope,
+    q: str | None = None,
+) -> TenantUnityDirectoryResponse:
+    query = (
+        select(Unity, Location)
+        .join(Location, Unity.location_id == Location.id)
+        .where(Location.scope_id == scope.id)
+    )
+    query_term_expression = _query_term_expression_for_search(q)
+    if query_term_expression is not None:
+        query = query.where(
+            or_(
+                _normalize_expression_for_search(Location.name).contains(
+                    query_term_expression
+                ),
+                _normalize_expression_for_search(Location.display_name).contains(
+                    query_term_expression
+                ),
+            )
+        )
+    unity_rows = session.execute(
+        query.order_by(Unity.creation_utc.desc(), Unity.id.desc())
+    ).all()
+
+    can_edit = _member_can_edit_scope_hierarchy_directory(actor)
+    can_delete = _member_can_delete_scope_hierarchy_directory(actor)
+    out_list: list[TenantUnityRecord] = []
+    for unity_row, location_row in unity_rows:
+        iid_list = list(unity_row.item_id_list)
+        labels = _item_display_label_list_for_scope(
+            session, scope_id=scope.id, item_id_list=iid_list
+        )
+        out_list.append(
+            TenantUnityRecord(
+                id=unity_row.id,
+                location_id=unity_row.location_id,
+                location_display_name=location_row.display_name,
+                item_id_list=iid_list,
+                item_display_label_list=labels,
+                creation_utc=unity_row.creation_utc,
+                initial_age=unity_row.initial_age,
+                final_age=unity_row.final_age,
+                can_edit=can_edit,
+                can_delete=can_delete,
+            )
+        )
+
+    return TenantUnityDirectoryResponse(
+        scope_id=scope.id,
+        scope_name=scope.name,
+        scope_display_name=scope.display_name,
+        can_edit=can_edit,
+        can_create=can_edit,
         item_list=out_list,
     )
 
@@ -2945,6 +3111,156 @@ def delete_current_scope_item(
     commit_session_with_null_if_empty(session)
 
     return _build_tenant_item_directory(
+        session,
+        actor=current_member,
+        scope=target_scope,
+    )
+
+
+@router.get(
+    "/tenant/current/scopes/{scope_id}/unities",
+    response_model=TenantUnityDirectoryResponse,
+)
+def get_current_scope_unity_directory(
+    scope_id: int,
+    q: str | None = Query(default=None),
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=scope_id,
+    )
+    return _build_tenant_unity_directory(
+        session,
+        actor=current_member,
+        scope=target_scope,
+        q=q,
+    )
+
+
+@router.post(
+    "/tenant/current/scopes/{scope_id}/unities",
+    response_model=TenantUnityDirectoryResponse,
+)
+def create_current_scope_unity(
+    scope_id: int,
+    body: TenantUnityUpsertRequest,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=scope_id,
+    )
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to create unity",
+        )
+
+    _get_scope_location_or_404(
+        session, scope_id=target_scope.id, location_id=body.location_id
+    )
+    _validate_item_id_list_for_scope(
+        session, scope_id=target_scope.id, item_id_list=body.item_id_list
+    )
+
+    unity_row = Unity(
+        location_id=body.location_id,
+        item_id_list=body.item_id_list,
+        initial_age=body.initial_age,
+        final_age=body.final_age,
+    )
+    session.add(unity_row)
+    _apply_member_audit_context(session, current_member)
+    commit_session_with_null_if_empty(session)
+
+    return _build_tenant_unity_directory(
+        session,
+        actor=current_member,
+        scope=target_scope,
+    )
+
+
+@router.patch(
+    "/tenant/current/scopes/{scope_id}/unities/{unity_id}",
+    response_model=TenantUnityDirectoryResponse,
+)
+def patch_current_scope_unity(
+    scope_id: int,
+    unity_id: int,
+    body: TenantUnityUpsertRequest,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=scope_id,
+    )
+    target_unity = _get_scope_unity_or_404(
+        session, scope_id=target_scope.id, unity_id=unity_id
+    )
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to update unity",
+        )
+
+    _get_scope_location_or_404(
+        session, scope_id=target_scope.id, location_id=body.location_id
+    )
+    _validate_item_id_list_for_scope(
+        session, scope_id=target_scope.id, item_id_list=body.item_id_list
+    )
+
+    target_unity.location_id = body.location_id
+    target_unity.item_id_list = body.item_id_list
+    target_unity.initial_age = body.initial_age
+    target_unity.final_age = body.final_age
+    session.add(target_unity)
+    _apply_member_audit_context(session, current_member)
+    commit_session_with_null_if_empty(session)
+
+    return _build_tenant_unity_directory(
+        session,
+        actor=current_member,
+        scope=target_scope,
+    )
+
+
+@router.delete(
+    "/tenant/current/scopes/{scope_id}/unities/{unity_id}",
+    response_model=TenantUnityDirectoryResponse,
+)
+def delete_current_scope_unity(
+    scope_id: int,
+    unity_id: int,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=scope_id,
+    )
+    target_unity = _get_scope_unity_or_404(
+        session, scope_id=target_scope.id, unity_id=unity_id
+    )
+    if not _member_can_delete_scope_hierarchy_directory(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to delete unity",
+        )
+
+    _apply_member_audit_context(session, current_member)
+    session.delete(target_unity)
+    commit_session_with_null_if_empty(session)
+
+    return _build_tenant_unity_directory(
         session,
         actor=current_member,
         scope=target_scope,

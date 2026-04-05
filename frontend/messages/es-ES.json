@@ -9,6 +9,7 @@
       "item": "Ítems",
       "field": "Campos",
       "action": "Acciones",
+      "unity": "Unidades",
       "event": "Eventos",
       "configuration": "Configuración",
       "comingSoon": "próximamente"
@@ -420,6 +421,61 @@
       }
     },
     "discardConfirm": "¿Descartar los cambios no guardados?"
+  },
+  "UnityConfigurationPage": {
+    "title": "Unidades",
+    "description": "Registra unidades asignadas (lotes) para el alcance activo: elige la ubicación, los ítems del catálogo que la componen y el rango de edad. Usa la lista a la izquierda para localizar registros y el panel lateral para editar o crear.",
+    "list": {
+      "emptyScope": "Crea un alcance antes de editar unidades.",
+      "missingCurrentScope": "Define un alcance activo en el selector del encabezado antes de editar unidades.",
+      "loadError": "No se pudieron cargar las unidades de este alcance. Inténtalo de nuevo."
+    },
+    "history": {
+      "title": "Historial de cambios",
+      "description": "Consulta el historial de unidades del alcance activo: quién cambió qué, cuándo y un resumen del cambio."
+    },
+    "filter": {
+      "toggleAriaLabel": "Mostrar u ocultar el panel de filtros de la lista",
+      "toggleLabel": "Filtro",
+      "searchLabel": "Ubicación o ítems",
+      "all": "",
+      "confirm": "Ok"
+    },
+    "section": {
+      "location": {
+        "label": "Ubicación",
+        "hint": "Ubicación operativa donde está asignada esta unidad."
+      },
+      "item": {
+        "label": "Ítem",
+        "hint": "Abre el selector, marca uno o más ítems en el árbol y confirma con Ok. Al guardar, se almacenan cada ítem elegido y sus ancestros en la jerarquía."
+      },
+      "age": {
+        "initialLabel": "Edad inicial",
+        "finalLabel": "Edad final",
+        "hint": "La edad inicial no puede ser mayor que la edad final."
+      }
+    },
+    "action": {
+      "cancel": "Cancelar",
+      "new": "Nueva",
+      "delete": "Eliminar",
+      "undoDelete": "Desmarcar eliminación",
+      "save": "Guardar",
+      "saving": "Guardando..."
+    },
+    "readOnlyNotice": "Puedes consultar las unidades del alcance activo, pero solo miembros master o administrador pueden crear o editar registros.",
+    "error": {
+      "save": "No se pudo guardar la unidad. Inténtalo de nuevo.",
+      "create": "No se pudo crear la unidad. Inténtalo de nuevo.",
+      "delete": "No se pudo eliminar la unidad. Inténtalo de nuevo.",
+      "validationItem": "Selecciona al menos un ítem del catálogo.",
+      "validationAge": "La edad inicial no puede ser mayor que la edad final.",
+      "validationAgeRequired": "Indica la edad inicial y la edad final.",
+      "validationLocation": "Registra una ubicación en el alcance antes de crear una unidad.",
+      "validationLocationSelect": "Selecciona una ubicación."
+    },
+    "discardConfirm": "¿Descartar cambios no guardados?"
   },
   "EventConfigurationPage": {
     "title": "Eventos",

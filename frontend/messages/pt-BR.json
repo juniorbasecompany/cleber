@@ -9,6 +9,7 @@
       "item": "Itens",
       "field": "Campos",
       "action": "Ações",
+      "unity": "Unidades",
       "event": "Eventos",
       "configuration": "Configuração",
       "comingSoon": "em breve"
@@ -418,6 +419,61 @@
         "formula_unknown_field_id": "A fórmula usa uma informação que não existe neste escopo. Ajuste os itens escolhidos ou o texto.",
         "formula_expression_invalid": "A conta à direita do igual não pôde ser validada. Confira parênteses, operadores e funções permitidas (como abs, min, max, round, Decimal e date)."
       }
+    },
+    "discardConfirm": "Descartar alterações não salvas?"
+  },
+  "UnityConfigurationPage": {
+    "title": "Unidades",
+    "description": "Cadastre unidades alocadas (lotes) no escopo ativo: escolha o local, os itens do catálogo que a compõem e a faixa de idade. Use a lista à esquerda para localizar registros e o painel ao lado para editar ou criar.",
+    "list": {
+      "emptyScope": "Crie um escopo antes de editar unidades.",
+      "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar unidades.",
+      "loadError": "Não foi possível carregar as unidades deste escopo. Tente novamente."
+    },
+    "history": {
+      "title": "Histórico de alterações",
+      "description": "Consulte o histórico das unidades do escopo ativo: quem alterou, quando e um resumo do que mudou."
+    },
+    "filter": {
+      "toggleAriaLabel": "Mostrar ou ocultar o painel de filtros da lista",
+      "toggleLabel": "Filtro",
+      "searchLabel": "Local ou itens",
+      "all": "",
+      "confirm": "Ok"
+    },
+    "section": {
+      "location": {
+        "label": "Local",
+        "hint": "Local da operação onde esta unidade está alocada."
+      },
+      "item": {
+        "label": "Item",
+        "hint": "Abra o seletor, marque um ou mais itens na árvore e confirme com Ok. Ao salvar, cada item escolhido e seus ancestrais na hierarquia são gravados."
+      },
+      "age": {
+        "initialLabel": "Idade inicial",
+        "finalLabel": "Idade final",
+        "hint": "A idade inicial não pode ser maior que a idade final."
+      }
+    },
+    "action": {
+      "cancel": "Cancelar",
+      "new": "Nova",
+      "delete": "Apagar",
+      "undoDelete": "Desmarcar exclusão",
+      "save": "Salvar",
+      "saving": "Salvando..."
+    },
+    "readOnlyNotice": "Você pode consultar as unidades do escopo ativo, mas só membros master ou administrador podem criar ou editar cadastros.",
+    "error": {
+      "save": "Não foi possível salvar a unidade. Tente novamente.",
+      "create": "Não foi possível criar a unidade. Tente novamente.",
+      "delete": "Não foi possível apagar a unidade. Tente novamente.",
+      "validationItem": "Selecione pelo menos um item do catálogo.",
+      "validationAge": "A idade inicial não pode ser maior que a idade final.",
+      "validationAgeRequired": "Informe a idade inicial e a idade final.",
+      "validationLocation": "Cadastre um local no escopo antes de criar uma unidade.",
+      "validationLocationSelect": "Selecione um local."
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },

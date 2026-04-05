@@ -29,6 +29,8 @@ type HierarchyDropdownFieldProps<TItem extends HierarchyDropdownFieldItemBase> =
   onChange: (nextSelectedValueList: number[]) => void;
   allLabel: string;
   confirmLabel: string;
+  /** "filter": exclusão em cascata (filtros de lista). "independent": alterna só o id clicado. */
+  multiToggleMode?: "filter" | "independent";
 };
 
 type HierarchySingleSelectFieldProps<TItem extends HierarchyDropdownFieldItemBase> =
@@ -308,6 +310,7 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
   getParentId,
   allLabel,
   confirmLabel,
+  multiToggleMode = "filter",
   disabled = false,
   primaryField = false
 }: HierarchyDropdownFieldProps<TItem>) {
@@ -347,6 +350,12 @@ export function HierarchyDropdownField<TItem extends HierarchyDropdownFieldItemB
 
   function handleToggleDraftValue(id: number) {
     setDraftSelectedValueList((previous) => {
+      if (multiToggleMode === "independent") {
+        return previous.includes(id)
+          ? previous.filter((item) => item !== id)
+          : [...previous, id];
+      }
+
       const relatedIdSet = new Set<number>();
 
       let currentParentId = itemById.get(id) ? getParentId(itemById.get(id) as TItem) : null;

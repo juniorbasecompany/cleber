@@ -2,9 +2,12 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
+
 from sqlalchemy import (
     BigInteger,
     CheckConstraint,
+    DateTime,
     ForeignKey,
     ForeignKeyConstraint,
     Index,
@@ -13,6 +16,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from valora_backend.model.base import Base
@@ -401,4 +405,51 @@ class Item(Base):
         default=0,
         server_default=text("0"),
         comment="Ordem de exibição entre irmãos na hierarquia.",
+    )
+
+
+class Unity(Base):
+    """Unidade alocada (lote) vinculada a um local."""
+
+    __tablename__ = "unity"
+    __table_args__ = (
+        CheckConstraint(
+            "initial_age <= final_age",
+            name="unity_age_range_chk",
+        ),
+        {"comment": "Unidade alocada (lote)."},
+    )
+
+    id: Mapped[int] = mapped_column(
+        BIGINT_COMPAT,
+        primary_key=True,
+        autoincrement=True,
+        comment="Identificador da unidade.",
+    )
+    location_id: Mapped[int] = mapped_column(
+        BIGINT_COMPAT,
+        ForeignKey("location.id", onupdate="CASCADE", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Localização da unidade.",
+    )
+    item_id_list: Mapped[list[int]] = mapped_column(
+        ARRAY(BIGINT_COMPAT),
+        nullable=False,
+        comment="Lista de IDs de item (catálogo) no escopo.",
+    )
+    creation_utc: Mapped[datetime] = mapped_column(
+        DateTime(timezone=False),
+        nullable=False,
+        default=lambda: datetime.now(UTC).replace(tzinfo=None),
+        comment="Momento de criação da unidade.",
+    )
+    initial_age: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Idade inicial.",
+    )
+    final_age: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Idade final.",
     )

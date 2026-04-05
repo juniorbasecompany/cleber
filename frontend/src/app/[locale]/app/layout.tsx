@@ -75,6 +75,11 @@ export default async function AppLayout({
       href: `/${locale}/app/configuration/action`
     },
     {
+      key: "unity",
+      label: t("navigation.unity"),
+      href: `/${locale}/app/configuration/unity`
+    },
+    {
       key: "event",
       label: t("navigation.event"),
       href: `/${locale}/app/configuration/event`

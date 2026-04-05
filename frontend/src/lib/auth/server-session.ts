@@ -14,7 +14,8 @@ import type {
   TenantScopeDirectoryResponse,
   TenantScopeEventDirectoryResponse,
   TenantScopeFieldDirectoryResponse,
-  TenantItemDirectoryResponse
+  TenantItemDirectoryResponse,
+  TenantUnityDirectoryResponse
 } from "@/lib/auth/types";
 
 const apiUrl = getPublicApiUrl();
@@ -176,6 +177,35 @@ export async function getTenantItemDirectory(scopeId: number) {
     }
 
     return (await response.json()) as TenantItemDirectoryResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function getTenantUnityDirectory(scopeId: number) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(authTokenCookieName)?.value;
+  if (!hasAuthSession(token)) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${apiUrl}/auth/tenant/current/scopes/${scopeId}/unities`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as TenantUnityDirectoryResponse;
   } catch {
     return null;
   }

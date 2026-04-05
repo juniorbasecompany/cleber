@@ -74,6 +74,13 @@ def main() -> None:
             _fail("log_table_name_chk deve permitir table_name item; def: " + chk[0])
         if "kind" not in defn:
             _fail("log_table_name_chk deve permitir table_name kind; def: " + chk[0])
+        if "unity" not in defn:
+            _fail("log_table_name_chk deve permitir table_name unity; def: " + chk[0])
+        if "'unity'" not in src:
+            _fail(
+                "corpo da funcao valora_audit_row_to_log deve incluir 'unity' na lista de tabelas "
+                "(aplique alembic upgrade head)."
+            )
 
     print("OK: valora_audit_row_to_log e log_table_name_chk consistentes com o dominio atual.")
 

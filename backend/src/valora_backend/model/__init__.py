@@ -3,12 +3,13 @@
 from valora_backend.model.base import Base
 from valora_backend.model.identity import (
     Account,
+    Item,
     Kind,
     Location,
     Member,
     Scope,
     Tenant,
-    Item,
+    Unity,
 )
 from valora_backend.model.log import Log
 from valora_backend.model.rules import (
@@ -38,4 +39,5 @@ __all__ = [
     "Tenant",
     "Kind",
     "Item",
+    "Unity",
 ]
