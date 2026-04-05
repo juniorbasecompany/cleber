@@ -36,6 +36,7 @@ import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useEditorNewIntentGeneration } from "@/component/configuration/use-editor-new-intent-generation";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
+import { useConfigurationDirectoryFetchGeneration } from "@/component/configuration/use-configuration-directory-fetch-generation";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import {
   FormulaPersistError,
@@ -305,8 +306,11 @@ export function ActionConfigurationClient({
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
   const selectedActionKeyRef = useRef<ActionSelectionKey>(initialSelectedActionKey);
   const didMountFilterRef = useRef(false);
-  /** Invalida conclusões de `loadActionDirectory` iniciadas antes de um `applySyncFromHandlers` (corrida save vs GET). */
-  const directoryFetchGenerationRef = useRef(0);
+  const {
+    bumpAfterProgrammaticSync,
+    captureGenerationAtFetchStart,
+    isFetchResultStale
+  } = useConfigurationDirectoryFetchGeneration();
   /** Após falha ao gravar fórmulas (ex.: validação 422), evita um load imediato que sobrescreve o rascunho. */
   const skipNextFormulaAutoLoadRef = useRef(false);
 
@@ -425,9 +429,9 @@ export function ActionConfigurationClient({
         preferredKey ?? selectedActionKeyRef.current;
       applyConfigurationSelectionToWindowHistory(actionPath, "action", keyForUrl);
       syncFromDirectory(nextDirectory, preferredKey);
-      directoryFetchGenerationRef.current += 1;
+      bumpAfterProgrammaticSync();
     },
-    [syncFromDirectory]
+    [bumpAfterProgrammaticSync, syncFromDirectory]
   );
 
   const scopeId = currentScope?.id;
@@ -436,7 +440,7 @@ export function ActionConfigurationClient({
       if (scopeId == null) {
         return;
       }
-      const fetchGenerationAtStart = directoryFetchGenerationRef.current;
+      const fetchGenerationAtStart = captureGenerationAtFetchStart();
       const query = new URLSearchParams({ label_lang: labelLang });
       const normalizedQuery = filterQuery.trim();
       if (normalizedQuery) {
@@ -454,7 +458,7 @@ export function ActionConfigurationClient({
           );
           return;
         }
-        if (fetchGenerationAtStart !== directoryFetchGenerationRef.current) {
+        if (isFetchResultStale(fetchGenerationAtStart)) {
           return;
         }
         syncFromDirectory(
@@ -465,7 +469,15 @@ export function ActionConfigurationClient({
         setRequestErrorMessage(copy.loadError);
       }
     },
-    [copy.loadError, filterQuery, labelLang, scopeId, syncFromDirectory]
+    [
+      captureGenerationAtFetchStart,
+      copy.loadError,
+      filterQuery,
+      isFetchResultStale,
+      labelLang,
+      scopeId,
+      syncFromDirectory
+    ]
   );
 
   useEffect(() => {

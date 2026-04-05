@@ -24,6 +24,7 @@ import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useEditorNewIntentGeneration } from "@/component/configuration/use-editor-new-intent-generation";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
+import { useConfigurationDirectoryFetchGeneration } from "@/component/configuration/use-configuration-directory-fetch-generation";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import {
   applyConfigurationSelectionToWindowHistory,
@@ -275,8 +276,11 @@ export function MemberConfigurationClient({
       : initialSelection.selectedMemberId
   );
   const didMountFilterRef = useRef(false);
-  /** Invalida conclusões de `loadMemberDirectory` iniciadas antes de um `applySyncFromHandlers` (corrida save vs GET). */
-  const directoryFetchGenerationRef = useRef(0);
+  const {
+    bumpAfterProgrammaticSync,
+    captureGenerationAtFetchStart,
+    isFetchResultStale
+  } = useConfigurationDirectoryFetchGeneration();
 
   const selectedMemberKey: ConfigurationSelectionKey = isCreateMode
     ? "new"
@@ -386,26 +390,9 @@ export function MemberConfigurationClient({
         preferredKey ?? selectedMemberKeyRef.current;
       applyConfigurationSelectionToWindowHistory(memberPath, "member", keyForUrl);
       syncFromDirectory(nextDirectory, preferredKey);
-      directoryFetchGenerationRef.current += 1;
-      // #region agent log
-      fetch("http://127.0.0.1:7676/ingest/16fbe7b6-e3ca-4fb0-80d1-7c696df7a955", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Debug-Session-Id": "d2e8da"
-        },
-        body: JSON.stringify({
-          sessionId: "d2e8da",
-          location: "member-configuration-client.tsx:applySyncFromHandlers",
-          message: "applySync bump generation",
-          data: { generation: directoryFetchGenerationRef.current },
-          timestamp: Date.now(),
-          hypothesisId: "H-apply-bump"
-        })
-      }).catch(() => {});
-      // #endregion
+      bumpAfterProgrammaticSync();
     },
-    [syncFromDirectory]
+    [bumpAfterProgrammaticSync, syncFromDirectory]
   );
 
   const handleChangeFilterRole = useCallback((next: {
@@ -425,7 +412,7 @@ export function MemberConfigurationClient({
   }, []);
 
   const loadMemberDirectory = useCallback(async () => {
-      const fetchGenerationAtStart = directoryFetchGenerationRef.current;
+      const fetchGenerationAtStart = captureGenerationAtFetchStart();
       const query = new URLSearchParams();
       const normalizedQuery = filterQuery.trim();
       if (normalizedQuery) {
@@ -457,27 +444,7 @@ export function MemberConfigurationClient({
           );
           return;
         }
-        if (fetchGenerationAtStart !== directoryFetchGenerationRef.current) {
-          // #region agent log
-          fetch("http://127.0.0.1:7676/ingest/16fbe7b6-e3ca-4fb0-80d1-7c696df7a955", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-Debug-Session-Id": "d2e8da"
-            },
-            body: JSON.stringify({
-              sessionId: "d2e8da",
-              location: "member-configuration-client.tsx:loadMemberDirectory",
-              message: "skip stale directory GET result",
-              data: {
-                atStart: fetchGenerationAtStart,
-                current: directoryFetchGenerationRef.current
-              },
-              timestamp: Date.now(),
-              hypothesisId: "H-stale-fetch-skip"
-            })
-          }).catch(() => {});
-          // #endregion
+        if (isFetchResultStale(fetchGenerationAtStart)) {
           return;
         }
         syncFromDirectory(
@@ -489,12 +456,14 @@ export function MemberConfigurationClient({
       }
     },
     [
+      captureGenerationAtFetchStart,
       copy.saveError,
       filterQuery,
       filterRoleAllIsSelected,
       filterRoleValueList,
       filterStatusAllIsSelected,
       filterStatusValueList,
+      isFetchResultStale,
       syncFromDirectory
     ]
   );
@@ -742,27 +711,6 @@ export function MemberConfigurationClient({
           selectedMember.id
         );
         applySyncFromHandlers(updatedDirectory, nextPreferred);
-        // #region agent log
-        fetch("http://127.0.0.1:7676/ingest/16fbe7b6-e3ca-4fb0-80d1-7c696df7a955", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Debug-Session-Id": "d2e8da"
-          },
-          body: JSON.stringify({
-            sessionId: "d2e8da",
-            location: "member-configuration-client.tsx:handleSave",
-            message: "PATCH ok after applySyncFromHandlers",
-            data: {
-              nextPreferred,
-              refAfterSync: selectedMemberKeyRef.current,
-              directoryCanEdit: updatedDirectory.can_edit
-            },
-            timestamp: Date.now(),
-            hypothesisId: "H-patch-sync"
-          })
-        }).catch(() => {});
-        // #endregion
       }
       setHistoryRefreshKey((previous) => previous + 1);
     } catch {

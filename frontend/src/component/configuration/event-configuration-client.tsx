@@ -20,6 +20,7 @@ import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useEditorNewIntentGeneration } from "@/component/configuration/use-editor-new-intent-generation";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
+import { useConfigurationDirectoryFetchGeneration } from "@/component/configuration/use-configuration-directory-fetch-generation";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type {
   ScopeFormulaListResponse,
@@ -471,8 +472,11 @@ export function EventConfigurationClient({
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
   const selectedEventKeyRef = useRef<EventSelectionKey>(initialSelectedEventKey);
   const didMountFilterRef = useRef(false);
-  /** Invalida conclusões de `loadEventDirectory` iniciadas antes de um `applySyncFromHandlers` (corrida save vs GET). */
-  const directoryFetchGenerationRef = useRef(0);
+  const {
+    bumpAfterProgrammaticSync,
+    captureGenerationAtFetchStart,
+    isFetchResultStale
+  } = useConfigurationDirectoryFetchGeneration();
 
   const selectedEvent = useMemo(() => {
     if (isCreateMode) {
@@ -599,9 +603,9 @@ export function EventConfigurationClient({
         preferredKey ?? selectedEventKeyRef.current;
       applyConfigurationSelectionToWindowHistory(eventPath, "event", keyForUrl);
       syncFromDirectory(nextDirectory, preferredKey);
-      directoryFetchGenerationRef.current += 1;
+      bumpAfterProgrammaticSync();
     },
-    [syncFromDirectory]
+    [bumpAfterProgrammaticSync, syncFromDirectory]
   );
 
   const scopeId = currentScope?.id;
@@ -640,7 +644,7 @@ export function EventConfigurationClient({
         return;
       }
 
-      const fetchGenerationAtStart = directoryFetchGenerationRef.current;
+      const fetchGenerationAtStart = captureGenerationAtFetchStart();
       const query = new URLSearchParams();
       const filterMomentFromUtc = toUtcIsoFromLocalInput(filterMomentFromInput);
       const filterMomentToUtc = toUtcIsoFromLocalInput(filterMomentToInput);
@@ -670,7 +674,7 @@ export function EventConfigurationClient({
           setRequestErrorMessage(parseErrorDetail(data, copy.loadError) ?? copy.loadError);
           return;
         }
-        if (fetchGenerationAtStart !== directoryFetchGenerationRef.current) {
+        if (isFetchResultStale(fetchGenerationAtStart)) {
           return;
         }
         syncFromDirectory(
@@ -682,12 +686,14 @@ export function EventConfigurationClient({
       }
     },
     [
+      captureGenerationAtFetchStart,
       copy.loadError,
       filterActionId,
       filterLocationIdList,
       filterMomentFromInput,
       filterMomentToInput,
       filterItemIdList,
+      isFetchResultStale,
       labelLang,
       scopeId,
       syncFromDirectory

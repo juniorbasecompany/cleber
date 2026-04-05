@@ -31,6 +31,7 @@ import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useEditorNewIntentGeneration } from "@/component/configuration/use-editor-new-intent-generation";
 import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/use-focus-first-editor-field-after-flash";
+import { useConfigurationDirectoryFetchGeneration } from "@/component/configuration/use-configuration-directory-fetch-generation";
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import {
   buildFieldSqlType,
@@ -220,6 +221,11 @@ export function FieldConfigurationClient({
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
   const selectedFieldKeyRef = useRef<FieldSelectionKey>(initialSelectedFieldKey);
   const didMountFilterRef = useRef(false);
+  const {
+    bumpAfterProgrammaticSync,
+    captureGenerationAtFetchStart,
+    isFetchResultStale
+  } = useConfigurationDirectoryFetchGeneration();
 
   const parsedSqlType = useMemo(() => parseFieldSqlType(sqlType), [sqlType]);
 
@@ -384,6 +390,7 @@ export function FieldConfigurationClient({
     if (currentScope?.id == null) {
       return;
     }
+    const fetchGenerationAtStart = captureGenerationAtFetchStart();
     const query = new URLSearchParams({ label_lang: labelLang });
     const normalizedQuery = filterQuery.trim();
     if (normalizedQuery) {
@@ -400,6 +407,9 @@ export function FieldConfigurationClient({
         );
         return;
       }
+      if (isFetchResultStale(fetchGenerationAtStart)) {
+        return;
+      }
       /* Usa o ref no término do fetch: um preferredKey capturado na chamada ficaria stale
          e podia reaplicar um id depois de um save que já pôs o painel em "new". */
       syncFromDirectory(
@@ -409,7 +419,15 @@ export function FieldConfigurationClient({
     } catch {
       setRequestErrorMessage(copy.loadError);
     }
-  }, [copy.loadError, currentScope, filterQuery, labelLang, syncFromDirectory]);
+  }, [
+    captureGenerationAtFetchStart,
+    copy.loadError,
+    currentScope,
+    filterQuery,
+    isFetchResultStale,
+    labelLang,
+    syncFromDirectory
+  ]);
 
   useEffect(() => {
     if (!didMountFilterRef.current) {
@@ -541,8 +559,16 @@ export function FieldConfigurationClient({
     bumpNewIntent();
     if (!isCreateMode) {
       syncFromDirectory(directory, "new");
+      bumpAfterProgrammaticSync();
     }
-  }, [bumpNewIntent, directory, isCreateMode, isSaving, syncFromDirectory]);
+  }, [
+    bumpAfterProgrammaticSync,
+    bumpNewIntent,
+    directory,
+    isCreateMode,
+    isSaving,
+    syncFromDirectory
+  ]);
 
   const handleSelectField = useCallback(
     (item: TenantScopeFieldRecord) => {
@@ -555,8 +581,15 @@ export function FieldConfigurationClient({
       }
 
       syncFromDirectory(directory, item.id);
+      bumpAfterProgrammaticSync();
     },
-    [directory, isCreateMode, selectedField, syncFromDirectory]
+    [
+      bumpAfterProgrammaticSync,
+      directory,
+      isCreateMode,
+      selectedField,
+      syncFromDirectory
+    ]
   );
 
   const handleToggleDelete = useCallback(() => {
@@ -605,6 +638,7 @@ export function FieldConfigurationClient({
         const updatedDirectory = data as TenantScopeFieldDirectoryResponse;
         bumpNewIntent();
         syncFromDirectory(updatedDirectory, "new");
+        bumpAfterProgrammaticSync();
         setHistoryRefreshKey((previous) => previous + 1);
         return;
       }
@@ -648,6 +682,7 @@ export function FieldConfigurationClient({
           ? "new"
           : null;
         syncFromDirectory(updatedDirectory, nextKeyAfterMutation);
+        bumpAfterProgrammaticSync();
       } else {
         /* Após editar, voltar ao formulário vazio (new), alinhado ao fluxo de criação. */
         bumpNewIntent();
@@ -655,6 +690,7 @@ export function FieldConfigurationClient({
           updatedDirectory,
           preferredSelectionKeyAfterEditSave(updatedDirectory.can_edit, selectedField.id)
         );
+        bumpAfterProgrammaticSync();
       }
       setHistoryRefreshKey((previous) => previous + 1);
     } catch {
@@ -669,6 +705,7 @@ export function FieldConfigurationClient({
       setIsSaving(false);
     }
   }, [
+    bumpAfterProgrammaticSync,
     bumpNewIntent,
     copy.createError,
     copy.deleteBlockedDetail,

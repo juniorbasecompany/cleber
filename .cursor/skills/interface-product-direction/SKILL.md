@@ -183,6 +183,8 @@ Regras para esta área:
 
 Para fluxos **diretório + editor** (lista ou árvore à esquerda, formulário ao centro, histórico placeholder e footer no shell), usar `ConfigurationDirectoryEditorShell` e a política em `configuration-directory-editor-policy.ts`, conforme [architecture/configuration-panels.md](../../../architecture/configuration-panels.md). Evitar duplicar markup do painel direito e regras de `saveDisabled`/`canSubmit` entre páginas desse tipo.
 
+Para **URL, seleção após salvar e invalidação de GET do diretório** (evitar corrida entre refetch e sync pós-save), seguir [skills/implementation/frontend/configuration-directory-selection.md](../../../skills/implementation/frontend/configuration-directory-selection.md).
+
 ## Componentes prioritários
 
 Obrigatórios:
