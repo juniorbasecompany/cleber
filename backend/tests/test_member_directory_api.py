@@ -21,6 +21,7 @@ from valora_backend.main import create_app
 from valora_backend.model.base import Base
 from valora_backend.model.identity import (
     Account,
+    Kind,
     Location,
     Member,
     Scope,
@@ -28,6 +29,28 @@ from valora_backend.model.identity import (
     Item,
 )
 from valora_backend.model.log import Log
+
+
+def _create_kind_via_api(client, scope_id: int, *, name: str, display_name: str) -> int:
+    response = client.post(
+        f"/auth/tenant/current/scopes/{scope_id}/kind",
+        json={"name": name, "display_name": display_name},
+    )
+    assert response.status_code == 200, response.text
+    for row in response.json()["item_list"]:
+        if row["name"] == name:
+            return row["id"]
+    raise AssertionError("kind not created")
+
+
+def _item_by_kind_name(
+    session: Session, scope_id: int, kind_name: str
+) -> Item | None:
+    return session.scalar(
+        select(Item)
+        .join(Kind, Item.kind_id == Kind.id)
+        .where(Item.scope_id == scope_id, Kind.name == kind_name)
+    )
 
 
 @contextmanager
@@ -1104,29 +1127,40 @@ def test_admin_can_create_move_update_and_delete_items() -> None:
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
+        kind_galinha_id = _create_kind_via_api(
+            client,
+            scope_id,
+            name="Galinha",
+            display_name="Unidade avícola postura",
+        )
+        kind_branca_id = _create_kind_via_api(
+            client,
+            scope_id,
+            name="Branca",
+            display_name="Linhagem branca",
+        )
+
         list_response = client.get(f"/auth/tenant/current/scopes/{scope_id}/items")
         root_response = client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "Galinha",
-                "display_name": "Unidade avícola postura",
+                "kind_id": kind_galinha_id,
                 "parent_item_id": None,
             },
         )
         session.expire_all()
-        root_item = session.scalar(select(Item).where(Item.name == "Galinha"))
+        root_item = _item_by_kind_name(session, scope_id, "Galinha")
         assert root_item is not None
 
         child_response = client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "Branca",
-                "display_name": "Linhagem branca",
+                "kind_id": kind_branca_id,
                 "parent_item_id": root_item.id,
             },
         )
         session.expire_all()
-        child_item = session.scalar(select(Item).where(Item.name == "Branca"))
+        child_item = _item_by_kind_name(session, scope_id, "Branca")
         assert child_item is not None
 
         move_response = client.post(
@@ -1137,19 +1171,21 @@ def test_admin_can_create_move_update_and_delete_items() -> None:
             },
         )
         update_response = client.patch(
-            f"/auth/tenant/current/scopes/{scope_id}/items/{child_item.id}",
-            json={
-                "name": "Branca",
-                "display_name": "Linhagem branca leve",
-                "parent_item_id": None,
-            },
+            f"/auth/tenant/current/scopes/{scope_id}/kind/{kind_branca_id}",
+            json={"display_name": "Linhagem branca leve"},
         )
+        assert update_response.status_code == 200
+        branca_kind = session.get(Kind, kind_branca_id)
+        assert branca_kind is not None
+        assert branca_kind.display_name == "Linhagem branca leve"
+
         delete_response = client.delete(
             f"/auth/tenant/current/scopes/{scope_id}/items/{root_item.id}"
         )
         session.expire_all()
         deleted_root = session.get(Item, root_item.id)
-        updated_child = session.get(Item, child_item.id)
+        root_item_id = root_item.id
+        child_item_id = child_item.id
 
     assert list_response.status_code == 200
     assert list_response.json()["can_create"] is True
@@ -1164,21 +1200,17 @@ def test_admin_can_create_move_update_and_delete_items() -> None:
     created_child = next(
         item for item in child_payload["item_list"] if item["name"] == "Branca"
     )
-    assert created_child["parent_item_id"] == root_item.id
+    assert created_child["parent_item_id"] == root_item_id
     assert created_child["path_labels"] == ["Galinha", "Branca"]
 
     assert move_response.status_code == 200
     moved_child = next(
         item
         for item in move_response.json()["item_list"]
-        if item["id"] == child_item.id
+        if item["id"] == child_item_id
     )
     assert moved_child["parent_item_id"] is None
     assert moved_child["sort_order"] == 0
-
-    assert update_response.status_code == 200
-    assert updated_child is not None
-    assert updated_child.display_name == "Linhagem branca leve"
 
     assert delete_response.status_code == 200
     assert deleted_root is None
@@ -1189,11 +1221,16 @@ def test_item_directory_q_filter_matches_accent_and_partial_text() -> None:
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
+        kind_uniao_id = _create_kind_via_api(
+            client,
+            scope_id,
+            name="União",
+            display_name="Núcleo União",
+        )
         create_response = client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "União",
-                "display_name": "Núcleo União",
+                "kind_id": kind_uniao_id,
                 "parent_item_id": None,
             },
         )
@@ -1239,24 +1276,34 @@ def test_item_directory_q_filter_keeps_ancestor_context_for_child_match() -> Non
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
+        kind_br_id = _create_kind_via_api(
+            client,
+            scope_id,
+            name="BR",
+            display_name="Brasil",
+        )
         root_response = client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "BR",
-                "display_name": "Brasil",
+                "kind_id": kind_br_id,
                 "parent_item_id": None,
             },
         )
         assert root_response.status_code == 200
         session.expire_all()
-        root_item = session.scalar(select(Item).where(Item.name == "BR"))
+        root_item = _item_by_kind_name(session, scope_id, "BR")
         assert root_item is not None
 
+        kind_uniao_id = _create_kind_via_api(
+            client,
+            scope_id,
+            name="União",
+            display_name="Núcleo União",
+        )
         child_response = client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "União",
-                "display_name": "Núcleo União",
+                "kind_id": kind_uniao_id,
                 "parent_item_id": root_item.id,
             },
         )
@@ -1282,28 +1329,32 @@ def test_item_delete_cascades_to_descendant_list() -> None:
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
+        kind_matriz_id = _create_kind_via_api(
+            client, scope_id, name="Matriz", display_name="Matriz"
+        )
         client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "Matriz",
-                "display_name": "Matriz",
+                "kind_id": kind_matriz_id,
                 "parent_item_id": None,
             },
         )
         session.expire_all()
-        parent_item = session.scalar(select(Item).where(Item.name == "Matriz"))
+        parent_item = _item_by_kind_name(session, scope_id, "Matriz")
         assert parent_item is not None
 
+        kind_filial_id = _create_kind_via_api(
+            client, scope_id, name="Filial", display_name="Filial"
+        )
         client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "Filial",
-                "display_name": "Filial",
+                "kind_id": kind_filial_id,
                 "parent_item_id": parent_item.id,
             },
         )
         session.expire_all()
-        child_item = session.scalar(select(Item).where(Item.name == "Filial"))
+        child_item = _item_by_kind_name(session, scope_id, "Filial")
         assert child_item is not None
         parent_item_id = parent_item.id
         child_item_id = child_item.id
@@ -1325,28 +1376,32 @@ def test_item_move_cannot_create_cycle() -> None:
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
+        kind_a_id = _create_kind_via_api(
+            client, scope_id, name="Nivel A", display_name="Nivel A"
+        )
         client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "Nivel A",
-                "display_name": "Nivel A",
+                "kind_id": kind_a_id,
                 "parent_item_id": None,
             },
         )
         session.expire_all()
-        parent_item = session.scalar(select(Item).where(Item.name == "Nivel A"))
+        parent_item = _item_by_kind_name(session, scope_id, "Nivel A")
         assert parent_item is not None
 
+        kind_b_id = _create_kind_via_api(
+            client, scope_id, name="Nivel B", display_name="Nivel B"
+        )
         client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "Nivel B",
-                "display_name": "Nivel B",
+                "kind_id": kind_b_id,
                 "parent_item_id": parent_item.id,
             },
         )
         session.expire_all()
-        child_item = session.scalar(select(Item).where(Item.name == "Nivel B"))
+        child_item = _item_by_kind_name(session, scope_id, "Nivel B")
         assert child_item is not None
 
         response = client.post(
@@ -1368,11 +1423,13 @@ def test_scope_delete_is_blocked_when_scope_has_items() -> None:
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
+        kind_tipo_a_id = _create_kind_via_api(
+            client, scope_id, name="Tipo A", display_name="Tipo A"
+        )
         client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "Tipo A",
-                "display_name": "Tipo A",
+                "kind_id": kind_tipo_a_id,
                 "parent_item_id": None,
             },
         )
@@ -1390,11 +1447,14 @@ def test_member_cannot_create_item() -> None:
         scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
         assert scope_id is not None
 
+        kind_x = Kind(scope_id=scope_id, name="X", display_name="X")
+        session.add(kind_x)
+        session.commit()
+
         response = client.post(
             f"/auth/tenant/current/scopes/{scope_id}/items",
             json={
-                "name": "X",
-                "display_name": "X",
+                "kind_id": kind_x.id,
                 "parent_item_id": None,
             },
         )

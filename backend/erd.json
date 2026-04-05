@@ -1122,7 +1122,7 @@
           "comment": "Nome da tabela que foi modificada",
           "type": "TEXT",
           "default": "",
-          "check": "table_name IN ( 'account', 'action', 'event', 'field', 'formula', 'input', 'label', 'location', 'member', 'result', 'scope', 'tenant', 'item' )",
+          "check": "table_name IN ( 'account', 'action', 'event', 'field', 'formula', 'input', 'kind', 'label', 'location', 'member', 'result', 'scope', 'tenant', 'item' )",
           "primary": false,
           "unique": false,
           "notNull": true,
@@ -1220,7 +1220,7 @@
           "check": "",
           "primary": false,
           "unique": false,
-          "notNull": false,
+          "notNull": true,
           "increment": false,
           "comment": "Escopo a qual pertence este tipo de item.",
           "size": "",
@@ -1257,6 +1257,16 @@
       ],
       "comment": "Aqui são guardados os tipos de itens. Exemplo: galinha, cobb, fêmea. Nome deve ser único por escopo.",
       "indices": [],
+      "constraints": [
+        {
+          "name": "kind_scope_name_unique",
+          "constraint": "UNIQUE (scope_id, name)"
+        },
+        {
+          "name": "kind_scope_display_name_unique",
+          "constraint": "UNIQUE (scope_id, display_name)"
+        }
+      ],
       "color": "#ff0000"
     }
   ],
@@ -1501,7 +1511,7 @@
       "endFieldId": "kind_id",
       "cardinality": "one_to_many",
       "updateConstraint": "Cascade",
-      "deleteConstraint": "Cascade"
+      "deleteConstraint": "Restrict"
     },
     {
       "id": "kind.scope_id",

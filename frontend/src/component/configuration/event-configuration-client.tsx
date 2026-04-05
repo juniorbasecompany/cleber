@@ -289,7 +289,7 @@ function buildFormulaInputFieldIdList(response: ScopeFormulaListResponse): numbe
   const seenIdSet = new Set<number>();
   const inputFieldIdList: number[] = [];
   const sortedFormulaList = [...response.item_list].sort(
-    (left, right) => left.step - right.step || left.id - right.id
+    (left, right) => left.sort_order - right.sort_order || left.id - right.id
   );
 
   for (const formula of sortedFormulaList) {

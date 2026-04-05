@@ -3,6 +3,7 @@
 from valora_backend.model.base import Base
 from valora_backend.model.identity import (
     Account,
+    Kind,
     Location,
     Member,
     Scope,
@@ -35,5 +36,6 @@ __all__ = [
     "Member",
     "Scope",
     "Tenant",
+    "Kind",
     "Item",
 ]

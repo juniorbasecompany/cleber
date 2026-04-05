@@ -53,15 +53,19 @@ import { useFocusFirstEditorFieldAfterFlash } from "@/component/configuration/us
 import { useReplaceConfigurationPath } from "@/component/configuration/use-replace-configuration-path";
 import type {
   AuditLogTableName,
+  TenantKindRecord,
+  TenantItemRecord,
   TenantScopeHierarchyItemBase,
   TenantScopeRecord
 } from "@/lib/auth/types";
 import { parseErrorDetail } from "@/lib/api/parse-error-detail";
+import { KindSelectOrCreateField } from "@/component/configuration/kind-select-or-create-field";
 
 export type ScopeHierarchySavePayload = {
   name: string;
   display_name: string;
   parentId: number | null;
+  kind_id?: number | null;
 };
 
 export type ScopeHierarchyDirectoryShape<TItem extends TenantScopeHierarchyItemBase> = {
@@ -93,6 +97,8 @@ export type ScopeHierarchyConfigurationClientProps<
   };
   getParentId: (item: TItem) => number | null;
   buildSavePayload: (input: ScopeHierarchySavePayload) => Record<string, unknown>;
+  /** Itens: seleção de tipo (`kind`) em vez de nome/descrição livres. */
+  editorVariant?: "name_display" | "kind";
 };
 
 type SelectedHierarchyKey = number | "new" | null;
@@ -391,8 +397,10 @@ export function ScopeHierarchyConfigurationClient<
   historyTableName,
   formIds,
   getParentId,
-  buildSavePayload
+  buildSavePayload,
+  editorVariant = "name_display"
 }: ScopeHierarchyConfigurationClientProps<TItem, TDirectory>) {
+  const isKindEditor = editorVariant === "kind";
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialScopeId = currentScope?.id ?? initialDirectory?.scope_id ?? null;
@@ -408,6 +416,20 @@ export function ScopeHierarchyConfigurationClient<
         ? initialItemList.find((item) => item.id === initialItemKey) ?? null
         : null;
   const shouldStartCreateMode = initialItemKey === "new" || initialItemKey == null;
+
+  const initialKindId =
+    isKindEditor && initialSelectedItem
+      ? (initialSelectedItem as unknown as TenantItemRecord).kind_id
+      : null;
+  const initialKindList: TenantKindRecord[] =
+    initialDirectory != null &&
+    "kind_list" in initialDirectory &&
+    Array.isArray(
+      (initialDirectory as { kind_list?: TenantKindRecord[] }).kind_list
+    )
+      ? ((initialDirectory as { kind_list: TenantKindRecord[] }).kind_list ??
+        [])
+      : [];
 
   const basePath = `/${locale}/app/configuration/${configurationSegment}`;
   const configurationPath = `/${locale}/app/configuration`;
@@ -436,16 +458,23 @@ export function ScopeHierarchyConfigurationClient<
   const [parentId, setParentId] = useState<number | null>(
     shouldStartCreateMode ? null : (initialSelectedItem ? getParentId(initialSelectedItem) : null)
   );
+  const [kindList, setKindList] =
+    useState<TenantKindRecord[]>(initialKindList);
+  const [kindId, setKindId] = useState<number | null>(
+    shouldStartCreateMode ? null : initialKindId
+  );
   const [baseline, setBaseline] = useState({
     name: shouldStartCreateMode ? "" : (initialSelectedItem?.name ?? ""),
     displayName: shouldStartCreateMode ? "" : (initialSelectedItem?.display_name ?? ""),
     parentId: shouldStartCreateMode
       ? null
-      : (initialSelectedItem ? getParentId(initialSelectedItem) : null)
+      : (initialSelectedItem ? getParentId(initialSelectedItem) : null),
+    kindId: shouldStartCreateMode ? null : initialKindId
   });
   const [fieldError, setFieldError] = useState<{
     name?: string;
     displayName?: string;
+    kindId?: string;
   }>({});
   const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -532,8 +561,20 @@ export function ScopeHierarchyConfigurationClient<
       return null;
     }
 
+    if (isKindEditor) {
+      return `id:${String(selectedItem.id)}:kind:${String((selectedItem as unknown as TenantItemRecord).kind_id)}:parent:${String(getParentId(selectedItem) ?? "root")}`;
+    }
+
     return `id:${String(selectedItem.id)}:name:${selectedItem.name}:display:${selectedItem.display_name}:parent:${String(getParentId(selectedItem) ?? "root")}`;
-  }, [directory, getParentId, isCreateMode, newIntentGeneration, parentId, selectedItem]);
+  }, [
+    directory,
+    getParentId,
+    isCreateMode,
+    isKindEditor,
+    newIntentGeneration,
+    parentId,
+    selectedItem
+  ]);
 
   const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
   useFocusFirstEditorFieldAfterFlash(
@@ -549,16 +590,22 @@ export function ScopeHierarchyConfigurationClient<
       setName(createMode ? "" : (item?.name ?? ""));
       setDisplayName(createMode ? "" : (item?.display_name ?? ""));
       setParentId(createMode ? draftParentId : (item ? getParentId(item) : null));
+      const nextKindId =
+        isKindEditor && item
+          ? (item as unknown as TenantItemRecord).kind_id
+          : null;
+      setKindId(createMode ? null : nextKindId);
       setBaseline({
         name: createMode ? "" : (item?.name ?? ""),
         displayName: createMode ? "" : (item?.display_name ?? ""),
-        parentId: createMode ? draftParentId : (item ? getParentId(item) : null)
+        parentId: createMode ? draftParentId : (item ? getParentId(item) : null),
+        kindId: createMode ? null : nextKindId
       });
       setFieldError({});
       setRequestErrorMessage(null);
       setIsDeletePending(false);
     },
-    [getParentId]
+    [getParentId, isKindEditor]
   );
 
   const loadHierarchyDirectory = useCallback(async () => {
@@ -583,6 +630,18 @@ export function ScopeHierarchyConfigurationClient<
 
       const nextDirectory = data as TDirectory;
       setDirectory(nextDirectory);
+      if (
+        isKindEditor &&
+        nextDirectory != null &&
+        "kind_list" in nextDirectory &&
+        Array.isArray(
+          (nextDirectory as { kind_list?: TenantKindRecord[] }).kind_list
+        )
+      ) {
+        setKindList(
+          (nextDirectory as { kind_list: TenantKindRecord[] }).kind_list ?? []
+        );
+      }
 
       if (isCreateMode) {
         syncEditor(null, true, null);
@@ -605,6 +664,7 @@ export function ScopeHierarchyConfigurationClient<
     copy.loadError,
     filterQuery,
     isCreateMode,
+    isKindEditor,
     scopeId,
     selectedItemId,
     syncEditor
@@ -618,11 +678,14 @@ export function ScopeHierarchyConfigurationClient<
     void loadHierarchyDirectory();
   }, [loadHierarchyDirectory]);
 
-  const isDirty =
-    name.trim() !== baseline.name.trim() ||
-    displayName.trim() !== baseline.displayName.trim() ||
-    parentId !== baseline.parentId ||
-    isDeletePending;
+  const isDirty = isKindEditor
+    ? (kindId ?? null) !== (baseline.kindId ?? null) ||
+      parentId !== baseline.parentId ||
+      isDeletePending
+    : name.trim() !== baseline.name.trim() ||
+      displayName.trim() !== baseline.displayName.trim() ||
+      parentId !== baseline.parentId ||
+      isDeletePending;
 
   const canEditForm = isCreateMode
     ? (directory?.can_create ?? false)
@@ -634,9 +697,22 @@ export function ScopeHierarchyConfigurationClient<
     canEdit: selectedItem?.can_edit ?? false
   });
   const footerErrorMessage =
-    requestErrorMessage ?? fieldError.name ?? fieldError.displayName ?? null;
+    requestErrorMessage ??
+    fieldError.name ??
+    fieldError.displayName ??
+    fieldError.kindId ??
+    null;
 
   const validate = useCallback(() => {
+    if (isKindEditor) {
+      const nextError: { kindId?: string } = {};
+      if (kindId == null) {
+        nextError.kindId =
+          copy.validationErrorKind ?? copy.validationError;
+      }
+      setFieldError(nextError);
+      return Object.keys(nextError).length === 0;
+    }
     const nextError: { name?: string; displayName?: string } = {};
     if (!name.trim()) {
       nextError.name = copy.validationError;
@@ -646,7 +722,14 @@ export function ScopeHierarchyConfigurationClient<
     }
     setFieldError(nextError);
     return Object.keys(nextError).length === 0;
-  }, [copy.validationError, displayName, name]);
+  }, [
+    copy.validationError,
+    copy.validationErrorKind,
+    displayName,
+    isKindEditor,
+    kindId,
+    name
+  ]);
 
   const handleStartCreate = useCallback(
     (draftParentId: number | null) => {
@@ -699,7 +782,8 @@ export function ScopeHierarchyConfigurationClient<
             buildSavePayload({
               name: name.trim(),
               display_name: displayName.trim(),
-              parentId
+              parentId,
+              kind_id: isKindEditor ? kindId : undefined
             })
           )
         }
@@ -714,6 +798,18 @@ export function ScopeHierarchyConfigurationClient<
 
     const nextDirectory = data as TDirectory;
     setDirectory(nextDirectory);
+    if (
+      isKindEditor &&
+      nextDirectory != null &&
+      "kind_list" in nextDirectory &&
+      Array.isArray(
+        (nextDirectory as { kind_list?: TenantKindRecord[] }).kind_list
+      )
+    ) {
+      setKindList(
+        (nextDirectory as { kind_list: TenantKindRecord[] }).kind_list ?? []
+      );
+    }
     syncEditor(null, true, null);
     setHistoryRefreshKey((previous) => previous + 1);
   }, [
@@ -723,6 +819,8 @@ export function ScopeHierarchyConfigurationClient<
     displayName,
     isCreateMode,
     isDeletePending,
+    isKindEditor,
+    kindId,
     name,
     parentId,
     scopeId,
@@ -912,23 +1010,49 @@ export function ScopeHierarchyConfigurationClient<
       }
       editorForm={
         <>
-          <ConfigurationNameDisplayNameFields
-            nameInputId={formIds.nameInput}
-            displayTextareaId={formIds.displayTextarea}
-            name={name}
-            displayName={displayName}
-            setName={setName}
-            setDisplayName={setDisplayName}
-            setFieldError={setFieldError}
-            fieldError={fieldError}
-            disabled={isDeletePending || !canEditForm}
-            nameLabel={copy.nameLabel}
-            nameHint={copy.nameHint}
-            displayNameLabel={copy.displayNameLabel}
-            displayNameHint={copy.displayNameHint}
-            flashActive={isEditorFlashActive}
-            onAfterFieldEdit={() => setRequestErrorMessage(null)}
-          />
+          {isKindEditor && scopeId != null ? (
+            <KindSelectOrCreateField
+              selectId={formIds.nameInput}
+              scopeId={scopeId}
+              kindList={kindList}
+              kindId={kindId}
+              onKindIdChange={setKindId}
+              onKindListChange={setKindList}
+              disabled={isDeletePending || !canEditForm}
+              flashActive={isEditorFlashActive}
+              fieldError={fieldError.kindId}
+              onAfterFieldEdit={() => setRequestErrorMessage(null)}
+              copy={{
+                selectLabel: copy.kindSelectLabel,
+                selectHint: copy.kindSelectHint,
+                selectPlaceholder: copy.kindSelectPlaceholder,
+                newKindButton: copy.kindNewButton,
+                newNameLabel: copy.kindNewNameLabel,
+                newDisplayNameLabel: copy.kindNewDisplayNameLabel,
+                createKind: copy.kindCreateSubmit,
+                cancelNewKind: copy.kindCreateCancel,
+                createError: copy.kindCreateError
+              }}
+            />
+          ) : (
+            <ConfigurationNameDisplayNameFields
+              nameInputId={formIds.nameInput}
+              displayTextareaId={formIds.displayTextarea}
+              name={name}
+              displayName={displayName}
+              setName={setName}
+              setDisplayName={setDisplayName}
+              setFieldError={setFieldError}
+              fieldError={fieldError}
+              disabled={isDeletePending || !canEditForm}
+              nameLabel={copy.nameLabel}
+              nameHint={copy.nameHint}
+              displayNameLabel={copy.displayNameLabel}
+              displayNameHint={copy.displayNameHint}
+              flashActive={isEditorFlashActive}
+              onAfterFieldEdit={() => setRequestErrorMessage(null)}
+            />
+          )}
 
           {directory ? (
             <ConfigurationInfoSection

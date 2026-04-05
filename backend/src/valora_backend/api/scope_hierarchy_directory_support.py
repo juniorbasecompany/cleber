@@ -11,10 +11,23 @@ from sqlalchemy.orm import Session
 
 
 def hierarchy_sort_key(item: Any) -> tuple[int, str, int]:
+    kind = getattr(item, "kind", None)
+    if kind is not None:
+        return (item.sort_order, kind.name.lower(), item.id)
     return (item.sort_order, item.name.lower(), item.id)
 
 
 def hierarchy_item_label(item: Any) -> str:
+    kind = getattr(item, "kind", None)
+    if kind is not None:
+        name = kind.name.strip()
+        if name:
+            return name
+        display_name = kind.display_name.strip()
+        if display_name:
+            return display_name
+        return f"#{item.id}"
+
     name = item.name.strip()
     if name:
         return name

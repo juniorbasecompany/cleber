@@ -97,11 +97,11 @@ def _action_in_scope_or_404(
 def _formula_statement_validation_error(
     exc: FormulaStatementValidationError,
     *,
-    formula_step: int | None = None,
+    formula_sort_order: int | None = None,
 ) -> HTTPException:
     detail: dict[str, str | int] = {"code": exc.code, "message": exc.message}
-    if formula_step is not None:
-        detail["step"] = formula_step
+    if formula_sort_order is not None:
+        detail["sort_order"] = formula_sort_order
     return HTTPException(
         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
         detail=detail,
@@ -1041,7 +1041,7 @@ def reorder_scope_actions(
 class ScopeFormulaRecord(BaseModel):
     id: int
     action_id: int
-    step: int
+    sort_order: int
     statement: str
 
 
@@ -1051,12 +1051,12 @@ class ScopeFormulaListResponse(BaseModel):
 
 
 class ScopeFormulaCreateRequest(BaseModel):
-    step: int
+    sort_order: int
     statement: str = PydanticField(min_length=1, max_length=65535)
 
 
 class ScopeFormulaPatchRequest(BaseModel):
-    step: int | None = None
+    sort_order: int | None = None
     statement: str | None = PydanticField(default=None, min_length=1, max_length=65535)
 
 
@@ -1076,14 +1076,17 @@ def list_scope_action_formulas(
         session.scalars(
             select(Formula)
             .where(Formula.action_id == action_id)
-            .order_by(Formula.step, Formula.id)
+            .order_by(Formula.sort_order, Formula.id)
         )
     )
     return ScopeFormulaListResponse(
         can_edit=_member_can_edit_scope_rules(member),
         item_list=[
             ScopeFormulaRecord(
-                id=r.id, action_id=r.action_id, step=r.step, statement=r.statement
+                id=r.id,
+                action_id=r.action_id,
+                sort_order=r.sort_order,
+                statement=r.statement,
             )
             for r in rows
         ],
@@ -1112,11 +1115,11 @@ def create_scope_action_formula(
         )
     except FormulaStatementValidationError as exc:
         raise _formula_statement_validation_error(
-            exc, formula_step=body.step
+            exc, formula_sort_order=body.sort_order
         ) from None
     row = Formula(
         action_id=action_id,
-        step=body.step,
+        sort_order=body.sort_order,
         statement=body.statement.strip(),
     )
     session.add(row)
@@ -1127,7 +1130,7 @@ def create_scope_action_formula(
         session.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Duplicate step for this action or invalid data",
+            detail="Duplicate sort_order for this action or invalid data",
         ) from exc
     return list_scope_action_formulas(scope_id, action_id, member, session)
 
@@ -1148,8 +1151,8 @@ def patch_scope_action_formula(
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     _action_in_scope_or_404(session, scope_id=scope_id, action_id=action_id)
     row = _formula_in_action_or_404(session, action_id=action_id, formula_id=formula_id)
-    if body.step is not None:
-        row.step = body.step
+    if body.sort_order is not None:
+        row.sort_order = body.sort_order
     if body.statement is not None:
         try:
             validate_formula_statement_for_scope(
@@ -1158,11 +1161,13 @@ def patch_scope_action_formula(
                 statement=body.statement.strip(),
             )
         except FormulaStatementValidationError as exc:
-            effective_step = (
-                body.step if body.step is not None else row.step
+            effective_sort = (
+                body.sort_order
+                if body.sort_order is not None
+                else row.sort_order
             )
             raise _formula_statement_validation_error(
-                exc, formula_step=effective_step
+                exc, formula_sort_order=effective_sort
             ) from None
         row.statement = body.statement.strip()
     session.add(row)
@@ -1173,7 +1178,7 @@ def patch_scope_action_formula(
         session.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Duplicate step for this action or invalid data",
+            detail="Duplicate sort_order for this action or invalid data",
         ) from exc
     return list_scope_action_formulas(scope_id, action_id, member, session)
 

@@ -89,7 +89,9 @@ class Formula(Base):
 
     __tablename__ = "formula"
     __table_args__ = (
-        UniqueConstraint("action_id", "step", name="formula_action_step_unique"),
+        UniqueConstraint(
+            "action_id", "sort_order", name="formula_action_sort_order_unique"
+        ),
         {
             "comment": "Fórmula que deve ser aplicada aos eventos da ação.",
         },
@@ -107,10 +109,13 @@ class Formula(Base):
         nullable=False,
         comment="Identificação da ação.",
     )
-    step: Mapped[int] = mapped_column(
+    sort_order: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
-        comment="Ordem que as fórmulas devem ser executadas. UNIQUE por action_id + step.",
+        comment=(
+            "Ordem que as fórmulas devem ser executadas. "
+            "UNIQUE por action_id + sort_order."
+        ),
     )
     statement: Mapped[str] = mapped_column(
         Text,

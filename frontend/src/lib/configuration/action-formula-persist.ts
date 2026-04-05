@@ -1,5 +1,5 @@
 /**
- * Persistência de fórmulas no painel da ação: evita colisão UNIQUE (action_id, step)
+ * Persistência de fórmulas no painel da ação: evita colisão UNIQUE (action_id, sort_order)
  * ao reordenar ou inserir linhas novas entre existentes.
  */
 
@@ -12,30 +12,30 @@ import {
 /** Erro de API ao gravar fórmula; `code` estável quando `detail` JSON inclui `code`. */
 export class FormulaPersistError extends Error {
     readonly code: string | null;
-    /** `step` da fórmula (1..n) quando a API devolve validação 422 com `detail.step`. */
-    readonly step: number | null;
+    /** Ordem (1..n) quando a API devolve validação 422 com `detail.sort_order`. */
+    readonly sort_order: number | null;
 
-    constructor(message: string, code: string | null, step: number | null = null) {
+    constructor(message: string, code: string | null, sort_order: number | null = null) {
         super(message);
         this.name = "FormulaPersistError";
         this.code = code;
-        this.step = step;
+        this.sort_order = sort_order;
     }
 }
 
 function throwPersistFailure(
     body: unknown,
     fallback: string,
-    /** Ordem 1..n na lista ativa quando a API não devolve `detail.step`. */
-    clientStep: number | null = null
+    /** Ordem 1..n na lista ativa quando a API não devolve `detail.sort_order`. */
+    clientSortOrder: number | null = null
 ): never {
-    const apiStep = parseErrorStep(body);
-    const step =
-        apiStep ?? (clientStep != null && clientStep >= 1 ? clientStep : null);
+    const apiOrder = parseErrorStep(body);
+    const sort_order =
+        apiOrder ?? (clientSortOrder != null && clientSortOrder >= 1 ? clientSortOrder : null);
     throw new FormulaPersistError(
         parseErrorDetail(body, fallback) ?? fallback,
         parseErrorCode(body),
-        step
+        sort_order
     );
 }
 
@@ -51,7 +51,7 @@ export type FormulaDraftRowPersist = {
     pendingDelete: boolean;
 };
 
-const TEMP_STEP_OFFSET = 10_000_000;
+const TEMP_SORT_ORDER_OFFSET = 10_000_000;
 
 function serverIdsInOrder(rows: { serverId?: number }[]): number[] {
     return rows.filter((r): r is { serverId: number } => r.serverId != null).map((r) => r.serverId);
@@ -133,7 +133,7 @@ export async function persistActionFormulaDraft(
             const response = await fetchImpl(`${base}/${row.serverId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ step: TEMP_STEP_OFFSET + row.serverId })
+                body: JSON.stringify({ sort_order: TEMP_SORT_ORDER_OFFSET + row.serverId })
             });
             if (!response.ok) {
                 const body: unknown = await response.json().catch(() => ({}));
@@ -155,7 +155,7 @@ export async function persistActionFormulaDraft(
             const response = await fetchImpl(`${base}/${row.serverId}`, {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ step: position, statement: trimmed })
+                body: JSON.stringify({ sort_order: position, statement: trimmed })
             });
             if (!response.ok) {
                 const body: unknown = await response.json().catch(() => ({}));
@@ -165,7 +165,7 @@ export async function persistActionFormulaDraft(
             const response = await fetchImpl(base, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ step: position, statement: trimmed })
+                body: JSON.stringify({ sort_order: position, statement: trimmed })
             });
             if (!response.ok) {
                 const body: unknown = await response.json().catch(() => ({}));

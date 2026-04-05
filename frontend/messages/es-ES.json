@@ -592,6 +592,17 @@
         "displayNameLabel": "Descripción",
         "displayNameHint": "Describe con más contexto qué representa esta unidad productiva en la operación."
       },
+      "kind": {
+        "selectLabel": "Tipo de unidad",
+        "selectHint": "Elige un tipo ya registrado o registra uno nuevo.",
+        "selectPlaceholder": "Selecciona…",
+        "newKindButton": "Nuevo tipo",
+        "newNameLabel": "Nombre corto del tipo",
+        "newDisplayNameLabel": "Descripción del tipo",
+        "createKind": "Guardar tipo",
+        "cancelNewKind": "Cancelar",
+        "createError": "No se pudo guardar el tipo. Inténtalo de nuevo."
+      },
       "structure": {
         "title": "Información",
         "description": "Resumen del ítem en foco: nivel en la jerarquía, orden entre hermanos y vínculo con el padre.",
@@ -628,7 +639,8 @@
       "create": "No se pudo crear. Inténtalo de nuevo.",
       "delete": "No se pudo eliminar. Inténtalo de nuevo.",
       "move": "No se pudo mover. Inténtalo de nuevo.",
-      "validation": "Este campo no puede quedar vacío."
+      "validation": "Este campo no puede quedar vacío.",
+      "validationKind": "Selecciona un tipo de unidad."
     },
     "discardConfirm": "¿Descartar los cambios no guardados?"
   },

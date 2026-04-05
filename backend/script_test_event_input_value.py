@@ -115,7 +115,10 @@ def _parse_input_field_id_list(formula_item_list: list[dict[str, Any]]) -> list[
 
     sorted_formula_list = sorted(
         formula_item_list,
-        key=lambda item: (int(item.get("step") or 0), int(item.get("id") or 0)),
+        key=lambda item: (
+            int(item.get("sort_order") or 0),
+            int(item.get("id") or 0),
+        ),
     )
     for formula in sorted_formula_list:
         statement = str(formula.get("statement") or "")

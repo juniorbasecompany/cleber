@@ -47,7 +47,7 @@ export function parseErrorCode(payload: unknown): string | null {
     return null;
 }
 
-/** Ordem da fórmula na lista (`step`, 1..n) quando a API devolve `detail.step`. */
+/** Ordem da fórmula na lista (1..n) quando a API devolve `detail.sort_order`. */
 export function parseErrorStep(payload: unknown): number | null {
     if (!payload || typeof payload !== "object") {
         return null;
@@ -56,7 +56,8 @@ export function parseErrorStep(payload: unknown): number | null {
     if (!detail || typeof detail !== "object" || Array.isArray(detail)) {
         return null;
     }
-    const raw = (detail as { step?: unknown }).step;
+    const d = detail as { sort_order?: unknown; step?: unknown };
+    const raw = d.sort_order ?? d.step;
     if (typeof raw === "number" && Number.isInteger(raw) && raw >= 1) {
         return raw;
     }

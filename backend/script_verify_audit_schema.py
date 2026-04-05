@@ -72,6 +72,8 @@ def main() -> None:
             _fail("log_table_name_chk deve permitir table_name input; def: " + chk[0])
         if "item" not in defn:
             _fail("log_table_name_chk deve permitir table_name item; def: " + chk[0])
+        if "kind" not in defn:
+            _fail("log_table_name_chk deve permitir table_name kind; def: " + chk[0])
 
     print("OK: valora_audit_row_to_log e log_table_name_chk consistentes com o dominio atual.")
 

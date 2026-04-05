@@ -596,6 +596,17 @@
         "displayNameLabel": "Description",
         "displayNameHint": "Describe what this productive unit represents in the operation with a bit more context."
       },
+      "kind": {
+        "selectLabel": "Unit type",
+        "selectHint": "Choose an existing type or register a new one.",
+        "selectPlaceholder": "Select…",
+        "newKindButton": "New type",
+        "newNameLabel": "Short name for the type",
+        "newDisplayNameLabel": "Description for the type",
+        "createKind": "Save type",
+        "cancelNewKind": "Cancel",
+        "createError": "Could not save the type. Please try again."
+      },
       "structure": {
         "title": "Information",
         "description": "Summary of the item in focus: level in the hierarchy, order among siblings, and parent link.",
@@ -632,7 +643,8 @@
       "create": "Could not create. Try again.",
       "delete": "Could not delete. Try again.",
       "move": "Could not move. Try again.",
-      "validation": "This field cannot be empty."
+      "validation": "This field cannot be empty.",
+      "validationKind": "Select a unit type."
     },
     "discardConfirm": "Discard unsaved changes?"
   },

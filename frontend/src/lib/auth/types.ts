@@ -107,8 +107,20 @@ export type TenantLocationDirectoryResponse = {
   item_list: TenantLocationRecord[];
 };
 
+export type TenantKindRecord = {
+  id: number;
+  name: string;
+  display_name: string;
+};
+
+export type TenantKindListResponse = {
+  can_edit: boolean;
+  item_list: TenantKindRecord[];
+};
+
 export type TenantItemRecord = TenantScopeHierarchyItemBase & {
   parent_item_id?: number | null;
+  kind_id: number;
 };
 
 export type TenantItemDirectoryResponse = {
@@ -117,6 +129,7 @@ export type TenantItemDirectoryResponse = {
   scope_display_name: string;
   can_edit: boolean;
   can_create: boolean;
+  kind_list: TenantKindRecord[];
   item_list: TenantItemRecord[];
 };
 
@@ -165,7 +178,7 @@ export type TenantScopeEventDirectoryResponse = {
 export type ScopeFormulaRecord = {
   id: number;
   action_id: number;
-  step: number;
+  sort_order: number;
   statement: string;
 };
 

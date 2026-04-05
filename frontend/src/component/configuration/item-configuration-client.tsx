@@ -39,9 +39,9 @@ export function ItemConfigurationClient({
         historyHeading: "item-history-heading"
       }}
       getParentId={(row) => row.parent_item_id ?? null}
-      buildSavePayload={({ name, display_name, parentId }) => ({
-        name,
-        display_name,
+      editorVariant="kind"
+      buildSavePayload={({ kind_id, parentId }) => ({
+        kind_id: kind_id!,
         parent_item_id: parentId
       })}
     />

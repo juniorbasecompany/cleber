@@ -13,7 +13,7 @@ from sqlalchemy import (
     UniqueConstraint,
     text,
 )
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from valora_backend.model.base import Base
 
@@ -287,6 +287,48 @@ class Location(Base):
     )
 
 
+class Kind(Base):
+    """Tipo de item (rótulo compartilhável) dentro de um escopo."""
+
+    __tablename__ = "kind"
+    __table_args__ = (
+        UniqueConstraint("scope_id", "name", name="kind_scope_name_unique"),
+        UniqueConstraint(
+            "scope_id", "display_name", name="kind_scope_display_name_unique"
+        ),
+        {
+            "comment": (
+                "Tipos de itens por escopo (ex.: galinha, cobb, fêmea); "
+                "nome e display_name únicos por escopo."
+            )
+        },
+    )
+
+    id: Mapped[int] = mapped_column(
+        BIGINT_COMPAT,
+        primary_key=True,
+        autoincrement=True,
+        comment="Identificador do tipo de item.",
+    )
+    scope_id: Mapped[int] = mapped_column(
+        BIGINT_COMPAT,
+        ForeignKey("scope.id", onupdate="CASCADE", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Escopo ao qual pertence este tipo de item.",
+    )
+    name: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        comment="Nome técnico do tipo de item.",
+    )
+    display_name: Mapped[str] = mapped_column(
+        Text,
+        nullable=False,
+        comment="Nome amigável do tipo de item.",
+    )
+    item_list: Mapped[list["Item"]] = relationship(back_populates="kind")
+
+
 class Item(Base):
     """Item hierárquico configurado dentro de um escopo."""
 
@@ -316,10 +358,10 @@ class Item(Base):
             "id",
         ),
         Index(
-            "item_scope_parent_name_idx",
+            "item_scope_parent_kind_idx",
             "scope_id",
             "parent_item_id",
-            "name",
+            "kind_id",
         ),
         {
             "comment": (
@@ -335,22 +377,19 @@ class Item(Base):
         autoincrement=True,
         comment="Identificador do item.",
     )
-    name: Mapped[str] = mapped_column(
-        Text,
-        nullable=False,
-        comment="Nome curto do item.",
-    )
-    display_name: Mapped[str] = mapped_column(
-        Text,
-        nullable=False,
-        comment="Descrição do item.",
-    )
     scope_id: Mapped[int] = mapped_column(
         BIGINT_COMPAT,
         ForeignKey("scope.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
         comment="Escopo deste item.",
     )
+    kind_id: Mapped[int] = mapped_column(
+        BIGINT_COMPAT,
+        ForeignKey("kind.id", onupdate="CASCADE", ondelete="RESTRICT"),
+        nullable=False,
+        comment="Tipo de item (rótulo compartilhado no escopo).",
+    )
+    kind: Mapped[Kind] = relationship(back_populates="item_list")
     parent_item_id: Mapped[int | None] = mapped_column(
         BIGINT_COMPAT,
         nullable=True,

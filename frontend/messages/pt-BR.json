@@ -592,6 +592,17 @@
         "displayNameLabel": "Descrição",
         "displayNameHint": "Descreva com mais contexto o que essa unidade produtiva representa na operação."
       },
+      "kind": {
+        "selectLabel": "Tipo de unidade",
+        "selectHint": "Escolha um tipo já cadastrado ou cadastre um novo.",
+        "selectPlaceholder": "Selecione…",
+        "newKindButton": "Novo tipo",
+        "newNameLabel": "Nome curto do tipo",
+        "newDisplayNameLabel": "Descrição do tipo",
+        "createKind": "Cadastrar tipo",
+        "cancelNewKind": "Cancelar",
+        "createError": "Não foi possível cadastrar o tipo. Tente novamente."
+      },
       "structure": {
         "title": "Informações",
         "description": "Resumo do item em foco: nível na hierarquia, ordem entre irmãos e vínculo com o pai.",
@@ -628,7 +639,8 @@
       "create": "Não foi possível criar. Tente novamente.",
       "delete": "Não foi possível apagar. Tente novamente.",
       "move": "Não foi possível mover. Tente novamente.",
-      "validation": "Este campo não pode ficar vazio."
+      "validation": "Este campo não pode ficar vazio.",
+      "validationKind": "Selecione um tipo de unidade."
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },

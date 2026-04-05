@@ -9,7 +9,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, literal, or_, select, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, contains_eager, joinedload
 
 from valora_backend.auth.dependencies import (
     get_current_account,
@@ -46,6 +46,7 @@ from valora_backend.db import get_session
 from valora_backend.model.identity import (
     Account,
     Item,
+    Kind,
     Location,
     Member,
     Scope,
@@ -382,9 +383,49 @@ class TenantLocationMoveRequest(BaseModel):
         return value
 
 
+class TenantKindRecord(BaseModel):
+    id: int
+    name: str
+    display_name: str
+
+
+class TenantKindListResponse(BaseModel):
+    can_edit: bool
+    item_list: list[TenantKindRecord] = Field(default_factory=list)
+
+
+class TenantKindCreateRequest(BaseModel):
+    name: str
+    display_name: str
+
+    @field_validator("name", "display_name")
+    @classmethod
+    def strip_non_empty_kind_value(cls, value: str) -> str:
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("must not be empty")
+        return cleaned
+
+
+class TenantKindPatchRequest(BaseModel):
+    name: str | None = None
+    display_name: str | None = None
+
+    @field_validator("name", "display_name")
+    @classmethod
+    def strip_kind_optional(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        cleaned = value.strip()
+        if not cleaned:
+            raise ValueError("must not be empty")
+        return cleaned
+
+
 class TenantItemRecord(BaseModel):
     id: int
     parent_item_id: int | None
+    kind_id: int
     name: str
     display_name: str
     sort_order: int
@@ -404,21 +445,20 @@ class TenantItemDirectoryResponse(BaseModel):
     scope_display_name: str
     can_edit: bool
     can_create: bool
+    kind_list: list[TenantKindRecord] = Field(default_factory=list)
     item_list: list[TenantItemRecord] = Field(default_factory=list)
 
 
 class TenantItemUpsertRequest(BaseModel):
-    name: str
-    display_name: str
+    kind_id: int
     parent_item_id: int | None = None
 
-    @field_validator("name", "display_name")
+    @field_validator("kind_id")
     @classmethod
-    def strip_non_empty_item_value(cls, value: str) -> str:
-        cleaned = value.strip()
-        if not cleaned:
-            raise ValueError("must not be empty")
-        return cleaned
+    def validate_kind_id_value(cls, value: int) -> int:
+        if value < 1:
+            raise ValueError("invalid kind id")
+        return value
 
     @field_validator("parent_item_id")
     @classmethod
@@ -1405,35 +1445,76 @@ def _get_scope_item_list(
     q: str | None = None,
     parent_item_id: int | None = None,
 ) -> list[Item]:
-    query = select(Item).where(Item.scope_id == scope_id)
+    query = (
+        select(Item)
+        .join(Kind, Item.kind_id == Kind.id)
+        .where(Item.scope_id == scope_id)
+        .options(contains_eager(Item.kind))
+    )
     if parent_item_id is not None:
         query = query.where(Item.parent_item_id == parent_item_id)
 
     query_term_expression = _query_term_expression_for_search(q)
     if query_term_expression is not None:
-            query = query.where(
-                or_(
-                    _normalize_expression_for_search(Item.name).contains(query_term_expression),
-                    _normalize_expression_for_search(Item.display_name).contains(
-                        query_term_expression
-                    ),
-                )
+        query = query.where(
+            or_(
+                _normalize_expression_for_search(Kind.name).contains(
+                    query_term_expression
+                ),
+                _normalize_expression_for_search(Kind.display_name).contains(
+                    query_term_expression
+                ),
             )
+        )
 
     return list(
-        session.scalars(query.order_by(Item.sort_order, Item.name, Item.id))
+        session.scalars(query.order_by(Item.sort_order, Kind.name, Item.id))
     )
 
 
 def _get_scope_item_or_404(session: Session, *, scope_id: int, item_id: int) -> Item:
-    target_item = session.get(Item, item_id)
-    if not target_item or target_item.scope_id != scope_id:
+    target_item = session.scalar(
+        select(Item)
+        .where(Item.id == item_id, Item.scope_id == scope_id)
+        .options(joinedload(Item.kind))
+    )
+    if not target_item:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Item not found for current scope",
         )
 
     return target_item
+
+
+def _get_scope_kind_or_404(
+    session: Session, *, scope_id: int, kind_id: int
+) -> Kind:
+    row = session.get(Kind, kind_id)
+    if not row or row.scope_id != scope_id:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Kind not found for current scope",
+        )
+    return row
+
+
+def _tenant_kind_record_list_for_scope(
+    session: Session, *, scope_id: int
+) -> list[TenantKindRecord]:
+    kind_row_list = list(
+        session.scalars(
+            select(Kind)
+            .where(Kind.scope_id == scope_id)
+            .order_by(Kind.name, Kind.id)
+        )
+    )
+    return [
+        TenantKindRecord(
+            id=row.id, name=row.name, display_name=row.display_name
+        )
+        for row in kind_row_list
+    ]
 
 
 def _move_item_in_scope(
@@ -1506,8 +1587,9 @@ def _build_tenant_item_directory(
         record = TenantItemRecord(
             id=item_row.id,
             parent_item_id=item_row.parent_item_id,
-            name=item_row.name,
-            display_name=item_row.display_name,
+            kind_id=item_row.kind_id,
+            name=item_row.kind.name,
+            display_name=item_row.kind.display_name,
             sort_order=item_row.sort_order,
             depth=depth,
             path_labels=path_labels,
@@ -1538,12 +1620,14 @@ def _build_tenant_item_directory(
         if dangling_item.id not in visited_item_id_set:
             append_branch(dangling_item, depth=0, path_prefix=[])
 
+    kind_list = _tenant_kind_record_list_for_scope(session, scope_id=scope.id)
     return TenantItemDirectoryResponse(
         scope_id=scope.id,
         scope_name=scope.name,
         scope_display_name=scope.display_name,
         can_edit=can_edit_hierarchy,
         can_create=can_edit_hierarchy,
+        kind_list=kind_list,
         item_list=out_list,
     )
 
@@ -2514,6 +2598,107 @@ def delete_current_scope_location(
 
 
 @router.get(
+    "/tenant/current/scopes/{scope_id}/kind",
+    response_model=TenantKindListResponse,
+)
+def get_current_scope_kind_list(
+    scope_id: int,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=scope_id,
+    )
+    can_edit = _member_can_edit_scope_hierarchy_directory(current_member)
+    return TenantKindListResponse(
+        can_edit=can_edit,
+        item_list=_tenant_kind_record_list_for_scope(
+            session, scope_id=target_scope.id
+        ),
+    )
+
+
+@router.post(
+    "/tenant/current/scopes/{scope_id}/kind",
+    response_model=TenantKindListResponse,
+)
+def create_current_scope_kind(
+    scope_id: int,
+    body: TenantKindCreateRequest,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=scope_id,
+    )
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to create kind",
+        )
+    row = Kind(
+        scope_id=target_scope.id,
+        name=body.name,
+        display_name=body.display_name,
+    )
+    session.add(row)
+    _apply_member_audit_context(session, current_member)
+    commit_session_with_null_if_empty(session)
+    return TenantKindListResponse(
+        can_edit=True,
+        item_list=_tenant_kind_record_list_for_scope(
+            session, scope_id=target_scope.id
+        ),
+    )
+
+
+@router.patch(
+    "/tenant/current/scopes/{scope_id}/kind/{kind_id}",
+    response_model=TenantKindListResponse,
+)
+def patch_current_scope_kind(
+    scope_id: int,
+    kind_id: int,
+    body: TenantKindPatchRequest,
+    current_member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    target_scope = _get_tenant_scope_for_location(
+        session,
+        actor=current_member,
+        scope_id=scope_id,
+    )
+    if not _member_can_edit_scope_hierarchy_directory(current_member):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Insufficient permissions to update kind",
+        )
+    row = _get_scope_kind_or_404(session, scope_id=target_scope.id, kind_id=kind_id)
+    if body.name is not None:
+        row.name = body.name
+    if body.display_name is not None:
+        row.display_name = body.display_name
+    if body.name is None and body.display_name is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No fields to update",
+        )
+    session.add(row)
+    _apply_member_audit_context(session, current_member)
+    commit_session_with_null_if_empty(session)
+    return TenantKindListResponse(
+        can_edit=True,
+        item_list=_tenant_kind_record_list_for_scope(
+            session, scope_id=target_scope.id
+        ),
+    )
+
+
+@router.get(
     "/tenant/current/scopes/{scope_id}/items",
     response_model=TenantItemDirectoryResponse,
 )
@@ -2565,9 +2750,11 @@ def create_current_scope_item(
         parent_item_id=body.parent_item_id,
         moving_item_id=None,
     )
+    _get_scope_kind_or_404(
+        session, scope_id=target_scope.id, kind_id=body.kind_id
+    )
     new_item = Item(
-        name=body.name,
-        display_name=body.display_name,
+        kind_id=body.kind_id,
         scope_id=target_scope.id,
         parent_item_id=body.parent_item_id,
         sort_order=sum(
@@ -2620,8 +2807,10 @@ def patch_current_scope_item(
             target_index=None,
         )
 
-    target_item.name = body.name
-    target_item.display_name = body.display_name
+    _get_scope_kind_or_404(
+        session, scope_id=target_scope.id, kind_id=body.kind_id
+    )
+    target_item.kind_id = body.kind_id
     session.add(target_item)
     _apply_member_audit_context(session, current_member)
     commit_session_with_null_if_empty(session)

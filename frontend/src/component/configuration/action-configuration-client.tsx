@@ -152,7 +152,7 @@ function isDeleteBlockedDetail(detail: string | null): boolean {
 
 function mapFormulaResponseToDraft(itemList: ScopeFormulaRecord[]): ActionFormulaDraftRow[] {
   return [...itemList]
-    .sort((a, b) => a.step - b.step || a.id - b.id)
+    .sort((a, b) => a.sort_order - b.sort_order || a.id - b.id)
     .map((item) => ({
       clientKey: `s-${item.id}`,
       serverId: item.id,
@@ -196,18 +196,18 @@ function userMessageForFormulaPersistFailure(
   if (error instanceof FormulaPersistError) {
     if (error.code && isFormulaValidationCode(error.code)) {
       const description = tActionPage(`formulas.validationError.${error.code}`);
-      if (error.step != null) {
+      if (error.sort_order != null) {
         return tActionPage("formulas.validationError.whichFormula", {
-          step: error.step,
+          step: error.sort_order,
           description
         });
       }
       return description;
     }
-    if (error.step != null) {
+    if (error.sort_order != null) {
       const description = error.message.trim() || fallback;
       return tActionPage("formulas.validationError.whichFormula", {
-        step: error.step,
+        step: error.sort_order,
         description
       });
     }
