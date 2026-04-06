@@ -10,7 +10,6 @@ import {
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel,
@@ -31,8 +30,6 @@ export type TenantConfigurationCopy = {
   /** Painel vazio até o utilizador abrir o registo na lista ou Novo (padrão dos diretórios). */
   emptyEditor: string;
   directoryCreateLabel: string;
-  createLead: string;
-  createHint: string;
   historyTitle: string;
   historyDescription: string;
   filterSearchLabel: string;
@@ -43,9 +40,6 @@ export type TenantConfigurationCopy = {
   legalNameHint: string;
   displayNameLabel: string;
   displayNameHint: string;
-  metadataSectionTitle: string;
-  metadataSectionDescription: string;
-  metadataIdLabel: string;
   cancel: string;
   delete: string;
   undoDelete: string;
@@ -417,38 +411,6 @@ export function TenantConfigurationClient({
             onAfterFieldEdit={() => setRequestErrorMessage(null)}
           />
 
-          {editorContext === "edit" ? (
-            <ConfigurationInfoSection
-              title={copy.metadataSectionTitle}
-              description={copy.metadataSectionDescription}
-            >
-              <ul className="ui-info-topic-list">
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">{copy.metadataIdLabel}</span>
-                    {": "}
-                    <span className="ui-info-topic-value">{tenant.id}</span>
-                  </p>
-                </li>
-              </ul>
-            </ConfigurationInfoSection>
-          ) : null}
-
-          {editorContext === "new" ? (
-            <ConfigurationInfoSection
-              title={copy.metadataSectionTitle}
-              description={copy.metadataSectionDescription}
-            >
-              <ul className="ui-info-topic-list">
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">{copy.createLead}</span>
-                  </p>
-                  <p className="ui-field-hint ui-info-topic-hint">{copy.createHint}</p>
-                </li>
-              </ul>
-            </ConfigurationInfoSection>
-          ) : null}
         </>
       }
       history={{

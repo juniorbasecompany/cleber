@@ -65,10 +65,6 @@ export type MemberConfigurationCopy = {
   accountLinked: string;
   accountPending: string;
   accountTopicLabel: string;
-  inviteSectionTitle: string;
-  inviteSectionDescription: string;
-  inviteCreateLead: string;
-  inviteCreateHint: string;
   cancel: string;
   directoryCreateLabel: string;
   delete: string;
@@ -1061,26 +1057,6 @@ export function MemberConfigurationClient({
                 </ul>
               </ConfigurationInfoSection>
             </>
-          ) : null}
-
-          {isCreateMode ? (
-            <ConfigurationInfoSection
-              title={copy.inviteSectionTitle}
-              description={copy.inviteSectionDescription}
-            >
-              <ul className="ui-info-topic-list">
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.inviteCreateLead}
-                    </span>
-                  </p>
-                  <p className="ui-field-hint ui-info-topic-hint">
-                    {copy.inviteCreateHint}
-                  </p>
-                </li>
-              </ul>
-            </ConfigurationInfoSection>
           ) : null}
 
         </>

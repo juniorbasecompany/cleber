@@ -135,10 +135,6 @@
         "nameHint": "Use o nome mais completo para referência administrativa."
       },
       "invite": {
-        "title": "Convite",
-        "description": "Novos cadastros entram como convite pendente até a pessoa aceitar com a conta do email informado.",
-        "createLead": "Cadastro de convite",
-        "createHint": "Salve para registrar o convite. A pessoa verá o licenciado ao entrar com uma conta Google que use o mesmo email.",
         "emailFieldHint": "Informe o email que receberá o convite. O primeiro acesso usa uma conta Google com esse mesmo endereço."
       },
       "access": {
@@ -655,13 +651,6 @@
         "nameLabel": "Nome completo",
         "nameHint": "Use a denominação formal; pode coincidir com o nome de exibição quando não houver um rótulo mais curto."
       }
-    },
-    "metadata": {
-      "idLabel": "Identificador interno",
-      "sectionTitle": "Referência no sistema",
-      "sectionDescription": "Identificador estável do licenciado na base de dados.",
-      "createLead": "Formulário vazio para o licenciado ativo",
-      "createHint": "Preencha nome de exibição e nome completo oficial. Salve para atualizar o licenciado desta sessão (identificador interno inalterado)."
     },
     "action": {
       "cancel": "Cancelar",

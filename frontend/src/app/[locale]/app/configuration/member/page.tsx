@@ -61,10 +61,6 @@ export default async function MemberConfigurationPage({
     deleteError: t("error.delete"),
     validationError: t("error.validation"),
     emailValidationError: t("error.emailValidation"),
-    inviteSectionTitle: t("section.invite.title"),
-    inviteSectionDescription: t("section.invite.description"),
-    inviteCreateLead: t("section.invite.createLead"),
-    inviteCreateHint: t("section.invite.createHint"),
     discardConfirm: t("discardConfirm"),
     roleLabels: {
       master: t("role.master"),

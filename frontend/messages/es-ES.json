@@ -135,10 +135,6 @@
         "nameHint": "Usa el nombre más completo para la referencia administrativa."
       },
       "invite": {
-        "title": "Invitación",
-        "description": "Los registros nuevos quedan como invitación pendiente hasta que la persona acepte con la cuenta del correo indicado.",
-        "createLead": "Registro de invitación",
-        "createHint": "Guarda para registrar la invitación. La persona verá el licenciatario al iniciar sesión con una cuenta de Google que use el mismo correo.",
         "emailFieldHint": "Indica el correo que recibirá la invitación. El primer acceso usa una cuenta de Google con esa misma dirección."
       },
       "idle": {
@@ -729,13 +725,6 @@
         "nameLabel": "Nombre completo",
         "nameHint": "Usa la denominación formal; puede coincidir con el nombre para mostrar cuando no haya una etiqueta más corta."
       }
-    },
-    "metadata": {
-      "idLabel": "Identificador interno",
-      "sectionTitle": "Referencia en el sistema",
-      "sectionDescription": "Identificador estable del licenciatario en la base de datos.",
-      "createLead": "Formulario vacío para el licenciatario activo",
-      "createHint": "Completa el nombre para mostrar y el nombre legal completo. Guarda para actualizar el licenciatario de esta sesión; el identificador interno no cambia."
     },
     "action": {
       "cancel": "Cancelar",

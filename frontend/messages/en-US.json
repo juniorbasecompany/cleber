@@ -135,10 +135,6 @@
         "nameHint": "Use the most complete name for administrative reference."
       },
       "invite": {
-        "title": "Invite",
-        "description": "New records start as a pending invite until the person accepts with the account for the email you enter.",
-        "createLead": "Invite registration",
-        "createHint": "Save to register the invite. The person will see this tenant after signing in with a Google account that uses the same email.",
         "emailFieldHint": "Enter the email that will receive the invite. First sign-in uses a Google account with that same address."
       },
       "idle": {
@@ -733,13 +729,6 @@
         "nameLabel": "Full name",
         "nameHint": "Use the formal name; it can match the display name when no shorter label is needed."
       }
-    },
-    "metadata": {
-      "idLabel": "Internal identifier",
-      "sectionTitle": "System reference",
-      "sectionDescription": "Stable identifier for this tenant in the database.",
-      "createLead": "Empty form for the active tenant",
-      "createHint": "Fill in the display name and full legal name. Save to update the tenant for this session; the internal identifier does not change."
     },
     "action": {
       "cancel": "Cancel",
