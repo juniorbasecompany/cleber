@@ -616,6 +616,7 @@
       "description": "Cada fila representa un día materializado del período seleccionado, consolidando horizontalmente los campos calculados para la ubicación y el ítem.",
       "placeholder": "Selecciona las fechas y ejecuta el cálculo para ver los resultados de este período.",
       "empty": "Ningún evento elegible produjo resultados en este período.",
+      "dateLabel": "Fecha",
       "createdLabel": "Creados",
       "updatedLabel": "Actualizados",
       "unchangedLabel": "Mantenidos",

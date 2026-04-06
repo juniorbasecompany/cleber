@@ -225,10 +225,6 @@ export type ScopeCurrentAgeCalculationRecord = {
 
 export type ScopeCurrentAgeCalculationResponse = {
   can_edit: boolean;
-  calculated_moment_utc: string;
-  created_count: number;
-  updated_count: number;
-  unchanged_count: number;
   item_list: ScopeCurrentAgeCalculationRecord[];
 };
 

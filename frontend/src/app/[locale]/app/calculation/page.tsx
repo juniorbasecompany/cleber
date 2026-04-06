@@ -7,6 +7,7 @@ import {
   getAuthSession,
   getTenantItemDirectory,
   getTenantLocationDirectory,
+  getTenantScopeActionFormulaList,
   getTenantScopeActionDirectory,
   getTenantScopeDirectory,
   getTenantScopeFieldDirectory
@@ -44,6 +45,18 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
       ])
       : [null, null, null, null];
 
+  const initialFormulaList =
+    currentScope != null && actionDirectory != null
+      ? (
+        await Promise.all(
+          actionDirectory.item_list.map(async (action) => {
+            const response = await getTenantScopeActionFormulaList(currentScope.id, action.id);
+            return response?.item_list ?? [];
+          })
+        )
+      ).flat()
+      : [];
+
   const t = await getTranslations("CalculationPage");
   const tState = await getTranslations("State");
 
@@ -63,6 +76,7 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
         initialLocationDirectory={locationDirectory}
         initialItemDirectory={itemDirectory}
         initialActionDirectory={actionDirectory}
+        initialFormulaList={initialFormulaList}
         copy={{
           title: t("title"),
           description: t("description"),
@@ -83,30 +97,13 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           validationRequired: t("panel.validationRequired"),
           validationOrder: t("panel.validationOrder"),
           calculateError: t("panel.error"),
-          fieldsTitle: t("fields.title"),
-          fieldsDescription: t("fields.description"),
-          initialBadge: t("fields.initialBadge"),
-          currentBadge: t("fields.currentBadge"),
-          finalBadge: t("fields.finalBadge"),
-          targetLabel: t("fields.targetLabel"),
-          missingLabel: t("fields.missingLabel"),
-          resultTitle: t("result.title"),
-          resultDescription: t("result.description"),
           resultPlaceholder: t("result.placeholder"),
           resultEmpty: t("result.empty"),
-          createdLabel: t("result.createdLabel"),
-          updatedLabel: t("result.updatedLabel"),
-          unchangedLabel: t("result.unchangedLabel"),
-          statusCreated: t("result.statusCreated"),
-          statusUpdated: t("result.statusUpdated"),
-          statusUnchanged: t("result.statusUnchanged"),
+          resultDateLabel: t("result.dateLabel"),
           locationLabel: t("result.locationLabel"),
           itemLabel: t("result.itemLabel"),
           actionLabel: t("result.actionLabel"),
-          fieldLabel: t("result.fieldLabel"),
           formulaLabel: t("result.formulaLabel"),
-          formulaOrderLabel: t("result.formulaOrderLabel"),
-          calculatedAtLabel: t("result.calculatedAtLabel"),
           emptyValue: t("result.emptyValue"),
           fallbackLocation: t("result.fallbackLocation"),
           fallbackItem: t("result.fallbackItem"),

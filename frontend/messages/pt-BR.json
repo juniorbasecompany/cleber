@@ -566,6 +566,7 @@
       "description": "Cada linha abaixo representa um dia materializado do período selecionado, consolidando horizontalmente os campos calculados para o local e item.",
       "placeholder": "Selecione as datas e execute o cálculo para ver os resultados deste período.",
       "empty": "Nenhum evento elegível produziu resultados neste período.",
+      "dateLabel": "Data",
       "createdLabel": "Criados",
       "updatedLabel": "Atualizados",
       "unchangedLabel": "Mantidos",

@@ -74,6 +74,76 @@
   gap: 0.75rem;
 }
 
+.ui-current-age-table-shell {
+  padding: 0;
+}
+
+.ui-current-age-table-scroll {
+  overflow-x: auto;
+}
+
+.ui-current-age-table {
+  width: 100%;
+  min-width: 70rem;
+  border-collapse: collapse;
+}
+
+.ui-current-age-table th,
+.ui-current-age-table td {
+  padding: 0.9rem 1rem;
+  border-right: var(--border-width-default) solid var(--color-border);
+  border-bottom: var(--border-width-default) solid var(--color-border);
+  vertical-align: top;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.ui-current-age-table th:last-child,
+.ui-current-age-table td:last-child {
+  border-right: none;
+}
+
+.ui-current-age-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--color-surface-overlay);
+  backdrop-filter: blur(10px);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+}
+
+.ui-current-age-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.ui-current-age-table tbody tr:nth-child(even) {
+  background: rgb(from var(--color-surface) r g b / 0.48);
+}
+
+.ui-current-age-table-cell-stack {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ui-current-age-table-cell-formula {
+  min-width: 22rem;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.ui-current-age-table-formula-stack {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.ui-current-age-table-formula-action {
+  color: inherit;
+}
+
 .ui-shell-page {
   min-height: 100dvh;
 }

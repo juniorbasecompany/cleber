@@ -4,9 +4,9 @@ import { useMemo, useState } from "react";
 
 import { PageHeader } from "@/component/app-shell/page-header";
 import { StatusPanel } from "@/component/app-shell/status-panel";
-import { Badge } from "@/component/ui/badge";
 import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import type {
+  ScopeFormulaRecord,
   ScopeCurrentAgeCalculationRecord,
   ScopeCurrentAgeCalculationResponse,
   TenantLocationDirectoryResponse,
@@ -37,30 +37,13 @@ type CurrentAgeCalculationCopy = {
   validationRequired: string;
   validationOrder: string;
   calculateError: string;
-  fieldsTitle: string;
-  fieldsDescription: string;
-  initialBadge: string;
-  currentBadge: string;
-  finalBadge: string;
-  targetLabel: string;
-  missingLabel: string;
-  resultTitle: string;
-  resultDescription: string;
   resultPlaceholder: string;
   resultEmpty: string;
-  createdLabel: string;
-  updatedLabel: string;
-  unchangedLabel: string;
-  statusCreated: string;
-  statusUpdated: string;
-  statusUnchanged: string;
+  resultDateLabel: string;
   locationLabel: string;
   itemLabel: string;
   actionLabel: string;
-  fieldLabel: string;
   formulaLabel: string;
-  formulaOrderLabel: string;
-  calculatedAtLabel: string;
   emptyValue: string;
   fallbackLocation: string;
   fallbackItem: string;
@@ -75,24 +58,11 @@ type CurrentAgeCalculationClientProps = {
   initialLocationDirectory: TenantLocationDirectoryResponse | null;
   initialItemDirectory: TenantItemDirectoryResponse | null;
   initialActionDirectory: TenantScopeActionDirectoryResponse | null;
+  initialFormulaList: ScopeFormulaRecord[];
   copy: CurrentAgeCalculationCopy;
 };
 
 const UI_TEXT_SEPARATOR = "\u00A0\u00A0\u25CF\u00A0\u00A0";
-
-function formatMomentCompact(value: string) {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-  return new Intl.DateTimeFormat(undefined, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(parsed);
-}
 
 function formatDayCompact(value: string) {
   const parsed = new Date(value);
@@ -122,35 +92,16 @@ function formatPersistedValue(
   return emptyValueLabel;
 }
 
-type DailyResultGroup = {
-  dayKey: string;
-  dayLabel: string;
-  locationId: number;
-  itemId: number;
-  calculatedAt: string;
-  status: "created" | "updated" | "unchanged";
-  itemList: ScopeCurrentAgeCalculationRecord[];
-  fieldSnapshotList: Array<{
-    fieldId: number;
-    item: ScopeCurrentAgeCalculationRecord | null;
-  }>;
-};
+const FORMULA_REFERENCE_TOKEN = /\$\{(field|input):(\d+)\}/g;
 
-function SummaryCard({
-  label,
-  value
-}: {
-  label: string;
-  value: number;
-}) {
-  return (
-    <article className="ui-card ui-card-stack">
-      <div className="ui-section-copy">
-        <p className="ui-text-caption">{label}</p>
-        <h2 className="ui-header-title ui-title-section">{value}</h2>
-      </div>
-    </article>
-  );
+function formatFormulaStatement(
+  statement: string,
+  fieldLabelById: Map<number, string>
+) {
+  return statement.replace(FORMULA_REFERENCE_TOKEN, (_full, _kind: string, idText: string) => {
+    const id = Number(idText);
+    return fieldLabelById.get(id) ?? `#${id}`;
+  });
 }
 
 export function CurrentAgeCalculationClient({
@@ -161,6 +112,7 @@ export function CurrentAgeCalculationClient({
   initialLocationDirectory,
   initialItemDirectory,
   initialActionDirectory,
+  initialFormulaList,
   copy
 }: CurrentAgeCalculationClientProps) {
   const [momentFrom, setMomentFrom] = useState<Date | null>(null);
@@ -216,6 +168,14 @@ export function CurrentAgeCalculationClient({
     return map;
   }, [initialActionDirectory?.item_list]);
 
+  const actionOrderById = useMemo(() => {
+    const map = new Map<number, number>();
+    for (const [index, item] of (initialActionDirectory?.item_list ?? []).entries()) {
+      map.set(item.id, index);
+    }
+    return map;
+  }, [initialActionDirectory?.item_list]);
+
   const fieldLabelById = useMemo(() => {
     const map = new Map<number, string>();
     for (const item of initialFieldDirectory?.item_list ?? []) {
@@ -223,6 +183,14 @@ export function CurrentAgeCalculationClient({
     }
     return map;
   }, [initialFieldDirectory?.item_list]);
+
+  const formulaStatementById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const formula of initialFormulaList) {
+      map.set(formula.id, formatFormulaStatement(formula.statement, fieldLabelById));
+    }
+    return map;
+  }, [fieldLabelById, initialFormulaList]);
 
   const fieldSortOrderById = useMemo(() => {
     const map = new Map<number, number>();
@@ -232,86 +200,24 @@ export function CurrentAgeCalculationClient({
     return map;
   }, [initialFieldDirectory?.item_list]);
 
-  const currentFieldLabel = currentField?.label_name?.trim() || (
-    currentField ? `#${currentField.id}` : copy.missingLabel
-  );
-
-  const dailyResultList = useMemo<DailyResultGroup[]>(() => {
+  const resultRowList = useMemo<ScopeCurrentAgeCalculationRecord[]>(() => {
     if (!result) {
       return [];
     }
-    const sortedItemList = [...result.item_list].sort((left, right) => (
-      left.result_moment_utc.localeCompare(right.result_moment_utc)
+    return [...result.item_list].sort((left, right) => (
+      left.result_moment_utc.slice(0, 10).localeCompare(right.result_moment_utc.slice(0, 10))
+      || (actionOrderById.get(left.action_id) ?? Number.MAX_SAFE_INTEGER)
+        - (actionOrderById.get(right.action_id) ?? Number.MAX_SAFE_INTEGER)
+      || left.formula_order - right.formula_order
       || left.location_id - right.location_id
       || left.item_id - right.item_id
+      || left.event_id - right.event_id
+      || left.formula_id - right.formula_id
       || (fieldSortOrderById.get(left.field_id) ?? Number.MAX_SAFE_INTEGER)
         - (fieldSortOrderById.get(right.field_id) ?? Number.MAX_SAFE_INTEGER)
-      || left.formula_order - right.formula_order
       || left.result_id - right.result_id
     ));
-    const lastKnownItemByFieldIdByGroup = new Map<string, Map<number, ScopeCurrentAgeCalculationRecord>>();
-    const groupMap = new Map<string, {
-      dayKey: string;
-      dayLabel: string;
-      locationId: number;
-      itemId: number;
-      calculatedAt: string;
-      status: "created" | "updated" | "unchanged";
-      itemList: ScopeCurrentAgeCalculationRecord[];
-      fieldSnapshotById: Map<number, ScopeCurrentAgeCalculationRecord>;
-    }>();
-    for (const item of sortedItemList) {
-      const dayKey = item.result_moment_utc.slice(0, 10);
-      const entityKey = `${item.location_id}:${item.item_id}`;
-      const groupKey = `${dayKey}:${entityKey}`;
-      const currentSnapshot = new Map(
-        lastKnownItemByFieldIdByGroup.get(entityKey) ?? []
-      );
-      currentSnapshot.set(item.field_id, item);
-      lastKnownItemByFieldIdByGroup.set(entityKey, currentSnapshot);
-      const currentGroup = groupMap.get(groupKey);
-      const nextStatus = currentGroup?.status === "created" || item.status === "created"
-        ? "created"
-        : currentGroup?.status === "updated" || item.status === "updated"
-          ? "updated"
-          : "unchanged";
-      if (currentGroup) {
-        currentGroup.itemList.push(item);
-        currentGroup.status = nextStatus;
-        currentGroup.fieldSnapshotById = new Map(currentSnapshot);
-        continue;
-      }
-      groupMap.set(groupKey, {
-        dayKey,
-        dayLabel: formatDayCompact(item.result_moment_utc),
-        locationId: item.location_id,
-        itemId: item.item_id,
-        calculatedAt: result.calculated_moment_utc,
-        status: nextStatus,
-        itemList: [item],
-        fieldSnapshotById: new Map(currentSnapshot)
-      });
-    }
-    return Array.from(groupMap.values())
-      .sort((left, right) => (
-        left.dayKey.localeCompare(right.dayKey)
-        || left.locationId - right.locationId
-        || left.itemId - right.itemId
-      ))
-      .map((group) => ({
-        dayKey: group.dayKey,
-        dayLabel: group.dayLabel,
-        locationId: group.locationId,
-        itemId: group.itemId,
-        calculatedAt: group.calculatedAt,
-        status: group.status,
-        itemList: group.itemList,
-        fieldSnapshotList: (initialFieldDirectory?.item_list ?? []).map((field) => ({
-          fieldId: field.id,
-          item: group.fieldSnapshotById.get(field.id) ?? null
-        }))
-      }));
-  }, [fieldSortOrderById, initialFieldDirectory?.item_list, result]);
+  }, [actionOrderById, fieldSortOrderById, result]);
 
   const asideEmptyMessage = !currentScope
     ? hasAnyScope
@@ -508,103 +414,59 @@ export function CurrentAgeCalculationClient({
             </div>
           </section>
 
-          <section className="ui-card ui-form-section ui-border-accent">
-            <div className="ui-section-copy">
-              <h2 className="ui-header-title ui-title-section">{copy.fieldsTitle}</h2>
-              <p className="ui-copy-body">{copy.fieldsDescription}</p>
-            </div>
-
-            <div className="ui-badge-row">
-              <Badge tone={initialField ? "active" : "neutral"}>
-                {copy.initialBadge}
-              </Badge>
-              <Badge tone={currentField ? "attention" : "neutral"}>
-                {copy.currentBadge}
-              </Badge>
-              <Badge tone={finalField ? "positive" : "neutral"}>
-                {copy.finalBadge}
-              </Badge>
-            </div>
-
-            <p className="ui-text-caption-wrap">
-              {copy.targetLabel}: {currentFieldLabel}
-            </p>
-          </section>
-
           <section className="ui-page-stack">
-            <div className="ui-section-copy">
-              <h2 className="ui-header-title ui-title-section">{copy.resultTitle}</h2>
-              <p className="ui-copy-body">{copy.resultDescription}</p>
-            </div>
-
-            {result ? (
-              <section className="ui-grid-cards-3">
-                <SummaryCard label={copy.createdLabel} value={result.created_count} />
-                <SummaryCard label={copy.updatedLabel} value={result.updated_count} />
-                <SummaryCard label={copy.unchangedLabel} value={result.unchanged_count} />
-              </section>
-            ) : null}
-
             {!result ? (
               <div className="ui-panel ui-empty-panel">{copy.resultPlaceholder}</div>
             ) : result.item_list.length === 0 ? (
               <div className="ui-panel ui-empty-panel">{copy.resultEmpty}</div>
             ) : (
-              <div className="ui-grid-list-md">
-                {dailyResultList.map((group) => (
-                  <article
-                    key={`${group.dayKey}-${group.locationId}-${group.itemId}`}
-                    className="ui-panel ui-panel-body-compact"
-                  >
-                    <div className="ui-stack-md">
-                      <div className="ui-row-between">
-                        <div className="ui-section-copy">
-                          <h3 className="ui-header-title ui-title-section">{group.dayLabel}</h3>
-                          <p className="ui-copy-body">
-                            {copy.locationLabel}: {locationLabelById.get(group.locationId) ?? copy.fallbackLocation}
-                            {UI_TEXT_SEPARATOR}
-                            {copy.itemLabel}: {itemLabelById.get(group.itemId) ?? copy.fallbackItem}
-                          </p>
-                          <p className="ui-text-caption-wrap">
-                            {copy.actionLabel}: {Array.from(new Set(
-                              group.itemList.map((item) => (
-                                actionLabelById.get(item.action_id) ?? copy.fallbackAction
-                              ))
-                            )).join(UI_TEXT_SEPARATOR)}
-                          </p>
-                        </div>
-                        <Badge
-                          tone={
-                            group.status === "created"
-                              ? "positive"
-                              : group.status === "updated"
-                                ? "attention"
-                                : "neutral"
-                          }
-                        >
-                          {group.status === "created"
-                            ? copy.statusCreated
-                            : group.status === "updated"
-                              ? copy.statusUpdated
-                              : copy.statusUnchanged}
-                        </Badge>
-                      </div>
-
-                      <div className="ui-badge-row">
-                        {group.fieldSnapshotList.map(({ fieldId, item }) => (
-                          <Badge key={`${group.dayKey}-${group.locationId}-${group.itemId}-${fieldId}`} tone="neutral">
-                            {fieldLabelById.get(fieldId) ?? `#${fieldId}`}:{" "}
-                            {item ? formatPersistedValue(item, copy.emptyValue) : copy.emptyValue}
-                          </Badge>
+              <div className="ui-current-age-table-shell ui-panel">
+                <div className="ui-current-age-table-scroll">
+                  <table className="ui-current-age-table">
+                    <thead>
+                      <tr>
+                        <th>{copy.resultDateLabel}</th>
+                        <th>{copy.locationLabel}</th>
+                        <th>{copy.formulaLabel}</th>
+                        {initialFieldDirectory?.item_list.map((field) => (
+                          <th key={`header-${field.id}`}>
+                            {field.label_name?.trim() || `#${field.id}`}
+                          </th>
                         ))}
-                      </div>
-
-                      <p className="ui-text-caption-wrap">
-                        {copy.calculatedAtLabel}: {formatMomentCompact(group.calculatedAt)}
-                      </p>
-                    </div>
-                  </article>
-                ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {resultRowList.map((item) => (
+                        <tr key={item.result_id}>
+                          <td>{formatDayCompact(item.result_moment_utc)}</td>
+                          <td>
+                            <div className="ui-current-age-table-cell-stack">
+                              <span>{locationLabelById.get(item.location_id) ?? copy.fallbackLocation}</span>
+                              <span>{itemLabelById.get(item.item_id) ?? copy.fallbackItem}</span>
+                            </div>
+                          </td>
+                          <td className="ui-current-age-table-cell-formula">
+                            <div className="ui-current-age-table-formula-stack">
+                              <span className="ui-current-age-table-formula-action">
+                                {actionLabelById.get(item.action_id) ?? copy.fallbackAction}
+                              </span>
+                              <span>
+                                {formulaStatementById.get(item.formula_id) ?? `#${item.formula_id}`}
+                              </span>
+                            </div>
+                          </td>
+                          {(initialFieldDirectory?.item_list ?? []).map((field) => (
+                            <td key={`${item.result_id}-${field.id}`}>
+                              {field.id === item.field_id
+                                ? formatPersistedValue(item, copy.emptyValue)
+                                : ""}
+                            </td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </section>

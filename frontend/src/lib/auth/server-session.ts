@@ -10,6 +10,7 @@ import type {
   TenantCurrentResponse,
   TenantLocationDirectoryResponse,
   TenantMemberDirectoryResponse,
+  ScopeFormulaListResponse,
   TenantScopeActionDirectoryResponse,
   TenantScopeDirectoryResponse,
   TenantScopeEventDirectoryResponse,
@@ -274,6 +275,38 @@ export async function getTenantScopeActionDirectory(
     }
 
     return (await response.json()) as TenantScopeActionDirectoryResponse;
+  } catch {
+    return null;
+  }
+}
+
+export async function getTenantScopeActionFormulaList(
+  scopeId: number,
+  actionId: number
+) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get(authTokenCookieName)?.value;
+  if (!hasAuthSession(token)) {
+    return null;
+  }
+
+  try {
+    const response = await fetch(
+      `${apiUrl}/auth/tenant/current/scopes/${scopeId}/actions/${actionId}/formulas`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`
+        },
+        cache: "no-store"
+      }
+    );
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return (await response.json()) as ScopeFormulaListResponse;
   } catch {
     return null;
   }
