@@ -858,6 +858,20 @@
           "comment": "Ordem da ação em relação às demais.",
           "size": "",
           "values": []
+        },
+        {
+          "id": "is_recurrent",
+          "name": "is_recurrent",
+          "comment": "Indica se o cálculo deve ocorrer desde a data do evento até o próximo eventual de mesma ação ou até a data da idade final. Alojamento é pontual, já a mortalidade é recorrente.",
+          "type": "BOOLEAN",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
         }
       ],
       "indices": [],

@@ -932,6 +932,7 @@ class ScopeActionRecord(BaseModel):
     id: int
     scope_id: int
     sort_order: int
+    is_recurrent: bool
     label_id: int | None = None
     label_name: str | None = None
 
@@ -942,6 +943,7 @@ class ScopeActionListResponse(BaseModel):
 
 
 class ScopeActionCreateRequest(BaseModel):
+    is_recurrent: bool = False
     label_lang: Literal["pt-BR", "en", "es"] | None = None
     label_name: str | None = PydanticField(default=None, max_length=2048)
 
@@ -953,6 +955,7 @@ class ScopeActionCreateRequest(BaseModel):
 
 
 class ScopeActionPatchRequest(BaseModel):
+    is_recurrent: bool | None = None
     label_lang: Literal["pt-BR", "en", "es"] | None = None
     label_name: str | None = PydanticField(default=None, max_length=2048)
 
@@ -1025,6 +1028,7 @@ def list_scope_actions(
                 id=r.id,
                 scope_id=r.scope_id,
                 sort_order=r.sort_order,
+                is_recurrent=r.is_recurrent,
                 label_id=pair.id if pair is not None else None,
                 label_name=pair.name if pair is not None else None,
             )
@@ -1051,6 +1055,7 @@ def create_scope_action(
     row = Action(
         scope_id=scope_id,
         sort_order=_next_action_sort_order(session, scope_id=scope_id),
+        is_recurrent=body.is_recurrent,
     )
     session.add(row)
     session.flush()
@@ -1088,6 +1093,7 @@ def get_scope_action(
         id=row.id,
         scope_id=row.scope_id,
         sort_order=row.sort_order,
+        is_recurrent=row.is_recurrent,
     )
 
 
@@ -1105,6 +1111,8 @@ def patch_scope_action(
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = _action_in_scope_or_404(session, scope_id=scope_id, action_id=action_id)
+    if body.is_recurrent is not None:
+        row.is_recurrent = body.is_recurrent
     if body.label_lang is not None and body.label_name is not None:
         _upsert_action_label_by_lang(
             session,

@@ -394,6 +394,10 @@
         "label": "Action name",
         "hint": "Short, easy-to-understand name used in formulas, screens, and reports."
       },
+      "recurrence": {
+        "label": "Recurring action",
+        "hint": "Enable this when the effect of the action should keep applying from the event date until the next event of the same action or until the final age."
+      },
       "info": {
         "title": "Information",
         "description": "Summary of the action in focus on the server.",

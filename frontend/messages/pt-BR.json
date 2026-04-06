@@ -357,6 +357,10 @@
       "actionName": {
         "label": "Nome da ação",
         "hint": "Nome curto e fácil de entender, usado em fórmulas, telas e relatórios."
+      },
+      "recurrence": {
+        "label": "Ação recorrente",
+        "hint": "Marque quando o efeito desta ação deve continuar valendo desde a data do evento até o próximo evento da mesma ação ou até a idade final."
       }
     },
     "buttons": {

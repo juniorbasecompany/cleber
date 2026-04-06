@@ -394,6 +394,10 @@
         "label": "Nombre de la acción",
         "hint": "Nombre breve y fácil de entender, usado en fórmulas, pantallas e informes."
       },
+      "recurrence": {
+        "label": "Acción recurrente",
+        "hint": "Actívala cuando el efecto de esta acción deba mantenerse desde la fecha del evento hasta el siguiente evento de la misma acción o hasta la edad final."
+      },
       "info": {
         "title": "Información",
         "description": "Resumen de la acción en foco en el servidor.",

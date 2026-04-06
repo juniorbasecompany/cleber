@@ -70,6 +70,8 @@ export type ActionConfigurationCopy = {
   filterToggleLabel: string;
   actionNameLabel: string;
   actionNameHint: string;
+  recurrenceLabel: string;
+  recurrenceHint: string;
   actionNameRequired: string;
   cancel: string;
   directoryCreateLabel: string;
@@ -272,6 +274,7 @@ export function ActionConfigurationClient({
       : null;
 
   const initialActionName = initialSelectedAction?.label_name?.trim() ?? "";
+  const initialIsRecurrent = initialSelectedAction?.is_recurrent ?? false;
 
   const [selectedActionId, setSelectedActionId] = useState<number | null>(
     typeof initialSelectedActionKey === "number" ? initialSelectedActionKey : null
@@ -280,8 +283,12 @@ export function ActionConfigurationClient({
   const [actionName, setActionName] = useState(
     initialSelectedActionKey === "new" ? "" : initialActionName
   );
+  const [isRecurrent, setIsRecurrent] = useState(
+    initialSelectedActionKey === "new" ? false : initialIsRecurrent
+  );
   const [baseline, setBaseline] = useState({
-    actionName: initialSelectedActionKey === "new" ? "" : initialActionName
+    actionName: initialSelectedActionKey === "new" ? "" : initialActionName,
+    isRecurrent: initialSelectedActionKey === "new" ? false : initialIsRecurrent
   });
   const [fieldError, setFieldError] = useState<{ actionName?: string }>({});
   const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
@@ -354,7 +361,7 @@ export function ActionConfigurationClient({
       return null;
     }
 
-    return `id:${String(selectedAction.id)}:ln:${selectedAction.label_name ?? ""}`;
+    return `id:${String(selectedAction.id)}:ln:${selectedAction.label_name ?? ""}:ir:${selectedAction.is_recurrent ? "1" : "0"}`;
   }, [directory, isCreateMode, newIntentGeneration, selectedAction]);
 
   const isEditorFlashActive = useEditorPanelFlash(editorPanelElementRef, editorFlashKey);
@@ -374,7 +381,8 @@ export function ActionConfigurationClient({
         setIsCreateMode(false);
         setSelectedActionId(null);
         setActionName("");
-        setBaseline({ actionName: "" });
+        setIsRecurrent(false);
+        setBaseline({ actionName: "", isRecurrent: false });
         setFieldError({});
         setRequestErrorMessage(null);
         setIsDeletePending(false);
@@ -394,13 +402,17 @@ export function ActionConfigurationClient({
 
       const nextActionName =
         nextSelectedAction?.label_name?.trim() ?? (nextKey === "new" ? "" : "");
+      const nextIsRecurrent =
+        nextKey === "new" ? false : (nextSelectedAction?.is_recurrent ?? false);
 
       setDirectory(nextDirectory);
       setIsCreateMode(nextKey === "new");
       setSelectedActionId(typeof nextKey === "number" ? nextKey : null);
       setActionName(nextActionName);
+      setIsRecurrent(nextIsRecurrent);
       setBaseline({
-        actionName: nextActionName
+        actionName: nextActionName,
+        isRecurrent: nextIsRecurrent
       });
       setFieldError({});
       setRequestErrorMessage(null);
@@ -630,10 +642,18 @@ export function ActionConfigurationClient({
   const isDirty = useMemo(() => {
     return (
       actionName.trim() !== baseline.actionName.trim() ||
+      isRecurrent !== baseline.isRecurrent ||
       isDeletePending ||
       formulasDirty
     );
-  }, [actionName, baseline.actionName, isDeletePending, formulasDirty]);
+  }, [
+    actionName,
+    baseline.actionName,
+    baseline.isRecurrent,
+    formulasDirty,
+    isDeletePending,
+    isRecurrent
+  ]);
 
   const validate = useCallback(() => {
     if (!actionName.trim()) {
@@ -707,6 +727,7 @@ export function ActionConfigurationClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            is_recurrent: isRecurrent,
             label_lang: labelLang,
             label_name: actionName.trim()
           })
@@ -782,18 +803,29 @@ export function ActionConfigurationClient({
       }
 
       const nameDirty = actionName.trim() !== baseline.actionName.trim();
+      const recurrenceDirty = isRecurrent !== baseline.isRecurrent;
       let latestDirectory: TenantScopeActionDirectoryResponse = directory;
 
-      if (nameDirty) {
+      if (nameDirty || recurrenceDirty) {
+        const patchBody: {
+          is_recurrent?: boolean;
+          label_lang?: LabelLang;
+          label_name?: string;
+        } = {
+          label_lang: labelLang
+        };
+        if (recurrenceDirty) {
+          patchBody.is_recurrent = isRecurrent;
+        }
+        if (nameDirty) {
+          patchBody.label_name = actionName.trim();
+        }
         const response = await fetch(
           `/api/auth/tenant/current/scopes/${scopeId}/actions/${selectedAction.id}`,
           {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              label_lang: labelLang,
-              label_name: actionName.trim()
-            })
+            body: JSON.stringify(patchBody)
           }
         );
         const data: unknown = await response.json().catch(() => ({}));
@@ -804,8 +836,10 @@ export function ActionConfigurationClient({
         }
 
         latestDirectory = data as TenantScopeActionDirectoryResponse;
-        setDirectory(latestDirectory);
-        setBaseline({ actionName: actionName.trim() });
+        setBaseline({
+          actionName: actionName.trim(),
+          isRecurrent
+        });
       }
 
       if (formulasCanEdit && formulasDirty) {
@@ -845,6 +879,7 @@ export function ActionConfigurationClient({
   }, [
     applySyncFromHandlers,
     baseline.actionName,
+    baseline.isRecurrent,
     bumpNewIntent,
     copy.createError,
     copy.deleteBlockedDetail,
@@ -852,6 +887,7 @@ export function ActionConfigurationClient({
     copy.saveError,
     directory,
     actionName,
+    isRecurrent,
     formulaBaselineList,
     formulaRowList,
     formulasCanEdit,
@@ -1042,6 +1078,27 @@ export function ActionConfigurationClient({
                 {fieldError.actionName ? (
                   <p className="ui-field-error">{fieldError.actionName}</p>
                 ) : null}
+              </div>
+
+              <div className="ui-field">
+                <label
+                  className="ui-field-label"
+                  htmlFor="action-is-recurrent"
+                  style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}
+                >
+                  <input
+                    id="action-is-recurrent"
+                    type="checkbox"
+                    checked={isRecurrent}
+                    disabled={isDeletePending || !canEditForm}
+                    onChange={(event) => {
+                      setIsRecurrent(event.target.checked);
+                      setRequestErrorMessage(null);
+                    }}
+                  />
+                  <span>{copy.recurrenceLabel}</span>
+                </label>
+                <p className="ui-field-hint">{copy.recurrenceHint}</p>
               </div>
             </section>
 

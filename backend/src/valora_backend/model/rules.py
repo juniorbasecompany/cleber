@@ -142,6 +142,16 @@ class Action(Base):
         nullable=False,
         comment="Ordem da ação em relação às demais no mesmo escopo.",
     )
+    is_recurrent: Mapped[bool] = mapped_column(
+        Boolean,
+        nullable=False,
+        default=False,
+        server_default=text("false"),
+        comment=(
+            "Indica se o cálculo deve ocorrer desde a data do evento até o próximo "
+            "evento da mesma ação ou até a data da idade final."
+        ),
+    )
 
 
 class Formula(Base):

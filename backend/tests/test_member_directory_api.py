@@ -1872,6 +1872,48 @@ def test_scope_action_reorder_and_reject_invalid_list() -> None:
         assert [item["sort_order"] for item in items] == [0, 1, 2]
 
 
+def test_scope_action_is_recurrent_is_exposed_and_editable() -> None:
+    with build_test_client(current_member_key="admin") as (client, session, _):
+        scope_id = session.scalar(select(Scope.id).where(Scope.name == "Aves"))
+        assert scope_id is not None
+
+        create_response = client.post(
+            f"/auth/tenant/current/scopes/{scope_id}/actions",
+            json={
+                "label_lang": "pt-BR",
+                "label_name": "Mortalidade recorrente",
+                "is_recurrent": True,
+            },
+        )
+        assert create_response.status_code == 200
+
+        created = next(
+            item
+            for item in create_response.json()["item_list"]
+            if item.get("label_name") == "Mortalidade recorrente"
+        )
+        assert created["is_recurrent"] is True
+
+        get_response = client.get(
+            f"/auth/tenant/current/scopes/{scope_id}/actions/{created['id']}"
+        )
+        assert get_response.status_code == 200
+        assert get_response.json()["is_recurrent"] is True
+
+        patch_response = client.patch(
+            f"/auth/tenant/current/scopes/{scope_id}/actions/{created['id']}",
+            json={"is_recurrent": False},
+        )
+        assert patch_response.status_code == 200
+
+        patched = next(
+            item
+            for item in patch_response.json()["item_list"]
+            if item["id"] == created["id"]
+        )
+        assert patched["is_recurrent"] is False
+
+
 def test_tenant_history_endpoint_returns_latest_scope_logs_with_diff() -> None:
     tenant_id_value: int | None = None
     with build_test_client(current_member_key="admin") as (client, session, _):

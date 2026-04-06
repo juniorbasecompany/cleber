@@ -17,7 +17,7 @@ A fonte de verdade do diagrama entidade-relacionamento (JSON drawDB) é [`erd.js
 | `unity`   | idem | Unidade alocada (lote) por local; referencia `item_id_list` do catálogo no escopo. |
 | `log`     | [`model/log.py`](src/valora_backend/model/log.py) | Auditoria (`table_name`, `action_type`, `row_id`, `row`, `moment_utc`). |
 | `field`   | [`model/rules.py`](src/valora_backend/model/rules.py) | Definição de campo por escopo; coluna SQL `type` e flags `is_initial_age` / `is_current_age` / `is_final_age` para marcar os campos de idade do lote. |
-| `action`  | idem | Ação por escopo. |
+| `action`  | idem | Ação por escopo, com `sort_order` e flag `is_recurrent` para distinguir efeitos pontuais de efeitos recorrentes. |
 | `formula` | idem | Passos de fórmula por ação (`step`, `statement`). |
 | `label`   | idem | Rótulo i18n ligado a `field` **ou** `action`. |
 | `event`   | idem | Evento operacional (`location_id`, `item_id`, `action_id`, `moment_utc`). |
@@ -66,7 +66,7 @@ Documentação interativa OpenAPI: ao subir o servidor, **`/docs`** (Swagger).
 **Regras por escopo** (campos, ações, fórmulas, rótulos, eventos, entradas, resultados) — prefixo `/auth/tenant/current` ([`api/rules.py`](src/valora_backend/api/rules.py)), sempre sob um `scope_id` do tenant atual:
 
 - `.../scopes/{scope_id}/fields` e `.../fields/{field_id}`
-- `.../scopes/{scope_id}/actions` e `.../actions/{action_id}`
+- `.../scopes/{scope_id}/actions` e `.../actions/{action_id}` (`action` expõe `is_recurrent`; em `POST`/`PATCH`, a flag define se o efeito da ação se estende do evento até o próximo evento da mesma ação ou até a idade final)
 - `.../actions/{action_id}/formulas` e `.../formulas/{formula_id}` (em `POST`/`PATCH`, a `statement` é validada com contrato de atribuição: exatamente um operador `=` de atribuição, `LHS` obrigatório `${field:id}` e `RHS` com `${field:id}` e `${input:id}`; todas as referências devem existir no escopo e a `RHS` passa por dry-run com [simpleeval](https://pypi.org/project/simpleeval/). Códigos 422 estáveis: `formula_invalid_assignment`, `formula_invalid_target`, `formula_unknown_field_id`, `formula_expression_invalid`, com `step` no detalhe quando disponível. Implementação em `valora_backend/rules/`; para reproduzir no terminal: `PYTHONPATH=src python script_try_formula_validate.py 1,2 '"${field:1} = …"' …`.)
 - `.../scopes/{scope_id}/labels` e `.../labels/{label_id}` (filtros opcionais `field_id` / `action_id` na listagem)
 - `.../scopes/{scope_id}/events` e `.../events/{event_id}`

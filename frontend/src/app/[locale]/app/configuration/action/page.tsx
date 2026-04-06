@@ -66,6 +66,8 @@ export default async function ActionConfigurationPage({ params }: ActionConfigur
           filterToggleLabel: t("filter.toggleLabel"),
           actionNameLabel: t("section.actionName.label"),
           actionNameHint: t("section.actionName.hint"),
+          recurrenceLabel: t("section.recurrence.label"),
+          recurrenceHint: t("section.recurrence.hint"),
           actionNameRequired: t("error.actionNameRequired"),
           cancel: t("buttons.cancel"),
           directoryCreateLabel: t("buttons.new"),

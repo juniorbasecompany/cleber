@@ -176,6 +176,7 @@ export type TenantScopeActionRecord = {
   id: number;
   scope_id: number;
   sort_order: number;
+  is_recurrent: boolean;
   label_id?: number | null;
   label_name?: string | null;
 };
