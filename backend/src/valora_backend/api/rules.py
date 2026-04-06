@@ -2647,7 +2647,10 @@ def calculate_scope_current_age(
         tuple[int, int], dict[int, str | bool | int | float]
     ] = defaultdict(dict)
     current_window_by_group: dict[tuple[int, int], dict[str, int]] = {}
-    closed_window_by_group: dict[tuple[int, int], dict[str, int]] = {}
+    close_after_day_by_group: dict[
+        tuple[int, int],
+        dict[str, Any],
+    ] = {}
     created_count = 0
     updated_count = 0
     unchanged_count = 0
@@ -2664,17 +2667,21 @@ def calculate_scope_current_age(
 
         group_key = (row.location_id, row.item_id)
         if occurrence["is_actual_event_day"]:
-            closed_window = closed_window_by_group.get(group_key)
-            if closed_window is not None and closed_window != window_meta:
-                closed_window_by_group.pop(group_key, None)
-            if group_key not in closed_window_by_group:
+            pending_close = close_after_day_by_group.get(group_key)
+            if pending_close is not None and pending_close["window"] != window_meta:
+                close_after_day_by_group.pop(group_key, None)
+            if group_key not in close_after_day_by_group:
                 current_window_by_group[group_key] = window_meta
 
         active_window = current_window_by_group.get(group_key)
         if active_window is None:
             continue
-        if closed_window_by_group.get(group_key) == active_window:
-            continue
+        pending_close = close_after_day_by_group.get(group_key)
+        execution_day = execution_moment_utc.date()
+        if pending_close is not None and pending_close["window"] == active_window:
+            if execution_day > pending_close["close_after_day"]:
+                current_window_by_group.pop(group_key, None)
+                continue
 
         group_state = state_by_group[group_key]
         for field_id, runtime_value in age_source_runtime_by_event_id.get(row.id, {}).items():
@@ -2762,8 +2769,10 @@ def calculate_scope_current_age(
                     ),
                 )
             if normalized_current_age >= active_window["source_final_age"]:
-                closed_window_by_group[group_key] = active_window
-                current_window_by_group.pop(group_key, None)
+                close_after_day_by_group[group_key] = {
+                    "window": active_window,
+                    "close_after_day": execution_day,
+                }
 
     if not result_row_list and deleted_result_count == 0:
         return ScopeCurrentAgeCalculationResponse(

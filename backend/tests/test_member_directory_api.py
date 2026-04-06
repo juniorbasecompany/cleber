@@ -2785,6 +2785,200 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
         ]
 
 
+def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_day() -> None:
+    with build_rules_session() as (session, tenant_id):
+        scope = Scope(
+            name="Aves",
+            display_name="Aves para producao de ovos",
+            tenant_id=tenant_id,
+        )
+        session.add(scope)
+        session.flush()
+
+        location = Location(
+            name="Granja A",
+            display_name="Granja A",
+            scope_id=scope.id,
+            parent_location_id=None,
+            sort_order=0,
+        )
+        kind = Kind(scope_id=scope.id, name="lote", display_name="Lote")
+        anchor_action = Action(scope_id=scope.id, sort_order=0)
+        final_day_first_action = Action(scope_id=scope.id, sort_order=1)
+        final_day_last_action = Action(scope_id=scope.id, sort_order=2)
+        initial_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=0,
+            is_initial_age=True,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        current_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=1,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=True,
+        )
+        final_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=2,
+            is_initial_age=False,
+            is_final_age=True,
+            is_current_age=False,
+        )
+        mirror_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=3,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        session.add_all(
+            [
+                location,
+                kind,
+                anchor_action,
+                final_day_first_action,
+                final_day_last_action,
+                initial_field,
+                current_field,
+                final_field,
+                mirror_field,
+            ]
+        )
+        session.flush()
+
+        anchor_current_formula = Formula(
+            action_id=anchor_action.id,
+            sort_order=0,
+            statement=f"${{field:{current_field.id}}} = ${{field:{current_field.id}}}",
+        )
+        final_day_increment_formula = Formula(
+            action_id=final_day_first_action.id,
+            sort_order=0,
+            statement=f"${{field:{current_field.id}}} = ${{field:{current_field.id}}} + 1",
+        )
+        final_day_mirror_formula = Formula(
+            action_id=final_day_first_action.id,
+            sort_order=1,
+            statement=f"${{field:{mirror_field.id}}} = ${{field:{current_field.id}}}",
+        )
+        final_day_anchor_formula = Formula(
+            action_id=final_day_last_action.id,
+            sort_order=0,
+            statement=f"${{field:{mirror_field.id}}} = ${{field:{current_field.id}}}",
+        )
+        session.add_all(
+            [
+                anchor_current_formula,
+                final_day_increment_formula,
+                final_day_mirror_formula,
+                final_day_anchor_formula,
+            ]
+        )
+        session.flush()
+
+        item = Item(
+            scope_id=scope.id,
+            kind_id=kind.id,
+            parent_item_id=None,
+            sort_order=0,
+        )
+        session.add(item)
+        session.flush()
+
+        initial_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=anchor_action.id,
+            moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+        )
+        first_event_on_final_day = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=final_day_first_action.id,
+            moment_utc=datetime(2026, 4, 3, 8, 0, 0),
+        )
+        second_event_on_final_day = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=final_day_last_action.id,
+            moment_utc=datetime(2026, 4, 3, 18, 0, 0),
+        )
+        final_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=anchor_action.id,
+            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+        )
+        session.add_all(
+            [
+                initial_event,
+                first_event_on_final_day,
+                second_event_on_final_day,
+                final_event,
+            ]
+        )
+        session.flush()
+
+        session.add_all(
+            [
+                Result(
+                    event_id=initial_event.id,
+                    field_id=initial_field.id,
+                    formula_id=anchor_current_formula.id,
+                    formula_order=anchor_current_formula.sort_order,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=10,
+                    moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+                ),
+                Result(
+                    event_id=final_event.id,
+                    field_id=final_field.id,
+                    formula_id=anchor_current_formula.id,
+                    formula_order=anchor_current_formula.sort_order,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=11,
+                    moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+                ),
+            ]
+        )
+        session.commit()
+
+        response = calculate_scope_current_age(
+            scope_id=scope.id,
+            body=ScopeCurrentAgeCalculationRequest(
+                moment_from_utc="2026-04-01T00:00:00Z",
+                moment_to_utc="2026-04-04T23:59:00Z",
+            ),
+            member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
+            session=session,
+        )
+
+        assert [
+            (
+                row.event_id,
+                row.formula_id,
+                row.formula_order,
+                int(row.numeric_value) if row.numeric_value is not None else None,
+                row.result_moment_utc.date().isoformat(),
+            )
+            for row in response.item_list
+        ] == [
+            (initial_event.id, anchor_current_formula.id, 0, 10, "2026-04-01"),
+            (first_event_on_final_day.id, final_day_increment_formula.id, 0, 11, "2026-04-03"),
+            (first_event_on_final_day.id, final_day_mirror_formula.id, 1, 11, "2026-04-03"),
+            (second_event_on_final_day.id, final_day_anchor_formula.id, 0, 11, "2026-04-03"),
+        ]
+
+
 def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type() -> None:
     with build_rules_session() as (session, tenant_id):
         scope = Scope(
