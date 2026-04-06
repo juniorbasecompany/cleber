@@ -2498,6 +2498,7 @@ def calculate_scope_current_age(
     )
     formula_row_list_by_action: defaultdict[int, list[Formula]] = defaultdict(list)
     parsed_formula_by_id = {}
+    action_id_set_by_age_target_field_id: defaultdict[int, set[int]] = defaultdict(set)
     for formula_row in formula_row_list:
         try:
             parsed_formula = parse_formula_statement(formula_row.statement)
@@ -2515,6 +2516,10 @@ def calculate_scope_current_age(
             )
         formula_row_list_by_action[formula_row.action_id].append(formula_row)
         parsed_formula_by_id[formula_row.id] = parsed_formula
+        if parsed_formula.target_field_id in (initial_field.id, final_field.id):
+            action_id_set_by_age_target_field_id[parsed_formula.target_field_id].add(
+                formula_row.action_id
+            )
 
     input_runtime_by_event_id: defaultdict[int, dict[int, str | bool | int | float]] = (
         defaultdict(dict)
@@ -2539,9 +2544,14 @@ def calculate_scope_current_age(
     final_age_by_event_id: dict[int, int] = {}
     age_source_runtime_by_event_id: defaultdict[int, dict[int, int]] = defaultdict(dict)
     existing_result_by_key: dict[tuple[int, int, int], Result] = {}
+    action_id_by_event_id = {row.id: row.action_id for row in event_row_list}
 
     for event_id, input_runtime in input_runtime_by_event_id.items():
-        if initial_field.id in input_runtime:
+        if (
+            initial_field.id in input_runtime
+            and action_id_by_event_id.get(event_id)
+            in action_id_set_by_age_target_field_id[initial_field.id]
+        ):
             normalized_age = _normalize_whole_age_runtime_or_400(
                 input_runtime[initial_field.id],
                 event_id=event_id,
@@ -2550,7 +2560,11 @@ def calculate_scope_current_age(
             if normalized_age is not None:
                 initial_age_by_event_id[event_id] = normalized_age
                 age_source_runtime_by_event_id[event_id][initial_field.id] = normalized_age
-        if final_field.id in input_runtime:
+        if (
+            final_field.id in input_runtime
+            and action_id_by_event_id.get(event_id)
+            in action_id_set_by_age_target_field_id[final_field.id]
+        ):
             normalized_age = _normalize_whole_age_runtime_or_400(
                 input_runtime[final_field.id],
                 event_id=event_id,

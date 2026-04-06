@@ -71,7 +71,7 @@ Documentação interativa OpenAPI: ao subir o servidor, **`/docs`** (Swagger).
 - `.../scopes/{scope_id}/labels` e `.../labels/{label_id}` (filtros opcionais `field_id` / `action_id` na listagem)
 - `.../scopes/{scope_id}/events` e `.../events/{event_id}`
 - `POST .../scopes/{scope_id}/events/read-current-age` (lê os `result` já materializados no período informado usando `result.moment_utc` como dia de referência da linha diária)
-- `POST .../scopes/{scope_id}/events/calculate-current-age` (recalcula o período informado apagando antes os `result` materializados nesse intervalo; cada ação executa no dia do evento e, se `action.is_recurrent = true`, volta a executar em cada dia seguinte até o próximo evento da mesma ação ou até a idade atual atingir a idade final; os resultados persistem uma linha por `evento + fórmula + dia materializado`, com o dia gravado em `result.moment_utc`)
+- `POST .../scopes/{scope_id}/events/calculate-current-age` (recalcula o período informado apagando antes os `result` materializados nesse intervalo; cada ação executa no dia do evento e, se `action.is_recurrent = true`, volta a executar em cada dia seguinte até o próximo evento da mesma ação ou até a idade atual atingir a idade final; a janela de idade só considera eventos que materializam os campos de idade por fórmula, mesmo quando a fórmula lê o valor a partir de `input`; os resultados persistem uma linha por `evento + fórmula + dia materializado`, com o dia gravado em `result.moment_utc`)
 - `.../events/{event_id}/inputs` e `.../inputs/{input_id}`
 - `.../events/{event_id}/results` e `.../results/{result_id}` (`result` segue o ERD atual: `text_value`, `boolean_value`, `numeric_value`, `moment_utc`, `formula_id`, `formula_order`)
 

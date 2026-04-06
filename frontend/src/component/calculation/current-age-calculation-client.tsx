@@ -130,6 +130,10 @@ type DailyResultGroup = {
   calculatedAt: string;
   status: "created" | "updated" | "unchanged";
   itemList: ScopeCurrentAgeCalculationRecord[];
+  fieldSnapshotList: Array<{
+    fieldId: number;
+    item: ScopeCurrentAgeCalculationRecord | null;
+  }>;
 };
 
 function SummaryCard({
@@ -236,10 +240,35 @@ export function CurrentAgeCalculationClient({
     if (!result) {
       return [];
     }
-    const groupMap = new Map<string, DailyResultGroup>();
-    for (const item of result.item_list) {
+    const sortedItemList = [...result.item_list].sort((left, right) => (
+      left.result_moment_utc.localeCompare(right.result_moment_utc)
+      || left.location_id - right.location_id
+      || left.item_id - right.item_id
+      || (fieldSortOrderById.get(left.field_id) ?? Number.MAX_SAFE_INTEGER)
+        - (fieldSortOrderById.get(right.field_id) ?? Number.MAX_SAFE_INTEGER)
+      || left.formula_order - right.formula_order
+      || left.result_id - right.result_id
+    ));
+    const lastKnownItemByFieldIdByGroup = new Map<string, Map<number, ScopeCurrentAgeCalculationRecord>>();
+    const groupMap = new Map<string, {
+      dayKey: string;
+      dayLabel: string;
+      locationId: number;
+      itemId: number;
+      calculatedAt: string;
+      status: "created" | "updated" | "unchanged";
+      itemList: ScopeCurrentAgeCalculationRecord[];
+      fieldSnapshotById: Map<number, ScopeCurrentAgeCalculationRecord>;
+    }>();
+    for (const item of sortedItemList) {
       const dayKey = item.result_moment_utc.slice(0, 10);
-      const groupKey = `${dayKey}:${item.location_id}:${item.item_id}`;
+      const entityKey = `${item.location_id}:${item.item_id}`;
+      const groupKey = `${dayKey}:${entityKey}`;
+      const currentSnapshot = new Map(
+        lastKnownItemByFieldIdByGroup.get(entityKey) ?? []
+      );
+      currentSnapshot.set(item.field_id, item);
+      lastKnownItemByFieldIdByGroup.set(entityKey, currentSnapshot);
       const currentGroup = groupMap.get(groupKey);
       const nextStatus = currentGroup?.status === "created" || item.status === "created"
         ? "created"
@@ -249,6 +278,7 @@ export function CurrentAgeCalculationClient({
       if (currentGroup) {
         currentGroup.itemList.push(item);
         currentGroup.status = nextStatus;
+        currentGroup.fieldSnapshotById = new Map(currentSnapshot);
         continue;
       }
       groupMap.set(groupKey, {
@@ -258,15 +288,30 @@ export function CurrentAgeCalculationClient({
         itemId: item.item_id,
         calculatedAt: result.calculated_moment_utc,
         status: nextStatus,
-        itemList: [item]
+        itemList: [item],
+        fieldSnapshotById: new Map(currentSnapshot)
       });
     }
-    return Array.from(groupMap.values()).sort((left, right) => (
-      left.dayKey.localeCompare(right.dayKey)
-      || left.locationId - right.locationId
-      || left.itemId - right.itemId
-    ));
-  }, [result]);
+    return Array.from(groupMap.values())
+      .sort((left, right) => (
+        left.dayKey.localeCompare(right.dayKey)
+        || left.locationId - right.locationId
+        || left.itemId - right.itemId
+      ))
+      .map((group) => ({
+        dayKey: group.dayKey,
+        dayLabel: group.dayLabel,
+        locationId: group.locationId,
+        itemId: group.itemId,
+        calculatedAt: group.calculatedAt,
+        status: group.status,
+        itemList: group.itemList,
+        fieldSnapshotList: (initialFieldDirectory?.item_list ?? []).map((field) => ({
+          fieldId: field.id,
+          item: group.fieldSnapshotById.get(field.id) ?? null
+        }))
+      }));
+  }, [fieldSortOrderById, initialFieldDirectory?.item_list, result]);
 
   const asideEmptyMessage = !currentScope
     ? hasAnyScope
@@ -546,24 +591,12 @@ export function CurrentAgeCalculationClient({
                       </div>
 
                       <div className="ui-badge-row">
-                        {Array.from((() => {
-                          const latestItemByFieldId = new Map<number, ScopeCurrentAgeCalculationRecord>();
-                          for (const item of group.itemList) {
-                            latestItemByFieldId.set(item.field_id, item);
-                          }
-                          return latestItemByFieldId.values();
-                        })())
-                          .sort((left, right) => (
-                            (fieldSortOrderById.get(left.field_id) ?? Number.MAX_SAFE_INTEGER)
-                            - (fieldSortOrderById.get(right.field_id) ?? Number.MAX_SAFE_INTEGER)
-                            || left.field_id - right.field_id
-                          ))
-                          .map((item) => (
-                            <Badge key={item.result_id} tone="neutral">
-                              {fieldLabelById.get(item.field_id) ?? `#${item.field_id}`}:{" "}
-                              {formatPersistedValue(item, copy.emptyValue)}
-                            </Badge>
-                          ))}
+                        {group.fieldSnapshotList.map(({ fieldId, item }) => (
+                          <Badge key={`${group.dayKey}-${group.locationId}-${group.itemId}-${fieldId}`} tone="neutral">
+                            {fieldLabelById.get(fieldId) ?? `#${fieldId}`}:{" "}
+                            {item ? formatPersistedValue(item, copy.emptyValue) : copy.emptyValue}
+                          </Badge>
+                        ))}
                       </div>
 
                       <p className="ui-text-caption-wrap">

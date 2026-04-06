@@ -3286,7 +3286,7 @@ def test_calculate_scope_current_age_repeats_recurrent_event_on_following_days()
         ]
 
 
-def test_calculate_scope_current_age_uses_later_final_age_input_to_close_window() -> None:
+def test_calculate_scope_current_age_ignores_age_input_without_formula_target() -> None:
     with build_rules_session() as (session, tenant_id):
         scope = Scope(
             name="Aves",
@@ -3305,7 +3305,7 @@ def test_calculate_scope_current_age_uses_later_final_age_input_to_close_window(
         )
         kind = Kind(scope_id=scope.id, name="lote", display_name="Lote")
         anchor_action = Action(scope_id=scope.id, sort_order=0)
-        final_update_action = Action(scope_id=scope.id, sort_order=1, is_recurrent=False)
+        unrelated_action = Action(scope_id=scope.id, sort_order=1, is_recurrent=False)
         recurrent_age_action = Action(scope_id=scope.id, sort_order=2, is_recurrent=True)
         initial_field = Field(
             scope_id=scope.id,
@@ -3336,7 +3336,7 @@ def test_calculate_scope_current_age_uses_later_final_age_input_to_close_window(
                 location,
                 kind,
                 anchor_action,
-                final_update_action,
+                unrelated_action,
                 recurrent_age_action,
                 initial_field,
                 current_field,
@@ -3365,12 +3365,18 @@ def test_calculate_scope_current_age_uses_later_final_age_input_to_close_window(
             sort_order=0,
             statement=f"${{field:{current_field.id}}} = ${{field:{current_field.id}}} + 1",
         )
+        unrelated_formula = Formula(
+            action_id=unrelated_action.id,
+            sort_order=0,
+            statement=f"${{field:{current_field.id}}} = ${{field:{current_field.id}}}",
+        )
         session.add_all(
             [
                 anchor_initial_formula,
                 anchor_current_formula,
                 anchor_final_formula,
                 recurrent_increment_formula,
+                unrelated_formula,
             ]
         )
         session.flush()
@@ -3390,26 +3396,26 @@ def test_calculate_scope_current_age_uses_later_final_age_input_to_close_window(
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 4, 8, 0, 0),
         )
-        final_update_event = Event(
+        unrelated_event = Event(
             location_id=location.id,
             item_id=item.id,
-            action_id=final_update_action.id,
+            action_id=unrelated_action.id,
             moment_utc=datetime(2026, 4, 4, 10, 0, 0),
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_age_action.id,
-            moment_utc=datetime(2026, 4, 6, 9, 0, 0),
+            moment_utc=datetime(2026, 4, 4, 11, 0, 0),
         )
-        session.add_all([alojamento_event, final_update_event, idade_event])
+        session.add_all([alojamento_event, unrelated_event, idade_event])
         session.flush()
 
         session.add_all(
             [
                 Input(event_id=alojamento_event.id, field_id=initial_field.id, value="10"),
-                Input(event_id=alojamento_event.id, field_id=final_field.id, value="20"),
-                Input(event_id=final_update_event.id, field_id=final_field.id, value="12"),
+                Input(event_id=alojamento_event.id, field_id=final_field.id, value="12"),
+                Input(event_id=unrelated_event.id, field_id=final_field.id, value="100"),
             ]
         )
         session.commit()
@@ -3435,9 +3441,10 @@ def test_calculate_scope_current_age_uses_later_final_age_input_to_close_window(
         ] == [
             (alojamento_event.id, anchor_initial_formula.id, 10, "2026-04-04"),
             (alojamento_event.id, anchor_current_formula.id, 10, "2026-04-04"),
-            (alojamento_event.id, anchor_final_formula.id, 20, "2026-04-04"),
-            (idade_event.id, recurrent_increment_formula.id, 11, "2026-04-06"),
-            (idade_event.id, recurrent_increment_formula.id, 12, "2026-04-07"),
+            (alojamento_event.id, anchor_final_formula.id, 12, "2026-04-04"),
+            (unrelated_event.id, unrelated_formula.id, 10, "2026-04-04"),
+            (idade_event.id, recurrent_increment_formula.id, 11, "2026-04-04"),
+            (idade_event.id, recurrent_increment_formula.id, 12, "2026-04-05"),
         ]
 
 
