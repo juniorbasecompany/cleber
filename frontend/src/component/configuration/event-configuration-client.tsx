@@ -255,6 +255,24 @@ function cloneEventActionInputDraftList(
   return inputDraftList.map((item) => ({ ...item }));
 }
 
+function buildEventInputSummary(
+  inputDraftList: EventActionInputDraft[]
+): string | null {
+  const valueSummaryList = inputDraftList
+    .map((item) => ({
+      label: item.label.trim(),
+      value: item.value.trim()
+    }))
+    .filter((item) => item.value.length > 0)
+    .map((item) => `${item.label || "-"}: ${item.value}`);
+
+  if (valueSummaryList.length === 0) {
+    return null;
+  }
+
+  return valueSummaryList.join(UI_TEXT_SEPARATOR);
+}
+
 function areEventActionInputDraftListsEqual(
   leftList: EventActionInputDraft[],
   rightList: EventActionInputDraft[]
@@ -276,6 +294,24 @@ function areEventActionInputDraftListsEqual(
     }
   }
   return true;
+}
+
+function updateEventDirectoryInputSummary(
+  directory: TenantScopeEventDirectoryResponse,
+  eventId: number,
+  inputSummary: string | null
+): TenantScopeEventDirectoryResponse {
+  return {
+    ...directory,
+    item_list: directory.item_list.map((item) =>
+      item.id === eventId
+        ? {
+            ...item,
+            input_summary: inputSummary
+          }
+        : item
+    )
+  };
 }
 
 function buildFormulaInputFieldIdList(response: ScopeFormulaListResponse): number[] {
@@ -598,7 +634,7 @@ export function EventConfigurationClient({
       syncFromDirectory(nextDirectory, preferredKey);
       bumpAfterProgrammaticSync();
     },
-    [bumpAfterProgrammaticSync, syncFromDirectory]
+    [bumpAfterProgrammaticSync, eventPath, syncFromDirectory]
   );
 
   const scopeId = currentScope?.id;
@@ -842,20 +878,10 @@ export function EventConfigurationClient({
     [resolveLocationLabel, resolveItemLabel]
   );
 
-  const selectedEventInputSummary = useMemo(() => {
-    const valueSummaryList = eventActionInputDraftList
-      .map((item) => ({
-        label: item.label.trim(),
-        value: item.value.trim()
-      }))
-      .filter((item) => item.value.length > 0)
-      .map((item) => `${item.label || "-"}: ${item.value}`);
-
-    if (valueSummaryList.length === 0) {
-      return null;
-    }
-    return valueSummaryList.join(UI_TEXT_SEPARATOR);
-  }, [eventActionInputDraftList]);
+  const selectedEventInputSummary = useMemo(
+    () => buildEventInputSummary(eventActionInputDraftList),
+    [eventActionInputDraftList]
+  );
 
   const eventActionInputDirty = useMemo(
     () =>
@@ -867,25 +893,8 @@ export function EventConfigurationClient({
   );
 
   const resolveEventListInputSummary = useCallback(
-    (item: TenantScopeEventRecord): string | null => {
-      const isSelected = item.id === selectedEvent?.id;
-      if (isSelected && eventActionInputDirty) {
-        return selectedEventInputSummary;
-      }
-      if (isSelected && actionInputLoading) {
-        return item.input_summary ?? null;
-      }
-      if (isSelected) {
-        return selectedEventInputSummary ?? item.input_summary ?? null;
-      }
-      return item.input_summary ?? null;
-    },
-    [
-      actionInputLoading,
-      eventActionInputDirty,
-      selectedEvent?.id,
-      selectedEventInputSummary
-    ]
+    (item: TenantScopeEventRecord): string | null => item.input_summary ?? null,
+    []
   );
 
   const isDirty = useMemo(
@@ -1048,6 +1057,68 @@ export function EventConfigurationClient({
     ]
   );
 
+  const refreshSavedEventActionInputState = useCallback(
+    async (eventId: number) => {
+      if (scopeId == null) {
+        return cloneEventActionInputDraftList(eventActionInputDraftList);
+      }
+
+      try {
+        const inputResponse = await fetch(
+          `/api/auth/tenant/current/scopes/${scopeId}/events/${eventId}/inputs`
+        );
+        const inputData: unknown = await inputResponse.json().catch(() => ({}));
+        if (!inputResponse.ok) {
+          throw new Error(
+            parseErrorDetail(inputData, copy.actionInputLoadError) ?? copy.actionInputLoadError
+          );
+        }
+
+        const savedInputList = (inputData as ScopeInputListResponse).item_list;
+        const savedInputByFieldIdMap = new Map<number, ScopeInputListResponse["item_list"][number]>();
+        for (const input of savedInputList) {
+          savedInputByFieldIdMap.set(input.field_id, input);
+        }
+
+        const nextDraftList = eventActionInputDraftList.map((draftItem) => {
+          const savedInput = savedInputByFieldIdMap.get(draftItem.fieldId);
+          return {
+            ...draftItem,
+            value: savedInput?.value ?? "",
+            serverInputId: savedInput?.id
+          };
+        });
+
+        const draftFieldIdSet = new Set(eventActionInputDraftList.map((item) => item.fieldId));
+        const orphanServerIdList = savedInputList
+          .filter((input) => !draftFieldIdSet.has(input.field_id))
+          .map((input) => input.id);
+
+        setActionInputErrorMessage(null);
+        setEventActionInputDraftList(nextDraftList);
+        setEventActionInputBaselineList(cloneEventActionInputDraftList(nextDraftList));
+        setEventActionInputOrphanServerIdList(orphanServerIdList);
+
+        return nextDraftList;
+      } catch (error) {
+        const fallbackDraftList = cloneEventActionInputDraftList(eventActionInputDraftList);
+        setActionInputErrorMessage(
+          error instanceof Error && error.message.trim()
+            ? error.message
+            : copy.actionInputLoadError
+        );
+        setEventActionInputBaselineList(cloneEventActionInputDraftList(fallbackDraftList));
+        setEventActionInputOrphanServerIdList([]);
+        return fallbackDraftList;
+      }
+    },
+    [
+      copy.actionInputLoadError,
+      eventActionInputDraftList,
+      scopeId
+    ]
+  );
+
   const handleStartCreate = useCallback(() => {
     if (!directory?.can_edit || isSaving) {
       return;
@@ -1118,11 +1189,17 @@ export function EventConfigurationClient({
         const updatedDirectory = data as TenantScopeEventDirectoryResponse;
         const previousIdSet = new Set(directory.item_list.map((item) => item.id));
         const created = updatedDirectory.item_list.find((item) => !previousIdSet.has(item.id));
+        let nextDirectory = updatedDirectory;
         if (created && eventActionInputDirty) {
           await persistEventActionInputDraftList(created.id);
+          nextDirectory = updateEventDirectoryInputSummary(
+            updatedDirectory,
+            created.id,
+            selectedEventInputSummary
+          );
         }
         bumpNewIntent();
-        applySyncFromHandlers(updatedDirectory, "new");
+        applySyncFromHandlers(nextDirectory, "new");
         setHistoryRefreshKey((previous) => previous + 1);
         return;
       }
@@ -1164,12 +1241,21 @@ export function EventConfigurationClient({
         const nextKey: EventSelectionKey = updatedDirectory.can_edit ? "new" : null;
         applySyncFromHandlers(updatedDirectory, nextKey);
       } else {
+        let nextDirectory = updatedDirectory;
         if (eventActionInputDirty) {
           await persistEventActionInputDraftList(selectedEvent.id);
+          const refreshedDraftList = await refreshSavedEventActionInputState(selectedEvent.id);
+          nextDirectory = updateEventDirectoryInputSummary(
+            updatedDirectory,
+            selectedEvent.id,
+            buildEventInputSummary(refreshedDraftList)
+          );
+        } else {
+          setEventActionInputBaselineList(cloneEventActionInputDraftList(eventActionInputDraftList));
         }
         bumpNewIntent();
         applySyncFromHandlers(
-          updatedDirectory,
+          nextDirectory,
           preferredSelectionKeyAfterEditSave(updatedDirectory.can_edit, selectedEvent.id)
         );
       }
@@ -1196,18 +1282,20 @@ export function EventConfigurationClient({
     copy.createError,
     copy.deleteBlockedDetail,
     copy.deleteError,
-    copy.actionInputSaveError,
     copy.momentRequired,
     copy.saveError,
     directory,
     isCreateMode,
     isDeletePending,
+    eventActionInputDraftList,
     eventActionInputDirty,
     locationId,
     momentInput,
     scopeId,
     selectedEvent,
+    selectedEventInputSummary,
     persistEventActionInputDraftList,
+    refreshSavedEventActionInputState,
     itemId,
     validate
   ]);
