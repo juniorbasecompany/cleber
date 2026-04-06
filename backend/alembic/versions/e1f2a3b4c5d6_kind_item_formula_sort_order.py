@@ -149,11 +149,47 @@ def upgrade() -> None:
 
     op.execute(
         """
-        INSERT INTO kind (scope_id, name, display_name)
-        SELECT DISTINCT ON (scope_id, name)
-            scope_id, name, display_name
-        FROM item
-        ORDER BY scope_id, name, id
+        DO $$
+        DECLARE
+            row_record RECORD;
+            resolved_display_name TEXT;
+            suffix_index INTEGER;
+        BEGIN
+            FOR row_record IN
+                SELECT DISTINCT ON (scope_id, name)
+                    scope_id, name, display_name, id
+                FROM item
+                ORDER BY scope_id, name, id
+            LOOP
+                resolved_display_name := row_record.display_name;
+                suffix_index := 1;
+
+                WHILE EXISTS (
+                    SELECT 1
+                    FROM kind
+                    WHERE scope_id = row_record.scope_id
+                      AND display_name = resolved_display_name
+                ) LOOP
+                    IF suffix_index = 1 THEN
+                        resolved_display_name := row_record.display_name
+                            || ' (' || row_record.name || ')';
+                    ELSE
+                        resolved_display_name := row_record.display_name
+                            || ' (' || row_record.name || ' #'
+                            || suffix_index::TEXT || ')';
+                    END IF;
+                    suffix_index := suffix_index + 1;
+                END LOOP;
+
+                INSERT INTO kind (scope_id, name, display_name)
+                VALUES (
+                    row_record.scope_id,
+                    row_record.name,
+                    resolved_display_name
+                );
+            END LOOP;
+        END
+        $$;
         """
     )
 
