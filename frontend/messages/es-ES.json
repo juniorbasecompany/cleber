@@ -311,7 +311,7 @@
       "save": "No se pudo guardar el campo. Inténtalo de nuevo.",
       "create": "No se pudo crear el campo. Inténtalo de nuevo.",
       "delete": "No se pudo eliminar el campo. Inténtalo de nuevo.",
-      "deleteBlockedDetail": "No se puede eliminar el campo mientras entradas o resultados de eventos sigan referenciándolo.",
+      "deleteBlockedDetail": "No se puede eliminar el campo mientras fórmulas, entradas o resultados de eventos sigan referenciándolo.",
       "validation": "Elige un tipo de dato válido.",
       "fieldNameRequired": "Indica el nombre del campo."
     },
@@ -399,7 +399,7 @@
       "title": "Fórmulas",
       "description": "Las fórmulas son pasos de cálculo que se aplican al procesar eventos de esta acción. Cada paso es un texto donde puedes escribir números, operaciones (como + y *) y referencias a la información del alcance.\n\nEscribe @ para abrir una lista e insertar una referencia de tipo field:n. Escribe # para abrir la misma lista e insertar una referencia de tipo input:n. El nombre elegido aparece subrayado en el texto y puedes seguir escribiendo con normalidad.\n\nEl orden de la lista es el orden de ejecución, de arriba abajo. Arrastra el asa junto a la fórmula para cambiar el orden antes de guardar.",
       "exampleList": "Ejemplos matemáticos:\nAdición: x + y\nSustracción: x - y\nMultiplicación: x * y\nDivisión: x / y\nDivisión entera: x // y\nMódulo: x % y\nPotencia: x ** 2\nParéntesis: (x + y) * z\nRedondeo: round((x * y) / z, 2)\nMínimo: min(x, y, z)\nMáximo: max(x, y, z)\nValor absoluto: abs(x - y)\nDecimal: Decimal(\"0.2\") * x\n\nEjemplos condicionales:\nCondición simple: x if y > 0 else 0\nCondición con igualdad: x + 10 if y == 1 else x - 10\nCondición con max/min: max(x, y) if z > 100 else min(x, y)\nCondición con división segura: round(x / y, 2) if y != 0 else 0\nCondición con and: x if (y > 0 and z > 0) else 0\n\nOtros recursos compatibles:\nComparaciones: x == y, x != y, x > y, x >= y, x < y, x <= y\nLógicos: x > 0 and y > 0, x > 0 or y > 0, not (x > y)\nFecha: x if data_ref > date(2026, 1, 1) else y\nFunciones: abs, min, max, round, Decimal y date",
-      "unknownFieldLabel": "Información no disponible",
+      "unknownFieldLabel": "Campo",
       "loading": "Cargando fórmulas…",
       "newFormula": "Nueva",
       "removeAriaLabel": "Marcar fórmula para eliminar al guardar",

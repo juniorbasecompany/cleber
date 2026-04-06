@@ -135,8 +135,10 @@ function isDeleteBlockedDetail(detail: string | null): boolean {
   }
   const normalized = detail.toLowerCase();
   return (
+    normalized.includes("formulas reference") ||
     normalized.includes("inputs reference") ||
     normalized.includes("results reference") ||
+    normalized.includes("formulas referenc") ||
     normalized.includes("inputs referenc") ||
     normalized.includes("results referenc")
   );

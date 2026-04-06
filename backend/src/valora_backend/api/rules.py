@@ -120,6 +120,25 @@ def _formula_in_action_or_404(
     return row
 
 
+def _field_is_referenced_by_scope_formula(
+    session: Session, *, scope_id: int, field_id: int
+) -> bool:
+    field_token = f"${{field:{field_id}}}"
+    input_token = f"${{input:{field_id}}}"
+    return session.scalar(
+        select(Formula.id)
+        .join(Action, Formula.action_id == Action.id)
+        .where(
+            Action.scope_id == scope_id,
+            or_(
+                Formula.statement.contains(field_token),
+                Formula.statement.contains(input_token),
+            ),
+        )
+        .limit(1)
+    ) is not None
+
+
 def _location_in_scope_or_404(
     session: Session, *, scope_id: int, location_id: int
 ) -> Location:
@@ -709,6 +728,13 @@ def delete_scope_field(
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = _field_in_scope_or_404(session, scope_id=scope_id, field_id=field_id)
+    if _field_is_referenced_by_scope_formula(
+        session, scope_id=scope_id, field_id=row.id
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot delete field while formulas reference it",
+        )
     if session.scalar(select(Input.id).where(Input.field_id == row.id).limit(1)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

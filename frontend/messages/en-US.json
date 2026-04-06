@@ -311,7 +311,7 @@
       "save": "Could not save the field. Try again.",
       "create": "Could not create the field. Try again.",
       "delete": "Could not delete the field. Try again.",
-      "deleteBlockedDetail": "This field cannot be deleted while event inputs or results still reference it.",
+      "deleteBlockedDetail": "This field cannot be deleted while formulas, event inputs, or results still reference it.",
       "validation": "Choose a valid data type.",
       "fieldNameRequired": "Enter a field name."
     },
@@ -399,7 +399,7 @@
       "title": "Formulas",
       "description": "Formulas are calculation steps applied when events for this action are processed. Each step is text where you can write numbers, operations (such as + and *), and references to information in the scope.\n\nType @ to open a list and insert a field:n reference. Type # to open the same list and insert an input:n reference. The selected name appears underlined in the text and you can keep typing as usual.\n\nThe list order is execution order, top to bottom. Drag the handle beside a formula to reorder before saving.",
       "exampleList": "Math examples:\nAddition: x + y\nSubtraction: x - y\nMultiplication: x * y\nDivision: x / y\nInteger division: x // y\nModulo: x % y\nPower: x ** 2\nParentheses: (x + y) * z\nRounding: round((x * y) / z, 2)\nMinimum: min(x, y, z)\nMaximum: max(x, y, z)\nAbsolute value: abs(x - y)\nDecimal: Decimal(\"0.2\") * x\n\nConditional examples:\nSimple condition: x if y > 0 else 0\nEquality condition: x + 10 if y == 1 else x - 10\nMax/min condition: max(x, y) if z > 100 else min(x, y)\nSafe division condition: round(x / y, 2) if y != 0 else 0\nAnd condition: x if (y > 0 and z > 0) else 0\n\nOther supported features:\nComparisons: x == y, x != y, x > y, x >= y, x < y, x <= y\nLogical: x > 0 and y > 0, x > 0 or y > 0, not (x > y)\nDate: x if data_ref > date(2026, 1, 1) else y\nFunctions: abs, min, max, round, Decimal, and date",
-      "unknownFieldLabel": "Information unavailable",
+      "unknownFieldLabel": "Field",
       "loading": "Loading formulas…",
       "newFormula": "New",
       "removeAriaLabel": "Mark formula for removal on save",

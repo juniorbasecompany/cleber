@@ -4,13 +4,17 @@ import unicodedata
 from collections.abc import Generator
 from contextlib import contextmanager
 from datetime import datetime
-from unittest.mock import patch
+from types import SimpleNamespace
+from unittest.mock import MagicMock, patch
 
+import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
+from valora_backend.api.rules import delete_scope_field
 from valora_backend.auth.dependencies import (
     get_current_account,
     get_current_member,
@@ -1525,6 +1529,30 @@ def test_delete_kind_succeeds_when_unused() -> None:
     assert orphan is None
     id_list = [r["id"] for r in response.json()["item_list"]]
     assert kind_id not in id_list
+
+
+def test_delete_scope_field_blocked_when_referenced_by_formula() -> None:
+    session = MagicMock()
+    session.scalar.return_value = 123
+    member = SimpleNamespace(role=2, tenant_id=1)
+
+    with (
+        patch("valora_backend.api.rules._require_scope_rules_editor"),
+        patch("valora_backend.api.rules._get_tenant_scope"),
+        patch(
+            "valora_backend.api.rules._field_in_scope_or_404",
+            return_value=SimpleNamespace(id=7),
+        ),
+    ):
+        with pytest.raises(HTTPException) as excinfo:
+            delete_scope_field(scope_id=5, field_id=7, member=member, session=session)
+
+    assert excinfo.value.status_code == 400
+    assert excinfo.value.detail == (
+        "Cannot delete field while formulas reference it"
+    )
+    assert session.scalar.call_count == 1
+    session.delete.assert_not_called()
 
 
 def test_scope_field_and_action_q_filter_ignores_case_and_accent() -> None:

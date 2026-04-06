@@ -275,7 +275,7 @@
       "save": "Não foi possível salvar o campo. Tente novamente.",
       "create": "Não foi possível criar o campo. Tente novamente.",
       "delete": "Não foi possível apagar o campo. Tente novamente.",
-      "deleteBlockedDetail": "Não é possível apagar o campo enquanto entradas ou resultados de eventos ainda o referenciam.",
+      "deleteBlockedDetail": "Não é possível apagar o campo enquanto fórmulas, entradas ou resultados de eventos ainda o referenciam.",
       "validation": "Escolha um tipo de dado válido.",
       "fieldNameRequired": "Informe o nome do campo."
     },
@@ -356,7 +356,7 @@
       "title": "Fórmulas",
       "description": "As fórmulas são contas que o sistema faz quando esta ação acontece. Cada linha é um passo, você pode escrever números, operações matemáticas, valores de entrada e valores calculados anteriormente.\n\nUse @ para escolher os valores já calculados, como o saldo de unidades, por exemplo.\n\nUse # para escolher os campos de entrada. Neste caso o valor será atribuído no momento do evento, como quantidade alojada, por exemplo.\n\nAs formulas são executadas de cima para baixo, na ordem em que aparecem. Para mudar a ordem arraste usando o ícone ao lado da fórmula.",
       "exampleList": "Exemplos matemáticos:\nAdição: x + y\nSubtração: x - y\nMultiplicação: x * y\nDivisão: x / y\nDivisão inteira: x // y\nMódulo: x % y\nPotência: x ** 2\nParênteses: (x + y) * z\nArredondamento: round((x * y) / z, 2)\nMínimo: min(x, y, z)\nMáximo: max(x, y, z)\nValor absoluto: abs(x - y)\nDecimal: Decimal(\"0.2\") * x\n\nExemplos condicionais:\nCondição simples: x if y > 0 else 0\nCondição com igualdade: x + 10 if y == 1 else x - 10\nCondição com max/min: max(x, y) if z > 100 else min(x, y)\nCondição com divisão segura: round(x / y, 2) if y != 0 else 0\nCondição com and: x if (y > 0 and z > 0) else 0\n\nOutros recursos suportados:\nComparações: x == y, x != y, x > y, x >= y, x < y, x <= y\nLógicos: x > 0 and y > 0, x > 0 or y > 0, not (x > y)\nData: x if data_ref > date(2026, 1, 1) else y\nFunções: abs, min, max, round, Decimal e date",
-      "unknownFieldLabel": "Informação indisponível",
+      "unknownFieldLabel": "Campo",
       "loading": "Carregando fórmulas…",
       "newFormula": "Nova",
       "removeAriaLabel": "Marcar fórmula para exclusão ao salvar",
