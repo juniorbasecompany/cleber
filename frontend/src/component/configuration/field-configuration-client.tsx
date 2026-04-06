@@ -17,7 +17,6 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ScopeRulesDirectorySortableList } from "@/component/configuration/configuration-scope-rules-directory-sortable";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
@@ -67,12 +66,6 @@ export type FieldConfigurationCopy = {
   filterToggleLabel: string;
   fieldNameLabel: string;
   fieldNameHint: string;
-  sectionInfoTitle: string;
-  sectionInfoDescription: string;
-  infoFieldNameRegisteredLabel: string;
-  infoFriendlyTypeLabel: string;
-  infoCreateLead: string;
-  infoCreateHint: string;
   cancel: string;
   directoryCreateLabel: string;
   delete: string;
@@ -250,34 +243,15 @@ export function FieldConfigurationClient({
     [t]
   );
 
-  /** Resumo de tipo numérico: inteiro, 1 decimal ou vários (lista + Informações). */
-  const infoSqlTypeSummary = useCallback(
-    (raw: string) => {
-      const p = parseFieldSqlType(raw);
-      if (p.kind === "number") {
-        const scale = p.scale ?? 0;
-        if (scale === 0) {
-          return t("section.info.typeValueInteger");
-        }
-        if (scale === 1) {
-          return t("section.info.typeValueNumberOne");
-        }
-        return t("section.info.typeValueNumberMany", { scale });
-      }
-      return sqlTypeCaption(raw);
-    },
-    [sqlTypeCaption, t]
-  );
-
   const resolveDirectoryTitle = useCallback(
     (item: TenantScopeFieldRecord) => {
       const name = item.label_name?.trim();
       if (name && name.length > 0) {
         return name;
       }
-      return infoSqlTypeSummary(item.sql_type);
+      return sqlTypeCaption(item.sql_type);
     },
-    [infoSqlTypeSummary]
+    [sqlTypeCaption]
   );
 
   const selectedField = useMemo(() => {
@@ -767,16 +741,16 @@ export function FieldConfigurationClient({
         <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
         {item.label_name?.trim() ? (
           <p className="ui-directory-caption-wrap">
-            {infoSqlTypeSummary(item.sql_type)}
+            {sqlTypeCaption(item.sql_type)}
           </p>
         ) : null}
       </button>
     ),
     [
       handleSelectField,
-      infoSqlTypeSummary,
       isDeletePending,
       resolveDirectoryTitle,
+      sqlTypeCaption,
       selectedField?.id
     ]
   );
@@ -799,7 +773,7 @@ export function FieldConfigurationClient({
             <p className="ui-directory-title">{resolveDirectoryTitle(item)}</p>
             {item.label_name?.trim() ? (
               <p className="ui-directory-caption-wrap">
-                {infoSqlTypeSummary(item.sql_type)}
+                {sqlTypeCaption(item.sql_type)}
               </p>
             ) : null}
           </button>
@@ -809,9 +783,9 @@ export function FieldConfigurationClient({
     ),
     [
       handleSelectField,
-      infoSqlTypeSummary,
       isDeletePending,
       resolveDirectoryTitle,
+      sqlTypeCaption,
       selectedField?.id
     ]
   );
@@ -993,57 +967,6 @@ export function FieldConfigurationClient({
               ) : null}
             </section>
 
-            {!isCreateMode && selectedField ? (
-              <ConfigurationInfoSection
-                title={copy.sectionInfoTitle}
-                description={copy.sectionInfoDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.infoFieldNameRegisteredLabel}
-                      </span>
-                      {": "}
-                      <span className="ui-info-topic-value">
-                        {selectedField.label_name?.trim() || "-"}
-                      </span>
-                    </p>
-                  </li>
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.infoFriendlyTypeLabel}
-                      </span>
-                      {": "}
-                      <span className="ui-info-topic-value">
-                        {infoSqlTypeSummary(selectedField.sql_type)}
-                      </span>
-                    </p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            ) : null}
-
-            {isCreateMode ? (
-              <ConfigurationInfoSection
-                title={copy.sectionInfoTitle}
-                description={copy.sectionInfoDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.infoCreateLead}
-                      </span>
-                    </p>
-                    <p className="ui-field-hint ui-info-topic-hint">
-                      {copy.infoCreateHint}
-                    </p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            ) : null}
           </>
         ) : (
           <div className="ui-panel ui-empty-panel">{asideEmptyMessage}</div>

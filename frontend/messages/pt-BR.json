@@ -141,14 +141,6 @@
         "createHint": "Salve para registrar o convite. A pessoa verá o licenciado ao entrar com uma conta Google que use o mesmo email.",
         "emailFieldHint": "Informe o email que receberá o convite. O primeiro acesso usa uma conta Google com esse mesmo endereço."
       },
-      "idle": {
-        "title": "Informações",
-        "description": "Resumo de como usar este painel: escolha um membro na lista à esquerda para editar o cadastro, ou use Novo para registrar um convite quando tiver permissão.",
-        "selectLead": "Nenhum membro selecionado",
-        "selectHint": "Clique em um membro na lista ou use o botão Novo para cadastrar um convite por email.",
-        "emptyLead": "Nenhum membro encontrado",
-        "emptyHint": "Não há membros neste licenciado e sua permissão atual não permite cadastrar convites."
-      },
       "access": {
         "title": "Acesso",
         "description": "Papel e situação controlam o alcance do membro neste licenciado.",
@@ -225,18 +217,6 @@
         "nameHint": "Use um rótulo curto para identificar o escopo, como Aves, Soja ou Leite.",
         "displayNameLabel": "Descrição do escopo",
         "displayNameHint": "Explique o recorte do escopo com mais contexto, como Aves para produção de ovos."
-      },
-      "info": {
-        "title": "Informações",
-        "description": "Resumo do escopo em foco: valores salvos no servidor e o que esta sessão pode alterar.",
-        "nameRegisteredLabel": "Nome salvo",
-        "displayRegisteredLabel": "Descrição salva",
-        "canEditLabel": "Pode editar",
-        "canDeleteLabel": "Pode apagar",
-        "yes": "Sim",
-        "no": "Não",
-        "createLead": "Novo escopo estrutural",
-        "createHint": "Você está definindo um novo recorte para o licenciado ativo. Salve para registrá-lo no diretório."
       }
     },
     "action": {
@@ -284,22 +264,6 @@
       "fieldName": {
         "label": "Nome do campo",
         "hint": "Nome do campo. Informe um nome curto e de fácil entendimento, como: quantidade, valor, percentual de crescimento. Este nome é usado nas fórmulas, gráficos e relatórios."
-      },
-      "info": {
-        "title": "Informações",
-        "description": "Resumo do campo em foco: identificador estável e tipo salvo no servidor.",
-        "idLabel": "Identificador",
-        "fieldNameRegisteredLabel": "Nome",
-        "friendlyTypeLabel": "Tipo",
-        "typeValueInteger": "Número inteiro",
-        "typeValueNumberOne": "Número com 1 decimal",
-        "typeValueNumberMany": "Número com {scale} decimais",
-        "sqlTypeRegisteredLabel": "Tipo no PostgreSQL",
-        "canEditLabel": "Pode editar",
-        "yes": "Sim",
-        "no": "Não",
-        "createLead": "Novo campo",
-        "createHint": "Você está definindo um novo campo para o escopo ativo. Salve para registrá-lo no diretório."
       }
     },
     "action": {
@@ -374,13 +338,6 @@
       "actionName": {
         "label": "Nome da ação",
         "hint": "Nome curto e fácil de entender, usado em fórmulas, telas e relatórios."
-      },
-      "info": {
-        "title": "Informações",
-        "description": "Resumo da ação em foco no servidor.",
-        "actionNameRegisteredLabel": "Nome",
-        "createLead": "Nova ação",
-        "createHint": "Você está definindo uma nova ação para o escopo ativo. Salve para registrá-la no diretório."
       }
     },
     "buttons": {
@@ -517,13 +474,6 @@
         "loading": "Carregando campos de entrada da ação...",
         "loadError": "Não foi possível carregar os campos de entrada da ação.",
         "saveError": "Não foi possível salvar os campos de entrada da ação."
-      },
-      "info": {
-        "title": "Informações",
-        "description": "Resumo do evento em foco no servidor.",
-        "summaryLabel": "Resumo",
-        "createLead": "Novo evento",
-        "createHint": "Você está registrando um novo evento para o escopo ativo. Salve para registrar no diretório."
       }
     },
     "filter": {
@@ -562,7 +512,7 @@
   },
   "LocationConfigurationPage": {
     "title": "Locais",
-    "description": "Neste painel você vê sua árvore de locais. À esquerda aparece a hierarquia; ao lado, o formulário para editar o nome e outras informações sobre o local, além do painel de histórico. Selecione um local na árvore para editá-lo ou clique no botão Novo para criar uma nova divisão naquele local.",
+    "description": "Neste painel você vê sua árvore de locais. À esquerda aparece a hierarquia; ao lado, o formulário para editar o nome e a descrição do local, além do painel de histórico. Selecione um local na árvore para editá-lo ou clique no botão Novo para criar uma nova divisão naquele local.",
     "list": {
       "emptyScope": "Crie um escopo antes de editar a hierarquia de locais.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar a hierarquia de locais."
@@ -583,18 +533,6 @@
         "nameHint": "Use um nome curto para identificar este local. Por exemplo: Rio Verde em vez de Fazenda Rio Verde, Piratini em vez de Aviário Piratini ou Oeste em vez de Talhão Oeste.",
         "displayNameLabel": "Descrição do local",
         "displayNameHint": "Informe o nome completo do local. Por exemplo: Fazenda Rio Verde em vez de Rio Verde, Aviário Piratini em vez de Piratini ou Talhão Oeste em vez de apenas Oeste."
-      },
-      "structure": {
-        "title": "Informações",
-        "description": "Resumo do local em foco, com o nível na hierarquia, a ordem entre irmãos do mesmo local.",
-        "levelLabel": "Nível hierárquico",
-        "levelHint": "Contado a partir da raiz do escopo (1 = raiz).",
-        "parentLabel": "Local pai",
-        "parentRoot": "Raiz do escopo (sem pai acima)",
-        "orderLabel": "Ordem entre irmãos",
-        "orderHintEdit": "Usada ao listar locais no mesmo nível.",
-        "orderHintCreate": "Será definida ao salvar o novo local.",
-        "orderPending": "-"
       }
     },
     "dragHandleAria": "Arrastar para reordenar ou mudar o nível",
@@ -657,18 +595,6 @@
         "createError": "Não foi possível cadastrar o tipo. Tente novamente.",
         "deleteAriaLabel": "Apagar tipo",
         "deleteError": "Não foi possível apagar o tipo. Tente novamente."
-      },
-      "structure": {
-        "title": "Informações",
-        "description": "Resumo do item em foco: nível na hierarquia, ordem entre irmãos e vínculo com o pai.",
-        "levelLabel": "Nível hierárquico",
-        "levelHint": "Contado a partir da raiz do escopo (1 = raiz).",
-        "parentLabel": "Unidade pai",
-        "parentRoot": "Raiz do escopo (sem pai acima)",
-        "orderLabel": "Ordem entre irmãos",
-        "orderHintEdit": "Usada ao listar itens no mesmo nível.",
-        "orderHintCreate": "Será definida ao salvar o novo cadastro.",
-        "orderPending": "-"
       }
     },
     "dragHandleAria": "Arrastar para reordenar ou mudar o nível",

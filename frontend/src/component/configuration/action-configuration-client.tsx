@@ -17,7 +17,6 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ScopeRulesDirectorySortableList } from "@/component/configuration/configuration-scope-rules-directory-sortable";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
@@ -72,11 +71,6 @@ export type ActionConfigurationCopy = {
   actionNameLabel: string;
   actionNameHint: string;
   actionNameRequired: string;
-  sectionInfoTitle: string;
-  sectionInfoDescription: string;
-  infoActionNameRegisteredLabel: string;
-  infoCreateLead: string;
-  infoCreateHint: string;
   cancel: string;
   directoryCreateLabel: string;
   delete: string;
@@ -1050,45 +1044,6 @@ export function ActionConfigurationClient({
                 ) : null}
               </div>
             </section>
-
-            {isCreateMode ? (
-              <ConfigurationInfoSection
-                title={copy.sectionInfoTitle}
-                description={copy.sectionInfoDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.infoCreateLead}
-                      </span>
-                    </p>
-                    <p className="ui-field-hint ui-info-topic-hint">
-                      {copy.infoCreateHint}
-                    </p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            ) : selectedAction ? (
-              <ConfigurationInfoSection
-                title={copy.sectionInfoTitle}
-                description={copy.sectionInfoDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.infoActionNameRegisteredLabel}
-                      </span>
-                      {": "}
-                      <span className="ui-info-topic-value">
-                        {selectedAction.label_name?.trim() || "-"}
-                      </span>
-                    </p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            ) : null}
 
             {(isCreateMode && directory.can_edit) ||
               (!isCreateMode && selectedAction) ? (

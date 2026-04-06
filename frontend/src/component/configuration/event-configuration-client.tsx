@@ -8,7 +8,6 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import { EventActionField } from "@/component/configuration/event-action-field";
@@ -75,15 +74,9 @@ export type EventConfigurationCopy = {
   filterAll: string;
   filterAllAria: string;
   filterConfirm: string;
-  sectionInfoTitle: string;
-  sectionInfoDescription: string;
-  infoSummaryLabel: string;
-  infoCreateLead: string;
-  infoCreateHint: string;
   fallbackLocation: string;
   fallbackItem: string;
   fallbackAction: string;
-  fallbackEvent: string;
   cancel: string;
   directoryCreateLabel: string;
   delete: string;
@@ -837,27 +830,6 @@ export function EventConfigurationClient({
     [actionMap, copy.fallbackAction]
   );
 
-  const buildEventSummaryLineList = useCallback(
-    (item: TenantScopeEventRecord, inputSummary?: string | null) => [
-      resolveActionLabel(item.action_id),
-      resolveLocationLabel(item.location_id),
-      resolveItemLabel(item.item_id),
-      inputSummary ?? "-"
-    ],
-    [resolveActionLabel, resolveLocationLabel, resolveItemLabel]
-  );
-
-  const renderEventSummaryLineBlock = useCallback(
-    (item: TenantScopeEventRecord, inputSummary?: string | null) =>
-      buildEventSummaryLineList(item, inputSummary).map((line, index, lineList) => (
-        <span key={`${item.id}-summary-${index}`}>
-          {line}
-          {index < lineList.length - 1 ? <br /> : null}
-        </span>
-      )),
-    [buildEventSummaryLineList]
-  );
-
   const renderEventAsideDetailLineBlock = useCallback(
     (item: TenantScopeEventRecord, inputSummary?: string | null) =>
       [resolveLocationLabel(item.location_id), resolveItemLabel(item.item_id), inputSummary ?? "-"]
@@ -1510,53 +1482,6 @@ export function EventConfigurationClient({
               </section>
             ) : null}
 
-            {isCreateMode ? (
-              <ConfigurationInfoSection
-                title={copy.sectionInfoTitle}
-                description={copy.sectionInfoDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">{copy.infoCreateLead}</span>
-                    </p>
-                    <p className="ui-field-hint ui-info-topic-hint">{copy.infoCreateHint}</p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            ) : selectedEvent ? (
-              <ConfigurationInfoSection
-                title={copy.sectionInfoTitle}
-                description={copy.sectionInfoDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">{copy.infoSummaryLabel}</span>
-                      {": "}
-                      <span className="ui-info-topic-value">
-                        {renderEventSummaryLineBlock(selectedEvent, selectedEventInputSummary)}
-                      </span>
-                    </p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            ) : (
-              <ConfigurationInfoSection
-                title={copy.sectionInfoTitle}
-                description={copy.sectionInfoDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">{copy.infoSummaryLabel}</span>
-                      {": "}
-                      <span className="ui-info-topic-value">{copy.fallbackEvent}</span>
-                    </p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            )}
           </>
         ) : (
           <div className="ui-panel ui-empty-panel">{asideEmptyMessage}</div>

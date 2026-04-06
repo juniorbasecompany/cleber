@@ -36,7 +36,6 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
@@ -522,27 +521,6 @@ export function ScopeHierarchyConfigurationClient<
     }
     return itemList.find((item) => item.id === selectedItemId) ?? null;
   }, [isCreateMode, itemList, selectedItemId]);
-
-  const structureParentLabel = useMemo(() => {
-    if (parentId == null) {
-      return copy.sectionStructureParentRoot;
-    }
-    const parentItem = itemList.find((item) => item.id === parentId);
-    return parentItem ? resolveHierarchyLabel(parentItem) : copy.sectionStructureParentRoot;
-  }, [copy.sectionStructureParentRoot, itemList, parentId]);
-
-  const structureLevelDisplay = useMemo(() => {
-    let depth = 0;
-    if (isCreateMode) {
-      if (parentId != null) {
-        const parentItem = itemList.find((item) => item.id === parentId);
-        depth = parentItem ? parentItem.depth + 1 : 0;
-      }
-    } else if (selectedItem) {
-      depth = selectedItem.depth;
-    }
-    return String(depth + 1);
-  }, [isCreateMode, itemList, parentId, selectedItem]);
 
   const selectedKey: SelectedHierarchyKey = isCreateMode ? "new" : (selectedItem?.id ?? null);
 
@@ -1054,58 +1032,6 @@ export function ScopeHierarchyConfigurationClient<
             />
           )}
 
-          {directory ? (
-            <ConfigurationInfoSection
-              title={copy.sectionStructureTitle}
-              description={copy.sectionStructureDescription}
-            >
-              <ul className="ui-info-topic-list">
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.sectionStructureLevelLabel}
-                    </span>
-                    {": "}
-                    <span className="ui-info-topic-value">
-                      {structureLevelDisplay}
-                    </span>
-                  </p>
-                  <p className="ui-field-hint ui-info-topic-hint">
-                    {copy.sectionStructureLevelHint}
-                  </p>
-                </li>
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.sectionStructureOrderLabel}
-                    </span>
-                    {": "}
-                    <span className="ui-info-topic-value">
-                      {isCreateMode || !selectedItem
-                        ? copy.sectionStructureOrderPending
-                        : String(selectedItem.sort_order)}
-                    </span>
-                  </p>
-                  <p className="ui-field-hint ui-info-topic-hint">
-                    {isCreateMode || !selectedItem
-                      ? copy.sectionStructureOrderHintCreate
-                      : copy.sectionStructureOrderHintEdit}
-                  </p>
-                </li>
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.sectionStructureParentLabel}
-                    </span>
-                    {": "}
-                    <span className="ui-info-topic-value">
-                      {structureParentLabel}
-                    </span>
-                  </p>
-                </li>
-              </ul>
-            </ConfigurationInfoSection>
-          ) : null}
         </>
       }
       history={{

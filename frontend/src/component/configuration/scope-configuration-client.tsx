@@ -8,7 +8,6 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameDisplayNameFields } from "@/component/configuration/configuration-name-display-name-fields";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
@@ -41,15 +40,6 @@ export type ScopeConfigurationCopy = {
   nameHint: string;
   displayNameLabel: string;
   displayNameHint: string;
-  sectionInfoTitle: string;
-  sectionInfoDescription: string;
-  infoNameRegisteredLabel: string;
-  infoDisplayRegisteredLabel: string;
-  infoCanEditLabel: string;
-  infoYes: string;
-  infoNo: string;
-  infoCreateLead: string;
-  infoCreateHint: string;
   cancel: string;
   directoryCreateLabel: string;
   delete: string;
@@ -540,69 +530,6 @@ export function ScopeConfigurationClient({
             flashActive={isEditorFlashActive}
             onAfterFieldEdit={() => setRequestErrorMessage(null)}
           />
-
-          {!isCreateMode && selectedScope ? (
-            <ConfigurationInfoSection
-              title={copy.sectionInfoTitle}
-              description={copy.sectionInfoDescription}
-            >
-              <ul className="ui-info-topic-list">
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.infoNameRegisteredLabel}
-                    </span>
-                    {": "}
-                    <span className="ui-info-topic-value">
-                      {selectedScope.name.trim() || "-"}
-                    </span>
-                  </p>
-                </li>
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.infoDisplayRegisteredLabel}
-                    </span>
-                    {": "}
-                    <span className="ui-info-topic-value">
-                      {selectedScope.display_name.trim() || "-"}
-                    </span>
-                  </p>
-                </li>
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.infoCanEditLabel}
-                    </span>
-                    {": "}
-                    <span className="ui-info-topic-value">
-                      {selectedScope.can_edit ? copy.infoYes : copy.infoNo}
-                    </span>
-                  </p>
-                </li>
-              </ul>
-            </ConfigurationInfoSection>
-          ) : null}
-
-          {isCreateMode ? (
-            <ConfigurationInfoSection
-              title={copy.sectionInfoTitle}
-              description={copy.sectionInfoDescription}
-            >
-              <ul className="ui-info-topic-list">
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {copy.infoCreateLead}
-                    </span>
-                  </p>
-                  <p className="ui-field-hint ui-info-topic-hint">
-                    {copy.infoCreateHint}
-                  </p>
-                </li>
-              </ul>
-            </ConfigurationInfoSection>
-          ) : null}
         </>
       }
       history={{

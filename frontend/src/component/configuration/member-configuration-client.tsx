@@ -43,12 +43,6 @@ export type MemberConfigurationCopy = {
   title: string;
   description: string;
   empty: string;
-  sectionIdleTitle: string;
-  sectionIdleDescription: string;
-  sectionIdleSelectLead: string;
-  sectionIdleSelectHint: string;
-  sectionIdleEmptyLead: string;
-  sectionIdleEmptyHint: string;
   historyTitle: string;
   historyDescription: string;
   filterSearchLabel: string;
@@ -784,9 +778,7 @@ export function MemberConfigurationClient({
     inviteEmailError ??
     null;
 
-  const hasMemberList = directory.item_list.length > 0;
   const showAsideEmptyPanel = directory.item_list.length === 0 && !canInviteMember;
-  const idleEditorHasAction = hasMemberList || canInviteMember;
 
   /* Com baseline igual ao servidor (ex.: nome vazio), isDirty fica false e o Salvar travava sem necessidade. */
   const saveDirtyGate =
@@ -1091,29 +1083,6 @@ export function MemberConfigurationClient({
             </ConfigurationInfoSection>
           ) : null}
 
-          {!isCreateMode && selectedMember == null ? (
-            <ConfigurationInfoSection
-              title={copy.sectionIdleTitle}
-              description={copy.sectionIdleDescription}
-            >
-              <ul className="ui-info-topic-list">
-                <li>
-                  <p className="ui-info-topic-lead">
-                    <span className="ui-info-topic-label">
-                      {idleEditorHasAction
-                        ? copy.sectionIdleSelectLead
-                        : copy.sectionIdleEmptyLead}
-                    </span>
-                  </p>
-                  <p className="ui-field-hint ui-info-topic-hint">
-                    {idleEditorHasAction
-                      ? copy.sectionIdleSelectHint
-                      : copy.sectionIdleEmptyHint}
-                  </p>
-                </li>
-              </ul>
-            </ConfigurationInfoSection>
-          ) : null}
         </>
       }
       history={{
