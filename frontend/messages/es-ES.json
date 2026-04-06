@@ -594,6 +594,8 @@
       "startLabel": "Fecha inicial",
       "endLabel": "Fecha final",
       "dateHint": "El cálculo cubre todo el intervalo desde el inicio del primer día hasta el fin del último día.",
+      "read": "Leer",
+      "reading": "Leyendo...",
       "calculate": "Calcular",
       "calculating": "Calculando...",
       "validationRequired": "Selecciona las dos fechas para calcular.",

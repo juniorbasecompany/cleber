@@ -594,6 +594,8 @@
       "startLabel": "Start date",
       "endLabel": "End date",
       "dateHint": "The calculation covers the full range from the start of the first day to the end of the last day.",
+      "read": "Read",
+      "reading": "Reading...",
       "calculate": "Calculate",
       "calculating": "Calculating...",
       "validationRequired": "Select both dates to calculate.",

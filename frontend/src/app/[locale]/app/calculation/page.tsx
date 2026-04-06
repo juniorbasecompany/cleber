@@ -76,6 +76,8 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           startLabel: t("panel.startLabel"),
           endLabel: t("panel.endLabel"),
           dateHint: t("panel.dateHint"),
+          read: t("panel.read"),
+          reading: t("panel.reading"),
           calculate: t("panel.calculate"),
           calculating: t("panel.calculating"),
           validationRequired: t("panel.validationRequired"),

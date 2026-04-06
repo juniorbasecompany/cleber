@@ -22,6 +22,7 @@ from valora_backend.api.rules import (
     create_scope_event_result,
     delete_scope_field,
     patch_scope_event_result,
+    read_scope_current_age,
 )
 from valora_backend.auth.dependencies import (
     get_current_account,
@@ -2421,9 +2422,9 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
             session=session,
         )
 
-        assert response.created_count == 3
-        assert response.updated_count == 1
-        assert response.unchanged_count == 1
+        assert response.created_count == 5
+        assert response.updated_count == 0
+        assert response.unchanged_count == 0
         assert [
             (
                 row.event_id,
@@ -2435,8 +2436,8 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
             for row in response.item_list
         ] == [
             (initial_event.id, anchor_formula.id, 0, 10, "created"),
-            (current_event_day_2.id, increment_formula.id, 0, 11, "updated"),
-            (current_event_day_2.id, mirror_formula.id, 1, 11, "unchanged"),
+            (current_event_day_2.id, increment_formula.id, 0, 11, "created"),
+            (current_event_day_2.id, mirror_formula.id, 1, 11, "created"),
             (current_event_day_3.id, increment_formula.id, 0, 12, "created"),
             (current_event_day_3.id, mirror_formula.id, 1, 12, "created"),
         ]
@@ -2469,13 +2470,6 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
         ] == [
             (
                 initial_event.id,
-                initial_field.id,
-                anchor_formula.id,
-                0,
-                10,
-            ),
-            (
-                initial_event.id,
                 current_field.id,
                 anchor_formula.id,
                 0,
@@ -2509,13 +2503,117 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                 1,
                 12,
             ),
-            (
-                final_event.id,
-                final_field.id,
-                anchor_formula.id,
-                0,
-                12,
+        ]
+
+
+def test_read_scope_current_age_reads_existing_results_without_recalculation() -> None:
+    with build_rules_session() as (session, tenant_id):
+        scope = Scope(
+            name="Aves",
+            display_name="Aves para producao de ovos",
+            tenant_id=tenant_id,
+        )
+        session.add(scope)
+        session.flush()
+
+        location = Location(
+            name="Granja A",
+            display_name="Granja A",
+            scope_id=scope.id,
+            parent_location_id=None,
+            sort_order=0,
+        )
+        kind = Kind(scope_id=scope.id, name="lote", display_name="Lote")
+        action = Action(scope_id=scope.id, sort_order=0)
+        field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=0,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=True,
+        )
+        initial_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=1,
+            is_initial_age=True,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        final_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=2,
+            is_initial_age=False,
+            is_final_age=True,
+            is_current_age=False,
+        )
+        session.add_all([location, kind, action, field, initial_field, final_field])
+        session.flush()
+
+        item = Item(
+            scope_id=scope.id,
+            kind_id=kind.id,
+            parent_item_id=None,
+            sort_order=0,
+        )
+        session.add(item)
+        session.flush()
+
+        formula = Formula(
+            action_id=action.id,
+            sort_order=0,
+            statement=f"${{field:{field.id}}} = ${{field:{field.id}}}",
+        )
+        session.add(formula)
+        session.flush()
+
+        event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=action.id,
+            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+        )
+        session.add(event)
+        session.flush()
+
+        result = Result(
+            event_id=event.id,
+            field_id=field.id,
+            formula_id=formula.id,
+            formula_order=formula.sort_order,
+            text_value=None,
+            boolean_value=None,
+            numeric_value=11,
+            moment_utc=datetime(2026, 4, 2, 12, 5, 0),
+        )
+        session.add(result)
+        session.commit()
+
+        response = read_scope_current_age(
+            scope_id=scope.id,
+            body=ScopeCurrentAgeCalculationRequest(
+                moment_from_utc="2026-04-01T00:00:00Z",
+                moment_to_utc="2026-04-03T23:59:00Z",
             ),
+            member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
+            session=session,
+        )
+
+        assert response.created_count == 0
+        assert response.updated_count == 0
+        assert response.unchanged_count == 1
+        assert [
+            (
+                row.event_id,
+                row.formula_id,
+                int(row.numeric_value) if row.numeric_value is not None else None,
+                row.status,
+            )
+            for row in response.item_list
+        ] == [
+            (event.id, formula.id, 11, "unchanged"),
         ]
 
 

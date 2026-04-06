@@ -30,6 +30,8 @@ type CurrentAgeCalculationCopy = {
   startLabel: string;
   endLabel: string;
   dateHint: string;
+  read: string;
+  reading: string;
   calculate: string;
   calculating: string;
   validationRequired: string;
@@ -138,6 +140,7 @@ export function CurrentAgeCalculationClient({
   const [momentFrom, setMomentFrom] = useState<Date | null>(null);
   const [momentTo, setMomentTo] = useState<Date | null>(null);
   const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
+  const [isReading, setIsReading] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
   const [result, setResult] = useState<ScopeCurrentAgeCalculationResponse | null>(null);
 
@@ -205,16 +208,72 @@ export function CurrentAgeCalculationClient({
       : copy.emptyScope
     : null;
 
-  async function handleCalculate() {
+  function validateRequest() {
     if (!currentScope || !canEdit || !isReady) {
-      return;
+      return false;
     }
     if (!momentFrom || !momentTo) {
       setRequestErrorMessage(copy.validationRequired);
-      return;
+      return false;
     }
     if (momentFrom.getTime() > momentTo.getTime()) {
       setRequestErrorMessage(copy.validationOrder);
+      return false;
+    }
+    return true;
+  }
+
+  async function handleRead() {
+    if (!validateRequest() || !currentScope) {
+      return;
+    }
+    const currentMomentFrom = momentFrom;
+    const currentMomentTo = momentTo;
+    if (!currentMomentFrom || !currentMomentTo) {
+      return;
+    }
+
+    setIsReading(true);
+    setRequestErrorMessage(null);
+
+    try {
+      const response = await fetch(
+        `/api/auth/tenant/current/scopes/${currentScope.id}/events/read-current-age`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            moment_from_utc: currentMomentFrom.toISOString(),
+            moment_to_utc: currentMomentTo.toISOString()
+          })
+        }
+      );
+      const data: unknown = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        setRequestErrorMessage(parseErrorDetail(data, copy.calculateError) ?? copy.calculateError);
+        return;
+      }
+
+      setResult(data as ScopeCurrentAgeCalculationResponse);
+    } catch (error) {
+      setRequestErrorMessage(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : copy.calculateError
+      );
+    } finally {
+      setIsReading(false);
+    }
+  }
+
+  async function handleCalculate() {
+    if (!validateRequest() || !currentScope) {
+      return;
+    }
+    const currentMomentFrom = momentFrom;
+    const currentMomentTo = momentTo;
+    if (!currentMomentFrom || !currentMomentTo) {
       return;
     }
 
@@ -228,8 +287,8 @@ export function CurrentAgeCalculationClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            moment_from_utc: momentFrom.toISOString(),
-            moment_to_utc: momentTo.toISOString()
+            moment_from_utc: currentMomentFrom.toISOString(),
+            moment_to_utc: currentMomentTo.toISOString()
           })
         }
       );
@@ -287,7 +346,7 @@ export function CurrentAgeCalculationClient({
                     setMomentFrom(value);
                     setRequestErrorMessage(null);
                   }}
-                  disabled={!canEdit || !isReady || isCalculating}
+                  disabled={!canEdit || !isReady || isCalculating || isReading}
                   locale={locale}
                   hidePlaceholder
                   periodBoundary="start"
@@ -305,7 +364,7 @@ export function CurrentAgeCalculationClient({
                     setMomentTo(value);
                     setRequestErrorMessage(null);
                   }}
-                  disabled={!canEdit || !isReady || isCalculating}
+                  disabled={!canEdit || !isReady || isCalculating || isReading}
                   locale={locale}
                   hidePlaceholder
                   periodBoundary="end"
@@ -321,9 +380,17 @@ export function CurrentAgeCalculationClient({
             <div className="ui-button-row">
               <button
                 type="button"
+                className="ui-button-secondary"
+                onClick={() => void handleRead()}
+                disabled={!canEdit || !isReady || isCalculating || isReading}
+              >
+                {isReading ? copy.reading : copy.read}
+              </button>
+              <button
+                type="button"
                 className="ui-button-primary"
                 onClick={() => void handleCalculate()}
-                disabled={!canEdit || !isReady || isCalculating}
+                disabled={!canEdit || !isReady || isCalculating || isReading}
               >
                 {isCalculating ? copy.calculating : copy.calculate}
               </button>

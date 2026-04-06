@@ -12,6 +12,7 @@ import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field as PydanticField, model_validator
 from sqlalchemy import func, or_, select, text, true
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -1868,6 +1869,102 @@ class ScopeCurrentAgeCalculationResponse(BaseModel):
     item_list: list[ScopeCurrentAgeCalculationRecord]
 
 
+def _build_current_age_response_from_result_rows(
+    *,
+    calculated_moment_utc: datetime,
+    result_row_list: list[tuple[Result, Event]],
+    status_by_result_key: dict[
+        tuple[int, int, int], Literal["created", "updated", "unchanged"]
+    ]
+    | None = None,
+) -> ScopeCurrentAgeCalculationResponse:
+    created_count = 0
+    updated_count = 0
+    unchanged_count = 0
+    item_list: list[ScopeCurrentAgeCalculationRecord] = []
+    for result_row, event_row in result_row_list:
+        result_key = (
+            result_row.event_id,
+            result_row.formula_id,
+            result_row.formula_order,
+        )
+        item_status = (
+            status_by_result_key[result_key]
+            if status_by_result_key is not None
+            else "unchanged"
+        )
+        if item_status == "created":
+            created_count += 1
+        elif item_status == "updated":
+            updated_count += 1
+        else:
+            unchanged_count += 1
+        item_list.append(
+            ScopeCurrentAgeCalculationRecord(
+                event_id=event_row.id,
+                result_id=result_row.id,
+                field_id=result_row.field_id,
+                formula_id=result_row.formula_id,
+                formula_order=result_row.formula_order,
+                location_id=event_row.location_id,
+                item_id=event_row.item_id,
+                action_id=event_row.action_id,
+                event_moment_utc=event_row.moment_utc,
+                text_value=result_row.text_value,
+                boolean_value=result_row.boolean_value,
+                numeric_value=result_row.numeric_value,
+                status=item_status,
+            )
+        )
+    return ScopeCurrentAgeCalculationResponse(
+        can_edit=True,
+        calculated_moment_utc=calculated_moment_utc,
+        created_count=created_count,
+        updated_count=updated_count,
+        unchanged_count=unchanged_count,
+        item_list=item_list,
+    )
+
+
+def _list_scope_current_age_results(
+    *,
+    scope_id: int,
+    moment_from_utc: datetime,
+    moment_to_utc: datetime,
+    session: Session,
+) -> ScopeCurrentAgeCalculationResponse:
+    result_row_list = list(
+        session.execute(
+            select(Result, Event)
+            .join(Event, Result.event_id == Event.id)
+            .join(Action, Event.action_id == Action.id)
+            .where(
+                Action.scope_id == scope_id,
+                Event.moment_utc >= moment_from_utc,
+                Event.moment_utc <= moment_to_utc,
+            )
+            .order_by(
+                func.date(Event.moment_utc).asc(),
+                Action.sort_order.asc(),
+                Event.moment_utc.asc(),
+                Event.id.asc(),
+                Result.formula_order.asc(),
+                Result.id.asc(),
+            )
+        )
+    )
+    if result_row_list:
+        calculated_moment_utc = max(
+            result_row.moment_utc for result_row, _event_row in result_row_list
+        )
+    else:
+        calculated_moment_utc = datetime.now(UTC).replace(tzinfo=None)
+    return _build_current_age_response_from_result_rows(
+        calculated_moment_utc=calculated_moment_utc,
+        result_row_list=result_row_list,
+    )
+
+
 def _resolve_scope_age_fields_or_400(
     session: Session, *, scope_id: int
 ) -> tuple[Field, Field, Field]:
@@ -2148,6 +2245,38 @@ def delete_scope_event(
 
 
 @router.post(
+    "/scopes/{scope_id}/events/read-current-age",
+    response_model=ScopeCurrentAgeCalculationResponse,
+)
+def read_scope_current_age(
+    scope_id: int,
+    body: ScopeCurrentAgeCalculationRequest,
+    member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    _get_tenant_scope(session, actor=member, scope_id=scope_id)
+
+    moment_from_utc = body.moment_from_utc
+    moment_to_utc = body.moment_to_utc
+    if moment_from_utc.tzinfo is not None:
+        moment_from_utc = moment_from_utc.astimezone(UTC).replace(tzinfo=None)
+    if moment_to_utc.tzinfo is not None:
+        moment_to_utc = moment_to_utc.astimezone(UTC).replace(tzinfo=None)
+    if moment_from_utc > moment_to_utc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid event period",
+        )
+
+    return _list_scope_current_age_results(
+        scope_id=scope_id,
+        moment_from_utc=moment_from_utc,
+        moment_to_utc=moment_to_utc,
+        session=session,
+    )
+
+
+@router.post(
     "/scopes/{scope_id}/events/calculate-current-age",
     response_model=ScopeCurrentAgeCalculationResponse,
 )
@@ -2321,21 +2450,6 @@ def calculate_scope_current_age(
                 )
             continue
 
-        result_key = (
-            row.event_id,
-            row.formula_id,
-            row.formula_order,
-        )
-        if result_key in existing_result_by_key:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    "Duplicate result rows for the same event/formula/order are not supported: "
-                    f"event {row.event_id}, formula {row.formula_id}, order {row.formula_order}"
-                ),
-            )
-        existing_result_by_key[result_key] = row
-
     event_row_list_by_group: defaultdict[tuple[int, int], list[Event]] = defaultdict(list)
     for row in event_row_list:
         event_row_list_by_group[(row.location_id, row.item_id)].append(row)
@@ -2417,6 +2531,9 @@ def calculate_scope_current_age(
             unchanged_count=0,
             item_list=[],
         )
+
+    session.execute(delete(Result).where(Result.event_id.in_(event_id_list)))
+    existing_result_by_key = {}
 
     state_by_group: defaultdict[
         tuple[int, int], dict[int, str | bool | int | float]
@@ -2614,35 +2731,16 @@ def calculate_scope_current_age(
         commit_session_with_null_if_empty(session)
 
     event_row_by_id = {row.id: row for row in event_row_list}
-    item_list: list[ScopeCurrentAgeCalculationRecord] = []
+    result_row_list: list[tuple[Result, Event]] = []
     for result_key in executed_result_key_list:
         current_result = existing_result_by_key[result_key]
         event_row = event_row_by_id[current_result.event_id]
-        item_list.append(
-            ScopeCurrentAgeCalculationRecord(
-                event_id=event_row.id,
-                result_id=current_result.id,
-                field_id=current_result.field_id,
-                formula_id=current_result.formula_id,
-                formula_order=current_result.formula_order,
-                location_id=event_row.location_id,
-                item_id=event_row.item_id,
-                action_id=event_row.action_id,
-                event_moment_utc=event_row.moment_utc,
-                text_value=current_result.text_value,
-                boolean_value=current_result.boolean_value,
-                numeric_value=current_result.numeric_value,
-                status=status_by_result_key[result_key],
-            )
-        )
+        result_row_list.append((current_result, event_row))
 
-    return ScopeCurrentAgeCalculationResponse(
-        can_edit=True,
+    return _build_current_age_response_from_result_rows(
         calculated_moment_utc=calculated_moment_utc,
-        created_count=created_count,
-        updated_count=updated_count,
-        unchanged_count=unchanged_count,
-        item_list=item_list,
+        result_row_list=result_row_list,
+        status_by_result_key=status_by_result_key,
     )
 
 
