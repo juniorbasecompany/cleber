@@ -588,7 +588,7 @@
         {
           "id": "type",
           "name": "type",
-          "comment": "Tipo do valor armazenado, considerando o padrão do dados do Postgres para tipo SQL completo como INTEGER, NUMERIC, NUMERIC( 15, 2 ), BOOLEAN, etc.",
+          "comment": "Tipo do valor armazenado, considerando o padrão do dados do Postgres para tipo SQL completo como TEXT, BOOLEAN, NUMERIC( 15, 0 ), NUMERIC( 15, 1 ) ... NUMERIC( 15, 10 ).",
           "type": "TEXT",
           "default": "",
           "check": "",
@@ -954,20 +954,6 @@
           "values": []
         },
         {
-          "id": "value",
-          "name": "value",
-          "comment": "Este é o valor resultado da aplicação da fórmula em determinado evento. É gravado no formato 'text'. Este valor, submetido field.type, volta ao tipo nativo do postgres. Ex: \"123\" será convertido para inteiro se field.type for \"INTEGER\"",
-          "type": "TEXT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
           "id": "parent_result_id",
           "name": "parent_result_id",
           "comment": "Ligação com o result anterior. Se o result pai for apagado ou modificado, todo os filhos devem ser apagados.",
@@ -1005,6 +991,48 @@
           "primary": false,
           "unique": false,
           "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "value",
+          "name": "text_value",
+          "comment": "Este é resultado da fórmula, no formato texto.",
+          "type": "TEXT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "boolean_value",
+          "name": "boolean_value",
+          "comment": "Este é resultado da fórmula, no formato booleano.",
+          "type": "BOOLEAN",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "numeric_value",
+          "name": "numeric_value",
+          "comment": "Este é resultado da fórmula, no formato numérico.",
+          "type": "NUMERIC( 15, 10 )",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": false,
           "increment": false,
           "size": "",
           "values": []
