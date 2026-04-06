@@ -612,6 +612,34 @@
           "comment": "Ordem do campo em relação às demais.",
           "size": "",
           "values": []
+        },
+        {
+          "id": "is_initial_age",
+          "name": "is_initial_age",
+          "comment": "Indica que este campo contém a idade inicial em dias, da unidade, do lote. O motor começa o cálculo no dia do evento que registrar este campo.",
+          "type": "BOOLEAN",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "is_final_age",
+          "name": "is_final_age",
+          "comment": "Indica que este campo contém a idade final em dias, da unidade, do lote. O motor pára de calcular no dia do evento que registrar este campo.",
+          "type": "BOOLEAN",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
         }
       ],
       "indices": [],
@@ -1328,34 +1356,6 @@
           "unique": false,
           "notNull": true,
           "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "initial_age",
-          "name": "initial_age",
-          "type": "INTEGER",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "comment": "Idade",
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "final_age",
-          "name": "final_age",
-          "type": "INTEGER",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "comment": "",
           "size": "",
           "values": []
         }
