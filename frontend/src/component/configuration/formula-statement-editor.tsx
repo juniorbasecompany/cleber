@@ -296,18 +296,22 @@ export function FormulaStatementEditor({
             EditorView.theme({
                 "&.cm-editor": {
                     width: "100%",
+                    minHeight:
+                        "var(--ui-formula-row-editor-content-min-height, 5rem)",
                     background: "transparent"
                 },
                 ".cm-scroller": {
                     fontFamily: "inherit",
                     /* Tema base do CodeMirror usa line-height: 1.4; input nativo usa ~normal, o que altera o recuo visual da primeira linha. */
-                    lineHeight: "inherit",
-                    overflow: "auto"
+                    lineHeight:
+                        "var(--ui-formula-row-line-height, inherit)",
+                    overflow: "hidden"
                 },
                 ".cm-content": {
                     padding: 0,
                     caretColor: "var(--color-text)",
-                    minHeight: "7rem"
+                    minHeight:
+                        "var(--ui-formula-row-editor-content-min-height, 5rem)"
                 },
                 /* Tema base do CodeMirror adiciona padding em cada linha; sem isso o texto fica mais recuado que .ui-input. */
                 ".cm-line": {

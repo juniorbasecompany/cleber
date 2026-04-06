@@ -2487,6 +2487,18 @@ button.ui-location-nest-create:disabled {
 
 /* Lista de fórmulas: espaço só entre itens (margem inferior), sem padding de stack. */
 .ui-formula-list {
+  --ui-formula-action-button-size: 2.5rem;
+  --ui-formula-action-gap: 0.5rem;
+  --ui-formula-row-editor-min-height: calc(
+    (var(--ui-formula-action-button-size) * 2) + var(--ui-formula-action-gap)
+  );
+  --ui-formula-row-default-lines: 3;
+  --ui-formula-row-editor-content-min-height: calc(
+    var(--ui-formula-row-editor-min-height) - (var(--space-control-y) * 2)
+  );
+  --ui-formula-row-line-height: calc(
+    var(--ui-formula-row-editor-content-min-height) / var(--ui-formula-row-default-lines)
+  );
   display: flex;
   flex-direction: column;
   margin: 0;
@@ -2570,6 +2582,7 @@ button.ui-location-nest-create:disabled {
 }
 
 .ui-formula-row-field .ui-input {
+  min-height: var(--ui-formula-row-editor-min-height);
   max-width: 100%;
   box-sizing: border-box;
 }
@@ -2578,6 +2591,7 @@ button.ui-location-nest-create:disabled {
 .ui-formula-statement-editor {
   padding: 0;
   overflow: hidden;
+  line-height: var(--ui-formula-row-line-height);
 }
 
 .ui-formula-statement-editor:focus-within {
@@ -2633,9 +2647,11 @@ button.ui-location-nest-create:disabled {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: flex-start;
+  gap: var(--ui-formula-action-gap);
   flex: 0 0 auto;
   width: auto;
+  min-height: var(--ui-formula-row-editor-min-height);
   padding: 0;
   margin: 0;
   margin-left: auto;
@@ -2660,14 +2676,16 @@ button.ui-location-nest-create:disabled {
   }
 }
 
-/* Alça de arrastar: altura em dobro da base 2.5rem; fundo quase branco. */
+/* Alça de arrastar: mesma escala do botão de exclusão; fundo quase branco. */
 .ui-formula-drag-handle {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   flex: 0 0 auto;
-  width: 2.75rem;
-  height: 5rem;
+  width: var(--ui-formula-action-button-size);
+  min-width: var(--ui-formula-action-button-size);
+  height: var(--ui-formula-action-button-size);
+  min-height: var(--ui-formula-action-button-size);
   margin: 0;
   padding: 0.25rem;
   border: var(--border-width-default) solid var(--color-border);
@@ -2693,9 +2711,10 @@ button.ui-location-nest-create:disabled {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: auto;
-  min-width: 2.5rem;
-  min-height: 2.5rem;
+  width: var(--ui-formula-action-button-size, 2.5rem);
+  min-width: var(--ui-formula-action-button-size, 2.5rem);
+  height: var(--ui-formula-action-button-size, 2.5rem);
+  min-height: var(--ui-formula-action-button-size, 2.5rem);
   padding: 0.35rem;
   margin: 0;
   border: var(--border-width-default) solid var(--color-secondary-action-hover);
