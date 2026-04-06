@@ -15,8 +15,10 @@ from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
 
 from valora_backend.api.rules import (
+    ScopeCurrentAgeCalculationRequest,
     ScopeResultCreateRequest,
     ScopeResultPatchRequest,
+    calculate_scope_current_age,
     create_scope_event_result,
     delete_scope_field,
     patch_scope_event_result,
@@ -39,7 +41,7 @@ from valora_backend.model.identity import (
     Item,
 )
 from valora_backend.model.log import Log
-from valora_backend.model.rules import Result
+from valora_backend.model.rules import Action, Event, Field, Result
 
 
 def _create_kind_via_api(client, scope_id: int, *, name: str, display_name: str) -> int:
@@ -246,6 +248,53 @@ def _seed_log(
             moment_utc=moment_utc,
         )
     )
+
+
+@contextmanager
+def build_rules_session() -> Generator[tuple[Session, int], None, None]:
+    engine = create_engine(
+        "sqlite://",
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+
+    @event.listens_for(engine, "connect")
+    def _enable_sqlite_foreign_keys_only(dbapi_connection, _connection_record) -> None:
+        cursor = dbapi_connection.cursor()
+        cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.close()
+
+    testing_session_local = sessionmaker(
+        bind=engine,
+        autoflush=False,
+        autocommit=False,
+        expire_on_commit=False,
+    )
+    Base.metadata.create_all(
+        engine,
+        tables=[
+            Tenant.__table__,
+            Scope.__table__,
+            Location.__table__,
+            Kind.__table__,
+            Item.__table__,
+            Field.__table__,
+            Action.__table__,
+            Event.__table__,
+            Result.__table__,
+        ],
+    )
+
+    session = testing_session_local()
+    tenant = Tenant(name="Acme Agro Ltda.", display_name="Acme Agro")
+    session.add(tenant)
+    session.commit()
+
+    try:
+        yield session, tenant.id
+    finally:
+        session.close()
+        engine.dispose()
 
 
 def test_get_current_tenant_member_directory_exposes_capabilities() -> None:
@@ -2108,3 +2157,270 @@ def test_patch_scope_event_result_can_replace_and_clear_typed_values() -> None:
     session.add.assert_called_with(existing_row)
     find_result.assert_called_once_with(session, event_id=9, result_id=11)
     list_results.assert_called_once_with(5, 9, member, session)
+
+
+def test_calculate_scope_current_age_creates_updates_and_keeps_matching_results() -> None:
+    with build_rules_session() as (session, tenant_id):
+        scope = Scope(
+            name="Aves",
+            display_name="Aves para producao de ovos",
+            tenant_id=tenant_id,
+        )
+        session.add(scope)
+        session.flush()
+
+        location = Location(
+            name="Granja A",
+            display_name="Granja A",
+            scope_id=scope.id,
+            parent_location_id=None,
+            sort_order=0,
+        )
+        kind = Kind(scope_id=scope.id, name="lote", display_name="Lote")
+        action = Action(scope_id=scope.id, sort_order=0)
+        initial_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=0,
+            is_initial_age=True,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        current_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=1,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=True,
+        )
+        final_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=2,
+            is_initial_age=False,
+            is_final_age=True,
+            is_current_age=False,
+        )
+        session.add_all([location, kind, action, initial_field, current_field, final_field])
+        session.flush()
+
+        item = Item(
+            scope_id=scope.id,
+            kind_id=kind.id,
+            parent_item_id=None,
+            sort_order=0,
+        )
+        session.add(item)
+        session.flush()
+
+        event_row_list: list[Event] = []
+        for day_offset in range(11):
+            row = Event(
+                location_id=location.id,
+                item_id=item.id,
+                action_id=action.id,
+                moment_utc=datetime(2026, 4, 1 + day_offset, 12, 0, 0),
+            )
+            session.add(row)
+            event_row_list.append(row)
+        session.flush()
+
+        session.add_all(
+            [
+                Result(
+                    event_id=event_row_list[0].id,
+                    field_id=initial_field.id,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=10,
+                    moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+                ),
+                Result(
+                    event_id=event_row_list[10].id,
+                    field_id=final_field.id,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=20,
+                    moment_utc=datetime(2026, 4, 11, 12, 0, 0),
+                ),
+                Result(
+                    event_id=event_row_list[0].id,
+                    field_id=current_field.id,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=10,
+                    moment_utc=datetime(2026, 4, 1, 12, 5, 0),
+                ),
+                Result(
+                    event_id=event_row_list[5].id,
+                    field_id=current_field.id,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=999,
+                    moment_utc=datetime(2026, 4, 6, 12, 5, 0),
+                ),
+            ]
+        )
+        session.commit()
+
+        response = calculate_scope_current_age(
+            scope_id=scope.id,
+            body=ScopeCurrentAgeCalculationRequest(
+                moment_from_utc="2026-04-01T00:00:00Z",
+                moment_to_utc="2026-04-11T23:59:00Z",
+            ),
+            member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
+            session=session,
+        )
+
+        assert response.created_count == 9
+        assert response.updated_count == 1
+        assert response.unchanged_count == 1
+        assert [row.numeric_value for row in response.item_list] == list(range(10, 21))
+
+        current_result_row_list = list(
+            session.scalars(
+                select(Result)
+                .where(Result.field_id == current_field.id)
+                .order_by(Result.event_id.asc())
+            )
+        )
+        assert len(current_result_row_list) == 11
+        assert [int(row.numeric_value) for row in current_result_row_list] == list(
+            range(10, 21)
+        )
+
+
+def test_calculate_scope_current_age_does_not_mix_different_location_item_groups() -> None:
+    with build_rules_session() as (session, tenant_id):
+        scope = Scope(
+            name="Aves",
+            display_name="Aves para producao de ovos",
+            tenant_id=tenant_id,
+        )
+        session.add(scope)
+        session.flush()
+
+        location_a = Location(
+            name="Granja A",
+            display_name="Granja A",
+            scope_id=scope.id,
+            parent_location_id=None,
+            sort_order=0,
+        )
+        location_b = Location(
+            name="Granja B",
+            display_name="Granja B",
+            scope_id=scope.id,
+            parent_location_id=None,
+            sort_order=1,
+        )
+        kind = Kind(scope_id=scope.id, name="lote", display_name="Lote")
+        action = Action(scope_id=scope.id, sort_order=0)
+        initial_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=0,
+            is_initial_age=True,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        current_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=1,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=True,
+        )
+        final_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=2,
+            is_initial_age=False,
+            is_final_age=True,
+            is_current_age=False,
+        )
+        session.add_all(
+            [
+                location_a,
+                location_b,
+                kind,
+                action,
+                initial_field,
+                current_field,
+                final_field,
+            ]
+        )
+        session.flush()
+
+        item_a = Item(
+            scope_id=scope.id,
+            kind_id=kind.id,
+            parent_item_id=None,
+            sort_order=0,
+        )
+        item_b = Item(
+            scope_id=scope.id,
+            kind_id=kind.id,
+            parent_item_id=None,
+            sort_order=1,
+        )
+        session.add_all([item_a, item_b])
+        session.flush()
+
+        event_a = Event(
+            location_id=location_a.id,
+            item_id=item_a.id,
+            action_id=action.id,
+            moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+        )
+        event_b = Event(
+            location_id=location_b.id,
+            item_id=item_b.id,
+            action_id=action.id,
+            moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+        )
+        session.add_all([event_a, event_b])
+        session.flush()
+
+        session.add_all(
+            [
+                Result(
+                    event_id=event_a.id,
+                    field_id=initial_field.id,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=10,
+                    moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+                ),
+                Result(
+                    event_id=event_b.id,
+                    field_id=final_field.id,
+                    text_value=None,
+                    boolean_value=None,
+                    numeric_value=12,
+                    moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+                ),
+            ]
+        )
+        session.commit()
+
+        response = calculate_scope_current_age(
+            scope_id=scope.id,
+            body=ScopeCurrentAgeCalculationRequest(
+                moment_from_utc="2026-04-01T00:00:00Z",
+                moment_to_utc="2026-04-03T23:59:00Z",
+            ),
+            member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
+            session=session,
+        )
+
+        assert response.created_count == 0
+        assert response.updated_count == 0
+        assert response.unchanged_count == 0
+        assert response.item_list == []
+        assert session.scalar(
+            select(Result.id).where(Result.field_id == current_field.id).limit(1)
+        ) is None

@@ -70,6 +70,7 @@ Documentação interativa OpenAPI: ao subir o servidor, **`/docs`** (Swagger).
 - `.../actions/{action_id}/formulas` e `.../formulas/{formula_id}` (em `POST`/`PATCH`, a `statement` é validada com contrato de atribuição: exatamente um operador `=` de atribuição, `LHS` obrigatório `${field:id}` e `RHS` com `${field:id}` e `${input:id}`; todas as referências devem existir no escopo e a `RHS` passa por dry-run com [simpleeval](https://pypi.org/project/simpleeval/). Códigos 422 estáveis: `formula_invalid_assignment`, `formula_invalid_target`, `formula_unknown_field_id`, `formula_expression_invalid`, com `step` no detalhe quando disponível. Implementação em `valora_backend/rules/`; para reproduzir no terminal: `PYTHONPATH=src python script_try_formula_validate.py 1,2 '"${field:1} = …"' …`.)
 - `.../scopes/{scope_id}/labels` e `.../labels/{label_id}` (filtros opcionais `field_id` / `action_id` na listagem)
 - `.../scopes/{scope_id}/events` e `.../events/{event_id}`
+- `POST .../scopes/{scope_id}/events/calculate-current-age` (recalcula `result.numeric_value` do campo marcado como `is_current_age` a partir dos eventos com idade inicial/final no período informado)
 - `.../events/{event_id}/inputs` e `.../inputs/{input_id}`
 - `.../events/{event_id}/results` e `.../results/{result_id}` (`result` segue o ERD atual: `text_value`, `boolean_value`, `numeric_value`, `moment_utc`)
 

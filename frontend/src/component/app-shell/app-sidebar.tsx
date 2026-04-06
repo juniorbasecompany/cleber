@@ -4,7 +4,16 @@ import type { ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { NavigationIcon, ValoraMark } from "@/component/ui/ui-icons";
+import {
+    ActionChecklistIcon,
+    DashboardIcon,
+    EventPathIcon,
+    ItemIcon,
+    LocationIcon,
+    RulerIcon,
+    UnityIcon,
+    ValoraMark
+} from "@/component/ui/ui-icons";
 
 type NavigationItem = {
     key: string;
@@ -12,7 +21,67 @@ type NavigationItem = {
     href: string;
 };
 
-type NavigationIconKind = "home" | "location" | "item" | "field" | "action" | "unity" | "event";
+type NavigationIconKind =
+    | "home"
+    | "location"
+    | "item"
+    | "field"
+    | "action"
+    | "unity"
+    | "event"
+    | "calculation";
+
+function CalculationIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            className={["ui-icon", className].filter(Boolean).join(" ")}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden
+        >
+            <rect x="3.5" y="3.5" width="17" height="17" rx="1.5" />
+            <path d="M3.5 7.5h17" />
+            <path d="M9.2 7.5v13" />
+            <path d="M14.8 7.5v13" />
+            <path d="M3.5 11.8h17" />
+            <path d="M3.5 16.1h17" />
+            <rect x="4.9" y="8.9" width="2.9" height="1.6" rx=".35" fill="currentColor" stroke="none" />
+        </svg>
+    );
+}
+
+function SidebarNavigationIcon({
+    kind,
+    className
+}: {
+    kind: NavigationIconKind;
+    className?: string;
+}) {
+    switch (kind) {
+        case "home":
+            return <DashboardIcon className={className} />;
+        case "location":
+            return <LocationIcon className={className} />;
+        case "item":
+            return <ItemIcon className={className} />;
+        case "field":
+            return <RulerIcon className={className} />;
+        case "action":
+            return <ActionChecklistIcon className={className} />;
+        case "unity":
+            return <UnityIcon className={className} />;
+        case "event":
+            return <EventPathIcon className={className} />;
+        case "calculation":
+            return <CalculationIcon className={className} />;
+        default:
+            return <DashboardIcon className={className} />;
+    }
+}
 
 type AppSidebarProps = {
     productName: string;
@@ -95,7 +164,7 @@ export function AppSidebar({
                                 }`}
                         >
                             <span className="ui-nav-item-icon">
-                                <NavigationIcon
+                                <SidebarNavigationIcon
                                     kind={navigationIconKind}
                                     className="ui-icon"
                                 />

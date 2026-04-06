@@ -83,6 +83,11 @@ export default async function AppLayout({
       key: "event",
       label: t("navigation.event"),
       href: `/${locale}/app/configuration/event`
+    },
+    {
+      key: "calculation",
+      label: t("navigation.calculation"),
+      href: `/${locale}/app/calculation`
     }
   ];
 

@@ -1632,6 +1632,75 @@ class ScopeEventPatchRequest(BaseModel):
     moment_utc: datetime | None = None
 
 
+class ScopeCurrentAgeCalculationRequest(BaseModel):
+    moment_from_utc: datetime
+    moment_to_utc: datetime
+
+
+class ScopeCurrentAgeCalculationRecord(BaseModel):
+    event_id: int
+    result_id: int
+    field_id: int
+    location_id: int
+    item_id: int
+    action_id: int
+    event_moment_utc: datetime
+    numeric_value: int
+    source_initial_event_id: int
+    source_initial_age: int
+    source_final_event_id: int
+    source_final_age: int
+    status: Literal["created", "updated", "unchanged"]
+
+
+class ScopeCurrentAgeCalculationResponse(BaseModel):
+    can_edit: bool
+    calculated_moment_utc: datetime
+    created_count: int
+    updated_count: int
+    unchanged_count: int
+    item_list: list[ScopeCurrentAgeCalculationRecord]
+
+
+def _resolve_scope_age_fields_or_400(
+    session: Session, *, scope_id: int
+) -> tuple[Field, Field, Field]:
+    field_list = list(
+        session.scalars(select(Field).where(Field.scope_id == scope_id).order_by(Field.id))
+    )
+    initial_field = next((row for row in field_list if row.is_initial_age), None)
+    final_field = next((row for row in field_list if row.is_final_age), None)
+    current_field = next((row for row in field_list if row.is_current_age), None)
+
+    if initial_field is None or final_field is None or current_field is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                "Current age calculation requires one initial age field, "
+                "one final age field, and one current age field in this scope"
+            ),
+        )
+
+    return initial_field, final_field, current_field
+
+
+def _normalize_whole_age_or_400(
+    value: Decimal | None, *, event_id: int, age_role: str
+) -> int | None:
+    if value is None:
+        return None
+    whole_value = value.to_integral_value()
+    if value != whole_value:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=(
+                f"Event {event_id} has a non-integer {age_role} age value; "
+                "current age calculation only supports whole days"
+            ),
+        )
+    return int(whole_value)
+
+
 @router.get(
     "/scopes/{scope_id}/events",
     response_model=ScopeEventListResponse,
@@ -1846,6 +1915,263 @@ def delete_scope_event(
         label_lang="pt-BR",
         member=member,
         session=session,
+    )
+
+
+@router.post(
+    "/scopes/{scope_id}/events/calculate-current-age",
+    response_model=ScopeCurrentAgeCalculationResponse,
+)
+def calculate_scope_current_age(
+    scope_id: int,
+    body: ScopeCurrentAgeCalculationRequest,
+    member: Member = Depends(get_current_member),
+    session: Session = Depends(get_session),
+):
+    _require_scope_rules_editor(member)
+    _get_tenant_scope(session, actor=member, scope_id=scope_id)
+
+    moment_from_utc = body.moment_from_utc
+    moment_to_utc = body.moment_to_utc
+    if moment_from_utc.tzinfo is not None:
+        moment_from_utc = moment_from_utc.astimezone(UTC).replace(tzinfo=None)
+    if moment_to_utc.tzinfo is not None:
+        moment_to_utc = moment_to_utc.astimezone(UTC).replace(tzinfo=None)
+    if moment_from_utc > moment_to_utc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid event period",
+        )
+
+    initial_field, final_field, current_field = _resolve_scope_age_fields_or_400(
+        session, scope_id=scope_id
+    )
+
+    event_row_list = list(
+        session.scalars(
+            select(Event)
+            .join(Action, Event.action_id == Action.id)
+            .where(
+                Action.scope_id == scope_id,
+                Event.moment_utc >= moment_from_utc,
+                Event.moment_utc <= moment_to_utc,
+            )
+            .order_by(Event.moment_utc.asc(), Event.id.asc())
+        )
+    )
+    calculated_moment_utc = datetime.now(UTC).replace(tzinfo=None)
+    if not event_row_list:
+        return ScopeCurrentAgeCalculationResponse(
+            can_edit=True,
+            calculated_moment_utc=calculated_moment_utc,
+            created_count=0,
+            updated_count=0,
+            unchanged_count=0,
+            item_list=[],
+        )
+
+    event_id_list = [row.id for row in event_row_list]
+    relevant_field_id_list = list(
+        {initial_field.id, final_field.id, current_field.id}
+    )
+    result_row_list = list(
+        session.scalars(
+            select(Result)
+            .where(
+                Result.event_id.in_(event_id_list),
+                Result.field_id.in_(relevant_field_id_list),
+            )
+            .order_by(Result.event_id.asc(), Result.id.asc())
+        )
+    )
+
+    initial_age_by_event_id: dict[int, int] = {}
+    final_age_by_event_id: dict[int, int] = {}
+    current_result_by_event_id: dict[int, Result] = {}
+
+    for row in result_row_list:
+        if row.field_id == initial_field.id and row.event_id not in initial_age_by_event_id:
+            normalized_age = _normalize_whole_age_or_400(
+                row.numeric_value,
+                event_id=row.event_id,
+                age_role="initial",
+            )
+            if normalized_age is not None:
+                initial_age_by_event_id[row.event_id] = normalized_age
+            if current_field.id == row.field_id and row.event_id not in current_result_by_event_id:
+                current_result_by_event_id[row.event_id] = row
+            continue
+
+        if row.field_id == final_field.id and row.event_id not in final_age_by_event_id:
+            normalized_age = _normalize_whole_age_or_400(
+                row.numeric_value,
+                event_id=row.event_id,
+                age_role="final",
+            )
+            if normalized_age is not None:
+                final_age_by_event_id[row.event_id] = normalized_age
+            if current_field.id == row.field_id and row.event_id not in current_result_by_event_id:
+                current_result_by_event_id[row.event_id] = row
+            continue
+
+        if row.field_id == current_field.id and row.event_id not in current_result_by_event_id:
+            current_result_by_event_id[row.event_id] = row
+
+    event_row_by_id = {row.id: row for row in event_row_list}
+    event_row_list_by_group: defaultdict[tuple[int, int], list[Event]] = defaultdict(list)
+    for row in event_row_list:
+        event_row_list_by_group[(row.location_id, row.item_id)].append(row)
+
+    assignment_meta_by_event_id: dict[int, dict[str, int]] = {}
+
+    for group_event_row_list in event_row_list_by_group.values():
+        active_initial_event: Event | None = None
+        active_initial_age: int | None = None
+
+        for row in group_event_row_list:
+            next_initial_age = initial_age_by_event_id.get(row.id)
+            if next_initial_age is not None:
+                active_initial_event = row
+                active_initial_age = next_initial_age
+
+            final_age = final_age_by_event_id.get(row.id)
+            if (
+                active_initial_event is None
+                or active_initial_age is None
+                or final_age is None
+            ):
+                continue
+
+            initial_day = active_initial_event.moment_utc.date()
+            final_day = row.moment_utc.date()
+            day_span = (final_day - initial_day).days
+            expected_final_age = active_initial_age + day_span
+            if final_age != expected_final_age:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=(
+                        "Initial and final age values do not match the day span "
+                        f"between events {active_initial_event.id} and {row.id}"
+                    ),
+                )
+
+            for candidate in group_event_row_list:
+                candidate_day = candidate.moment_utc.date()
+                if candidate_day < initial_day or candidate_day > final_day:
+                    continue
+
+                numeric_value = active_initial_age + (candidate_day - initial_day).days
+                previous_assignment = assignment_meta_by_event_id.get(candidate.id)
+                if previous_assignment is not None and previous_assignment["numeric_value"] != numeric_value:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=(
+                            f"Overlapping current age ranges assign different values to event {candidate.id}"
+                        ),
+                    )
+
+                assignment_meta_by_event_id[candidate.id] = {
+                    "numeric_value": numeric_value,
+                    "source_initial_event_id": active_initial_event.id,
+                    "source_initial_age": active_initial_age,
+                    "source_final_event_id": row.id,
+                    "source_final_age": final_age,
+                }
+
+            active_initial_event = None
+            active_initial_age = None
+
+    if not assignment_meta_by_event_id:
+        return ScopeCurrentAgeCalculationResponse(
+            can_edit=True,
+            calculated_moment_utc=calculated_moment_utc,
+            created_count=0,
+            updated_count=0,
+            unchanged_count=0,
+            item_list=[],
+        )
+
+    created_count = 0
+    updated_count = 0
+    unchanged_count = 0
+    status_by_event_id: dict[int, Literal["created", "updated", "unchanged"]] = {}
+
+    for row in event_row_list:
+        assignment_meta = assignment_meta_by_event_id.get(row.id)
+        if assignment_meta is None:
+            continue
+
+        target_numeric_value = Decimal(assignment_meta["numeric_value"])
+        current_result = current_result_by_event_id.get(row.id)
+        if current_result is None:
+            current_result = Result(
+                event_id=row.id,
+                field_id=current_field.id,
+                text_value=None,
+                boolean_value=None,
+                numeric_value=target_numeric_value,
+                moment_utc=calculated_moment_utc,
+            )
+            session.add(current_result)
+            current_result_by_event_id[row.id] = current_result
+            status_by_event_id[row.id] = "created"
+            created_count += 1
+            continue
+
+        should_update = (
+            current_result.numeric_value != target_numeric_value
+            or current_result.text_value is not None
+            or current_result.boolean_value is not None
+        )
+        if should_update:
+            current_result.numeric_value = target_numeric_value
+            current_result.text_value = None
+            current_result.boolean_value = None
+            current_result.moment_utc = calculated_moment_utc
+            session.add(current_result)
+            status_by_event_id[row.id] = "updated"
+            updated_count += 1
+            continue
+
+        status_by_event_id[row.id] = "unchanged"
+        unchanged_count += 1
+
+    if created_count > 0 or updated_count > 0:
+        _apply_member_audit_context(session, member)
+        commit_session_with_null_if_empty(session)
+
+    item_list: list[ScopeCurrentAgeCalculationRecord] = []
+    for event_id in event_id_list:
+        assignment_meta = assignment_meta_by_event_id.get(event_id)
+        if assignment_meta is None:
+            continue
+        event_row = event_row_by_id[event_id]
+        current_result = current_result_by_event_id[event_id]
+        item_list.append(
+            ScopeCurrentAgeCalculationRecord(
+                event_id=event_row.id,
+                result_id=current_result.id,
+                field_id=current_field.id,
+                location_id=event_row.location_id,
+                item_id=event_row.item_id,
+                action_id=event_row.action_id,
+                event_moment_utc=event_row.moment_utc,
+                numeric_value=assignment_meta["numeric_value"],
+                source_initial_event_id=assignment_meta["source_initial_event_id"],
+                source_initial_age=assignment_meta["source_initial_age"],
+                source_final_event_id=assignment_meta["source_final_event_id"],
+                source_final_age=assignment_meta["source_final_age"],
+                status=status_by_event_id[event_id],
+            )
+        )
+
+    return ScopeCurrentAgeCalculationResponse(
+        can_edit=True,
+        calculated_moment_utc=calculated_moment_utc,
+        created_count=created_count,
+        updated_count=updated_count,
+        unchanged_count=unchanged_count,
+        item_list=item_list,
     )
 
 

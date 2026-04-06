@@ -200,6 +200,36 @@ export type TenantScopeEventDirectoryResponse = {
   item_list: TenantScopeEventRecord[];
 };
 
+export type ScopeCurrentAgeCalculationStatus =
+  | "created"
+  | "updated"
+  | "unchanged";
+
+export type ScopeCurrentAgeCalculationRecord = {
+  event_id: number;
+  result_id: number;
+  field_id: number;
+  location_id: number;
+  item_id: number;
+  action_id: number;
+  event_moment_utc: string;
+  numeric_value: number;
+  source_initial_event_id: number;
+  source_initial_age: number;
+  source_final_event_id: number;
+  source_final_age: number;
+  status: ScopeCurrentAgeCalculationStatus;
+};
+
+export type ScopeCurrentAgeCalculationResponse = {
+  can_edit: boolean;
+  calculated_moment_utc: string;
+  created_count: number;
+  updated_count: number;
+  unchanged_count: number;
+  item_list: ScopeCurrentAgeCalculationRecord[];
+};
+
 export type ScopeFormulaRecord = {
   id: number;
   action_id: number;

@@ -11,6 +11,7 @@
       "action": "Actions",
       "unity": "Units",
       "event": "Events",
+      "calculation": "Calculation",
       "configuration": "Configuration",
       "comingSoon": "coming soon"
     },
@@ -570,6 +571,60 @@
       "actionRequired": "Select an action."
     },
     "discardConfirm": "Discard unsaved changes?"
+  },
+  "CalculationPage": {
+    "title": "Current age calculation",
+    "description": "Choose a period to find events with initial and final age, recalculate the current age field, and review the results saved inside the selected filter.",
+    "status": {
+      "readyTitle": "Age fields are ready",
+      "readyDescription": "The active scope already has one initial, one current, and one final age field to support the daily recalculation.",
+      "missingTitle": "Age setup is incomplete",
+      "missingDescription": "Before calculating, mark in the scope fields which one is initial age, current age, and final age."
+    },
+    "state": {
+      "emptyScope": "Create a scope before calculating the current age.",
+      "missingCurrentScope": "Select an active scope in the header before calculating the current age.",
+      "readOnlyNotice": "You can view this panel, but only master or administrator members can recalculate and write results."
+    },
+    "panel": {
+      "startLabel": "Start date",
+      "endLabel": "End date",
+      "dateHint": "The calculation covers the full range from the start of the first day to the end of the last day.",
+      "calculate": "Calculate",
+      "calculating": "Calculating...",
+      "validationRequired": "Select both dates to calculate.",
+      "validationOrder": "The start date must be earlier than or equal to the end date.",
+      "error": "Could not calculate the current age. Try again."
+    },
+    "fields": {
+      "title": "Fields used in the calculation",
+      "description": "The scope flags define where the initial and final age come from and which field receives the persisted result.",
+      "initialBadge": "Initial age",
+      "currentBadge": "Current age",
+      "finalBadge": "Final age",
+      "targetLabel": "Target field",
+      "missingLabel": "Pending"
+    },
+    "result": {
+      "title": "Results in the period",
+      "description": "Each line below represents the value persisted in result.numeric_value for the field marked as current age.",
+      "placeholder": "Select the dates and run the calculation to see the results for this period.",
+      "empty": "No initial and final age pair was found in this period to generate results.",
+      "createdLabel": "Created",
+      "updatedLabel": "Updated",
+      "unchangedLabel": "Kept",
+      "statusCreated": "Created",
+      "statusUpdated": "Updated",
+      "statusUnchanged": "Kept",
+      "locationLabel": "Location",
+      "itemLabel": "Item",
+      "actionLabel": "Action",
+      "sourceLabel": "Range",
+      "calculatedAtLabel": "Calculated at",
+      "fallbackLocation": "Unavailable location",
+      "fallbackItem": "Unavailable item",
+      "fallbackAction": "Unavailable action"
+    }
   },
   "LocationConfigurationPage": {
     "title": "Locations",
