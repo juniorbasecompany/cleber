@@ -754,6 +754,8 @@
     "discardConfirm": "¿Descartar los cambios no guardados?"
   },
   "AuditHistory": {
+    "toggleAriaLabel": "Mostrar u ocultar el historial del panel",
+    "toggleLabel": "Historial",
     "loading": "Cargando historial...",
     "empty": "No se encontraron registros de historial.",
     "unknownUser": "Usuario desconocido",

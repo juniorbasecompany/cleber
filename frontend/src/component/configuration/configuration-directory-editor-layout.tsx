@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode, RefObject } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 
 import { PageHeader } from "@/component/app-shell/page-header";
 import {
@@ -10,6 +11,11 @@ import {
   type ConfigurationEditorFooterProps
 } from "@/component/configuration/configuration-editor-footer";
 import { ConfigurationHistoryPanel } from "@/component/configuration/configuration-history-panel";
+import { ConfigurationPanelVisibilitySwitch } from "@/component/configuration/configuration-panel-visibility-switch";
+import {
+  toggleHistoryPanelVisible,
+  useHistoryPanelVisible
+} from "@/component/configuration/history-panel-visibility";
 import type { AuditLogTableName } from "@/lib/auth/types";
 
 /** Pesos de flex-grow entre o aside do diretório e o painel do editor (espaço extra após bases mínimas). */
@@ -51,7 +57,9 @@ export function ConfigurationDirectoryEditorLayout({
   history,
   footer
 }: ConfigurationDirectoryEditorLayoutProps) {
+  const tHistory = useTranslations("AuditHistory");
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const historyVisible = useHistoryPanelVisible(history.tableName);
 
   useEffect(() => {
     setPortalTarget(document.getElementById("app-shell-footer-slot"));
@@ -68,6 +76,15 @@ export function ConfigurationDirectoryEditorLayout({
       >
         <aside className="ui-panel ui-stack-lg ui-panel-context-card">
           {directoryAside}
+
+          <div className="ui-panel-visibility-footer">
+            <ConfigurationPanelVisibilitySwitch
+              checked={historyVisible}
+              ariaLabel={tHistory("toggleAriaLabel")}
+              label={tHistory("toggleLabel")}
+              onToggle={() => toggleHistoryPanelVisible(history.tableName)}
+            />
+          </div>
         </aside>
 
         <div
@@ -79,13 +96,15 @@ export function ConfigurationDirectoryEditorLayout({
         </div>
       </div>
 
-      <ConfigurationHistoryPanel
-        headingId={history.headingId}
-        title={history.title}
-        description={history.description}
-        tableName={history.tableName}
-        refreshKey={history.refreshKey}
-      />
+      {historyVisible ? (
+        <ConfigurationHistoryPanel
+          headingId={history.headingId}
+          title={history.title}
+          description={history.description}
+          tableName={history.tableName}
+          refreshKey={history.refreshKey}
+        />
+      ) : null}
 
       {portalTarget
         ? createPortal(<ConfigurationEditorFooter {...footer} />, portalTarget)

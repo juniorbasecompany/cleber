@@ -758,6 +758,8 @@
     "discardConfirm": "Discard unsaved changes?"
   },
   "AuditHistory": {
+    "toggleAriaLabel": "Show or hide the panel history",
+    "toggleLabel": "History",
     "loading": "Loading history...",
     "empty": "No history records found.",
     "unknownUser": "Unknown user",

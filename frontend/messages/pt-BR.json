@@ -754,6 +754,8 @@
     "discardConfirm": "Descartar alterações não salvas?"
   },
   "AuditHistory": {
+    "toggleAriaLabel": "Mostrar ou ocultar o histórico do painel",
+    "toggleLabel": "Histórico",
     "loading": "Carregando histórico...",
     "empty": "Nenhum registro de histórico encontrado.",
     "unknownUser": "Usuário desconhecido",
