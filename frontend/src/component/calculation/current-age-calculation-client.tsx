@@ -731,7 +731,7 @@ export function CurrentAgeCalculationClient({
                           {(initialFieldDirectory?.item_list ?? []).map((field) => (
                             <td key={`${item.result_id}-${field.id}`}>
                               {field.id === item.field_id
-                                ? formatPersistedValue(item, copy.emptyValue, field.type)
+                                ? formatPersistedValue(item, copy.emptyValue, field.sql_type)
                                 : ""}
                             </td>
                           ))}
