@@ -322,7 +322,11 @@ export function CurrentAgeCalculationClient({
   const [isCalculating, setIsCalculating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [result, setResult] = useState<ScopeCurrentAgeCalculationResponse | null>(null);
-  const [expandedResultId, setExpandedResultId] = useState<number | null>(null);
+  const [activeDropdown, setActiveDropdown] = useState<{
+    resultId: number;
+    top: number;
+    left: number;
+  } | null>(null);
 
   const initialField = useMemo(
     () => initialFieldDirectory?.item_list.find((item) => item.is_initial_age) ?? null,
@@ -436,8 +440,49 @@ export function CurrentAgeCalculationClient({
   }, []);
 
   useEffect(() => {
-    setExpandedResultId(null);
+    setActiveDropdown(null);
   }, [result, momentFrom, momentTo, locationId, itemId]);
+
+  useEffect(() => {
+    if (activeDropdown == null) {
+      return undefined;
+    }
+
+    function handlePointerDown(event: MouseEvent) {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) {
+        return;
+      }
+      if (target.closest("[data-current-age-dropdown-anchor]")) {
+        return;
+      }
+      if (target.closest("[data-current-age-dropdown-panel]")) {
+        return;
+      }
+      setActiveDropdown(null);
+    }
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        setActiveDropdown(null);
+      }
+    }
+
+    function handleViewportChange() {
+      setActiveDropdown(null);
+    }
+
+    document.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("resize", handleViewportChange);
+    window.addEventListener("scroll", handleViewportChange, true);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("resize", handleViewportChange);
+      window.removeEventListener("scroll", handleViewportChange, true);
+    };
+  }, [activeDropdown]);
 
   function validateRequest() {
     if (!currentScope || !canEdit || !isReady) {
@@ -742,7 +787,7 @@ export function CurrentAgeCalculationClient({
                     </thead>
                     <tbody>
                       {resultDisplayRowList.map(({ item, dayBandIndex }) => {
-                        const isExpanded = expandedResultId === item.result_id;
+                        const isExpanded = activeDropdown?.resultId === item.result_id;
 
                         return (
                           <Fragment key={item.result_id}>
@@ -758,54 +803,44 @@ export function CurrentAgeCalculationClient({
                                 }
 
                                 return (
-                                  <td key={`${item.result_id}-${field.id}`}>
-                                    <button
-                                      type="button"
-                                      className="ui-current-age-table-value-button"
-                                      onClick={() => {
-                                        setExpandedResultId((current) => (
-                                          current === item.result_id ? null : item.result_id
-                                        ));
-                                      }}
+                                  <td
+                                    key={`${item.result_id}-${field.id}`}
+                                    className="ui-current-age-table-value-cell"
+                                  >
+                                    <div className="ui-current-age-table-value-dropdown">
+                                      <button
+                                        type="button"
+                                        className="ui-current-age-table-value-button"
+                                        data-current-age-dropdown-anchor
+                                        onClick={(event) => {
+                                          if (isExpanded) {
+                                            setActiveDropdown(null);
+                                            return;
+                                          }
+
+                                          const rect = event.currentTarget.getBoundingClientRect();
+                                          const dropdownWidth = 352;
+                                          const viewportPadding = 12;
+                                          const left = Math.min(
+                                            Math.max(viewportPadding, rect.left),
+                                            window.innerWidth - dropdownWidth - viewportPadding
+                                          );
+
+                                          setActiveDropdown({
+                                            resultId: item.result_id,
+                                            top: rect.bottom + 6,
+                                            left
+                                          });
+                                        }}
                                       aria-expanded={isExpanded}
                                     >
-                                      {formatPersistedValue(item, copy.emptyValue, field.sql_type)}
-                                    </button>
+                                        {formatPersistedValue(item, copy.emptyValue, field.sql_type)}
+                                      </button>
+                                    </div>
                                   </td>
                                 );
                               })}
                             </tr>
-                            {isExpanded ? (
-                              <tr className="ui-current-age-table-detail-row">
-                                <td
-                                  colSpan={1 + (initialFieldDirectory?.item_list.length ?? 0)}
-                                  className="ui-current-age-table-detail-cell"
-                                >
-                                  <div className="ui-card ui-card-stack ui-current-age-formula-box">
-                                    <div className="ui-current-age-formula-box-row">
-                                      <span className="ui-current-age-formula-box-label">
-                                        {copy.actionLabel}
-                                      </span>
-                                      <span>
-                                        {actionLabelById.get(item.action_id) ?? copy.fallbackAction}
-                                      </span>
-                                    </div>
-                                    <div className="ui-current-age-formula-box-row">
-                                      <span className="ui-current-age-formula-box-label">
-                                        {copy.formulaLabel}
-                                      </span>
-                                      <span className="ui-current-age-formula-box-formula">
-                                        {renderFormulaStatementInline(
-                                          formulaRawStatementById.get(item.formula_id)
-                                            ?? `#${item.formula_id}`,
-                                          fieldLabelById
-                                        )}
-                                      </span>
-                                    </div>
-                                  </div>
-                                </td>
-                              </tr>
-                            ) : null}
                           </Fragment>
                         );
                       })}
@@ -852,6 +887,40 @@ export function CurrentAgeCalculationClient({
             )}
           />,
           footerPortalTarget
+        )
+        : null}
+
+      {activeDropdown
+        ? createPortal(
+          (() => {
+            const item = resultRowList.find((entry) => entry.result_id === activeDropdown.resultId);
+            if (!item) {
+              return null;
+            }
+
+            return (
+              <div
+                className="ui-current-age-table-dropdown-panel"
+                data-current-age-dropdown-panel
+                style={{ top: `${activeDropdown.top}px`, left: `${activeDropdown.left}px` }}
+              >
+                <div className="ui-current-age-formula-box-row">
+                  <span>
+                    {actionLabelById.get(item.action_id) ?? copy.fallbackAction}
+                  </span>
+                </div>
+                <div className="ui-current-age-formula-box-row">
+                  <span className="ui-current-age-formula-box-formula">
+                    {renderFormulaStatementInline(
+                      formulaRawStatementById.get(item.formula_id) ?? `#${item.formula_id}`,
+                      fieldLabelById
+                    )}
+                  </span>
+                </div>
+              </div>
+            );
+          })(),
+          document.body
         )
         : null}
     </section>

@@ -76,12 +76,13 @@
 
 .ui-current-age-table-shell {
   padding: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .ui-current-age-table-scroll {
   overflow-x: auto;
-  overflow-y: auto;
+  overflow-y: visible;
+  position: relative;
 }
 
 .ui-current-age-table {
@@ -175,22 +176,28 @@
   border-radius: var(--radius-control);
 }
 
-.ui-current-age-table-detail-row td {
-  vertical-align: top;
+.ui-current-age-table-value-cell {
+  position: static;
 }
 
-.ui-current-age-table-detail-cell {
-  padding: 0.5rem 0.625rem;
+.ui-current-age-table-value-dropdown {
+  display: flex;
+  justify-content: center;
+}
+
+.ui-current-age-table-dropdown-panel {
+  position: fixed;
+  z-index: calc(var(--z-menu-panel) + 1);
+  width: max-content;
+  min-width: 0;
+  max-width: calc(100vw - 1.5rem);
+  padding: 0.75rem 0.875rem;
+  border: var(--border-width-default) solid var(--color-accent-vertical-border);
+  border-radius: var(--radius-card);
+  background: white;
+  box-shadow: var(--shadow-menu-panel);
   text-align: left;
   white-space: normal;
-}
-
-.ui-current-age-formula-box {
-  gap: 0.5rem;
-  padding: 0.75rem 0.875rem;
-  border-color: var(--color-accent-vertical-border);
-  background: transparent;
-  box-shadow: none;
 }
 
 .ui-current-age-formula-box-row {
