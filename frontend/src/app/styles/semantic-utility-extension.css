@@ -95,7 +95,7 @@
   padding: 0.35rem 0.5rem;
   border-right: var(--border-width-default) solid var(--color-border);
   border-bottom: var(--border-width-default) solid var(--color-border);
-  vertical-align: top;
+  vertical-align: middle;
   text-align: left;
   white-space: nowrap;
   line-height: 1.2;
@@ -105,9 +105,10 @@
   font-size: 0.875rem;
   font-weight: 400;
   color: var(--color-text);
+  background: white;
 }
 
-.ui-current-age-table td:nth-child(n+4) {
+.ui-current-age-table td:nth-child(n+2) {
   text-align: center;
 }
 
@@ -139,6 +140,14 @@
   background: var(--color-surface);
 }
 
+.ui-current-age-table tbody tr.ui-current-age-table-day-band-even {
+  background: color-mix(in srgb, var(--color-surface) 92%, var(--color-accent-surface) 8%);
+}
+
+.ui-current-age-table tbody tr.ui-current-age-table-day-band-odd {
+  background: color-mix(in srgb, var(--color-surface) 84%, var(--color-accent-surface) 16%);
+}
+
 .ui-current-age-table-cell-stack {
   display: grid;
   gap: 0.125rem;
@@ -146,22 +155,60 @@
   font-weight: 400;
 }
 
-.ui-current-age-table-cell-formula {
-  min-width: 18rem;
+.ui-current-age-table-value-button {
+  display: inline-flex;
+  min-width: 100%;
+  align-items: center;
+  justify-content: center;
+  padding: 0.125rem;
+  border: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.ui-current-age-table-value-button:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus-ring);
+  border-radius: var(--radius-control);
+}
+
+.ui-current-age-table-detail-row td {
+  vertical-align: top;
+}
+
+.ui-current-age-table-detail-cell {
+  padding: 0.5rem 0.625rem;
+  text-align: left;
+  white-space: normal;
+}
+
+.ui-current-age-formula-box {
+  gap: 0.5rem;
+  padding: 0.75rem 0.875rem;
+  border-color: var(--color-accent-vertical-border);
+  background: transparent;
+  box-shadow: none;
+}
+
+.ui-current-age-formula-box-row {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ui-current-age-formula-box-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--color-text-subtle);
+}
+
+.ui-current-age-formula-box-formula {
   white-space: normal;
   word-break: break-word;
-}
-
-.ui-current-age-table-formula-stack {
-  display: grid;
-  gap: 0.15rem;
-  font-size: 0.8125rem;
-  font-weight: 400;
-}
-
-.ui-current-age-table-formula-action {
-  color: inherit;
-  font-weight: 400;
 }
 
 .ui-shell-page {

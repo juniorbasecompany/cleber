@@ -322,6 +322,7 @@ export function CurrentAgeCalculationClient({
   const [isCalculating, setIsCalculating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [result, setResult] = useState<ScopeCurrentAgeCalculationResponse | null>(null);
+  const [expandedResultId, setExpandedResultId] = useState<number | null>(null);
 
   const initialField = useMemo(
     () => initialFieldDirectory?.item_list.find((item) => item.is_initial_age) ?? null,
@@ -406,6 +407,20 @@ export function CurrentAgeCalculationClient({
     ));
   }, [actionOrderById, fieldSortOrderById, result]);
 
+  const resultDisplayRowList = useMemo(() => {
+    let previousDayKey = "";
+    let dayBandIndex = -1;
+
+    return resultRowList.map((item) => {
+      const dayKey = item.result_moment_utc.slice(0, 10);
+      if (dayKey !== previousDayKey) {
+        dayBandIndex += 1;
+        previousDayKey = dayKey;
+      }
+      return { item, dayBandIndex };
+    });
+  }, [resultRowList]);
+
   const emptyResultMessage = useMemo(() => (
     resolveEmptyResultMessage(result?.empty_reason, copy)
   ), [copy, result?.empty_reason]);
@@ -419,6 +434,10 @@ export function CurrentAgeCalculationClient({
   useEffect(() => {
     setFooterPortalTarget(document.getElementById("app-shell-footer-slot"));
   }, []);
+
+  useEffect(() => {
+    setExpandedResultId(null);
+  }, [result, momentFrom, momentTo, locationId, itemId]);
 
   function validateRequest() {
     if (!currentScope || !canEdit || !isReady) {
@@ -714,7 +733,6 @@ export function CurrentAgeCalculationClient({
                     <thead>
                       <tr>
                         <th>{copy.resultDateLabel}</th>
-                        <th>{copy.formulaLabel}</th>
                         {initialFieldDirectory?.item_list.map((field) => (
                           <th key={`header-${field.id}`}>
                             {field.label_name?.trim() || `#${field.id}`}
@@ -723,28 +741,74 @@ export function CurrentAgeCalculationClient({
                       </tr>
                     </thead>
                     <tbody>
-                      {resultRowList.map((item) => (
-                        <tr key={item.result_id}>
-                          <td>{formatDayCompact(item.result_moment_utc)}</td>
-                          <td className="ui-current-age-table-cell-formula">
-                            <div className="ui-current-age-table-formula-stack">
-                              <span className="ui-current-age-table-formula-action">
-                                {actionLabelById.get(item.action_id) ?? copy.fallbackAction}
-                              </span>
-                              <span>
-                                {formulaStatementById.get(item.formula_id) ?? `#${item.formula_id}`}
-                              </span>
-                            </div>
-                          </td>
-                          {(initialFieldDirectory?.item_list ?? []).map((field) => (
-                            <td key={`${item.result_id}-${field.id}`}>
-                              {field.id === item.field_id
-                                ? formatPersistedValue(item, copy.emptyValue, field.sql_type)
-                                : ""}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
+                      {resultDisplayRowList.map(({ item, dayBandIndex }) => {
+                        const isExpanded = expandedResultId === item.result_id;
+
+                        return (
+                          <Fragment key={item.result_id}>
+                            <tr
+                              className={dayBandIndex % 2 === 0
+                                ? "ui-current-age-table-day-band-even"
+                                : "ui-current-age-table-day-band-odd"}
+                            >
+                              <td>{formatDayCompact(item.result_moment_utc)}</td>
+                              {(initialFieldDirectory?.item_list ?? []).map((field) => {
+                                if (field.id !== item.field_id) {
+                                  return <td key={`${item.result_id}-${field.id}`}></td>;
+                                }
+
+                                return (
+                                  <td key={`${item.result_id}-${field.id}`}>
+                                    <button
+                                      type="button"
+                                      className="ui-current-age-table-value-button"
+                                      onClick={() => {
+                                        setExpandedResultId((current) => (
+                                          current === item.result_id ? null : item.result_id
+                                        ));
+                                      }}
+                                      aria-expanded={isExpanded}
+                                    >
+                                      {formatPersistedValue(item, copy.emptyValue, field.sql_type)}
+                                    </button>
+                                  </td>
+                                );
+                              })}
+                            </tr>
+                            {isExpanded ? (
+                              <tr className="ui-current-age-table-detail-row">
+                                <td
+                                  colSpan={1 + (initialFieldDirectory?.item_list.length ?? 0)}
+                                  className="ui-current-age-table-detail-cell"
+                                >
+                                  <div className="ui-card ui-card-stack ui-current-age-formula-box">
+                                    <div className="ui-current-age-formula-box-row">
+                                      <span className="ui-current-age-formula-box-label">
+                                        {copy.actionLabel}
+                                      </span>
+                                      <span>
+                                        {actionLabelById.get(item.action_id) ?? copy.fallbackAction}
+                                      </span>
+                                    </div>
+                                    <div className="ui-current-age-formula-box-row">
+                                      <span className="ui-current-age-formula-box-label">
+                                        {copy.formulaLabel}
+                                      </span>
+                                      <span className="ui-current-age-formula-box-formula">
+                                        {renderFormulaStatementInline(
+                                          formulaRawStatementById.get(item.formula_id)
+                                            ?? `#${item.formula_id}`,
+                                          fieldLabelById
+                                        )}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </td>
+                              </tr>
+                            ) : null}
+                          </Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
