@@ -2,8 +2,8 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 export type ConfigurationEditorFooterProps = {
-    configurationPath: string;
-    cancelLabel: string;
+    configurationPath?: string;
+    cancelLabel?: string;
     discardConfirm: string;
     isDirty: boolean;
     footerErrorMessage: string | null;
@@ -14,6 +14,7 @@ export type ConfigurationEditorFooterProps = {
     saveLabel: string;
     savingLabel: string;
     isSaving: boolean;
+    startContent?: ReactNode;
     dangerAction?: ReactNode;
 };
 
@@ -28,16 +29,22 @@ export function ConfigurationEditorFooter({
     saveLabel,
     savingLabel,
     isSaving,
+    startContent,
     dangerAction
 }: ConfigurationEditorFooterProps) {
     return (
         <div className="ui-action-footer">
-            <Link
-                href={configurationPath}
-                className="ui-button-secondary"
-            >
-                {cancelLabel}
-            </Link>
+            <div className="ui-action-footer-start">
+                {startContent}
+                {configurationPath && cancelLabel ? (
+                    <Link
+                        href={configurationPath}
+                        className="ui-button-secondary"
+                    >
+                        {cancelLabel}
+                    </Link>
+                ) : null}
+            </div>
             <div className="ui-action-footer-feedback">
                 {footerErrorMessage ? (
                     <div

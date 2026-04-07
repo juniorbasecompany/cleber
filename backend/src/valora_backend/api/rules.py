@@ -1862,6 +1862,8 @@ class ScopeEventPatchRequest(BaseModel):
 class ScopeCurrentAgeCalculationRequest(BaseModel):
     moment_from_utc: datetime
     moment_to_utc: datetime
+    location_id: int | None = None
+    item_id: int | None = None
 
 
 class ScopeCurrentAgeCalculationRecord(BaseModel):
@@ -1953,19 +1955,35 @@ def _list_scope_current_age_results(
     scope_id: int,
     moment_from_utc: datetime,
     moment_to_utc: datetime,
+    location_id: int | None,
+    item_id: int | None,
     session: Session,
 ) -> ScopeCurrentAgeCalculationResponse:
+    query = (
+        select(Result, Event)
+        .join(Event, Result.event_id == Event.id)
+        .join(Action, Event.action_id == Action.id)
+        .where(
+            Action.scope_id == scope_id,
+            Result.moment_utc >= moment_from_utc,
+            Result.moment_utc <= moment_to_utc,
+        )
+    )
+    if location_id is not None:
+        _location_in_scope_or_404(session, scope_id=scope_id, location_id=location_id)
+        expanded_location_id_list = _expand_scope_location_id_list_with_descendants(
+            session, scope_id=scope_id, location_id_list=[location_id]
+        )
+        query = query.where(Event.location_id.in_(expanded_location_id_list))
+    if item_id is not None:
+        _item_in_scope_or_404(session, scope_id=scope_id, item_id=item_id)
+        expanded_item_id_list = _expand_scope_item_id_list_with_descendants(
+            session, scope_id=scope_id, item_id_list=[item_id]
+        )
+        query = query.where(Event.item_id.in_(expanded_item_id_list))
     result_row_list = list(
         session.execute(
-            select(Result, Event)
-            .join(Event, Result.event_id == Event.id)
-            .join(Action, Event.action_id == Action.id)
-            .where(
-                Action.scope_id == scope_id,
-                Result.moment_utc >= moment_from_utc,
-                Result.moment_utc <= moment_to_utc,
-            )
-            .order_by(
+            query.order_by(
                 func.date(Result.moment_utc).asc(),
                 Action.sort_order.asc(),
                 Event.moment_utc.asc(),
@@ -2458,6 +2476,8 @@ def read_scope_current_age(
         scope_id=scope_id,
         moment_from_utc=moment_from_utc,
         moment_to_utc=moment_to_utc,
+        location_id=body.location_id,
+        item_id=body.item_id,
         session=session,
     )
 
@@ -2487,6 +2507,11 @@ def delete_scope_current_age(
             detail="Invalid event period",
         )
 
+    if body.location_id is not None:
+        _location_in_scope_or_404(session, scope_id=scope_id, location_id=body.location_id)
+    if body.item_id is not None:
+        _item_in_scope_or_404(session, scope_id=scope_id, item_id=body.item_id)
+
     event_id_list = list(
         session.scalars(
             select(Event.id)
@@ -2497,6 +2522,49 @@ def delete_scope_current_age(
             )
         )
     )
+    if body.location_id is not None:
+        expanded_location_id_list = _expand_scope_location_id_list_with_descendants(
+            session, scope_id=scope_id, location_id_list=[body.location_id]
+        )
+        event_id_list = list(
+            session.scalars(
+                select(Event.id)
+                .join(Action, Event.action_id == Action.id)
+                .where(
+                    Action.scope_id == scope_id,
+                    Event.moment_utc <= moment_to_utc,
+                    Event.location_id.in_(expanded_location_id_list),
+                    *(
+                        []
+                        if body.item_id is None
+                        else [
+                            Event.item_id.in_(
+                                _expand_scope_item_id_list_with_descendants(
+                                    session,
+                                    scope_id=scope_id,
+                                    item_id_list=[body.item_id],
+                                )
+                            )
+                        ]
+                    ),
+                )
+            )
+        )
+    elif body.item_id is not None:
+        expanded_item_id_list = _expand_scope_item_id_list_with_descendants(
+            session, scope_id=scope_id, item_id_list=[body.item_id]
+        )
+        event_id_list = list(
+            session.scalars(
+                select(Event.id)
+                .join(Action, Event.action_id == Action.id)
+                .where(
+                    Action.scope_id == scope_id,
+                    Event.moment_utc <= moment_to_utc,
+                    Event.item_id.in_(expanded_item_id_list),
+                )
+            )
+        )
     calculated_moment_utc = datetime.now(UTC).replace(tzinfo=None)
     if not event_id_list:
         return ScopeCurrentAgeCalculationResponse(
@@ -2558,6 +2626,22 @@ def calculate_scope_current_age(
             detail="Invalid event period",
         )
 
+    if body.location_id is not None:
+        _location_in_scope_or_404(session, scope_id=scope_id, location_id=body.location_id)
+    if body.item_id is not None:
+        _item_in_scope_or_404(session, scope_id=scope_id, item_id=body.item_id)
+
+    expanded_location_id_list: list[int] | None = None
+    expanded_item_id_list: list[int] | None = None
+    if body.location_id is not None:
+        expanded_location_id_list = _expand_scope_location_id_list_with_descendants(
+            session, scope_id=scope_id, location_id_list=[body.location_id]
+        )
+    if body.item_id is not None:
+        expanded_item_id_list = _expand_scope_item_id_list_with_descendants(
+            session, scope_id=scope_id, item_id_list=[body.item_id]
+        )
+
     initial_field, final_field, current_field = _resolve_scope_age_fields_or_400(
         session, scope_id=scope_id
     )
@@ -2578,6 +2662,8 @@ def calculate_scope_current_age(
                 .where(
                     Action.scope_id == scope_id,
                     Event.moment_utc <= moment_to_utc,
+                    *([] if expanded_location_id_list is None else [Event.location_id.in_(expanded_location_id_list)]),
+                    *([] if expanded_item_id_list is None else [Event.item_id.in_(expanded_item_id_list)]),
                 )
             )
         ),

@@ -89,7 +89,12 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           readOnlyNotice: t("state.readOnlyNotice"),
           startLabel: t("panel.startLabel"),
           endLabel: t("panel.endLabel"),
-          dateHint: t("panel.dateHint"),
+          startHint: t("panel.startHint"),
+          endHint: t("panel.endHint"),
+          locationLabel: t("panel.locationLabel"),
+          locationHint: t("panel.locationHint"),
+          itemLabel: t("panel.itemLabel"),
+          itemHint: t("panel.itemHint"),
           read: t("panel.read"),
           reading: t("panel.reading"),
           calculate: t("panel.calculate"),
@@ -109,13 +114,9 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           resultEmptyNoPersistedResultsInPeriod: t("result.emptyNoPersistedResultsInPeriod"),
           resultEmptyNoResultsToDeleteInPeriod: t("result.emptyNoResultsToDeleteInPeriod"),
           resultDateLabel: t("result.dateLabel"),
-          locationLabel: t("result.locationLabel"),
-          itemLabel: t("result.itemLabel"),
           actionLabel: t("result.actionLabel"),
           formulaLabel: t("result.formulaLabel"),
           emptyValue: t("result.emptyValue"),
-          fallbackLocation: t("result.fallbackLocation"),
-          fallbackItem: t("result.fallbackItem"),
           fallbackAction: t("result.fallbackAction")
         }}
       />

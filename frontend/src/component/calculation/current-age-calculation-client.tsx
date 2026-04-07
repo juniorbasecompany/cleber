@@ -1,8 +1,15 @@
 "use client";
 
-import { Fragment, useMemo, useState, type ReactNode } from "react";
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
+import {
+  DirectoryFilterCard,
+  DirectoryFilterPanel
+} from "@/component/configuration/directory-filter-panel";
+import { ConfigurationEditorFooter } from "@/component/configuration/configuration-editor-footer";
+import { HierarchySingleSelectField } from "@/component/configuration/hierarchy-dropdown-field";
 import { StatusPanel } from "@/component/app-shell/status-panel";
 import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import type {
@@ -30,7 +37,12 @@ type CurrentAgeCalculationCopy = {
   readOnlyNotice: string;
   startLabel: string;
   endLabel: string;
-  dateHint: string;
+  startHint: string;
+  endHint: string;
+  locationLabel: string;
+  locationHint: string;
+  itemLabel: string;
+  itemHint: string;
   read: string;
   reading: string;
   calculate: string;
@@ -50,13 +62,9 @@ type CurrentAgeCalculationCopy = {
   resultEmptyNoPersistedResultsInPeriod: string;
   resultEmptyNoResultsToDeleteInPeriod: string;
   resultDateLabel: string;
-  locationLabel: string;
-  itemLabel: string;
   actionLabel: string;
   formulaLabel: string;
   emptyValue: string;
-  fallbackLocation: string;
-  fallbackItem: string;
   fallbackAction: string;
 };
 
@@ -71,8 +79,6 @@ type CurrentAgeCalculationClientProps = {
   initialFormulaList: ScopeFormulaRecord[];
   copy: CurrentAgeCalculationCopy;
 };
-
-const UI_TEXT_SEPARATOR = "\u00A0\u00A0\u25CF\u00A0\u00A0";
 
 function formatDayCompact(value: string) {
   const parsed = new Date(value);
@@ -305,8 +311,11 @@ export function CurrentAgeCalculationClient({
   initialFormulaList,
   copy
 }: CurrentAgeCalculationClientProps) {
+  const [footerPortalTarget, setFooterPortalTarget] = useState<HTMLElement | null>(null);
   const [momentFrom, setMomentFrom] = useState<Date | null>(null);
   const [momentTo, setMomentTo] = useState<Date | null>(null);
+  const [locationId, setLocationId] = useState<number | null>(null);
+  const [itemId, setItemId] = useState<number | null>(null);
   const [requestErrorMessage, setRequestErrorMessage] = useState<ReactNode | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
@@ -328,28 +337,6 @@ export function CurrentAgeCalculationClient({
 
   const canEdit = initialFieldDirectory?.can_edit ?? false;
   const isReady = initialField != null && currentField != null && finalField != null;
-
-  const locationLabelById = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const item of initialLocationDirectory?.item_list ?? []) {
-      const label = item.path_labels.length > 0
-        ? item.path_labels.join(UI_TEXT_SEPARATOR)
-        : item.name.trim() || item.display_name.trim() || `#${item.id}`;
-      map.set(item.id, label);
-    }
-    return map;
-  }, [initialLocationDirectory?.item_list]);
-
-  const itemLabelById = useMemo(() => {
-    const map = new Map<number, string>();
-    for (const item of initialItemDirectory?.item_list ?? []) {
-      const label = item.path_labels.length > 0
-        ? item.path_labels.join(UI_TEXT_SEPARATOR)
-        : item.name.trim() || item.display_name.trim() || `#${item.id}`;
-      map.set(item.id, label);
-    }
-    return map;
-  }, [initialItemDirectory?.item_list]);
 
   const actionLabelById = useMemo(() => {
     const map = new Map<number, string>();
@@ -428,6 +415,10 @@ export function CurrentAgeCalculationClient({
       : copy.emptyScope
     : null;
 
+  useEffect(() => {
+    setFooterPortalTarget(document.getElementById("app-shell-footer-slot"));
+  }, []);
+
   function validateRequest() {
     if (!currentScope || !canEdit || !isReady) {
       return false;
@@ -464,7 +455,9 @@ export function CurrentAgeCalculationClient({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             moment_from_utc: currentMomentFrom.toISOString(),
-            moment_to_utc: currentMomentTo.toISOString()
+            moment_to_utc: currentMomentTo.toISOString(),
+            location_id: locationId,
+            item_id: itemId
           })
         }
       );
@@ -518,7 +511,9 @@ export function CurrentAgeCalculationClient({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             moment_from_utc: currentMomentFrom.toISOString(),
-            moment_to_utc: currentMomentTo.toISOString()
+            moment_to_utc: currentMomentTo.toISOString(),
+            location_id: locationId,
+            item_id: itemId
           })
         }
       );
@@ -572,7 +567,9 @@ export function CurrentAgeCalculationClient({
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             moment_from_utc: currentMomentFrom.toISOString(),
-            moment_to_utc: currentMomentTo.toISOString()
+            moment_to_utc: currentMomentTo.toISOString(),
+            location_id: locationId,
+            item_id: itemId
           })
         }
       );
@@ -596,7 +593,7 @@ export function CurrentAgeCalculationClient({
   }
 
   return (
-    <section className="ui-page-stack">
+    <section className="ui-page-stack ui-page-stack-footer">
       <PageHeader
         title={copy.title}
         description={copy.description}
@@ -617,73 +614,83 @@ export function CurrentAgeCalculationClient({
             <div className="ui-notice-attention ui-notice-block">{copy.readOnlyNotice}</div>
           ) : null}
 
-          <section className="ui-card ui-form-section ui-border-accent">
-            <div className="ui-grid-cards-2">
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="current-age-start">
-                  {copy.startLabel}
-                </label>
-                <TenantDateTimePicker
-                  id="current-age-start"
-                  value={momentFrom}
-                  onChange={(value) => {
-                    setMomentFrom(value);
-                    setRequestErrorMessage(null);
-                  }}
-                  disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
-                  locale={locale}
-                  hidePlaceholder
-                  periodBoundary="start"
-                />
-              </div>
+          <DirectoryFilterPanel>
+            <DirectoryFilterCard>
+              <div className="ui-grid-cards-2">
+                <div className="ui-field">
+                  <label className="ui-field-label" htmlFor="current-age-start">
+                    {copy.startLabel}
+                  </label>
+                  <TenantDateTimePicker
+                    id="current-age-start"
+                    value={momentFrom}
+                    onChange={(value) => {
+                      setMomentFrom(value);
+                      setRequestErrorMessage(null);
+                    }}
+                    disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
+                    locale={locale}
+                    hidePlaceholder
+                    periodBoundary="start"
+                  />
+                  <p className="ui-field-hint">{copy.startHint}</p>
+                </div>
 
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="current-age-end">
-                  {copy.endLabel}
-                </label>
-                <TenantDateTimePicker
-                  id="current-age-end"
-                  value={momentTo}
-                  onChange={(value) => {
-                    setMomentTo(value);
-                    setRequestErrorMessage(null);
-                  }}
-                  disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
-                  locale={locale}
-                  hidePlaceholder
-                  periodBoundary="end"
-                />
+                <div className="ui-field">
+                  <label className="ui-field-label" htmlFor="current-age-end">
+                    {copy.endLabel}
+                  </label>
+                  <TenantDateTimePicker
+                    id="current-age-end"
+                    value={momentTo}
+                    onChange={(value) => {
+                      setMomentTo(value);
+                      setRequestErrorMessage(null);
+                    }}
+                    disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
+                    locale={locale}
+                    hidePlaceholder
+                    periodBoundary="end"
+                  />
+                  <p className="ui-field-hint">{copy.endHint}</p>
+                </div>
               </div>
-            </div>
+            </DirectoryFilterCard>
 
-            <p className="ui-field-hint">{copy.dateHint}</p>
-            <div className="ui-button-row">
-              <button
-                type="button"
-                className="ui-button-secondary"
-                onClick={() => void handleRead()}
+            <DirectoryFilterCard>
+              <HierarchySingleSelectField
+                id="current-age-location"
+                label={copy.locationLabel}
+                itemList={initialLocationDirectory?.item_list ?? []}
+                value={locationId}
+                onChange={(nextValue) => {
+                  setLocationId(nextValue);
+                  setRequestErrorMessage(null);
+                }}
+                getParentId={(item) => item.parent_location_id ?? null}
+                allLabel=""
                 disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
-              >
-                {isReading ? copy.reading : copy.read}
-              </button>
-              <button
-                type="button"
-                className="ui-button-primary"
-                onClick={() => void handleCalculate()}
+              />
+              <p className="ui-field-hint">{copy.locationHint}</p>
+            </DirectoryFilterCard>
+
+            <DirectoryFilterCard>
+              <HierarchySingleSelectField
+                id="current-age-item"
+                label={copy.itemLabel}
+                itemList={initialItemDirectory?.item_list ?? []}
+                value={itemId}
+                onChange={(nextValue) => {
+                  setItemId(nextValue);
+                  setRequestErrorMessage(null);
+                }}
+                getParentId={(row) => row.parent_item_id ?? null}
+                allLabel=""
                 disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
-              >
-                {isCalculating ? copy.calculating : copy.calculate}
-              </button>
-              <button
-                type="button"
-                className="ui-button-danger"
-                onClick={() => void handleDelete()}
-                disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
-              >
-                {isDeleting ? copy.deleting : copy.delete}
-              </button>
-            </div>
-          </section>
+              />
+              <p className="ui-field-hint">{copy.itemHint}</p>
+            </DirectoryFilterCard>
+          </DirectoryFilterPanel>
 
           <section className="ui-page-stack">
             {requestErrorMessage ? (
@@ -699,7 +706,6 @@ export function CurrentAgeCalculationClient({
                     <thead>
                       <tr>
                         <th>{copy.resultDateLabel}</th>
-                        <th>{copy.locationLabel}</th>
                         <th>{copy.formulaLabel}</th>
                         {initialFieldDirectory?.item_list.map((field) => (
                           <th key={`header-${field.id}`}>
@@ -712,12 +718,6 @@ export function CurrentAgeCalculationClient({
                       {resultRowList.map((item) => (
                         <tr key={item.result_id}>
                           <td>{formatDayCompact(item.result_moment_utc)}</td>
-                          <td>
-                            <div className="ui-current-age-table-cell-stack">
-                              <span>{locationLabelById.get(item.location_id) ?? copy.fallbackLocation}</span>
-                              <span>{itemLabelById.get(item.item_id) ?? copy.fallbackItem}</span>
-                            </div>
-                          </td>
                           <td className="ui-current-age-table-cell-formula">
                             <div className="ui-current-age-table-formula-stack">
                               <span className="ui-current-age-table-formula-action">
@@ -743,8 +743,45 @@ export function CurrentAgeCalculationClient({
               </div>
             )}
           </section>
+
         </>
       )}
+
+      {footerPortalTarget
+        ? createPortal(
+          <ConfigurationEditorFooter
+            discardConfirm=""
+            isDirty={false}
+            footerErrorMessage={null}
+            onSave={() => void handleRead()}
+            saveDisabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
+            saveLabel={copy.read}
+            savingLabel={copy.reading}
+            isSaving={isReading}
+            startContent={(
+              <div className="ui-button-row">
+                <button
+                  type="button"
+                  className="ui-button-secondary"
+                  onClick={() => void handleCalculate()}
+                  disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
+                >
+                  {isCalculating ? copy.calculating : copy.calculate}
+                </button>
+                <button
+                  type="button"
+                  className="ui-button-danger"
+                  onClick={() => void handleDelete()}
+                  disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
+                >
+                  {isDeleting ? copy.deleting : copy.delete}
+                </button>
+              </div>
+            )}
+          />,
+          footerPortalTarget
+        )
+        : null}
     </section>
   );
 }

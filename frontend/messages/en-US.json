@@ -593,7 +593,12 @@
     "panel": {
       "startLabel": "Start date",
       "endLabel": "End date",
-      "dateHint": "The calculation covers the full range from the start of the first day to the end of the last day.",
+      "startHint": "Enter the start date and time for the period considered in the calculation.",
+      "endHint": "Enter the end date and time for the period considered in the calculation.",
+      "locationLabel": "Location",
+      "locationHint": "Select a location to restrict results to that branch of the hierarchy, or leave it blank to consider all.",
+      "itemLabel": "Item",
+      "itemHint": "Select an item to restrict results to that branch of the hierarchy, or leave it blank to consider all.",
       "read": "Read",
       "reading": "Reading...",
       "calculate": "Calculate",

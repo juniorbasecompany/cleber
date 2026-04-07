@@ -85,6 +85,7 @@ Novos painéis **diretório + editor** devem preferir **Shell + política**; usa
 - Texto visível não deve ficar em literals no componente.
 - Copy de abas, ações, avisos, erros e placeholders vive em `messages/`.
 - Chaves de ação devem permanecer consistentes entre painéis quando tiverem o mesmo significado.
+- Em filtros hierárquicos de seleção única, o estado vazio do gatilho não deve usar placeholder textual como `Todos` ou `Todas`; o esperado é gatilho vazio, hint explicativa abaixo do campo e limpeza explícita da seleção.
 
 ## Implementações de referência
 

@@ -593,7 +593,12 @@
     "panel": {
       "startLabel": "Fecha inicial",
       "endLabel": "Fecha final",
-      "dateHint": "El cálculo cubre todo el intervalo desde el inicio del primer día hasta el fin del último día.",
+      "startHint": "Informa la fecha y hora inicial del período que se considerará en el cálculo.",
+      "endHint": "Informa la fecha y hora final del período que se considerará en el cálculo.",
+      "locationLabel": "Ubicación",
+      "locationHint": "Selecciona una ubicación para restringir los resultados a esa rama de la jerarquía, o déjalo en blanco para considerar todo.",
+      "itemLabel": "Ítem",
+      "itemHint": "Selecciona un ítem para restringir los resultados a esa rama de la jerarquía, o déjalo en blanco para considerar todo.",
       "read": "Leer",
       "reading": "Leyendo...",
       "calculate": "Calcular",
