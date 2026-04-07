@@ -206,6 +206,13 @@ export type ScopeCurrentAgeCalculationStatus =
   | "updated"
   | "unchanged";
 
+export type ScopeCurrentAgeCalculationEmptyReason =
+  | "no_events_before_period_end"
+  | "no_eligible_window"
+  | "no_results_in_selected_period"
+  | "no_persisted_results_in_period"
+  | "no_results_to_delete_in_period";
+
 export type ScopeCurrentAgeCalculationRecord = {
   event_id: number;
   result_id: number;
@@ -225,6 +232,11 @@ export type ScopeCurrentAgeCalculationRecord = {
 
 export type ScopeCurrentAgeCalculationResponse = {
   can_edit: boolean;
+  calculated_moment_utc: string;
+  created_count: number;
+  updated_count: number;
+  unchanged_count: number;
+  empty_reason?: ScopeCurrentAgeCalculationEmptyReason | null;
   item_list: ScopeCurrentAgeCalculationRecord[];
 };
 

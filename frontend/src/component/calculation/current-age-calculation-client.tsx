@@ -1,11 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState, type ReactNode } from "react";
 
 import { PageHeader } from "@/component/app-shell/page-header";
 import { StatusPanel } from "@/component/app-shell/status-panel";
 import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import type {
+  ScopeCurrentAgeCalculationEmptyReason,
   ScopeFormulaRecord,
   ScopeCurrentAgeCalculationRecord,
   ScopeCurrentAgeCalculationResponse,
@@ -39,9 +40,15 @@ type CurrentAgeCalculationCopy = {
   validationRequired: string;
   validationOrder: string;
   calculateError: string;
+  calculateErrorMissingFormulaInput: string;
   deleteError: string;
   resultPlaceholder: string;
-  resultEmpty: string;
+  resultEmptyDefault: string;
+  resultEmptyNoEventsBeforePeriodEnd: string;
+  resultEmptyNoEligibleWindow: string;
+  resultEmptyNoResultsInSelectedPeriod: string;
+  resultEmptyNoPersistedResultsInPeriod: string;
+  resultEmptyNoResultsToDeleteInPeriod: string;
   resultDateLabel: string;
   locationLabel: string;
   itemLabel: string;
@@ -159,6 +166,134 @@ function formatFormulaStatement(
   });
 }
 
+function renderFormulaStatementInline(
+  statement: string,
+  fieldLabelById: Map<number, string>
+): ReactNode[] {
+  const nodeList: ReactNode[] = [];
+  let lastIndex = 0;
+  let tokenIndex = 0;
+  for (const match of statement.matchAll(FORMULA_REFERENCE_TOKEN)) {
+    const fullMatch = match[0];
+    const referenceKind = match[1] === "input" ? "input" : "field";
+    const id = Number(match[2]);
+    const matchIndex = match.index ?? 0;
+    if (matchIndex > lastIndex) {
+      nodeList.push(statement.slice(lastIndex, matchIndex));
+    }
+    nodeList.push(
+      <span
+        key={`${referenceKind}-${id}-${tokenIndex}`}
+        className={referenceKind === "input"
+          ? "ui-formula-field-token ui-formula-input-token"
+          : "ui-formula-field-token"}
+      >
+        {fieldLabelById.get(id) ?? `#${id}`}
+      </span>
+    );
+    lastIndex = matchIndex + fullMatch.length;
+    tokenIndex += 1;
+  }
+  if (lastIndex < statement.length) {
+    nodeList.push(statement.slice(lastIndex));
+  }
+  return nodeList;
+}
+
+function renderTemplateWithSlots(
+  template: string,
+  slotByName: Record<string, ReactNode>
+): ReactNode[] {
+  const nodeList: ReactNode[] = [];
+  let lastIndex = 0;
+  let tokenIndex = 0;
+  const tokenRegex = /\{([a-zA-Z0-9_]+)\}/g;
+  for (const match of template.matchAll(tokenRegex)) {
+    const matchIndex = match.index ?? 0;
+    if (matchIndex > lastIndex) {
+      nodeList.push(template.slice(lastIndex, matchIndex));
+    }
+    const slotName = match[1];
+    nodeList.push(
+      <Fragment key={`${slotName}-${tokenIndex}`}>
+        {slotByName[slotName] ?? match[0]}
+      </Fragment>
+    );
+    lastIndex = matchIndex + match[0].length;
+    tokenIndex += 1;
+  }
+  if (lastIndex < template.length) {
+    nodeList.push(template.slice(lastIndex));
+  }
+  return nodeList;
+}
+
+function resolveEmptyResultMessage(
+  emptyReason: ScopeCurrentAgeCalculationEmptyReason | null | undefined,
+  copy: CurrentAgeCalculationCopy
+) {
+  switch (emptyReason) {
+    case "no_events_before_period_end":
+      return copy.resultEmptyNoEventsBeforePeriodEnd;
+    case "no_eligible_window":
+      return copy.resultEmptyNoEligibleWindow;
+    case "no_results_in_selected_period":
+      return copy.resultEmptyNoResultsInSelectedPeriod;
+    case "no_persisted_results_in_period":
+      return copy.resultEmptyNoPersistedResultsInPeriod;
+    case "no_results_to_delete_in_period":
+      return copy.resultEmptyNoResultsToDeleteInPeriod;
+    default:
+      return copy.resultEmptyDefault;
+  }
+}
+
+function parseDetailObject(payload: unknown) {
+  if (!payload || typeof payload !== "object") {
+    return null;
+  }
+  const detail = (payload as { detail?: unknown }).detail;
+  if (!detail || typeof detail !== "object" || Array.isArray(detail)) {
+    return null;
+  }
+  return detail as Record<string, unknown>;
+}
+
+function resolveCurrentAgeRequestErrorMessage(
+  payload: unknown,
+  fallback: string,
+  copy: CurrentAgeCalculationCopy,
+  actionLabelById: Map<number, string>,
+  formulaStatementById: Map<number, string>,
+  formulaRawStatementById: Map<number, string>,
+  fieldLabelById: Map<number, string>
+): ReactNode {
+  const detail = parseDetailObject(payload);
+  const code = typeof detail?.code === "string" ? detail.code : null;
+  if (code === "current_age_formula_input_missing") {
+    const actionId = Number(detail?.action_id);
+    const formulaId = Number(detail?.formula_id);
+    const fieldId = Number(detail?.field_id);
+    const eventLabel = actionLabelById.get(actionId) ?? `#${detail?.event_id ?? ""}`;
+    const formulaRawStatement = formulaRawStatementById.get(formulaId);
+    const formulaLabel = formulaRawStatement != null
+      ? renderFormulaStatementInline(formulaRawStatement, fieldLabelById)
+      : (formulaStatementById.get(formulaId) ?? `#${detail?.formula_id ?? ""}`);
+    const fieldLabel = fieldLabelById.get(fieldId) ?? `#${detail?.field_id ?? ""}`;
+    return renderTemplateWithSlots(copy.calculateErrorMissingFormulaInput, {
+      eventLabel,
+      formulaLabel,
+      fieldLabel: (
+        <span className="ui-formula-field-token ui-formula-input-token">
+          {fieldLabel}
+        </span>
+      )
+    });
+  }
+
+  return parseErrorDetail(payload, fallback) ?? fallback;
+}
+
 export function CurrentAgeCalculationClient({
   locale,
   currentScope,
@@ -172,7 +307,7 @@ export function CurrentAgeCalculationClient({
 }: CurrentAgeCalculationClientProps) {
   const [momentFrom, setMomentFrom] = useState<Date | null>(null);
   const [momentTo, setMomentTo] = useState<Date | null>(null);
-  const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
+  const [requestErrorMessage, setRequestErrorMessage] = useState<ReactNode | null>(null);
   const [isReading, setIsReading] = useState(false);
   const [isCalculating, setIsCalculating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -248,6 +383,14 @@ export function CurrentAgeCalculationClient({
     return map;
   }, [fieldLabelById, initialFormulaList]);
 
+  const formulaRawStatementById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const formula of initialFormulaList) {
+      map.set(formula.id, formula.statement);
+    }
+    return map;
+  }, [initialFormulaList]);
+
   const fieldSortOrderById = useMemo(() => {
     const map = new Map<number, number>();
     for (const [index, item] of (initialFieldDirectory?.item_list ?? []).entries()) {
@@ -274,6 +417,10 @@ export function CurrentAgeCalculationClient({
       || left.result_id - right.result_id
     ));
   }, [actionOrderById, fieldSortOrderById, result]);
+
+  const emptyResultMessage = useMemo(() => (
+    resolveEmptyResultMessage(result?.empty_reason, copy)
+  ), [copy, result?.empty_reason]);
 
   const asideEmptyMessage = !currentScope
     ? hasAnyScope
@@ -324,7 +471,17 @@ export function CurrentAgeCalculationClient({
       const data: unknown = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setRequestErrorMessage(parseErrorDetail(data, copy.calculateError) ?? copy.calculateError);
+        setRequestErrorMessage(
+          resolveCurrentAgeRequestErrorMessage(
+            data,
+            copy.calculateError,
+            copy,
+            actionLabelById,
+            formulaStatementById,
+            formulaRawStatementById,
+            fieldLabelById
+          )
+        );
         return;
       }
 
@@ -368,7 +525,17 @@ export function CurrentAgeCalculationClient({
       const data: unknown = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        setRequestErrorMessage(parseErrorDetail(data, copy.calculateError) ?? copy.calculateError);
+        setRequestErrorMessage(
+          resolveCurrentAgeRequestErrorMessage(
+            data,
+            copy.calculateError,
+            copy,
+            actionLabelById,
+            formulaStatementById,
+            formulaRawStatementById,
+            fieldLabelById
+          )
+        );
         return;
       }
 
@@ -490,10 +657,6 @@ export function CurrentAgeCalculationClient({
             </div>
 
             <p className="ui-field-hint">{copy.dateHint}</p>
-            {requestErrorMessage ? (
-              <p className="ui-field-error">{requestErrorMessage}</p>
-            ) : null}
-
             <div className="ui-button-row">
               <button
                 type="button"
@@ -523,10 +686,12 @@ export function CurrentAgeCalculationClient({
           </section>
 
           <section className="ui-page-stack">
-            {!result ? (
+            {requestErrorMessage ? (
+              <div className="ui-panel ui-empty-panel">{requestErrorMessage}</div>
+            ) : !result ? (
               <div className="ui-panel ui-empty-panel">{copy.resultPlaceholder}</div>
             ) : result.item_list.length === 0 ? (
-              <div className="ui-panel ui-empty-panel">{copy.resultEmpty}</div>
+              <div className="ui-panel ui-empty-panel">{emptyResultMessage}</div>
             ) : (
               <div className="ui-current-age-table-shell ui-panel">
                 <div className="ui-current-age-table-scroll">

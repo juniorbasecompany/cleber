@@ -603,6 +603,7 @@
       "validationRequired": "Select both dates to calculate.",
       "validationOrder": "The start date must be earlier than or equal to the end date.",
       "error": "Could not calculate the current age. Try again.",
+      "errorMissingFormulaInput": "Provide {fieldLabel} in formula {formulaLabel} for the event {eventLabel}.",
       "deleteError": "Could not delete the results in this period. Try again."
     },
     "fields": {
@@ -619,6 +620,11 @@
       "description": "Each line below represents one materialized day in the selected period, consolidating the calculated fields horizontally for the location and item.",
       "placeholder": "Select the dates and run the calculation to see the results for this period.",
       "empty": "No eligible event produced results in this period.",
+      "emptyNoEventsBeforePeriodEnd": "There are no recorded events up to the end of the selected period.",
+      "emptyNoEligibleWindow": "There are events in the analyzed period, but no eligible set was found. To calculate, there must be an initial age followed by a final age for the same location and item.",
+      "emptyNoResultsInSelectedPeriod": "Eligible events were found, but no result was produced inside the selected period.",
+      "emptyNoPersistedResultsInPeriod": "There are no saved calculated results for this period.",
+      "emptyNoResultsToDeleteInPeriod": "There were no calculated results to delete in this period.",
       "dateLabel": "Date",
       "createdLabel": "Created",
       "updatedLabel": "Updated",

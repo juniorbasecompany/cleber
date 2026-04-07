@@ -1881,12 +1881,22 @@ class ScopeCurrentAgeCalculationRecord(BaseModel):
     status: Literal["created", "updated", "unchanged"]
 
 
+ScopeCurrentAgeCalculationEmptyReason = Literal[
+    "no_events_before_period_end",
+    "no_eligible_window",
+    "no_results_in_selected_period",
+    "no_persisted_results_in_period",
+    "no_results_to_delete_in_period",
+]
+
+
 class ScopeCurrentAgeCalculationResponse(BaseModel):
     can_edit: bool
     calculated_moment_utc: datetime
     created_count: int
     updated_count: int
     unchanged_count: int
+    empty_reason: ScopeCurrentAgeCalculationEmptyReason | None = None
     item_list: list[ScopeCurrentAgeCalculationRecord]
 
 
@@ -1933,6 +1943,7 @@ def _build_current_age_response_from_result_rows(
         created_count=created_count,
         updated_count=updated_count,
         unchanged_count=unchanged_count,
+        empty_reason=None,
         item_list=item_list,
     )
 
@@ -1967,6 +1978,14 @@ def _list_scope_current_age_results(
     return _build_current_age_response_from_result_rows(
         calculated_moment_utc=datetime.now(UTC).replace(tzinfo=None),
         result_row_list=[(result_row, event_row, None) for result_row, event_row in result_row_list],
+    ) if result_row_list else ScopeCurrentAgeCalculationResponse(
+        can_edit=True,
+        calculated_moment_utc=datetime.now(UTC).replace(tzinfo=None),
+        created_count=0,
+        updated_count=0,
+        unchanged_count=0,
+        empty_reason="no_persisted_results_in_period",
+        item_list=[],
     )
 
 
@@ -2486,6 +2505,7 @@ def delete_scope_current_age(
             created_count=0,
             updated_count=0,
             unchanged_count=0,
+            empty_reason="no_results_to_delete_in_period",
             item_list=[],
         )
 
@@ -2508,6 +2528,7 @@ def delete_scope_current_age(
         created_count=0,
         updated_count=0,
         unchanged_count=0,
+        empty_reason="no_results_to_delete_in_period",
         item_list=[],
     )
 
@@ -2574,6 +2595,7 @@ def calculate_scope_current_age(
             created_count=0,
             updated_count=0,
             unchanged_count=0,
+            empty_reason="no_events_before_period_end",
             item_list=[],
         )
 
@@ -2712,6 +2734,7 @@ def calculate_scope_current_age(
             created_count=0,
             updated_count=0,
             unchanged_count=0,
+            empty_reason="no_eligible_window",
             item_list=[],
         )
 
@@ -2797,11 +2820,19 @@ def calculate_scope_current_age(
                 if field_id not in event_input_runtime:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
-                        detail=(
-                            f"Event {row.id} formula {formula_row.id} "
-                            f"(sort_order {formula_row.sort_order}) requires input "
-                            f"for field {field_id}"
-                        ),
+                        detail={
+                            "code": "current_age_formula_input_missing",
+                            "message": (
+                                f"Event {row.id} formula {formula_row.id} "
+                                f"(sort_order {formula_row.sort_order}) requires input "
+                                f"for field {field_id}"
+                            ),
+                            "event_id": row.id,
+                            "action_id": row.action_id,
+                            "formula_id": formula_row.id,
+                            "formula_sort_order": formula_row.sort_order,
+                            "field_id": field_id,
+                        },
                     )
                 evaluator_names[f"i_{field_id}"] = event_input_runtime[field_id]
 
@@ -2870,6 +2901,7 @@ def calculate_scope_current_age(
             created_count=0,
             updated_count=0,
             unchanged_count=0,
+            empty_reason="no_results_in_selected_period",
             item_list=[],
         )
 

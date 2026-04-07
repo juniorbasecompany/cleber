@@ -553,6 +553,7 @@
       "validationRequired": "Selecione as duas datas para calcular.",
       "validationOrder": "A data inicial deve ser menor ou igual à data final.",
       "error": "Não foi possível calcular a idade atual. Tente novamente.",
+      "errorMissingFormulaInput": "Informe {fieldLabel} na fórmula {formulaLabel} no evento de {eventLabel}.",
       "deleteError": "Não foi possível apagar os resultados do período. Tente novamente."
     },
     "fields": {
@@ -569,6 +570,11 @@
       "description": "Cada linha abaixo representa um dia materializado do período selecionado, consolidando horizontalmente os campos calculados para o local e item.",
       "placeholder": "Selecione as datas e execute o cálculo para ver os resultados deste período.",
       "empty": "Nenhum evento elegível produziu resultados neste período.",
+      "emptyNoEventsBeforePeriodEnd": "Não há eventos cadastrados até o fim do período selecionado.",
+      "emptyNoEligibleWindow": "Há eventos no período analisado, mas nenhum conjunto elegível foi encontrado. Para calcular, é preciso existir uma idade inicial e depois uma idade final no mesmo local e item.",
+      "emptyNoResultsInSelectedPeriod": "Foram encontrados eventos elegíveis, mas nenhum resultado foi produzido dentro do período selecionado.",
+      "emptyNoPersistedResultsInPeriod": "Não existem resultados calculados salvos para este período.",
+      "emptyNoResultsToDeleteInPeriod": "Não havia resultados calculados para excluir neste período.",
       "dateLabel": "Data",
       "createdLabel": "Criados",
       "updatedLabel": "Atualizados",
