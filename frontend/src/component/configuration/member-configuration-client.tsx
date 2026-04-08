@@ -204,7 +204,7 @@ export function MemberConfigurationClient({
         (item) => item.id === initialSelection.selectedMemberId
       ) ?? null);
 
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
   const memberPath = `/${locale}/app/configuration/member`;
 
   const replacePath = useCallback(

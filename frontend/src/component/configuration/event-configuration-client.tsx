@@ -390,7 +390,7 @@ export function EventConfigurationClient({
   const searchParams = useSearchParams();
   const initialSearchEventKey = parseSelectedEventKey(searchParams.get("event"));
 
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
   const eventPath = `/${locale}/app/configuration/event`;
 
   const replacePath = useCallback(

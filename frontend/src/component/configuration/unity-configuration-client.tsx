@@ -142,7 +142,7 @@ export function UnityConfigurationClient({
   const searchParams = useSearchParams();
   const initialSearchUnityKey = parseSelectedUnityKey(searchParams.get("unity"));
 
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
   const unityPath = `/${locale}/app/configuration/unity`;
 
   const replacePath = useCallback(

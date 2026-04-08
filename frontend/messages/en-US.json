@@ -71,25 +71,6 @@
       }
     }
   },
-  "ConfigurationPage": {
-    "openTenantEditor": "Edit tenant",
-    "openMemberEditor": "Edit members",
-    "openScopeEditor": "Edit scopes",
-    "cards": {
-      "organization": {
-        "title": "Tenant",
-        "description": "The contracting organization for this workspace: the name shown in the top bar, tenant switcher, and other surfaces. Changes apply to the tenant active in your session; if you manage more than one, switch from the menu before editing."
-      },
-      "member": {
-        "title": "Members",
-        "description": "A member is a person tied to this tenant in the product, not just the sign-in account, but the link with role (master, administrator, member) and status. Everyone listed here can operate in this organization; roles and status control what they can change, including sensitive tenant-wide settings."
-      },
-      "scope": {
-        "title": "Scope",
-        "description": "A scope is a context unit inside the tenant: where records, and later the locations hierarchy, stay separated instead of mixed together. Think branch, job site, venue, or project,  the label is yours, but the job is always to isolate data that should not appear in one pile. The scope selected in the header is what applies when you work on locations and anything that depends on it."
-      }
-    }
-  },
   "MemberConfigurationPage": {
     "title": "Members",
     "description": "Edit the records of the members linked to the active tenant. Name, role, and status stay centralized in this directory.",

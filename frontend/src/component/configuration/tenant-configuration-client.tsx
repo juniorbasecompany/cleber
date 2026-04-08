@@ -72,7 +72,7 @@ export function TenantConfigurationClient({
   copy
 }: TenantConfigurationClientProps) {
   const router = useRouter();
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
 

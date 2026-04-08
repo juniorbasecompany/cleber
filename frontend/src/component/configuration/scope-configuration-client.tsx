@@ -120,7 +120,7 @@ export function ScopeConfigurationClient({
       ? initialDirectory.item_list.find((item) => item.id === initialSelectedScopeKey) ?? null
       : null;
 
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
   const scopePath = `/${locale}/app/configuration/scope`;
 
   const replacePath = useCallback(

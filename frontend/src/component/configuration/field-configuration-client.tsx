@@ -162,7 +162,7 @@ export function FieldConfigurationClient({
   const searchParams = useSearchParams();
   const initialSearchFieldKey = parseSelectedFieldKey(searchParams.get("field"));
 
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
   const fieldPath = `/${locale}/app/configuration/field`;
 
   const replacePath = useCallback(

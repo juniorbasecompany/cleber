@@ -71,25 +71,6 @@
       }
     }
   },
-  "ConfigurationPage": {
-    "openTenantEditor": "Editar licenciado",
-    "openMemberEditor": "Editar membros",
-    "openScopeEditor": "Editar escopos",
-    "cards": {
-      "organization": {
-        "title": "Licenciado",
-        "description": "É a organização contratante do ambiente: o nome que aparece na barra superior, no seletor de licenciado e em outras telas. As alterações valem para o licenciado ativo na sua sessão; se você administra mais de um, troque pelo menu antes de editar."
-      },
-      "member": {
-        "title": "Membros",
-        "description": "Membro é a pessoa vinculada a este licenciado no sistema: não é só a conta de acesso, é o vínculo com papel (master, administrador, membro) e situação. Quem consta aqui pode operar o ambiente nesta organização; papéis e situação definem o que pode ser alterado, inclusive dados sensíveis do ambiente."
-      },
-      "scope": {
-        "title": "Escopo",
-        "description": "Escopo é uma unidade de contexto dentro do licenciado: onde os cadastros e, na sequência, a hierarquia de locais se separam sem se misturar. Pense em filial, obra, sede ou projeto, o rótulo é seu, mas a função é sempre isolar dados que não devem aparecer juntos. O escopo selecionado no cabeçalho é o que vale ao trabalhar em locais e nos fluxos que dependem dele."
-      }
-    }
-  },
   "MemberConfigurationPage": {
     "title": "Membros",
     "description": "Edite o cadastro dos membros vinculados ao licenciado ativo. Nome, papel e situação ficam centralizados neste diretório.",

@@ -71,25 +71,6 @@
       }
     }
   },
-  "ConfigurationPage": {
-    "openTenantEditor": "Editar licenciatario",
-    "openMemberEditor": "Editar miembros",
-    "openScopeEditor": "Editar alcances",
-    "cards": {
-      "organization": {
-        "title": "Licenciatario",
-        "description": "Es la organización contratante del espacio de trabajo: el nombre que ves en la barra superior, el selector de licenciatario y otras pantallas. Los cambios aplican al licenciatario activo en tu sesión; si administras más de uno, cámbialo desde el menú antes de editar."
-      },
-      "member": {
-        "title": "Miembros",
-        "description": "Un miembro es una persona vinculada a este licenciatario en el producto: no es solo la cuenta de acceso, sino el vínculo con rol (master, administrador, miembro) y estado. Quien aparece aquí puede operar en esta organización; roles y estado definen qué puede cambiar, incluidos ajustes sensibles del espacio de trabajo."
-      },
-      "scope": {
-        "title": "Alcance",
-        "description": "Un alcance es una unidad de contexto dentro del licenciatario: donde los registros y, más adelante, la jerarquía de ubicaciones se separan sin mezclarse. Piensa en sucursal, obra, sede o proyecto, la etiqueta es tuya, pero la función es aislar datos que no deberían verse juntos. El alcance elegido en el encabezado es el que rige al trabajar en ubicaciones y en lo que dependa de él."
-      }
-    }
-  },
   "MemberConfigurationPage": {
     "title": "Miembros",
     "description": "Edita el registro de los miembros vinculados al licenciatario activo. Nombre, rol y estado quedan centralizados en este directorio.",

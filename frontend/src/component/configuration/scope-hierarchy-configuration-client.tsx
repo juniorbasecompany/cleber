@@ -428,7 +428,7 @@ export function ScopeHierarchyConfigurationClient<
       : [];
 
   const basePath = `/${locale}/app/configuration/${configurationSegment}`;
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
 
   const replacePath = useCallback(
     (nextPath: string) => {

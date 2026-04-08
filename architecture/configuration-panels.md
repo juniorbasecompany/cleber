@@ -89,7 +89,7 @@ Novos painéis **diretório + editor** devem preferir **Shell + política**; usa
 
 ## Implementações de referência
 
-- Hub de atalhos (licenciado, membros, escopo): `frontend/src/app/[locale]/app/configuration/page.tsx` — três cartões `InfoCard`, sem bloco introdutório `PageHeader`; os mesmos destinos estão acessíveis pelo menu da conta (`AccountMenu`), sem item de menu agregado só para esta rota.
+- Rota `frontend/src/app/[locale]/app/configuration/page.tsx`: redireciona para o dashboard (`/app`); não há hub de cartões. Atalhos para licenciado, membros e escopo ficam no menu da conta (`AccountMenu`).
 - Diretório + editor: `frontend/src/component/configuration/configuration-directory-editor-shell.tsx`, `configuration-directory-editor-layout.tsx`, `configuration-directory-editor-policy.ts`
 - Escopo e locais: `frontend/src/component/configuration/scope-configuration-client.tsx`, `location-configuration-client.tsx`, páginas em `frontend/src/app/[locale]/app/configuration/scope/`, `.../location/`
 - Campos por escopo (regras): `frontend/src/component/configuration/field-configuration-client.tsx`, página `frontend/src/app/[locale]/app/configuration/field/` (contexto do escopo ativo, mesmo stack de diretório + editor + histórico; ordem do diretório persistida em `field.sort_order`, reordenável por arrastar, alinhado ao padrão `@dnd-kit` das fórmulas em `action-formula-section.tsx`; o editor também marca se o campo representa idade inicial ou final do lote via `field.is_initial_age` / `field.is_final_age`)

@@ -244,7 +244,7 @@ export function ActionConfigurationClient({
   const searchParams = useSearchParams();
   const initialSearchActionKey = parseSelectedActionKey(searchParams.get("action"));
 
-  const configurationPath = `/${locale}/app/configuration`;
+  const configurationPath = `/${locale}/app`;
   const actionPath = `/${locale}/app/configuration/action`;
 
   const replacePath = useCallback(
