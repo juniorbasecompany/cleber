@@ -132,11 +132,15 @@ export default async function AppLayout({
             authSession.account.name ||
             authSession.account.email
           }
-          configurationHref={`/${locale}/app/configuration`}
+          tenantHref={`/${locale}/app/configuration/tenant`}
+          memberHref={`/${locale}/app/configuration/member`}
+          scopeHref={`/${locale}/app/configuration/scope`}
           copy={{
             localeFlagTriggerAriaLabel: t("menu.localeFlagTriggerAriaLabel"),
             localeFlagMenuAriaLabel: t("menu.localeFlagMenuAriaLabel"),
-            configurationLabel: t("menu.configurationLabel"),
+            tenantShortcutLabel: t("menu.tenantShortcutLabel"),
+            memberShortcutLabel: t("menu.memberShortcutLabel"),
+            scopeShortcutLabel: t("menu.scopeShortcutLabel"),
             switchingLocale: t("menu.switchingLocale"),
             signOutLabel: t("topbar.signOut"),
             signOutPendingLabel: t("topbar.signOutPending")

@@ -1,7 +1,6 @@
 import { getTranslations } from "next-intl/server";
 
 import { InfoCard } from "@/component/app-shell/info-card";
-import { PageHeader } from "@/component/app-shell/page-header";
 import { BuildingIcon, ScopeIcon, UsersIcon } from "@/component/ui/ui-icons";
 
 type ConfigurationPageProps = {
@@ -17,8 +16,6 @@ export default async function ConfigurationPage({ params }: ConfigurationPagePro
 
     return (
         <section className="ui-page-stack">
-            <PageHeader title={t("title")} description={t("description")} />
-
             <section className="ui-grid-cards-3">
                 <InfoCard
                     title={t("cards.organization.title")}

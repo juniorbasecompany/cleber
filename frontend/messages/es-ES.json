@@ -24,7 +24,9 @@
       "scopeMenuAriaLabel": "Alcances disponibles",
       "localeFlagTriggerAriaLabel": "Elegir idioma y región",
       "localeFlagMenuAriaLabel": "Idiomas disponibles",
-      "configurationLabel": "Configuración",
+      "tenantShortcutLabel": "Licenciatario",
+      "memberShortcutLabel": "Miembros",
+      "scopeShortcutLabel": "Alcance",
       "loadingTenantList": "Cargando...",
       "tenantListError": "No se pudo cargar la lista de licenciatarios.",
       "emptyTenantList": "No hay ningún licenciatario disponible.",
@@ -70,8 +72,6 @@
     }
   },
   "ConfigurationPage": {
-    "title": "Organización, quién accede y en qué contexto",
-    "description": "Antes del trabajo operativo diario, Valora necesita dejar claro qué organización contratante es esta (el licenciatario), quién puede actuar dentro de ella (miembros y roles) y en qué franja de contexto viven los datos: alcances, sucursales, proyectos, sedes, lo que encaje con tu operación. Esta pantalla es donde mantienes esa columna vertebral; sin eso, los registros y los permisos quedan sin marco claro. El árbol de ubicaciones tiene su propia entrada en la barra lateral y siempre respeta el alcance activo que eliges en el encabezado.",
     "openTenantEditor": "Editar licenciatario",
     "openMemberEditor": "Editar miembros",
     "openScopeEditor": "Editar alcances",
@@ -82,7 +82,7 @@
       },
       "member": {
         "title": "Miembros",
-        "description": "Un miembro es una persona vinculada a este licenciatario en el producto: no es solo la cuenta de acceso, sino el vínculo con rol (master, administrador, miembro) y estado. Quien aparece aquí puede operar en esta organización; roles y estado definen qué puede cambiar, incluida la configuración sensible."
+        "description": "Un miembro es una persona vinculada a este licenciatario en el producto: no es solo la cuenta de acceso, sino el vínculo con rol (master, administrador, miembro) y estado. Quien aparece aquí puede operar en esta organización; roles y estado definen qué puede cambiar, incluidos ajustes sensibles del espacio de trabajo."
       },
       "scope": {
         "title": "Alcance",

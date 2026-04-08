@@ -24,7 +24,9 @@
       "scopeMenuAriaLabel": "Available scopes",
       "localeFlagTriggerAriaLabel": "Choose language and region",
       "localeFlagMenuAriaLabel": "Available languages",
-      "configurationLabel": "Configuration",
+      "tenantShortcutLabel": "Tenant",
+      "memberShortcutLabel": "Members",
+      "scopeShortcutLabel": "Scope",
       "loadingTenantList": "Loading...",
       "tenantListError": "Could not load the tenant list.",
       "emptyTenantList": "No tenant available.",
@@ -70,8 +72,6 @@
     }
   },
   "ConfigurationPage": {
-    "title": "Organization, who can act, and which context",
-    "description": "Before day-to-day operations, Valora needs three things spelled out: which contracting organization this is (the tenant), who may act inside it (members and roles), and which slice of context data lives in, scopes: branches, projects, sites, whatever matches your operation. This screen is where you maintain that backbone; without it, records and permissions lack a clear frame of reference. The locations tree lives under its own sidebar entry and always follows the active scope you pick in the header.",
     "openTenantEditor": "Edit tenant",
     "openMemberEditor": "Edit members",
     "openScopeEditor": "Edit scopes",
@@ -82,7 +82,7 @@
       },
       "member": {
         "title": "Members",
-        "description": "A member is a person tied to this tenant in the product, not just the sign-in account, but the link with role (master, administrator, member) and status. Everyone listed here can operate in this organization; roles and status control what they can change, including sensitive configuration."
+        "description": "A member is a person tied to this tenant in the product, not just the sign-in account, but the link with role (master, administrator, member) and status. Everyone listed here can operate in this organization; roles and status control what they can change, including sensitive tenant-wide settings."
       },
       "scope": {
         "title": "Scope",

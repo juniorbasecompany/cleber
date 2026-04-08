@@ -24,7 +24,9 @@
       "scopeMenuAriaLabel": "Escopos disponíveis",
       "localeFlagTriggerAriaLabel": "Escolher idioma e região",
       "localeFlagMenuAriaLabel": "Idiomas disponíveis",
-      "configurationLabel": "Configuração",
+      "tenantShortcutLabel": "Licenciado",
+      "memberShortcutLabel": "Membros",
+      "scopeShortcutLabel": "Escopo",
       "loadingTenantList": "Carregando...",
       "tenantListError": "Não foi possível carregar a lista de licenciados.",
       "emptyTenantList": "Nenhum licenciado disponível.",
@@ -70,8 +72,6 @@
     }
   },
   "ConfigurationPage": {
-    "title": "Organização, quem acessa e em qual contexto",
-    "description": "O Valora separa três ideias antes de qualquer operação do dia a dia: qual é a organização contratante (o licenciado), quem pode agir dentro dela (membros e papéis) e em qual fatia de contexto os dados se organizam, escopos: filiais, projetos, unidades, o que fizer sentido para você. Esta página é o painel onde você mantém esse esqueleto; sem isso definido, cadastros e permissões ficam sem referência clara. A árvore de locais fica na entrada própria do menu lateral e sempre respeita o escopo ativo que você escolhe no cabeçalho.",
     "openTenantEditor": "Editar licenciado",
     "openMemberEditor": "Editar membros",
     "openScopeEditor": "Editar escopos",
@@ -82,7 +82,7 @@
       },
       "member": {
         "title": "Membros",
-        "description": "Membro é a pessoa vinculada a este licenciado no sistema: não é só a conta de acesso, é o vínculo com papel (master, administrador, membro) e situação. Quem consta aqui pode operar o ambiente nesta organização; papéis e situação definem o que pode ser alterado, inclusive nesta área de configuração."
+        "description": "Membro é a pessoa vinculada a este licenciado no sistema: não é só a conta de acesso, é o vínculo com papel (master, administrador, membro) e situação. Quem consta aqui pode operar o ambiente nesta organização; papéis e situação definem o que pode ser alterado, inclusive dados sensíveis do ambiente."
       },
       "scope": {
         "title": "Escopo",

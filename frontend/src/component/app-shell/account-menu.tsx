@@ -14,7 +14,9 @@ import {
 type AccountMenuCopy = {
     localeFlagTriggerAriaLabel: string;
     localeFlagMenuAriaLabel: string;
-    configurationLabel: string;
+    tenantShortcutLabel: string;
+    memberShortcutLabel: string;
+    scopeShortcutLabel: string;
     switchingLocale: string;
     signOutLabel: string;
     signOutPendingLabel: string;
@@ -24,7 +26,9 @@ type AccountMenuProps = {
     accountName: string;
     currentLocale: string;
     localeList: string[];
-    configurationHref: string;
+    tenantHref: string;
+    memberHref: string;
+    scopeHref: string;
     copy: AccountMenuCopy;
     placement?: "default" | "sidebar";
 };
@@ -65,7 +69,9 @@ export function AccountMenu({
     accountName,
     currentLocale,
     localeList,
-    configurationHref,
+    tenantHref,
+    memberHref,
+    scopeHref,
     copy,
     placement = "default"
 }: AccountMenuProps) {
@@ -173,12 +179,28 @@ export function AccountMenu({
                         <div role="menu" aria-label={accountName} className={panelClassName}>
                             <div className="ui-menu-list">
                                 <Link
-                                    href={configurationHref}
+                                    href={tenantHref}
                                     role="menuitem"
                                     onClick={() => setActiveMenu(null)}
                                     className="ui-menu-item"
                                 >
-                                    {copy.configurationLabel}
+                                    {copy.tenantShortcutLabel}
+                                </Link>
+                                <Link
+                                    href={memberHref}
+                                    role="menuitem"
+                                    onClick={() => setActiveMenu(null)}
+                                    className="ui-menu-item"
+                                >
+                                    {copy.memberShortcutLabel}
+                                </Link>
+                                <Link
+                                    href={scopeHref}
+                                    role="menuitem"
+                                    onClick={() => setActiveMenu(null)}
+                                    className="ui-menu-item"
+                                >
+                                    {copy.scopeShortcutLabel}
                                 </Link>
 
                                 <button
