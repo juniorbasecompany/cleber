@@ -434,6 +434,7 @@
       "missingCurrentScope": "Define un alcance activo en el encabezado antes de registrar eventos.",
       "loadError": "No se pudieron cargar los eventos de este alcance. Inténtalo de nuevo.",
       "fallbackLocation": "Ubicación no disponible",
+      "fallbackUnity": "Unidad no disponible",
       "fallbackItem": "Ítem no disponible",
       "fallbackAction": "Acción no disponible"
     },
@@ -465,7 +466,6 @@
       "actionInput": {
         "title": "Campos de entrada de la acción",
         "hint": "Completa los campos usados como entrada en las fórmulas de la acción seleccionada.",
-        "empty": "La acción seleccionada no tiene campos de entrada en fórmulas.",
         "loading": "Cargando campos de entrada de la acción...",
         "loadError": "No se pudieron cargar los campos de entrada de la acción.",
         "saveError": "No se pudieron guardar los campos de entrada de la acción."

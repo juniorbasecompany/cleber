@@ -18,7 +18,6 @@ export type EventActionFieldCopy = {
   actionEmptyAriaLabel: string;
   inputSectionTitle: string;
   inputSectionHint: string;
-  inputEmpty: string;
   inputLoading: string;
 };
 
@@ -74,7 +73,10 @@ export function EventActionField({
   inputErrorMessage,
   onChangeInputValue
 }: EventActionFieldProps) {
-  const shouldShowInputSection = showInputSection ?? (actionId != null);
+  const wantsInputSection = showInputSection ?? (actionId != null);
+  const shouldRenderInputBlock =
+    wantsInputSection
+    && (inputLoading || Boolean(inputErrorMessage) || generatedInputFieldList.length > 0);
 
   const actionField = (
     <div className="ui-field">
@@ -103,14 +105,12 @@ export function EventActionField({
     </div>
   );
 
-  const inputFieldSection = shouldShowInputSection ? (
+  const inputFieldSection = shouldRenderInputBlock ? (
     <>
       {inputLoading ? (
         <p className="ui-field-hint">{copy.inputLoading}</p>
       ) : inputErrorMessage ? (
         <p className="ui-field-error">{inputErrorMessage}</p>
-      ) : generatedInputFieldList.length === 0 ? (
-        <p className="ui-field-hint">{copy.inputEmpty}</p>
       ) : (
         generatedInputFieldList.map((item) => (
           <div className="ui-field" key={item.fieldId}>
@@ -130,7 +130,9 @@ export function EventActionField({
         ))
       )}
 
-      <p className="ui-field-hint">{copy.inputSectionHint}</p>
+      {generatedInputFieldList.length > 0 ? (
+        <p className="ui-field-hint">{copy.inputSectionHint}</p>
+      ) : null}
     </>
   ) : null;
 
@@ -151,7 +153,7 @@ export function EventActionField({
         </section>
       ) : null}
 
-      {shouldShowInputSection ? (
+      {shouldRenderInputBlock ? (
         <section className="ui-card ui-form-section ui-border-accent">
           {inputFieldSection}
         </section>

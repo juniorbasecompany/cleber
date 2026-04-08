@@ -434,6 +434,7 @@
       "missingCurrentScope": "Select an active scope in the header before recording events.",
       "loadError": "Could not load events for this scope. Try again.",
       "fallbackLocation": "Unavailable location",
+      "fallbackUnity": "Unavailable unity",
       "fallbackItem": "Unavailable item",
       "fallbackAction": "Unavailable action"
     },
@@ -465,7 +466,6 @@
       "actionInput": {
         "title": "Action input fields",
         "hint": "Fill in the fields used as input in formulas for the selected action.",
-        "empty": "The selected action has no formula inputs.",
         "loading": "Loading action input fields...",
         "loadError": "Could not load action input fields.",
         "saveError": "Could not save action input fields."

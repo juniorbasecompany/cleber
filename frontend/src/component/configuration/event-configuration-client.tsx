@@ -62,7 +62,6 @@ export type EventConfigurationCopy = {
   actionHint: string;
   actionInputSectionTitle: string;
   actionInputSectionHint: string;
-  actionInputEmpty: string;
   actionInputLoading: string;
   actionInputLoadError: string;
   actionInputSaveError: string;
@@ -78,6 +77,7 @@ export type EventConfigurationCopy = {
   filterAllAria: string;
   filterConfirm: string;
   fallbackLocation: string;
+  fallbackUnity: string;
   fallbackItem: string;
   fallbackAction: string;
   cancel: string;
@@ -454,6 +454,14 @@ export function EventConfigurationClient({
       })),
     [initialUnityDirectory?.item_list]
   );
+
+  const unityMap = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const item of initialUnityDirectory?.item_list ?? []) {
+      map.set(item.id, item.name.trim() || `#${item.id}`);
+    }
+    return map;
+  }, [initialUnityDirectory?.item_list]);
 
   const [directory, setDirectory] = useState<TenantScopeEventDirectoryResponse | null>(() =>
     initialEventDirectory == null
@@ -904,6 +912,11 @@ export function EventConfigurationClient({
     [copy.fallbackLocation, locationMap]
   );
 
+  const resolveUnityLabel = useCallback(
+    (id: number | null) => (id == null ? "-" : (unityMap.get(id) ?? copy.fallbackUnity)),
+    [copy.fallbackUnity, unityMap]
+  );
+
   const resolveItemLabel = useCallback(
     (id: number | null) => (id == null ? "-" : (itemLabelMap.get(id) ?? copy.fallbackItem)),
     [copy.fallbackItem, itemLabelMap]
@@ -916,14 +929,17 @@ export function EventConfigurationClient({
 
   const renderEventAsideDetailLineBlock = useCallback(
     (item: TenantScopeEventRecord, inputSummary?: string | null) =>
-      [resolveLocationLabel(item.location_id), resolveItemLabel(item.item_id), inputSummary ?? "-"]
-        .map((line, index, lineList) => (
-          <span key={`${item.id}-aside-detail-${index}`}>
-            {line}
-            {index < lineList.length - 1 ? <br /> : null}
-          </span>
-        )),
-    [resolveLocationLabel, resolveItemLabel]
+      [
+        resolveLocationLabel(item.location_id),
+        resolveItemLabel(item.item_id),
+        inputSummary ?? "-"
+      ].map((line, index, list) => (
+        <span key={`${item.id}-aside-detail-${index}`}>
+          {line}
+          {index < list.length - 1 ? <br /> : null}
+        </span>
+      )),
+    [resolveItemLabel, resolveLocationLabel]
   );
 
   const selectedEventInputSummary = useMemo(
@@ -1466,11 +1482,18 @@ export function EventConfigurationClient({
                     : undefined
                 }
               >
-                <div className="ui-directory-title-row">
-                  <p className="ui-directory-title ui-directory-title-emphasis">
-                    {resolveActionLabel(item.action_id)}
-                  </p>
-                  <p className="ui-directory-date">{formatMomentCompact(item.moment_utc)}</p>
+                <div className="ui-directory-event-head">
+                  <div className="ui-directory-title-row">
+                    <p className="ui-directory-title ui-directory-title-emphasis">
+                      {resolveActionLabel(item.action_id)}
+                    </p>
+                    <p className="ui-directory-date">{formatMomentCompact(item.moment_utc)}</p>
+                  </div>
+                  {item.unity_id != null ? (
+                    <p className="ui-directory-title ui-directory-title-emphasis">
+                      {resolveUnityLabel(item.unity_id)}
+                    </p>
+                  ) : null}
                 </div>
                 <p className="ui-directory-caption-wrap">
                   {renderEventAsideDetailLineBlock(
@@ -1567,7 +1590,6 @@ export function EventConfigurationClient({
                   actionEmptyAriaLabel: copy.filterAllAria,
                   inputSectionTitle: copy.actionInputSectionTitle,
                   inputSectionHint: copy.actionInputSectionHint,
-                  inputEmpty: copy.actionInputEmpty,
                   inputLoading: copy.actionInputLoading
                 }}
                 actionId={actionId}
@@ -1616,7 +1638,10 @@ export function EventConfigurationClient({
               </div>
             </section>
 
-            {actionId != null ? (
+            {actionId != null
+            && (actionInputLoading
+              || Boolean(actionInputErrorMessage)
+              || eventActionInputDraftList.length > 0) ? (
               <section className="ui-card ui-form-section ui-border-accent">
                 <EventActionField
                   copy={{
@@ -1625,7 +1650,6 @@ export function EventConfigurationClient({
                     actionEmptyAriaLabel: copy.filterAllAria,
                     inputSectionTitle: copy.actionInputSectionTitle,
                     inputSectionHint: copy.actionInputSectionHint,
-                    inputEmpty: copy.actionInputEmpty,
                     inputLoading: copy.actionInputLoading
                   }}
                   actionId={actionId}

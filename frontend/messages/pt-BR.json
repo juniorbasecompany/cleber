@@ -434,6 +434,7 @@
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de registrar eventos.",
       "loadError": "Não foi possível carregar os eventos deste escopo. Tente novamente.",
       "fallbackLocation": "Local indisponível",
+      "fallbackUnity": "Unidade indisponível",
       "fallbackItem": "Item indisponível",
       "fallbackAction": "Ação indisponível"
     },
@@ -465,7 +466,6 @@
       "actionInput": {
         "title": "Campos de entrada da ação",
         "hint": "Preencha os campos usados como entrada nas fórmulas da ação selecionada.",
-        "empty": "A ação selecionada não possui campos de entrada em fórmulas.",
         "loading": "Carregando campos de entrada da ação...",
         "loadError": "Não foi possível carregar os campos de entrada da ação.",
         "saveError": "Não foi possível salvar os campos de entrada da ação."
