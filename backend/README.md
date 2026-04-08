@@ -67,7 +67,7 @@ Documentação interativa OpenAPI: ao subir o servidor, **`/docs`** (Swagger).
 
 - `.../scopes/{scope_id}/fields` e `.../fields/{field_id}`
 - `.../scopes/{scope_id}/actions` e `.../actions/{action_id}` (`action` expõe `is_recurrent`; em `POST`/`PATCH`, a flag define se o efeito da ação se estende do evento até o próximo evento da mesma ação ou até a idade final)
-- `.../actions/{action_id}/formulas` e `.../formulas/{formula_id}` (em `POST`/`PATCH`, a `statement` é validada com contrato de atribuição: exatamente um operador `=` de atribuição, `LHS` obrigatório `${field:id}` e `RHS` com `${field:id}` e `${input:id}`; todas as referências devem existir no escopo e a `RHS` passa por dry-run com [simpleeval](https://pypi.org/project/simpleeval/). Códigos 422 estáveis: `formula_invalid_assignment`, `formula_invalid_target`, `formula_unknown_field_id`, `formula_expression_invalid`, com `step` no detalhe quando disponível. Implementação em `valora_backend/rules/`; para reproduzir no terminal: `PYTHONPATH=src python script_try_formula_validate.py 1,2 '"${field:1} = …"' …`.)
+- `.../actions/{action_id}/formulas` e `.../formulas/{formula_id}` (em `POST`/`PATCH`, a `statement` é validada com contrato de atribuição: exatamente um operador `=` de atribuição, `LHS` obrigatório `${field:id}` e `RHS` com `${field:id}` e `${input:id}`; todas as referências devem existir no escopo e a `RHS` passa por dry-run com [simpleeval](https://pypi.org/project/simpleeval/). Códigos 422 estáveis: `formula_invalid_assignment`, `formula_invalid_target`, `formula_unknown_field_id`, `formula_expression_invalid`, com `step` no detalhe quando disponível. Implementação em `valora_backend/rules/`; cobertura em `tests/test_formula_statement_validate.py`.)
 - `.../scopes/{scope_id}/labels` e `.../labels/{label_id}` (filtros opcionais `field_id` / `action_id` na listagem)
 - `.../scopes/{scope_id}/events` e `.../events/{event_id}`
 - `POST .../scopes/{scope_id}/events/read-current-age` (lê os `result` já materializados no período informado usando `result.moment_utc` como dia de referência da linha diária)
@@ -156,18 +156,6 @@ cd backend
 python -m alembic revision --autogenerate -m "descrição"
 ```
 
-### Validação parcial do schema (fase 1 — E.1)
-
-O script [`script_validate_schema_phase1.py`](script_validate_schema_phase1.py) **não** valida o schema completo do repositório: ele confere apenas as tabelas **`tenant`**, **`account`**, **`member`**, PKs, FKs (incluindo `ON DELETE` / `UPDATE`), `CHECK`s e o índice único parcial em `member`. Útil como verificação mínima de identidade; o restante do modelo segue `erd.json`, modelos SQLAlchemy e migrações.
-
-Com o Postgres acessível e migrations aplicadas, na pasta `backend`:
-
-```bash
-python script_validate_schema_phase1.py
-```
-
-Exit code `0` se passar.
-
 ### Testes de triggers de auditoria (`log`)
 
 Com Postgres acessível e `alembic upgrade head` aplicado, na pasta `backend`:
@@ -199,4 +187,3 @@ Política atual de auditoria:
 - `src/valora_backend/api/`: [`auth.py`](src/valora_backend/api/auth.py), [`rules.py`](src/valora_backend/api/rules.py).
 - `alembic/`: migrations; `env.py` usa `Base.metadata` e a mesma URL que o backend.
 - `erd.json`: ERD drawDB (fonte de verdade do diagrama).
-- `script_validate_schema_phase1.py`: checagem automática mínima do subconjunto identidade (E.1).

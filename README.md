@@ -10,8 +10,6 @@ Repositório de documentação canônica para a construção gradual de um siste
 - `skills/`: verdade operacional. Define como cada parte do sistema deve ser implementada. O subconjunto [`skills/implementation/stack/`](skills/implementation/stack/SKILL.md) fixa o stack de front e back na implementação e revisão.
 - `architecture/`: verdade decisória curta. Registra princípios, limites e decisões permanentes. O ficheiro [`technology-stack.md`](architecture/technology-stack.md) regista a decisão canónica de stack (frontend e backend).
 - `vision/`: explicação humana. Mostra o que a solução faz e como ela evolui.
-- `reference/`: material de consulta. Reúne apoio, plano anterior, nota conceitual e planilha-fonte.
-- `archive/`: histórico superado. Guarda material que não deve mais orientar o desenho atual.
 - `.cursor/plans/`: planos de implementação, roadmaps e checklists versionados no Git (ex.: [plano fase 1 — banco de dados](.cursor/plans/plan-fase1-banco-dados.md)). A skill `project-plans` em `.cursor/skills/project-plans/` orienta o agente a criar planos nesta pasta.
 
 ## Ordem de autoridade
@@ -19,8 +17,6 @@ Repositório de documentação canônica para a construção gradual de um siste
 1. `skills/`
 2. `architecture/`
 3. `vision/`
-4. `reference/`
-5. `archive/`
 
 Quando houver conflito entre documentos, a camada de maior autoridade prevalece.
 
@@ -36,4 +32,3 @@ Quando houver conflito entre documentos, a camada de maior autoridade prevalece.
 2. Leia `vision/solution-overview.md` para entender o problema e a proposta da solução.
 3. Leia `architecture/source-of-truth.md`, `architecture/system-principles.md` e `architecture/technology-stack.md` para entender as decisões permanentes e o stack.
 4. Use `skills/` para orientar desenho e implementação.
-5. Consulte `reference/` apenas quando precisar de contexto, origem ou exemplo de raciocínio anterior.

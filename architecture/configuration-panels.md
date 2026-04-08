@@ -21,7 +21,7 @@ Alguns fluxos de configuração usam **outra composição**: diretório à esque
 
 ## Diretório + editor (lista ou árvore)
 
-Padrão canónico para telas como escopo e locais: lista plana ou árvore no `aside`, formulário no painel central, `ConfigurationHistoryPlaceholder` e ações no `ConfigurationEditorFooter` via portal do app shell.
+Padrão canónico para telas como escopo e locais: lista plana ou árvore no `aside`, formulário no painel central, área de histórico (placeholder de layout, quando aplicável) e ações no `ConfigurationEditorFooter` via portal do app shell.
 
 ### Camadas de código
 

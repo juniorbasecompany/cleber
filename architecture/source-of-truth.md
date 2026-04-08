@@ -7,8 +7,6 @@ A documentação do projeto tem autoridade explícita por camada.
 1. `skills/` é a verdade operacional.
 2. `architecture/` é a verdade decisória curta.
 3. `vision/` é a explicação humana da solução.
-4. `reference/` é material de consulta.
-5. `archive/` é material histórico e superado.
 
 ## Modelo relacional do backend
 
@@ -44,16 +42,6 @@ Use esta camada para registrar decisões estruturais que valem para todo o siste
 
 Use esta camada para explicar o que está sendo construído e como isso ajuda a operação.
 
-### `reference/`
-
-Use esta camada para consultar contexto, exemplo, plano anterior ou material-fonte.
-
-### `archive/`
-
-Use esta camada apenas para recuperar histórico, comparar pensamento anterior ou rastrear decisão superada.
-
 ## Regra de conflito
 
-- `reference/` não redefine `skills/` nem `architecture/`.
-- `archive/` não deve orientar decisão nova sem promoção explícita.
-- Quando um detalhe importante existir apenas em `reference/`, ele deve ser promovido para `skills/` ou `architecture/` antes de virar base oficial.
+- Documentação fora destas pastas (anexos, planilhas ou notas externas ao repositório) não redefine `skills/` nem `architecture/`.

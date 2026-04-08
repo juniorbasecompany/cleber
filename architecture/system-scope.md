@@ -20,4 +20,4 @@ O projeto está construindo uma base comum para sair de planilha operacional e c
 
 ## O que não pertence aqui
 
-Explicação longa de domínio, exemplo extenso, racional histórico, análise comparativa e material-fonte devem ficar em 'reference/' ou 'archive/'.
+Explicação longa de domínio, exemplo extenso, racional histórico, análise comparativa e material-fonte devem ficar fora do núcleo versionado (`skills/`, `architecture/`, `vision/`), por exemplo em suporte externo ao repositório, sem competir com a ordem de autoridade oficial.
