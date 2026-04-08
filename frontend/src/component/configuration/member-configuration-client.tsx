@@ -9,7 +9,6 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ConfigurationInfoSection } from "@/component/configuration/configuration-info-section";
 import { ConfigurationNameField } from "@/component/configuration/configuration-name-field";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
@@ -53,16 +52,9 @@ export type MemberConfigurationCopy = {
   filterAll: string;
   nameLabel: string;
   nameHint: string;
-  sectionAccessTitle: string;
-  sectionAccessDescription: string;
   emailLabel: string;
   inviteEmailHint: string;
   memberEmailHint: string;
-  roleLabel: string;
-  statusLabel: string;
-  accountLinked: string;
-  accountPending: string;
-  accountTopicLabel: string;
   cancel: string;
   directoryCreateLabel: string;
   delete: string;
@@ -710,26 +702,6 @@ export function MemberConfigurationClient({
     validate
   ]);
 
-  const accessRoleText = useMemo(() => {
-    if (!selectedMember) {
-      return "";
-    }
-
-    return (
-      copy.roleLabels[selectedMember.role_name as keyof typeof copy.roleLabels] ??
-      selectedMember.role_name
-    );
-  }, [copy.roleLabels, selectedMember]);
-
-  const accessStatusText = useMemo(() => {
-    if (!selectedMember) {
-      return "";
-    }
-
-    const key = normalizeStatusKey(selectedMember.status);
-    return copy.statusLabels[key];
-  }, [copy.statusLabels, selectedMember]);
-
   const canInviteMember = directoryAllowsMemberInvite(directory);
 
   const recordCanEdit =
@@ -986,52 +958,6 @@ export function MemberConfigurationClient({
             onAfterFieldEdit={() => setRequestErrorMessage(null)}
           />
 
-          {!isCreateMode && selectedMember ? (
-            <>
-              <ConfigurationInfoSection
-                title={copy.sectionAccessTitle}
-                description={copy.sectionAccessDescription}
-              >
-                <ul className="ui-info-topic-list">
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.accountTopicLabel}
-                      </span>
-                      {": "}
-                      <span className="ui-info-topic-value">
-                        {selectedMember.account_id
-                          ? copy.accountLinked
-                          : copy.accountPending}
-                      </span>
-                    </p>
-                  </li>
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.roleLabel}
-                      </span>
-                      {": "}
-                      <span className="ui-info-topic-value">
-                        {accessRoleText}
-                      </span>
-                    </p>
-                  </li>
-                  <li>
-                    <p className="ui-info-topic-lead">
-                      <span className="ui-info-topic-label">
-                        {copy.statusLabel}
-                      </span>
-                      {": "}
-                      <span className="ui-info-topic-value">
-                        {accessStatusText}
-                      </span>
-                    </p>
-                  </li>
-                </ul>
-              </ConfigurationInfoSection>
-            </>
-          ) : null}
 
         </>
       }
