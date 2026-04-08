@@ -1551,6 +1551,7 @@ export function EventConfigurationClient({
                   disabled={isDeletePending || !canEditForm}
                   showFlash={Boolean(fieldError.moment)}
                   locale={locale}
+                  hidePlaceholder
                 />
                 <p className="ui-field-hint">{copy.momentHint}</p>
                 {fieldError.moment ? (

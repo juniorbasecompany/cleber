@@ -516,9 +516,9 @@
       "startHint": "Enter the start date and time for the period considered in the calculation.",
       "endHint": "Enter the end date and time for the period considered in the calculation.",
       "locationLabel": "Location",
-      "locationHint": "Select a location to restrict results to that branch of the hierarchy, or leave it blank to consider all.",
+      "locationHint": "Select a location to restrict results to that branch of the hierarchy, or leave it blank for no location filter.",
       "itemLabel": "Item",
-      "itemHint": "Select an item to restrict results to that branch of the hierarchy, or leave it blank to consider all.",
+      "itemHint": "Select an item to restrict results to that branch of the hierarchy, or leave it blank for no item filter.",
       "read": "Read",
       "reading": "Reading...",
       "calculate": "Calculate",
@@ -532,7 +532,6 @@
       "deleteError": "Could not delete the results in this period. Try again."
     },
     "result": {
-      "placeholder": "Select the dates and run the calculation to see the results for this period.",
       "empty": "No eligible event produced results in this period.",
       "emptyNoEventsBeforePeriodEnd": "There are no recorded events up to the end of the selected period.",
       "emptyNoEligibleWindow": "There are events in the analyzed period, but no eligible set was found. To calculate, there must be an initial age followed by a final age for the same location and item.",
@@ -613,7 +612,6 @@
       "kind": {
         "selectLabel": "Unit type",
         "selectHint": "Type to filter, pick a suggestion, or add a new type from the last row of the menu (add icon).",
-        "selectPlaceholder": "Search or add a type…",
         "openListAriaLabel": "Open or close the type list",
         "addAriaLabel": "Add type with the text entered",
         "createError": "Could not save the type. Please try again.",

@@ -163,7 +163,7 @@ export function DirectoryFilterMultiSelectField({
           <span className="ui-filter-chip-check" aria-hidden data-selected={allIsSelected ? "true" : undefined}>
             {allIsSelected ? "✓" : ""}
           </span>
-          <span className="ui-filter-chip-label">{allLabel ?? "Todos"}</span>
+          <span className="ui-filter-chip-label">{allLabel ?? ""}</span>
         </button>
         {sortedOptionList.map((item) => {
           const isSelected = selectedValueList.includes(item.value);

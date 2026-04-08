@@ -106,7 +106,6 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           calculateError: t("panel.error"),
           calculateErrorMissingFormulaInput: t.raw("panel.errorMissingFormulaInput"),
           deleteError: t("panel.deleteError"),
-          resultPlaceholder: t("result.placeholder"),
           resultEmptyDefault: t("result.empty"),
           resultEmptyNoEventsBeforePeriodEnd: t("result.emptyNoEventsBeforePeriodEnd"),
           resultEmptyNoEligibleWindow: t("result.emptyNoEligibleWindow"),

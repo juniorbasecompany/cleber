@@ -54,7 +54,6 @@ type CurrentAgeCalculationCopy = {
   calculateError: string;
   calculateErrorMissingFormulaInput: string;
   deleteError: string;
-  resultPlaceholder: string;
   resultEmptyDefault: string;
   resultEmptyNoEventsBeforePeriodEnd: string;
   resultEmptyNoEligibleWindow: string;

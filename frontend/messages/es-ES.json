@@ -516,9 +516,9 @@
       "startHint": "Informa la fecha y hora inicial del período que se considerará en el cálculo.",
       "endHint": "Informa la fecha y hora final del período que se considerará en el cálculo.",
       "locationLabel": "Ubicación",
-      "locationHint": "Selecciona una ubicación para restringir los resultados a esa rama de la jerarquía, o déjalo en blanco para considerar todo.",
+      "locationHint": "Selecciona una ubicación para restringir los resultados a esa rama de la jerarquía, o déjalo en blanco para no filtrar por ubicación.",
       "itemLabel": "Ítem",
-      "itemHint": "Selecciona un ítem para restringir los resultados a esa rama de la jerarquía, o déjalo en blanco para considerar todo.",
+      "itemHint": "Selecciona un ítem para restringir los resultados a esa rama de la jerarquía, o déjalo en blanco para no filtrar por ítem.",
       "read": "Leer",
       "reading": "Leyendo...",
       "calculate": "Calcular",
@@ -532,7 +532,6 @@
       "deleteError": "No se pudieron eliminar los resultados del período. Inténtalo de nuevo."
     },
     "result": {
-      "placeholder": "Selecciona las fechas y ejecuta el cálculo para ver los resultados de este período.",
       "empty": "Ningún evento elegible produjo resultados en este período.",
       "emptyNoEventsBeforePeriodEnd": "No hay eventos registrados hasta el final del período seleccionado.",
       "emptyNoEligibleWindow": "Hay eventos en el período analizado, pero no se encontró ningún conjunto elegible. Para calcular, debe existir una edad inicial y después una edad final para la misma ubicación y el mismo ítem.",
@@ -613,7 +612,6 @@
       "kind": {
         "selectLabel": "Tipo de unidad",
         "selectHint": "Escribe para filtrar, elige una sugerencia o añade un tipo nuevo en la última fila del menú (icono de inclusión).",
-        "selectPlaceholder": "Buscar o registrar tipo…",
         "openListAriaLabel": "Abrir o cerrar la lista de tipos",
         "addAriaLabel": "Incluir tipo con el texto escrito",
         "createError": "No se pudo guardar el tipo. Inténtalo de nuevo.",

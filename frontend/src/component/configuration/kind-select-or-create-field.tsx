@@ -12,7 +12,6 @@ import { ChevronDownIcon, PlusIcon } from "@/component/ui/ui-icons";
 export type KindSelectOrCreateCopy = {
   selectLabel: string;
   selectHint: string;
-  selectPlaceholder: string;
   openListAriaLabel: string;
   addKindAriaLabel: string;
   createError: string;
@@ -375,7 +374,6 @@ export function KindSelectOrCreateField({
             aria-controls={listboxId}
             aria-invalid={fieldError != null && fieldError !== ""}
             autoComplete="off"
-            placeholder={copy.selectPlaceholder}
             value={inputValue}
             disabled={disabled}
             onChange={handleInputChange}

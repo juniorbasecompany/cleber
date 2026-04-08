@@ -64,7 +64,6 @@ export default async function ItemConfigurationPage({
           nameHint: t("section.identity.nameHint"),
           kindSelectLabel: t("section.kind.selectLabel"),
           kindSelectHint: t("section.kind.selectHint"),
-          kindSelectPlaceholder: t("section.kind.selectPlaceholder"),
           kindOpenListAriaLabel: t("section.kind.openListAriaLabel"),
           kindAddAriaLabel: t("section.kind.addAriaLabel"),
           kindCreateError: t("section.kind.createError"),

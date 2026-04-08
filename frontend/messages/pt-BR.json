@@ -516,9 +516,9 @@
       "startHint": "Informe a data e hora de início do período que será considerado no cálculo.",
       "endHint": "Informe a data e hora final do período que será considerado no cálculo.",
       "locationLabel": "Local",
-      "locationHint": "Selecione um local para restringir os resultados a esse ponto da hierarquia, ou deixe em branco para considerar todos.",
+      "locationHint": "Selecione um local para restringir os resultados a esse ponto da hierarquia, ou deixe em branco para não filtrar por local.",
       "itemLabel": "Item",
-      "itemHint": "Selecione um item para restringir os resultados a esse ramo da hierarquia, ou deixe em branco para considerar todos.",
+      "itemHint": "Selecione um item para restringir os resultados a esse ramo da hierarquia, ou deixe em branco para não filtrar por item.",
       "read": "Ler",
       "reading": "Lendo...",
       "calculate": "Calcular",
@@ -532,7 +532,6 @@
       "deleteError": "Não foi possível apagar os resultados do período. Tente novamente."
     },
     "result": {
-      "placeholder": "Selecione as datas e execute o cálculo para ver os resultados deste período.",
       "empty": "Nenhum evento elegível produziu resultados neste período.",
       "emptyNoEventsBeforePeriodEnd": "Não há eventos cadastrados até o fim do período selecionado.",
       "emptyNoEligibleWindow": "Há eventos no período analisado, mas nenhum conjunto elegível foi encontrado. Para calcular, é preciso existir uma idade inicial e depois uma idade final no mesmo local e item.",
@@ -613,7 +612,6 @@
       "kind": {
         "selectLabel": "Tipo de unidade",
         "selectHint": "Digite para filtrar, escolha uma sugestão ou confirme um tipo novo na última linha do menu (ícone de inclusão).",
-        "selectPlaceholder": "Buscar ou cadastrar tipo…",
         "openListAriaLabel": "Abrir ou fechar a lista de tipos",
         "addAriaLabel": "Incluir tipo com o texto digitado",
         "createError": "Não foi possível cadastrar o tipo. Tente novamente.",

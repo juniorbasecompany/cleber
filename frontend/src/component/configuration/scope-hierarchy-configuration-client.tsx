@@ -986,7 +986,6 @@ export function ScopeHierarchyConfigurationClient<
               copy={{
                 selectLabel: copy.kindSelectLabel,
                 selectHint: copy.kindSelectHint,
-                selectPlaceholder: copy.kindSelectPlaceholder,
                 openListAriaLabel: copy.kindOpenListAriaLabel,
                 addKindAriaLabel: copy.kindAddAriaLabel,
                 createError: copy.kindCreateError,
