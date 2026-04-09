@@ -289,8 +289,27 @@ class Event(Base):
         ForeignKey("unity.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=True,
         comment=(
-            "Ligação opcional ao lote (unidade). Se preenchido, deve ser consistente "
-            "com location_id e item_id."
+            "Ligação opcional ao lote (unidade). Quando preenchido, location_id deve "
+            "coincidir com unity.location_id e item_id deve pertencer a "
+            "unity.item_id_list. Evento com unity_id é um fato; sem, é um padrão "
+            "(standard) e estará ligado ao age_field_id."
+        ),
+    )
+    moment_utc: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=False),
+        nullable=True,
+        comment=(
+            "Momento do evento ou da medição. Presente apenas quando unity_id é "
+            "informado (fato). NULL para eventos-padrão (standard)."
+        ),
+    )
+    age_field_id: Mapped[int | None] = mapped_column(
+        BIGINT_COMPAT,
+        ForeignKey("field.id", onupdate="CASCADE", ondelete="RESTRICT"),
+        nullable=True,
+        comment=(
+            "Campo de idade usado em eventos-padrão (standard). Quando presente, "
+            "o evento não tem unity_id nem moment_utc."
         ),
     )
     location_id: Mapped[int] = mapped_column(
@@ -304,12 +323,6 @@ class Event(Base):
         ForeignKey("item.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
         comment="Ligação ao item.",
-    )
-    moment_utc: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False),
-        nullable=False,
-        default=lambda: datetime.now(UTC).replace(tzinfo=None),
-        comment="Momento do evento ou da medição.",
     )
     action_id: Mapped[int] = mapped_column(
         BIGINT_COMPAT,
@@ -378,6 +391,15 @@ class Result(Base):
         autoincrement=True,
         comment="Identificador do resultado da fórmula aplicada ao evento.",
     )
+    unity_id: Mapped[int] = mapped_column(
+        BIGINT_COMPAT,
+        ForeignKey("unity.id", onupdate="CASCADE", ondelete="RESTRICT"),
+        nullable=False,
+        comment=(
+            "Unidade à qual o resultado pertence. Preenchido mesmo quando "
+            "o evento-origem é um padrão (sem unity_id próprio)."
+        ),
+    )
     event_id: Mapped[int] = mapped_column(
         BIGINT_COMPAT,
         ForeignKey("event.id", onupdate="CASCADE", ondelete="RESTRICT"),
@@ -388,8 +410,8 @@ class Result(Base):
         DateTime(timezone=False),
         nullable=False,
         comment=(
-            "Este é o dia materializado do resultado. Para ações recorrentes, o mesmo evento "
-            "pode gerar resultados em vários dias diferentes."
+            "Data referente ao evento. Para fatos, vem do evento. Para padrões, "
+            "é a data derivada do age_field_id que determina a idade da unidade."
         ),
     )
     field_id: Mapped[int] = mapped_column(
@@ -403,9 +425,14 @@ class Result(Base):
     )
     formula_id: Mapped[int] = mapped_column(
         BIGINT_COMPAT,
-        ForeignKey("formula.id", onupdate="CASCADE", ondelete="CASCADE"),
+        ForeignKey("formula.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
         comment="Ligação com a formula.",
+    )
+    formula_order: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment="Ordem do cálculo das fórmulas do mesmo evento.",
     )
     text_value: Mapped[str | None] = mapped_column(
         Text,
@@ -421,10 +448,5 @@ class Result(Base):
         Numeric(15, 10),
         nullable=True,
         comment="Este é resultado da fórmula, no formato numérico.",
-    )
-    formula_order: Mapped[int] = mapped_column(
-        Integer,
-        nullable=False,
-        comment="Ordem do cálculo das fórmulas do mesmo evento.",
     )
 

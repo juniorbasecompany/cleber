@@ -2073,6 +2073,7 @@ def test_create_scope_event_result_supports_typed_values_from_erd() -> None:
     session = MagicMock()
     member = SimpleNamespace(role=2, tenant_id=1)
     body = ScopeResultCreateRequest(
+        unity_id=42,
         field_id=7,
         formula_id=13,
         numeric_value="12.5000000000",
@@ -2087,6 +2088,7 @@ def test_create_scope_event_result_supports_typed_values_from_erd() -> None:
             return_value=event_row,
         ),
         patch("valora_backend.api.rules._field_in_scope_or_404"),
+        patch("valora_backend.api.rules._get_scope_unity_or_404"),
         patch(
             "valora_backend.api.rules._formula_in_action_or_404",
             return_value=formula_row,
@@ -2109,6 +2111,7 @@ def test_create_scope_event_result_supports_typed_values_from_erd() -> None:
     assert response == {"ok": True}
     created_row = session.add.call_args.args[0]
     assert isinstance(created_row, Result)
+    assert created_row.unity_id == 42
     assert created_row.event_id == 9
     assert created_row.field_id == 7
     assert created_row.formula_id == 13
@@ -2124,6 +2127,7 @@ def test_patch_scope_event_result_can_replace_and_clear_typed_values() -> None:
     session = MagicMock()
     member = SimpleNamespace(role=2, tenant_id=1)
     existing_row = Result(
+        unity_id=42,
         event_id=9,
         field_id=7,
         formula_id=13,
@@ -2280,25 +2284,38 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         initial_event = Event(
+            unity_id=unity.id,
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 1, 12, 0, 0),
         )
         current_event_day_2 = Event(
+            unity_id=unity.id,
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
             moment_utc=datetime(2026, 4, 2, 12, 0, 0),
         )
         current_event_day_3 = Event(
+            unity_id=unity.id,
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
             moment_utc=datetime(2026, 4, 3, 12, 0, 0),
         )
         final_event = Event(
+            unity_id=unity.id,
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
@@ -2322,6 +2339,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     value="1",
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=initial_event.id,
                     field_id=initial_field.id,
                     formula_id=anchor_formula.id,
@@ -2332,6 +2350,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     moment_utc=datetime(2026, 4, 1, 12, 0, 0),
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=final_event.id,
                     field_id=final_field.id,
                     formula_id=anchor_formula.id,
@@ -2342,6 +2361,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     moment_utc=datetime(2026, 4, 4, 12, 0, 0),
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=current_event_day_2.id,
                     field_id=current_field.id,
                     formula_id=increment_formula.id,
@@ -2352,6 +2372,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     moment_utc=datetime(2026, 4, 2, 12, 5, 0),
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=current_event_day_2.id,
                     field_id=mirror_field.id,
                     formula_id=mirror_formula.id,
@@ -2621,6 +2642,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     value="1",
                 ),
                 Result(
+                    unity_id=unity_match.id,
                     event_id=initial_event.id,
                     field_id=initial_field.id,
                     formula_id=anchor_formula.id,
@@ -2631,6 +2653,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     moment_utc=datetime(2026, 4, 1, 12, 0, 0),
                 ),
                 Result(
+                    unity_id=unity_match.id,
                     event_id=final_event.id,
                     field_id=final_field.id,
                     formula_id=anchor_formula.id,
@@ -2641,6 +2664,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     moment_utc=datetime(2026, 4, 4, 12, 0, 0),
                 ),
                 Result(
+                    unity_id=unity_match.id,
                     event_id=current_event_day_2.id,
                     field_id=current_field.id,
                     formula_id=increment_formula.id,
@@ -2651,6 +2675,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     moment_utc=datetime(2026, 4, 2, 12, 5, 0),
                 ),
                 Result(
+                    unity_id=unity_match.id,
                     event_id=current_event_day_2.id,
                     field_id=mirror_field.id,
                     formula_id=mirror_formula.id,
@@ -2732,6 +2757,15 @@ def test_read_scope_current_age_reads_existing_results_without_recalculation() -
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         formula = Formula(
             action_id=action.id,
             sort_order=0,
@@ -2745,11 +2779,13 @@ def test_read_scope_current_age_reads_existing_results_without_recalculation() -
             item_id=item.id,
             action_id=action.id,
             moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            unity_id=unity.id,
         )
         session.add(event)
         session.flush()
 
         result = Result(
+            unity_id=unity.id,
             event_id=event.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -2880,6 +2916,7 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
         session.flush()
 
         result_a = Result(
+            unity_id=unity_a.id,
             event_id=event_a.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -2890,6 +2927,7 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
             moment_utc=datetime(2026, 4, 2, 12, 5, 0),
         )
         result_b = Result(
+            unity_id=unity_b.id,
             event_id=event_b.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -2982,6 +3020,15 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         formula = Formula(
             action_id=action.id,
             sort_order=0,
@@ -2995,17 +3042,20 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
             item_id=item.id,
             action_id=action.id,
             moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+            unity_id=unity.id,
         )
         deleted_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
             moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all([kept_event, deleted_event])
         session.flush()
 
         kept_result = Result(
+            unity_id=unity.id,
             event_id=kept_event.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -3016,6 +3066,7 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
             moment_utc=datetime(2026, 4, 1, 8, 5, 0),
         )
         deleted_result = Result(
+            unity_id=unity.id,
             event_id=deleted_event.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -3139,6 +3190,7 @@ def test_delete_scope_current_age_filters_by_unity_id() -> None:
         session.flush()
 
         result_a = Result(
+            unity_id=unity_a.id,
             event_id=event_a.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -3149,6 +3201,7 @@ def test_delete_scope_current_age_filters_by_unity_id() -> None:
             moment_utc=datetime(2026, 4, 2, 10, 5, 0),
         )
         result_b = Result(
+            unity_id=unity_b.id,
             event_id=event_b.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -3260,29 +3313,42 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         initial_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            unity_id=unity.id,
         )
         double_event_same_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=double_action.id,
             moment_utc=datetime(2026, 4, 2, 8, 0, 0),
+            unity_id=unity.id,
         )
         plus_event_same_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=plus_action.id,
             moment_utc=datetime(2026, 4, 2, 18, 0, 0),
+            unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all(
             [initial_event, double_event_same_day, plus_event_same_day, final_event]
@@ -3292,6 +3358,7 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
         session.add_all(
             [
                 Result(
+                    unity_id=unity.id,
                     event_id=initial_event.id,
                     field_id=initial_field.id,
                     formula_id=anchor_formula.id,
@@ -3302,6 +3369,7 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
                     moment_utc=datetime(2026, 4, 1, 12, 0, 0),
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=final_event.id,
                     field_id=final_field.id,
                     formula_id=anchor_formula.id,
@@ -3450,23 +3518,35 @@ def test_calculate_scope_current_age_rounds_numeric_result_to_field_scale_half_u
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         initial_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+            unity_id=unity.id,
         )
         calc_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=calc_action.id,
             moment_utc=datetime(2026, 4, 2, 8, 0, 0),
+            unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 3, 8, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all([initial_event, calc_event, final_event])
         session.flush()
@@ -3474,6 +3554,7 @@ def test_calculate_scope_current_age_rounds_numeric_result_to_field_scale_half_u
         session.add_all(
             [
                 Result(
+                    unity_id=unity.id,
                     event_id=initial_event.id,
                     field_id=initial_field.id,
                     formula_id=anchor_formula.id,
@@ -3484,6 +3565,7 @@ def test_calculate_scope_current_age_rounds_numeric_result_to_field_scale_half_u
                     moment_utc=datetime(2026, 4, 1, 8, 0, 0),
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=final_event.id,
                     field_id=final_field.id,
                     formula_id=anchor_formula.id,
@@ -3642,29 +3724,42 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         initial_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+            unity_id=unity.id,
         )
         first_event_on_final_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=final_day_first_action.id,
             moment_utc=datetime(2026, 4, 3, 8, 0, 0),
+            unity_id=unity.id,
         )
         second_event_on_final_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=final_day_last_action.id,
             moment_utc=datetime(2026, 4, 3, 18, 0, 0),
+            unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all(
             [
@@ -3679,6 +3774,7 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
         session.add_all(
             [
                 Result(
+                    unity_id=unity.id,
                     event_id=initial_event.id,
                     field_id=initial_field.id,
                     formula_id=anchor_current_formula.id,
@@ -3689,6 +3785,7 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
                     moment_utc=datetime(2026, 4, 1, 8, 0, 0),
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=final_event.id,
                     field_id=final_field.id,
                     formula_id=anchor_current_formula.id,
@@ -3846,23 +3943,35 @@ def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         initial_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            unity_id=unity.id,
         )
         current_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
             moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all([initial_event, current_event, final_event])
         session.flush()
@@ -3870,6 +3979,7 @@ def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type
         session.add_all(
             [
                 Result(
+                    unity_id=unity.id,
                     event_id=initial_event.id,
                     field_id=initial_field.id,
                     formula_id=anchor_formula.id,
@@ -3880,6 +3990,7 @@ def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type
                     moment_utc=datetime(2026, 4, 1, 12, 0, 0),
                 ),
                 Result(
+                    unity_id=unity.id,
                     event_id=final_event.id,
                     field_id=final_field.id,
                     formula_id=anchor_formula.id,
@@ -4019,17 +4130,28 @@ def test_calculate_scope_current_age_opens_window_from_age_inputs_and_keeps_futu
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         alojamento_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
             moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all([alojamento_event, idade_event])
         session.flush()
@@ -4174,17 +4296,28 @@ def test_calculate_scope_current_age_repeats_recurrent_event_on_following_days()
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         alojamento_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_age_action.id,
             moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all([alojamento_event, idade_event])
         session.flush()
@@ -4326,23 +4459,35 @@ def test_calculate_scope_current_age_ignores_age_input_without_formula_target() 
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         alojamento_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            unity_id=unity.id,
         )
         unrelated_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=unrelated_action.id,
             moment_utc=datetime(2026, 4, 4, 10, 0, 0),
+            unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_age_action.id,
             moment_utc=datetime(2026, 4, 4, 11, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all([alojamento_event, unrelated_event, idade_event])
         session.flush()
@@ -4478,17 +4623,28 @@ def test_calculate_scope_current_age_does_not_repeat_non_recurrent_event_on_foll
         session.add(item)
         session.flush()
 
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
         alojamento_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=single_age_action.id,
             moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            unity_id=unity.id,
         )
         session.add_all([alojamento_event, idade_event])
         session.flush()
@@ -4629,23 +4785,41 @@ def test_calculate_scope_current_age_does_not_mix_different_location_item_groups
         session.add_all([item_a, item_b])
         session.flush()
 
+        unity_a = Unity(
+            name="Lote A",
+            location_id=location_a.id,
+            item_id_list=[item_a.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        unity_b = Unity(
+            name="Lote B",
+            location_id=location_b.id,
+            item_id_list=[item_b.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add_all([unity_a, unity_b])
+        session.flush()
+
         initial_event_group_a = Event(
             location_id=location_a.id,
             item_id=item_a.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            unity_id=unity_a.id,
         )
         current_event_group_b = Event(
             location_id=location_b.id,
             item_id=item_b.id,
             action_id=current_action.id,
             moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            unity_id=unity_b.id,
         )
         final_event_group_b = Event(
             location_id=location_b.id,
             item_id=item_b.id,
             action_id=anchor_action.id,
             moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            unity_id=unity_b.id,
         )
         session.add_all([initial_event_group_a, current_event_group_b, final_event_group_b])
         session.flush()
@@ -4658,6 +4832,7 @@ def test_calculate_scope_current_age_does_not_mix_different_location_item_groups
                     value="1",
                 ),
                 Result(
+                    unity_id=unity_a.id,
                     event_id=initial_event_group_a.id,
                     field_id=initial_field.id,
                     formula_id=anchor_formula.id,
@@ -4668,6 +4843,7 @@ def test_calculate_scope_current_age_does_not_mix_different_location_item_groups
                     moment_utc=datetime(2026, 4, 1, 12, 0, 0),
                 ),
                 Result(
+                    unity_id=unity_b.id,
                     event_id=final_event_group_b.id,
                     field_id=final_field.id,
                     formula_id=anchor_formula.id,

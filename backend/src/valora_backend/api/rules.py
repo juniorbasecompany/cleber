@@ -1866,7 +1866,8 @@ class ScopeEventRecord(BaseModel):
     location_id: int
     item_id: int
     action_id: int
-    moment_utc: datetime
+    moment_utc: datetime | None = None
+    age_field_id: int | None = None
     input_summary: str | None = None
 
 
@@ -1881,6 +1882,7 @@ class ScopeEventCreateRequest(BaseModel):
     action_id: int
     moment_utc: datetime | None = None
     unity_id: int | None = None
+    age_field_id: int | None = None
 
 
 class ScopeEventPatchRequest(BaseModel):
@@ -1889,6 +1891,7 @@ class ScopeEventPatchRequest(BaseModel):
     action_id: int | None = None
     moment_utc: datetime | None = None
     unity_id: int | None = None
+    age_field_id: int | None = None
 
 
 class ScopeCurrentAgeCalculationRequest(BaseModel):
@@ -2334,7 +2337,11 @@ def list_scope_events(
         query = query.where(Event.item_id.in_(expanded_item_id_list))
     if action_id is not None:
         query = query.where(Event.action_id == action_id)
-    rows = list(session.scalars(query.order_by(Event.moment_utc.asc(), Event.id.asc())))
+    rows = list(
+        session.scalars(
+            query.order_by(Event.moment_utc.asc().nulls_last(), Event.id.asc())
+        )
+    )
     summary_by_event_id = _event_input_summary_by_event_id(
         session,
         event_id_list=[r.id for r in rows],
@@ -2350,6 +2357,7 @@ def list_scope_events(
                 item_id=r.item_id,
                 action_id=r.action_id,
                 moment_utc=r.moment_utc,
+                age_field_id=r.age_field_id,
                 input_summary=summary_by_event_id.get(r.id),
             )
             for r in rows
@@ -2374,17 +2382,23 @@ def create_scope_event(
     action = _action_in_scope_or_404(
         session, scope_id=scope_id, action_id=body.action_id
     )
-    moment = body.moment_utc or datetime.now(UTC)
-    if moment.tzinfo is not None:
-        moment = moment.astimezone(UTC).replace(tzinfo=None)
     if body.unity_id is not None:
         _get_scope_unity_or_404(session, scope_id=scope_id, unity_id=body.unity_id)
+    if body.age_field_id is not None:
+        _field_in_scope_or_404(session, scope_id=scope_id, field_id=body.age_field_id)
+    is_standard = body.age_field_id is not None
+    moment: datetime | None = None
+    if not is_standard:
+        moment = body.moment_utc or datetime.now(UTC)
+        if moment.tzinfo is not None:
+            moment = moment.astimezone(UTC).replace(tzinfo=None)
     row = Event(
         unity_id=body.unity_id,
         location_id=body.location_id,
         item_id=body.item_id,
         action_id=action.id,
         moment_utc=moment,
+        age_field_id=body.age_field_id,
     )
     session.add(row)
     _apply_member_audit_context(session, member)
@@ -2434,6 +2448,12 @@ def patch_scope_event(
         row.moment_utc = moment
     if "unity_id" in body.model_fields_set:
         row.unity_id = body.unity_id
+    if "age_field_id" in body.model_fields_set:
+        if body.age_field_id is not None:
+            _field_in_scope_or_404(
+                session, scope_id=scope_id, field_id=body.age_field_id
+            )
+        row.age_field_id = body.age_field_id
     if row.unity_id is not None:
         _get_scope_unity_or_404(session, scope_id=scope_id, unity_id=row.unity_id)
     session.add(row)
@@ -2937,6 +2957,7 @@ def calculate_scope_current_age(
 
             if moment_from_utc <= execution_moment_utc <= moment_to_utc:
                 current_result = Result(
+                    unity_id=row.unity_id,
                     event_id=row.id,
                     field_id=target_field.id,
                     formula_id=formula_row.id,
@@ -3122,6 +3143,7 @@ def delete_scope_event_input(
 
 class ScopeResultRecord(BaseModel):
     id: int
+    unity_id: int
     event_id: int
     field_id: int
     formula_id: int
@@ -3138,6 +3160,7 @@ class ScopeResultListResponse(BaseModel):
 
 
 class ScopeResultCreateRequest(BaseModel):
+    unity_id: int
     field_id: int
     formula_id: int
     formula_order: int | None = None
@@ -3179,6 +3202,7 @@ def list_scope_event_results(
         item_list=[
             ScopeResultRecord(
                 id=r.id,
+                unity_id=r.unity_id,
                 event_id=r.event_id,
                 field_id=r.field_id,
                 formula_id=r.formula_id,
@@ -3207,6 +3231,7 @@ def create_scope_event_result(
     _require_scope_rules_editor(member)
     event_row = _event_in_scope_or_404(session, scope_id=scope_id, event_id=event_id)
     _field_in_scope_or_404(session, scope_id=scope_id, field_id=body.field_id)
+    _get_scope_unity_or_404(session, scope_id=scope_id, unity_id=body.unity_id)
     formula_row = _formula_in_action_or_404(
         session,
         action_id=event_row.action_id,
@@ -3216,6 +3241,7 @@ def create_scope_event_result(
     if moment.tzinfo is not None:
         moment = moment.astimezone(UTC).replace(tzinfo=None)
     row = Result(
+        unity_id=body.unity_id,
         event_id=event_id,
         field_id=body.field_id,
         formula_id=formula_row.id,

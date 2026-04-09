@@ -4,8 +4,8 @@
       "id": "tenant",
       "name": "tenant",
       "comment": "Este é o licenciado que está contratando o sistema.",
-      "x": -826.2769788110389,
-      "y": -304.3735352899682,
+      "x": -858.8207564899864,
+      "y": -303.2513360596596,
       "locked": false,
       "fields": [
         {
@@ -44,7 +44,7 @@
       "id": "account",
       "name": "account",
       "comment": "Esta é a conta do usuário do sistema.",
-      "x": 153.38607156984244,
+      "x": 62.48793391485128,
       "y": -269.9600174031965,
       "locked": false,
       "fields": [
@@ -136,8 +136,8 @@
       "id": "member",
       "name": "member",
       "comment": "Usuário do sistema em um determinado licenciado.",
-      "x": -325.79487712009063,
-      "y": -413.43233957110743,
+      "x": -384.1492370961346,
+      "y": -412.3101403407989,
       "locked": false,
       "fields": [
         {
@@ -592,8 +592,8 @@
       "id": "event",
       "name": "event",
       "comment": "É o momento em que determinada fórmula é aplicada.",
-      "x": 664.79356749751,
-      "y": 593.6398556206941,
+      "x": 605.3170082911582,
+      "y": 666.5828055907488,
       "locked": false,
       "fields": [
         {
@@ -613,7 +613,7 @@
         {
           "id": "unity_id",
           "name": "unity_id",
-          "comment": "Indica a ligação com uma unidade específica. Quando preenchido, location_id deve ser igual a unity.location_id e item_id deve pertencer a unity.item_id_list. O evento ligado a uma unidade é um fato; quando não está, é um padrão (standard)  e estará ligado ao age_field_id.",
+          "comment": "Indica a ligação com uma unidade específica. Quando preenchido, location_id deve ser igual a unity.location_id e item_id deve pertencer a unity.item_id_list. O evento ligado a uma unidade é um fato; quando não está, é um padrão (standard).",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -621,34 +621,6 @@
           "unique": false,
           "notNull": false,
           "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "moment_utc",
-          "name": "moment_utc",
-          "comment": "Momento do evento ou da medição, que só existe quando unity_id é informada, ou seja, é um fato que ocorreu em determinado momento.",
-          "type": "TIMESTAMP",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": false,
-          "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "age_field_id",
-          "name": "age_field_id",
-          "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": false,
-          "increment": false,
-          "comment": "Indica o campo que é usado para determinar a idade do lote. O evento que tem age_field_id é um padrão (standard). Quando não tem, deverá ter unity_id e então é um fato, com data.",
           "size": "",
           "values": []
         },
@@ -681,6 +653,20 @@
           "values": []
         },
         {
+          "id": "moment_utc",
+          "name": "moment_utc",
+          "comment": "Momento do evento ou da medição.",
+          "type": "TIMESTAMP",
+          "default": "now() at time zone 'UTC'",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
           "id": "action_id",
           "name": "action_id",
           "type": "BIGINT",
@@ -702,8 +688,8 @@
       "id": "formula",
       "name": "formula",
       "comment": "Fórmula que deve ser aplicada aos eventos da ação.",
-      "x": 662.4832559341995,
-      "y": 1143.3116484167497,
+      "x": 182.18198536214834,
+      "y": 1275.7311575931565,
       "locked": false,
       "fields": [
         {
@@ -770,8 +756,8 @@
       "id": "action",
       "name": "action",
       "comment": "Tabela para definir as ações. Ex: Alojamento, Mortalidade, etc...",
-      "x": -215.16935362949255,
-      "y": 1178.8479891478128,
+      "x": -210.68055670825845,
+      "y": 1103.6606407171412,
       "locked": false,
       "fields": [
         {
@@ -838,8 +824,8 @@
       "id": "input",
       "name": "input",
       "comment": "Aqui ficam registrados os valores dos parâmetros de entrada das ações aplicadas aos eventos em cada dia.",
-      "x": 581.5899402949567,
-      "y": 1735.0808463163085,
+      "x": 547.9239633857001,
+      "y": 1764.25802630433,
       "locked": false,
       "fields": [
         {
@@ -906,8 +892,8 @@
       "id": "result",
       "name": "result",
       "comment": "Aqui ficam registrados os resultados das fórmulas aplicadas aos eventos em cada dia.",
-      "x": 1073.2076723942982,
-      "y": 1414.2764560388114,
+      "x": 969.9653432059126,
+      "y": 1450.1868314086844,
       "locked": false,
       "fields": [
         {
@@ -921,20 +907,6 @@
           "unique": true,
           "notNull": true,
           "increment": true,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "unity_id",
-          "name": "unity_id",
-          "comment": "Este campo indica a unidade para a qual pertence este resultado. Observe que há resultados provenientes de padrão (evento sem unity), então para efetuar o cálculo é obrigatório que saibamos quem é o unity_id, que será gravado aqui.",
-          "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
           "size": "",
           "values": []
         },
@@ -955,7 +927,7 @@
         {
           "id": "moment_utc",
           "name": "moment_utc",
-          "comment": "Esta é a data referente ao evento. Quando o resultado refere-se a um fato, esta data vem do evento. Quando o resultado refere-se a um padrão, esta data é igual a data do age_field_id que é usado para determinar a idade do unity.",
+          "comment": "Este é o momento em que o cálculo foi efetuado.",
           "type": "TIMESTAMP",
           "default": "",
           "check": "",
@@ -985,20 +957,6 @@
           "name": "formula_id",
           "comment": "Ligação com a formula.",
           "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "formula_order",
-          "name": "formula_order",
-          "comment": "Ordem do cálculo das fórmulas do mesmo evento.",
-          "type": "INTEGER",
           "default": "",
           "check": "",
           "primary": false,
@@ -1049,6 +1007,20 @@
           "increment": false,
           "size": "",
           "values": []
+        },
+        {
+          "id": "formula_order",
+          "name": "formula_order",
+          "comment": "Ordem do cálculo das fórmulas do mesmo evento.",
+          "type": "INTEGER",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
         }
       ],
       "indices": [],
@@ -1058,8 +1030,8 @@
       "id": "label",
       "name": "label",
       "comment": "Serve basicamente para dar um nome amigável para o campo ou para a ação. Exatamente um entre field_id e action_id deve estar preenchido.\nunique por (lang, field_id) e por (lang, action_id)",
-      "x": -847.1862167030206,
-      "y": 1378.9142108808837,
+      "x": -921.2513659033838,
+      "y": 960.3338979758006,
       "locked": false,
       "fields": [
         {
@@ -1256,14 +1228,14 @@
           "values": []
         }
       ],
-      "x": -929.2716296167907,
-      "y": 653.9725037624705
+      "x": -921.4162350046307,
+      "y": 1363.2024173174634
     },
     {
       "id": "kind",
       "name": "kind",
-      "x": 29.31976766687103,
-      "y": 475.54990795950437,
+      "x": 15.85337690316851,
+      "y": 483.40530257166415,
       "locked": false,
       "fields": [
         {
@@ -1323,8 +1295,8 @@
     {
       "id": "unity",
       "name": "unity",
-      "x": 737.5263419199713,
-      "y": 42.941097534780795,
+      "x": 639.8950088831288,
+      "y": 44.06329676508926,
       "locked": false,
       "fields": [
         {
@@ -1403,50 +1375,6 @@
     }
   ],
   "relationships": [
-    {
-      "id": "result.unity_id",
-      "name": "result.unity_id",
-      "startTableId": "unity",
-      "startFieldId": "id",
-      "endTableId": "result",
-      "endFieldId": "unity_id",
-      "cardinality": "one_to_many",
-      "updateConstraint": "Cascade",
-      "deleteConstraint": "Restrict"
-    },
-    {
-      "id": "result.formula_id",
-      "name": "result.formula_id",
-      "startTableId": "formula",
-      "startFieldId": "id",
-      "endTableId": "result",
-      "endFieldId": "formula_id",
-      "cardinality": "one_to_many",
-      "updateConstraint": "Cascade",
-      "deleteConstraint": "Restrict"
-    },
-    {
-      "id": "result.event_id",
-      "name": "result.event_id",
-      "startTableId": "event",
-      "startFieldId": "id",
-      "endTableId": "result",
-      "endFieldId": "event_id",
-      "cardinality": "one_to_many",
-      "updateConstraint": "Cascade",
-      "deleteConstraint": "Restrict"
-    },
-    {
-      "id": "result.field_id",
-      "name": "result.field_id",
-      "startTableId": "field",
-      "startFieldId": "id",
-      "endTableId": "result",
-      "endFieldId": "field_id",
-      "cardinality": "one_to_many",
-      "updateConstraint": "Cascade",
-      "deleteConstraint": "Restrict"
-    },
     {
       "id": "field.scope_id",
       "name": "field.scope_id",
@@ -1635,6 +1563,28 @@
       "deleteConstraint": "Restrict"
     },
     {
+      "id": "result.field_id",
+      "name": "result.field_id",
+      "startTableId": "field",
+      "startFieldId": "id",
+      "endTableId": "result",
+      "endFieldId": "field_id",
+      "cardinality": "one_to_many",
+      "updateConstraint": "Cascade",
+      "deleteConstraint": "Restrict"
+    },
+    {
+      "id": "result.event_id",
+      "name": "result.event_id",
+      "startTableId": "event",
+      "startFieldId": "id",
+      "endTableId": "result",
+      "endFieldId": "event_id",
+      "cardinality": "one_to_many",
+      "updateConstraint": "Cascade",
+      "deleteConstraint": "Restrict"
+    },
+    {
       "id": "action.scope_id",
       "name": "action.scope_id",
       "startTableId": "scope",
@@ -1690,6 +1640,17 @@
       "deleteConstraint": "Restrict"
     },
     {
+      "id": "result.formula_id",
+      "name": "result.formula_id",
+      "startTableId": "formula",
+      "startFieldId": "id",
+      "endTableId": "result",
+      "endFieldId": "formula_id",
+      "cardinality": "one_to_many",
+      "updateConstraint": "Cascade",
+      "deleteConstraint": "Cascade"
+    },
+    {
       "id": "event.unity_id",
       "name": "event.unity_id",
       "startTableId": "unity",
@@ -1699,35 +1660,35 @@
       "cardinality": "one_to_many",
       "updateConstraint": "Cascade",
       "deleteConstraint": "Restrict"
-    },
-    {
-      "id": "event.age_field_id",
-      "name": "event.age_field_id",
-      "startTableId": "field",
-      "startFieldId": "id",
-      "endTableId": "event",
-      "endFieldId": "age_field_id",
-      "cardinality": "one_to_many",
-      "updateConstraint": "Cascade",
-      "deleteConstraint": "Restrict"
     }
   ],
   "notes": [
     {
       "id": 0,
-      "x": 1120.5724711838004,
-      "y": 702.343769563237,
+      "x": 981.2090435943621,
+      "y": 714.5570599067589,
+      "title": "formula.statement e field.id",
+      "content": "Os tokens ${field:X} e ${input:X} mantêm um vínculo lógico com field.id = X.\nEssa relação não é uma FK explícita, pois está embutida na instrução textual, exigindo validação por parsing.\nA integridade deve ser garantida na aplicação (ou via validação prévia), assegurando que todo X referenciado exista em field.",
+      "locked": false,
+      "color": "#fcf7ac",
+      "height": 258,
+      "width": 300
+    },
+    {
+      "id": 1,
+      "x": 984.7863643164662,
+      "y": 1049.1033317285737,
       "title": "formula.statement e tokens",
-      "content": "Os tokens `${field:X}` e `${input:X}` são identificadores estruturados usados para resolver valores is durante a execução da fórmula.\nEles codificam dois aspectos: o `field_id` (X) e a origem do valor (`field` = estado, `input` = evento).\nDevem seguir um padrão rígido e ser validados por parsing, garantindo que sejam reconhecíveis e semanticamente consistentes.",
+      "content": "Os tokens `${field:X}` e `${input:X}` são identificadores estruturados usados para resolver valores is durante a execução da fórmula.\nEles codificam doaspectos: o `field_id` (X) e a origem do valor (`field` = estado, `input` = evento).\nDevem seguir um padrão rígido e ser validados por parsing, garantindo que sejam reconhecíveis e semanticamente consistentes.",
       "locked": false,
       "color": "#fcf7ac",
       "height": 306,
       "width": 300
     },
     {
-      "id": 1,
-      "x": -845.237452443384,
-      "y": 1237.6297643737194,
+      "id": 2,
+      "x": -921.5470001043642,
+      "y": 832.5158422323389,
       "title": "label.field_id e label.action_id",
       "content": "field_id, action_id, ao menos 1 e no máximo 1 deve estar preenchido.",
       "locked": false,
@@ -1736,37 +1697,15 @@
       "width": 300
     },
     {
-      "id": 2,
-      "x": 732.9852042338007,
-      "y": 351.7472468019251,
+      "id": 3,
+      "x": 982.1134333622954,
+      "y": 88.03042767941963,
       "title": "unity.item_id_list",
       "content": "Observe que aqui temos a lista de item que estão compondo a unidade. Quando o evento está ligado a uma unidade, location_id deve coincidir com unity.location_id e item_id deve pertencer a esta lista.",
       "locked": false,
       "color": "#fcf7ac",
-      "height": 186,
+      "height": 114,
       "width": 300
-    },
-    {
-      "id": 3,
-      "x": 1110.0623689342904,
-      "y": 359.74251698370915,
-      "title": "formula.statement e field.id",
-      "content": "Os tokens ${field:X} e ${input:X} mantêm um vínculo lógico com field.id = X.\nEssa relação não é uma FK explícita, pois está embutida na instrução textual, exigindo validação por parsing.\nA integridade deve ser garantida na aplicação (ou via validação prévia), assegurando que todo X referenciado exista em field.",
-      "locked": false,
-      "color": "#fcf7ac",
-      "height": 282,
-      "width": 300
-    },
-    {
-      "id": 4,
-      "x": 1110.6518950025693,
-      "y": 1175.8322768523885,
-      "title": "result - cálculo",
-      "content": "O resultado do cálculo provêm de duas fonte:\nfato: quando o evento tem unit_id\npadrão: quando o evento tem age_field_id.",
-      "locked": false,
-      "color": "#fcf7ac",
-      "height": 162,
-      "width": 298.95311841270455
     }
   ],
   "subjectAreas": [],
