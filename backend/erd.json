@@ -648,7 +648,7 @@
           "unique": false,
           "notNull": false,
           "increment": false,
-          "comment": "Indica o campo que é usado para determinar a idade do lote. O evento que tem age_field_id é um padrão (standard). Quando não tem, deverá ter unity_id e então é um fato, com data.",
+          "comment": "Indica o campo que é usado para determinar a idade do lote (is_current_age = true). O evento que tem age_field_id é um padrão (standard). Quando não tem, deverá ter unity_id e então é um fato, com data.",
           "size": "",
           "values": []
         },
