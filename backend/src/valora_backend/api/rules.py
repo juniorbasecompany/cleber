@@ -2409,7 +2409,7 @@ def create_scope_event(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail={
                 "code": "event_standard_moment_forbidden",
-                "message": "moment_utc must be null when unity_id is null (standard event)",
+                "message": "Standard events cannot include a timestamp; omit the date or choose a unity for a fact.",
             },
         )
     moment: datetime | None = None
@@ -2483,7 +2483,7 @@ def patch_scope_event(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "code": "event_fact_moment_required",
-                        "message": "cannot clear moment_utc while unity_id is set",
+                        "message": "Cannot clear the timestamp while a unity is selected; remove the unity or keep a date and time.",
                     },
                 )
             row.moment_utc = None
@@ -2493,7 +2493,7 @@ def patch_scope_event(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail={
                         "code": "event_moment_requires_unity",
-                        "message": "moment_utc requires unity_id",
+                        "message": "Select a unity before setting the event date and time.",
                     },
                 )
             moment = body.moment_utc

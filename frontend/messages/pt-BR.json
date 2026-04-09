@@ -481,7 +481,12 @@
       "momentRequired": "Informe a data e hora do evento.",
       "locationRequired": "Selecione um local.",
       "itemRequired": "Selecione um item.",
-      "actionRequired": "Selecione uma ação."
+      "actionRequired": "Selecione uma ação.",
+      "api": {
+        "event_moment_requires_unity": "Para informar data e hora, selecione uma unidade. Em fatos, o momento fica vinculado ao lote.",
+        "event_standard_moment_forbidden": "Eventos padrão não usam data nem unidade. Limpe a data ou selecione uma unidade para registrar um fato.",
+        "event_fact_moment_required": "Com unidade selecionada, informe data e hora, ou remova a unidade para alterar o momento."
+      }
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },
@@ -556,7 +561,12 @@
       "currentAgeFieldMissing": "Marque um campo como idade atual do lote no cadastro de campos deste escopo antes de criar um evento padrão.",
       "locationRequired": "Selecione um local.",
       "itemRequired": "Selecione um item.",
-      "actionRequired": "Selecione uma ação."
+      "actionRequired": "Selecione uma ação.",
+      "api": {
+        "event_moment_requires_unity": "Para informar data e hora, selecione uma unidade. Em fatos, o momento fica vinculado ao lote.",
+        "event_standard_moment_forbidden": "Eventos padrão não usam data nem unidade. Limpe a data ou selecione uma unidade para registrar um fato.",
+        "event_fact_moment_required": "Com unidade selecionada, informe data e hora, ou remova a unidade para alterar o momento."
+      }
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },

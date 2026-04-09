@@ -34,7 +34,7 @@ import type {
   TenantUnityDirectoryResponse,
   TenantUnityRecord
 } from "@/lib/auth/types";
-import { parseErrorDetail } from "@/lib/api/parse-error-detail";
+import { parseErrorCode, parseErrorDetail } from "@/lib/api/parse-error-detail";
 import type { LabelLang } from "@/lib/i18n/label-lang";
 import {
   filterItemListByUnity,
@@ -46,6 +46,11 @@ import {
 } from "@/lib/navigation/configuration-path";
 
 const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
+
+type ScopeEventApiErrorCode =
+  | "event_moment_requires_unity"
+  | "event_standard_moment_forbidden"
+  | "event_fact_moment_required";
 
 export type EventConfigurationCopy = {
   title: string;
@@ -103,7 +108,24 @@ export type EventConfigurationCopy = {
   actionRequired: string;
   discardConfirm: string;
   currentAgeFieldMissing?: string;
+  /** Mensagens por `detail.code` da API de eventos (REST); ver `rules.py`. */
+  scopeEventApiError?: Partial<Record<ScopeEventApiErrorCode, string>>;
 };
+
+function resolveScopeEventHttpErrorMessage(
+  payload: unknown,
+  scopeEventApiError: EventConfigurationCopy["scopeEventApiError"],
+  fallback: string
+): string {
+  const code = parseErrorCode(payload);
+  if (code && scopeEventApiError) {
+    const mapped = scopeEventApiError[code as ScopeEventApiErrorCode];
+    if (typeof mapped === "string" && mapped.trim()) {
+      return mapped;
+    }
+  }
+  return parseErrorDetail(payload, fallback) ?? fallback;
+}
 
 type EventConfigurationClientProps = {
   locale: string;
@@ -1375,7 +1397,9 @@ export function EventConfigurationClient({
         const data: unknown = await response.json().catch(() => ({}));
 
         if (!response.ok) {
-          setRequestErrorMessage(parseErrorDetail(data, copy.createError) ?? copy.createError);
+          setRequestErrorMessage(
+            resolveScopeEventHttpErrorMessage(data, copy.scopeEventApiError, copy.createError)
+          );
           return;
         }
 
@@ -1431,7 +1455,11 @@ export function EventConfigurationClient({
 
       if (!response.ok) {
         const fallback = isDeletePending ? copy.deleteError : copy.saveError;
-        const detail = parseErrorDetail(data, fallback) ?? fallback;
+        const detail = resolveScopeEventHttpErrorMessage(
+          data,
+          copy.scopeEventApiError,
+          fallback
+        );
         if (isDeletePending && isDeleteBlockedDetail(detail)) {
           setRequestErrorMessage(copy.deleteBlockedDetail);
           return;

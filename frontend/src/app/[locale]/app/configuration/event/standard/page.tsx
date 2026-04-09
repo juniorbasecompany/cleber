@@ -123,7 +123,12 @@ export default async function EventStandardConfigurationPage({
           itemRequired: t("error.itemRequired"),
           actionRequired: t("error.actionRequired"),
           discardConfirm: t("discardConfirm"),
-          currentAgeFieldMissing: t("error.currentAgeFieldMissing")
+          currentAgeFieldMissing: t("error.currentAgeFieldMissing"),
+          scopeEventApiError: {
+            event_moment_requires_unity: t("error.api.event_moment_requires_unity"),
+            event_standard_moment_forbidden: t("error.api.event_standard_moment_forbidden"),
+            event_fact_moment_required: t("error.api.event_fact_moment_required")
+          }
         }}
       />
     </Suspense>

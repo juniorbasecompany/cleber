@@ -481,7 +481,12 @@
       "momentRequired": "Indica la fecha y hora del evento.",
       "locationRequired": "Selecciona una ubicación.",
       "itemRequired": "Selecciona un ítem.",
-      "actionRequired": "Selecciona una acción."
+      "actionRequired": "Selecciona una acción.",
+      "api": {
+        "event_moment_requires_unity": "Para indicar fecha y hora, selecciona primero una unidad. En hechos, el momento queda vinculado al lote.",
+        "event_standard_moment_forbidden": "Los eventos patrón no usan fecha ni unidad. Borra la fecha o selecciona una unidad para registrar un hecho.",
+        "event_fact_moment_required": "Con unidad seleccionada, indica fecha y hora, o quita la unidad para cambiar el momento."
+      }
     },
     "discardConfirm": "¿Descartar los cambios no guardados?"
   },
@@ -556,7 +561,12 @@
       "currentAgeFieldMissing": "Marca un campo como edad actual del lote en la configuración de campos de este alcance antes de crear un evento patrón.",
       "locationRequired": "Selecciona una ubicación.",
       "itemRequired": "Selecciona un ítem.",
-      "actionRequired": "Selecciona una acción."
+      "actionRequired": "Selecciona una acción.",
+      "api": {
+        "event_moment_requires_unity": "Para indicar fecha y hora, selecciona primero una unidad. En hechos, el momento queda vinculado al lote.",
+        "event_standard_moment_forbidden": "Los eventos patrón no usan fecha ni unidad. Borra la fecha o selecciona una unidad para registrar un hecho.",
+        "event_fact_moment_required": "Con unidad seleccionada, indica fecha y hora, o quita la unidad para cambiar el momento."
+      }
     },
     "discardConfirm": "¿Descartar los cambios no guardados?"
   },
