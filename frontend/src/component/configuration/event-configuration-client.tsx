@@ -102,9 +102,6 @@ export type EventConfigurationCopy = {
   itemRequired: string;
   actionRequired: string;
   discardConfirm: string;
-  /** Painel Padrão: rótulo do campo de idade atual do escopo. */
-  ageFieldLabel?: string;
-  ageFieldHint?: string;
   currentAgeFieldMissing?: string;
 };
 
@@ -1656,22 +1653,6 @@ export function EventConfigurationClient({
       editorForm={
         directory ? (
           <>
-            {variant === "standard" ? (
-              <section className="ui-card ui-form-section ui-border-accent">
-                <EditorPanelFlashOverlay active={isEditorFlashActive} />
-                <div className="ui-field">
-                  <span className="ui-field-label">{copy.ageFieldLabel}</span>
-                  <p className="ui-directory-title ui-directory-title-emphasis">
-                    {currentAgeField?.label ?? copy.currentAgeFieldMissing}
-                  </p>
-                  <p className="ui-field-hint">{copy.ageFieldHint}</p>
-                  {fieldError.currentAge ? (
-                    <p className="ui-field-error">{fieldError.currentAge}</p>
-                  ) : null}
-                </div>
-              </section>
-            ) : null}
-
             {variant === "fact" ? (
               <section className="ui-card ui-form-section ui-border-accent">
                 <EditorPanelFlashOverlay active={isEditorFlashActive} />
@@ -1714,6 +1695,9 @@ export function EventConfigurationClient({
             ) : null}
 
             <section className="ui-card ui-form-section ui-border-accent">
+              {variant === "standard" ? (
+                <EditorPanelFlashOverlay active={isEditorFlashActive} />
+              ) : null}
               <HierarchySingleSelectField
                 id="event-location"
                 label={copy.locationLabel}

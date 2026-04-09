@@ -123,8 +123,6 @@ export default async function EventStandardConfigurationPage({
           itemRequired: t("error.itemRequired"),
           actionRequired: t("error.actionRequired"),
           discardConfirm: t("discardConfirm"),
-          ageFieldLabel: t("section.ageField.label"),
-          ageFieldHint: t("section.ageField.hint"),
           currentAgeFieldMissing: t("error.currentAgeFieldMissing")
         }}
       />
