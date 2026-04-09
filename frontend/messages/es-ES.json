@@ -27,11 +27,9 @@
       "tenantShortcutLabel": "Licenciatario",
       "memberShortcutLabel": "Miembros",
       "scopeShortcutLabel": "Alcance",
-      "loadingTenantList": "Cargando...",
       "tenantListError": "No se pudo cargar la lista de licenciatarios.",
       "emptyTenantList": "No hay ningún licenciatario disponible.",
       "switchingTenant": "Cambiando licenciatario...",
-      "loadingScopeList": "Cargando alcances...",
       "scopeListError": "No se pudo cargar la lista de alcances.",
       "emptyScopeList": "No hay ningún alcance disponible.",
       "switchingScope": "Guardando alcance...",
@@ -336,7 +334,7 @@
       "description": "Las fórmulas son pasos de cálculo que se aplican al procesar eventos de esta acción. Cada paso es un texto donde puedes escribir números, operaciones (como + y *) y referencias a la información del alcance.\n\nEscribe @ para abrir una lista e insertar una referencia de tipo field:n. Escribe # para abrir la misma lista e insertar una referencia de tipo input:n. El nombre elegido aparece subrayado en el texto y puedes seguir escribiendo con normalidad.\n\nEl orden de la lista es el orden de ejecución, de arriba abajo. Arrastra el asa junto a la fórmula para cambiar el orden antes de guardar.",
       "exampleList": "Ejemplos matemáticos:\nAdición: x + y\nSustracción: x - y\nMultiplicación: x * y\nDivisión: x / y\nDivisión entera: x // y\nMódulo: x % y\nPotencia: x ** 2\nParéntesis: (x + y) * z\nRedondeo: round((x * y) / z, 2)\nMínimo: min(x, y, z)\nMáximo: max(x, y, z)\nValor absoluto: abs(x - y)\nDecimal: Decimal(\"0.2\") * x\n\nEjemplos condicionales:\nCondición simple: x if y > 0 else 0\nCondición con igualdad: x + 10 if y == 1 else x - 10\nCondición con max/min: max(x, y) if z > 100 else min(x, y)\nCondición con división segura: round(x / y, 2) if y != 0 else 0\nCondición con and: x if (y > 0 and z > 0) else 0\n\nOtros recursos compatibles:\nComparaciones: x == y, x != y, x > y, x >= y, x < y, x <= y\nLógicos: x > 0 and y > 0, x > 0 or y > 0, not (x > y)\nFecha: x if data_ref > date(2026, 1, 1) else y\nFunciones: abs, min, max, round, Decimal y date",
       "unknownFieldLabel": "Campo",
-      "loading": "Cargando fórmulas…",
+      "loadingAriaLabel": "Cargando fórmulas",
       "newFormula": "Nueva",
       "removeAriaLabel": "Marcar fórmula para eliminar al guardar",
       "unmarkAriaLabel": "Quitar marca de eliminación de esta fórmula",
@@ -447,7 +445,7 @@
       "actionInput": {
         "title": "Campos de entrada de la acción",
         "hint": "Completa los campos usados como entrada en las fórmulas de la acción seleccionada.",
-        "loading": "Cargando campos de entrada de la acción...",
+        "loadingAriaLabel": "Cargando campos de entrada de la acción",
         "loadError": "No se pudieron cargar los campos de entrada de la acción.",
         "saveError": "No se pudieron guardar los campos de entrada de la acción."
       }
@@ -518,6 +516,7 @@
       "calculating": "Calculando...",
       "delete": "Eliminar",
       "deleting": "Eliminando...",
+      "resultTableBusyAriaLabel": "Actualizando tabla de resultados",
       "validationRequired": "Selecciona las dos fechas para calcular.",
       "validationOrder": "La fecha inicial debe ser menor o igual que la fecha final.",
       "error": "No se pudo calcular la edad actual. Inténtalo de nuevo.",
@@ -586,8 +585,8 @@
     "discardConfirm": "¿Descartar los cambios no guardados?"
   },
   "ItemConfigurationPage": {
-    "title": "Unidades productivas",
-    "description": "En este panel ves el árbol de unidades productivas del alcance. A la izquierda está la jerarquía; al lado, el formulario para editar nombre y descripción, además del panel de historial. Selecciona un ítem en el árbol para editarlo o usa el botón Nueva para crear otro nivel bajo el ítem elegido.",
+    "title": "Ítems",
+    "description": "En este panel ves el árbol de ítems del alcance. A la izquierda está la jerarquía; al lado, el formulario para editar nombre y descripción, además del panel de historial. Selecciona un ítem en el árbol para editarlo o usa el botón Nueva para crear otro nivel bajo el ítem elegido.",
     "list": {
       "emptyScope": "Crea un alcance antes de editar unidades productivas.",
       "missingCurrentScope": "Define un alcance activo en el selector del encabezado antes de editar unidades productivas."
@@ -679,7 +678,7 @@
   "AuditHistory": {
     "toggleAriaLabel": "Mostrar u ocultar el historial del panel",
     "toggleLabel": "Historial",
-    "loading": "Cargando historial...",
+    "loadingAriaLabel": "Cargando historial",
     "unknownUser": "Usuario desconocido",
     "entryLabel": "Registro #{id}",
     "metaLine": "{actor} el {moment}",
@@ -734,7 +733,7 @@
     }
   },
   "SelectTenantPage": {
-    "loading": "Cargando opciones de acceso...",
+    "loadingAriaLabel": "Cargando opciones de acceso",
     "title": "Elige cómo quieres entrar en Valora.",
     "description": "Tu cuenta de Google ha sido validada. Ahora solo falta definir el licenciatario activo que gobernará el contexto operativo de la sesión.",
     "activeListTitle": "Organizaciones activas",
@@ -752,7 +751,7 @@
     "genericError": "No se pudo completar esta acción ahora mismo. Inténtalo de nuevo."
   },
   "State": {
-    "loadingDescription": "Cargando la base de la aplicación.",
+    "loadingAriaLabel": "Cargando el espacio de trabajo",
     "errorTitle": "No se pudo cargar esta área.",
     "errorDescription": "Se produjo un problema al mostrar la interfaz. Puedes intentarlo de nuevo sin salir del flujo actual.",
     "retry": "Intentar de nuevo"

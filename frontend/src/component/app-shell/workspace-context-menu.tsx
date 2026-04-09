@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { MenuListSkeleton } from "@/component/ui/skeleton-patterns";
 import type {
   TenantListResponse,
   TenantOption,
@@ -15,11 +16,9 @@ type WorkspaceContextMenuCopy = {
   tenantMenuAriaLabel: string;
   scopeTriggerAriaLabel: string;
   scopeMenuAriaLabel: string;
-  loadingTenantList: string;
   tenantListError: string;
   emptyTenantList: string;
   switchingTenant: string;
-  loadingScopeList: string;
   scopeListError: string;
   emptyScopeList: string;
   switchingScope: string;
@@ -303,15 +302,18 @@ export function WorkspaceContextMenu({
             <div
               role="menu"
               aria-label={copy.tenantMenuAriaLabel}
+              aria-busy={isLoadingTenantList || switchingTenantId !== null}
               className="ui-menu-panel ui-menu-panel-start ui-menu-panel-wide ui-menu-panel-context"
             >
-              {isLoadingTenantList || switchingTenantId !== null ? (
-                <div className="ui-menu-feedback">
-                  <span className="ui-menu-feedback-label">
-                    {isLoadingTenantList
-                      ? copy.loadingTenantList
-                      : copy.switchingTenant}
-                  </span>
+              {switchingTenantId !== null ? (
+                <span className="ui-sr-only" role="status" aria-live="polite">
+                  {copy.switchingTenant}
+                </span>
+              ) : null}
+
+              {isLoadingTenantList ? (
+                <div className="ui-menu-list" style={{ padding: "0.35rem 0.5rem" }}>
+                  <MenuListSkeleton rowCount={5} />
                 </div>
               ) : null}
 
@@ -377,15 +379,18 @@ export function WorkspaceContextMenu({
             <div
               role="menu"
               aria-label={copy.scopeMenuAriaLabel}
+              aria-busy={isLoadingScopeList || switchingScopeId !== null}
               className="ui-menu-panel ui-menu-panel-start ui-menu-panel-wide ui-menu-panel-context"
             >
-              {isLoadingScopeList || switchingScopeId !== null ? (
-                <div className="ui-menu-feedback">
-                  <span className="ui-menu-feedback-label">
-                    {isLoadingScopeList
-                      ? copy.loadingScopeList
-                      : copy.switchingScope}
-                  </span>
+              {switchingScopeId !== null ? (
+                <span className="ui-sr-only" role="status" aria-live="polite">
+                  {copy.switchingScope}
+                </span>
+              ) : null}
+
+              {isLoadingScopeList ? (
+                <div className="ui-menu-list" style={{ padding: "0.35rem 0.5rem" }}>
+                  <MenuListSkeleton rowCount={5} />
                 </div>
               ) : null}
 

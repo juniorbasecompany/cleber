@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { CurrentAgeCalculationClient } from "@/component/calculation/current-age-calculation-client";
+import { CalculationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
 import {
   getAuthSession,
   getTenantItemDirectory,
@@ -65,9 +66,7 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
   return (
     <Suspense
       fallback={(
-        <div className="ui-panel ui-empty-panel">
-          {tState("loadingDescription")}
-        </div>
+        <CalculationWorkspaceSkeleton busyAriaLabel={tState("loadingAriaLabel")} />
       )}
     >
       <CurrentAgeCalculationClient
@@ -107,6 +106,7 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           calculating: t("panel.calculating"),
           delete: t("panel.delete"),
           deleting: t("panel.deleting"),
+          resultTableBusyAriaLabel: t("panel.resultTableBusyAriaLabel"),
           validationRequired: t("panel.validationRequired"),
           validationOrder: t("panel.validationOrder"),
           calculateError: t("panel.error"),

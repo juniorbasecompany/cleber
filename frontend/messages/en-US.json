@@ -27,11 +27,9 @@
       "tenantShortcutLabel": "Tenant",
       "memberShortcutLabel": "Members",
       "scopeShortcutLabel": "Scope",
-      "loadingTenantList": "Loading...",
       "tenantListError": "Could not load the tenant list.",
       "emptyTenantList": "No tenant available.",
       "switchingTenant": "Switching tenant...",
-      "loadingScopeList": "Loading scopes...",
       "scopeListError": "Could not load the scope list.",
       "emptyScopeList": "No scope available.",
       "switchingScope": "Saving scope...",
@@ -336,7 +334,7 @@
       "description": "Formulas are calculation steps applied when events for this action are processed. Each step is text where you can write numbers, operations (such as + and *), and references to information in the scope.\n\nType @ to open a list and insert a field:n reference. Type # to open the same list and insert an input:n reference. The selected name appears underlined in the text and you can keep typing as usual.\n\nThe list order is execution order, top to bottom. Drag the handle beside a formula to reorder before saving.",
       "exampleList": "Math examples:\nAddition: x + y\nSubtraction: x - y\nMultiplication: x * y\nDivision: x / y\nInteger division: x // y\nModulo: x % y\nPower: x ** 2\nParentheses: (x + y) * z\nRounding: round((x * y) / z, 2)\nMinimum: min(x, y, z)\nMaximum: max(x, y, z)\nAbsolute value: abs(x - y)\nDecimal: Decimal(\"0.2\") * x\n\nConditional examples:\nSimple condition: x if y > 0 else 0\nEquality condition: x + 10 if y == 1 else x - 10\nMax/min condition: max(x, y) if z > 100 else min(x, y)\nSafe division condition: round(x / y, 2) if y != 0 else 0\nAnd condition: x if (y > 0 and z > 0) else 0\n\nOther supported features:\nComparisons: x == y, x != y, x > y, x >= y, x < y, x <= y\nLogical: x > 0 and y > 0, x > 0 or y > 0, not (x > y)\nDate: x if data_ref > date(2026, 1, 1) else y\nFunctions: abs, min, max, round, Decimal, and date",
       "unknownFieldLabel": "Field",
-      "loading": "Loading formulas…",
+      "loadingAriaLabel": "Loading formulas",
       "newFormula": "New",
       "removeAriaLabel": "Mark formula for removal on save",
       "unmarkAriaLabel": "Unmark removal for this formula",
@@ -447,7 +445,7 @@
       "actionInput": {
         "title": "Action input fields",
         "hint": "Fill in the fields used as input in formulas for the selected action.",
-        "loading": "Loading action input fields...",
+        "loadingAriaLabel": "Loading action input fields",
         "loadError": "Could not load action input fields.",
         "saveError": "Could not save action input fields."
       }
@@ -518,6 +516,7 @@
       "calculating": "Calculating...",
       "delete": "Delete",
       "deleting": "Deleting...",
+      "resultTableBusyAriaLabel": "Updating results table",
       "validationRequired": "Select both dates to calculate.",
       "validationOrder": "The start date must be earlier than or equal to the end date.",
       "error": "Could not calculate the current age. Try again.",
@@ -586,8 +585,8 @@
     "discardConfirm": "Discard unsaved changes?"
   },
   "ItemConfigurationPage": {
-    "title": "Productive units",
-    "description": "This panel shows the productive-unit tree for the scope. The hierarchy is on the left; beside it is the form to edit the name and description, plus the history panel. Select an item in the tree to edit it, or use the New button to add a child under the chosen item.",
+    "title": "Items",
+    "description": "This panel shows the scope's item tree. The hierarchy is on the left; beside it is the form to edit the name and description, plus the history panel. Select an item in the tree to edit it, or use the New button to add a child under the chosen item.",
     "list": {
       "emptyScope": "Create a scope before editing productive units.",
       "missingCurrentScope": "Set an active scope from the header selector before editing productive units."
@@ -679,7 +678,7 @@
   "AuditHistory": {
     "toggleAriaLabel": "Show or hide the panel history",
     "toggleLabel": "History",
-    "loading": "Loading history...",
+    "loadingAriaLabel": "Loading history",
     "unknownUser": "Unknown user",
     "entryLabel": "Log #{id}",
     "metaLine": "{actor} on {moment}",
@@ -734,7 +733,7 @@
     }
   },
   "SelectTenantPage": {
-    "loading": "Loading access options...",
+    "loadingAriaLabel": "Loading access options",
     "title": "Choose how you want to enter Valora.",
     "description": "Your Google account has been validated. Now you only need to define the active tenant that will govern the session's operational context.",
     "activeListTitle": "Active organizations",
@@ -752,7 +751,7 @@
     "genericError": "Could not complete this action right now. Try again."
   },
   "State": {
-    "loadingDescription": "Loading the application foundation.",
+    "loadingAriaLabel": "Loading workspace",
     "errorTitle": "Could not load this area.",
     "errorDescription": "There was a problem rendering the interface. You can try again without leaving the current flow.",
     "retry": "Try again"

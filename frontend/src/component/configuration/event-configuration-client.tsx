@@ -67,7 +67,7 @@ export type EventConfigurationCopy = {
   actionHint: string;
   actionInputSectionTitle: string;
   actionInputSectionHint: string;
-  actionInputLoading: string;
+  actionInputLoadingAriaLabel: string;
   actionInputLoadError: string;
   actionInputSaveError: string;
   filterTitle: string;
@@ -1634,7 +1634,7 @@ export function EventConfigurationClient({
                   actionEmptyAriaLabel: copy.filterAllAria,
                   inputSectionTitle: copy.actionInputSectionTitle,
                   inputSectionHint: copy.actionInputSectionHint,
-                  inputLoading: copy.actionInputLoading
+                  inputLoadingAriaLabel: copy.actionInputLoadingAriaLabel
                 }}
                 actionId={actionId}
                 actionOptionList={actionOptionList}
@@ -1694,7 +1694,7 @@ export function EventConfigurationClient({
                     actionEmptyAriaLabel: copy.filterAllAria,
                     inputSectionTitle: copy.actionInputSectionTitle,
                     inputSectionHint: copy.actionInputSectionHint,
-                    inputLoading: copy.actionInputLoading
+                    inputLoadingAriaLabel: copy.actionInputLoadingAriaLabel
                   }}
                   actionId={actionId}
                   actionOptionList={actionOptionList}

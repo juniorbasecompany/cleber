@@ -26,7 +26,7 @@ export default async function SelectTenantPage({
           <TenantSelectionPanel
             locale={locale}
             copy={{
-              loading: t("loading"),
+              loadingAriaLabel: t("loadingAriaLabel"),
               title: t("title"),
               description: t("description"),
               activeListTitle: t("activeListTitle"),

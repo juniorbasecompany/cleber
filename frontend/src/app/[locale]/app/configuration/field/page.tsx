@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { FieldConfigurationClient } from "@/component/configuration/field-configuration-client";
+import { ConfigurationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
 import {
   getAuthSession,
   getTenantScopeDirectory,
@@ -41,9 +42,7 @@ export default async function FieldConfigurationPage({ params }: FieldConfigurat
   return (
     <Suspense
       fallback={
-        <div className="ui-panel ui-empty-panel">
-          {tState("loadingDescription")}
-        </div>
+        <ConfigurationWorkspaceSkeleton busyAriaLabel={tState("loadingAriaLabel")} />
       }
     >
       <FieldConfigurationClient

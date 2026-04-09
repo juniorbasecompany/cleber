@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { LocationConfigurationClient } from "@/component/configuration/location-configuration-client";
+import { ConfigurationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
 import {
   getAuthSession,
   getTenantLocationDirectory,
@@ -39,11 +40,12 @@ export default async function LocationConfigurationPage({
 
   return (
     <Suspense
-      fallback={
-        <div className="ui-panel ui-empty-panel">
-          {tState("loadingDescription")}
-        </div>
-      }
+      fallback={(
+        <ConfigurationWorkspaceSkeleton
+          busyAriaLabel={tState("loadingAriaLabel")}
+          growRatio="4-3"
+        />
+      )}
     >
       <LocationConfigurationClient
         locale={locale}

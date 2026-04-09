@@ -76,8 +76,14 @@ export function ConfigurationEditorFooter({
                     className="ui-button-primary"
                     onClick={onSave}
                     disabled={saveDisabled}
+                    aria-busy={isSaving}
                 >
-                    {isSaving ? savingLabel : saveLabel}
+                    {saveLabel}
+                    {isSaving ? (
+                        <span className="ui-sr-only" role="status">
+                            {savingLabel}
+                        </span>
+                    ) : null}
                 </button>
             </div>
         </div>

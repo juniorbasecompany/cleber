@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { TenantConfigurationClient } from "@/component/configuration/tenant-configuration-client";
+import { ConfigurationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
 import { getTenantCurrentDetail } from "@/lib/auth/server-session";
 
 type TenantConfigurationPageProps = {
@@ -50,9 +51,7 @@ export default async function TenantConfigurationPage({
   return (
     <Suspense
       fallback={
-        <div className="ui-panel ui-empty-panel">
-          {tState("loadingDescription")}
-        </div>
+        <ConfigurationWorkspaceSkeleton busyAriaLabel={tState("loadingAriaLabel")} />
       }
     >
       <TenantConfigurationClient

@@ -9,6 +9,7 @@ import {
   DirectoryFilterPanel
 } from "@/component/configuration/directory-filter-panel";
 import { ConfigurationEditorFooter } from "@/component/configuration/configuration-editor-footer";
+import { CurrentAgeResultTableSkeleton } from "@/component/ui/skeleton-patterns";
 import { HierarchySingleSelectField } from "@/component/configuration/hierarchy-dropdown-field";
 import { StatusPanel } from "@/component/app-shell/status-panel";
 import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
@@ -76,6 +77,7 @@ type CurrentAgeCalculationCopy = {
   fallbackAction: string;
   cancel: string;
   discardConfirm: string;
+  resultTableBusyAriaLabel: string;
 };
 
 type CurrentAgeCalculationClientProps = {
@@ -502,6 +504,9 @@ export function CurrentAgeCalculationClient({
       : copy.emptyScope
     : null;
 
+  const showResultSkeleton =
+    !requestErrorMessage && (isReading || isCalculating || isDeleting);
+
   const configurationPath = `/${locale}/app`;
 
   useEffect(() => {
@@ -886,6 +891,11 @@ export function CurrentAgeCalculationClient({
           <section className="ui-page-stack">
             {requestErrorMessage ? (
               <div className="ui-panel ui-empty-panel">{requestErrorMessage}</div>
+            ) : showResultSkeleton ? (
+              <CurrentAgeResultTableSkeleton
+                busyAriaLabel={copy.resultTableBusyAriaLabel}
+                columnCount={Math.max(2, fieldList.length)}
+              />
             ) : result == null || result.item_list.length === 0 ? null : (
               <div className="ui-current-age-table-shell ui-panel">
                 <div className="ui-current-age-table-scroll">
@@ -1003,8 +1013,14 @@ export function CurrentAgeCalculationClient({
                 className="ui-button-danger"
                 onClick={() => void handleDelete()}
                 disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
+                aria-busy={isDeleting}
               >
-                {isDeleting ? copy.deleting : copy.delete}
+                {copy.delete}
+                {isDeleting ? (
+                  <span className="ui-sr-only" role="status">
+                    {copy.deleting}
+                  </span>
+                ) : null}
               </button>
             )}
             endContent={(
@@ -1013,8 +1029,14 @@ export function CurrentAgeCalculationClient({
                 className="ui-button-primary"
                 onClick={() => void handleCalculate()}
                 disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
+                aria-busy={isCalculating}
               >
-                {isCalculating ? copy.calculating : copy.calculate}
+                {copy.calculate}
+                {isCalculating ? (
+                  <span className="ui-sr-only" role="status">
+                    {copy.calculating}
+                  </span>
+                ) : null}
               </button>
             )}
           />,

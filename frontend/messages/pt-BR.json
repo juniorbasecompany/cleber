@@ -27,11 +27,9 @@
       "tenantShortcutLabel": "Licenciado",
       "memberShortcutLabel": "Membros",
       "scopeShortcutLabel": "Escopo",
-      "loadingTenantList": "Carregando...",
       "tenantListError": "Não foi possível carregar a lista de licenciados.",
       "emptyTenantList": "Nenhum licenciado disponível.",
       "switchingTenant": "Trocando licenciado...",
-      "loadingScopeList": "Carregando escopos...",
       "scopeListError": "Não foi possível carregar a lista de escopos.",
       "emptyScopeList": "Nenhum escopo disponível.",
       "switchingScope": "Salvando escopo...",
@@ -336,7 +334,7 @@
       "description": "As fórmulas são contas que o sistema faz quando esta ação acontece. Cada linha é um passo, você pode escrever números, operações matemáticas, valores de entrada e valores calculados anteriormente.\n\nUse @ para escolher os valores já calculados, como o saldo de unidades, por exemplo.\n\nUse # para escolher os campos de entrada. Neste caso o valor será atribuído no momento do evento, como quantidade alojada, por exemplo.\n\nAs formulas são executadas de cima para baixo, na ordem em que aparecem. Para mudar a ordem arraste usando o ícone ao lado da fórmula.",
       "exampleList": "Exemplos matemáticos:\nAdição: x + y\nSubtração: x - y\nMultiplicação: x * y\nDivisão: x / y\nDivisão inteira: x // y\nMódulo: x % y\nPotência: x ** 2\nParênteses: (x + y) * z\nArredondamento: round((x * y) / z, 2)\nMínimo: min(x, y, z)\nMáximo: max(x, y, z)\nValor absoluto: abs(x - y)\nDecimal: Decimal(\"0.2\") * x\n\nExemplos condicionais:\nCondição simples: x if y > 0 else 0\nCondição com igualdade: x + 10 if y == 1 else x - 10\nCondição com max/min: max(x, y) if z > 100 else min(x, y)\nCondição com divisão segura: round(x / y, 2) if y != 0 else 0\nCondição com and: x if (y > 0 and z > 0) else 0\n\nOutros recursos suportados:\nComparações: x == y, x != y, x > y, x >= y, x < y, x <= y\nLógicos: x > 0 and y > 0, x > 0 or y > 0, not (x > y)\nData: x if data_ref > date(2026, 1, 1) else y\nFunções: abs, min, max, round, Decimal e date",
       "unknownFieldLabel": "Campo",
-      "loading": "Carregando fórmulas…",
+      "loadingAriaLabel": "Carregando fórmulas",
       "newFormula": "Nova",
       "removeAriaLabel": "Marcar fórmula para exclusão ao salvar",
       "unmarkAriaLabel": "Desmarcar exclusão desta fórmula",
@@ -447,7 +445,7 @@
       "actionInput": {
         "title": "Campos de entrada da ação",
         "hint": "Preencha os campos usados como entrada nas fórmulas da ação selecionada.",
-        "loading": "Carregando campos de entrada da ação...",
+        "loadingAriaLabel": "Carregando campos de entrada da ação",
         "loadError": "Não foi possível carregar os campos de entrada da ação.",
         "saveError": "Não foi possível salvar os campos de entrada da ação."
       }
@@ -518,6 +516,7 @@
       "calculating": "Calculando...",
       "delete": "Apagar",
       "deleting": "Apagando...",
+      "resultTableBusyAriaLabel": "Atualizando tabela de resultados",
       "validationRequired": "Selecione as duas datas para calcular.",
       "validationOrder": "A data inicial deve ser menor ou igual à data final.",
       "error": "Não foi possível calcular a idade atual. Tente novamente.",
@@ -586,8 +585,8 @@
     "discardConfirm": "Descartar alterações não salvas?"
   },
   "ItemConfigurationPage": {
-    "title": "Unidades produtivas",
-    "description": "Neste painel você vê a árvore de unidades produtivas do escopo. À esquerda está a hierarquia; ao lado, o formulário para editar nome e descrição, além do painel de histórico. Selecione um item na árvore para editá-lo ou use o botão Nova para criar outro nível abaixo do item escolhido.",
+    "title": "Itens",
+    "description": "Neste painel você vê a árvore dos itens do escopo. À esquerda está a hierarquia; ao lado, o formulário para editar nome e descrição, além do painel de histórico. Selecione um item na árvore para editá-lo ou use o botão Nova para criar outro nível abaixo do item escolhido.",
     "list": {
       "emptyScope": "Crie um escopo antes de editar unidades produtivas.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de editar unidades produtivas."
@@ -679,7 +678,7 @@
   "AuditHistory": {
     "toggleAriaLabel": "Mostrar ou ocultar o histórico do painel",
     "toggleLabel": "Histórico",
-    "loading": "Carregando histórico...",
+    "loadingAriaLabel": "Carregando histórico",
     "unknownUser": "Usuário desconhecido",
     "entryLabel": "Registro #{id}",
     "metaLine": "{actor} em {moment}",
@@ -734,7 +733,7 @@
     }
   },
   "SelectTenantPage": {
-    "loading": "Carregando opções de acesso...",
+    "loadingAriaLabel": "Carregando opções de acesso",
     "title": "Escolha como deseja entrar no Valora.",
     "description": "Sua conta Google foi validada. Agora falta definir o licenciado ativo que vai governar o contexto operacional da sessão.",
     "activeListTitle": "Organizações ativas",
@@ -752,7 +751,7 @@
     "genericError": "Não foi possível concluir esta ação agora. Tente novamente."
   },
   "State": {
-    "loadingDescription": "Carregando a base da aplicação.",
+    "loadingAriaLabel": "Carregando área de trabalho",
     "errorTitle": "Não foi possível carregar esta área.",
     "errorDescription": "Ocorreu um problema ao exibir a interface. Você pode tentar novamente sem sair do fluxo atual.",
     "retry": "Tentar novamente"

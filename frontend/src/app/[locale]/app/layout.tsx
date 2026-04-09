@@ -51,16 +51,6 @@ export default async function AppLayout({
       href: `/${locale}/app`
     },
     {
-      key: "location",
-      label: t("navigation.location"),
-      href: `/${locale}/app/configuration/location`
-    },
-    {
-      key: "item",
-      label: t("navigation.item"),
-      href: `/${locale}/app/configuration/item`
-    },
-    {
       key: "field",
       label: t("navigation.field"),
       href: `/${locale}/app/configuration/field`
@@ -69,6 +59,16 @@ export default async function AppLayout({
       key: "action",
       label: t("navigation.action"),
       href: `/${locale}/app/configuration/action`
+    },
+    {
+      key: "location",
+      label: t("navigation.location"),
+      href: `/${locale}/app/configuration/location`
+    },
+    {
+      key: "item",
+      label: t("navigation.item"),
+      href: `/${locale}/app/configuration/item`
     },
     {
       key: "unity",
@@ -107,11 +107,9 @@ export default async function AppLayout({
             tenantMenuAriaLabel: t("menu.tenantMenuAriaLabel"),
             scopeTriggerAriaLabel: t("menu.scopeTriggerAriaLabel"),
             scopeMenuAriaLabel: t("menu.scopeMenuAriaLabel"),
-            loadingTenantList: t("menu.loadingTenantList"),
             tenantListError: t("menu.tenantListError"),
             emptyTenantList: t("menu.emptyTenantList"),
             switchingTenant: t("menu.switchingTenant"),
-            loadingScopeList: t("menu.loadingScopeList"),
             scopeListError: t("menu.scopeListError"),
             emptyScopeList: t("menu.emptyScopeList"),
             switchingScope: t("menu.switchingScope"),

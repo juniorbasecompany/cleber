@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { EventConfigurationClient } from "@/component/configuration/event-configuration-client";
+import { ConfigurationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
 import {
   getAuthSession,
   getTenantLocationDirectory,
@@ -52,9 +53,7 @@ export default async function EventConfigurationPage({ params }: EventConfigurat
   return (
     <Suspense
       fallback={
-        <div className="ui-panel ui-empty-panel">
-          {tState("loadingDescription")}
-        </div>
+        <ConfigurationWorkspaceSkeleton busyAriaLabel={tState("loadingAriaLabel")} />
       }
     >
       <EventConfigurationClient
@@ -87,7 +86,7 @@ export default async function EventConfigurationPage({ params }: EventConfigurat
           actionHint: t("section.action.hint"),
           actionInputSectionTitle: t("section.actionInput.title"),
           actionInputSectionHint: t("section.actionInput.hint"),
-          actionInputLoading: t("section.actionInput.loading"),
+          actionInputLoadingAriaLabel: t("section.actionInput.loadingAriaLabel"),
           actionInputLoadError: t("section.actionInput.loadError"),
           actionInputSaveError: t("section.actionInput.saveError"),
           filterTitle: t("filter.title"),

@@ -20,9 +20,10 @@ import {
     ValoraMark
 } from "@/component/ui/ui-icons";
 import { Badge } from "@/component/ui/badge";
+import { TenantSelectionSkeleton } from "@/component/ui/skeleton-patterns";
 
 type TenantSelectionCopy = {
-    loading: string;
+    loadingAriaLabel: string;
     title: string;
     description: string;
     activeListTitle: string;
@@ -403,11 +404,7 @@ export function TenantSelectionPanel({
     );
 
     if (isLoading) {
-        return (
-            <div className="ui-panel ui-empty-panel">
-                {copy.loading}
-            </div>
-        );
+        return <TenantSelectionSkeleton busyAriaLabel={copy.loadingAriaLabel} />;
     }
 
     return (

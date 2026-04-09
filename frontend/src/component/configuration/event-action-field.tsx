@@ -1,5 +1,7 @@
 "use client";
 
+import { FormFieldsSkeleton } from "@/component/ui/skeleton-patterns";
+
 type EventActionOption = {
   id: number;
   label: string;
@@ -18,7 +20,7 @@ export type EventActionFieldCopy = {
   actionEmptyAriaLabel: string;
   inputSectionTitle: string;
   inputSectionHint: string;
-  inputLoading: string;
+  inputLoadingAriaLabel: string;
 };
 
 type EventActionFieldProps = {
@@ -108,7 +110,12 @@ export function EventActionField({
   const inputFieldSection = shouldRenderInputBlock ? (
     <>
       {inputLoading ? (
-        <p className="ui-field-hint">{copy.inputLoading}</p>
+        <div
+          aria-busy="true"
+          aria-label={copy.inputLoadingAriaLabel}
+        >
+          <FormFieldsSkeleton fieldCount={3} />
+        </div>
       ) : inputErrorMessage ? (
         <p className="ui-field-error">{inputErrorMessage}</p>
       ) : (

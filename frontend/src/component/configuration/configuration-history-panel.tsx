@@ -1,5 +1,6 @@
 "use client";
 
+import { HistoryListSkeleton } from "@/component/ui/skeleton-patterns";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -346,8 +347,8 @@ export function ConfigurationHistoryPanel({
       ) : null}
 
       {isLoading ? (
-        <div className="ui-panel ui-empty-panel ui-panel-body-compact">
-          {t("loading")}
+        <div aria-busy="true" aria-label={t("loadingAriaLabel")}>
+          <HistoryListSkeleton entryCount={5} />
         </div>
       ) : null}
 

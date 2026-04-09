@@ -22,6 +22,7 @@ import {
   FormulaStatementEditor,
   type FormulaFieldOption
 } from "@/component/configuration/formula-statement-editor";
+import { FormulaRowsSkeleton } from "@/component/ui/skeleton-patterns";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useTranslations } from "next-intl";
 import { useMemo, type CSSProperties } from "react";
@@ -192,7 +193,9 @@ export function ActionFormulaSection({
       ) : null}
 
       {isLoading ? (
-        <p className="ui-field-hint">{t("loading")}</p>
+        <div aria-busy="true" aria-label={t("loadingAriaLabel")}>
+          <FormulaRowsSkeleton rowCount={3} />
+        </div>
       ) : rowList.length > 0 ? (
         <DndContext
           id="action-configuration-formula-list"
