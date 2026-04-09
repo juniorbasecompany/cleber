@@ -8,6 +8,8 @@ export type DirectoryFilterStorageSegment =
   | "tenant"
   | "member"
   | "event"
+  | "event-fact"
+  | "event-standard"
   | "field"
   | "action"
   | "location"

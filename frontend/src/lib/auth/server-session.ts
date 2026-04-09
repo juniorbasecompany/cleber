@@ -321,6 +321,8 @@ export async function getTenantScopeEventDirectory(
     item_id?: number | number[];
     action_id?: number;
     label_lang?: "pt-BR" | "en" | "es";
+    /** Eventos-padrão (standard) ou fatos (fact); omitido: lista mista. */
+    event_kind?: "standard" | "fact";
   } = {}
 ) {
   const cookieStore = await cookies();
@@ -355,6 +357,9 @@ export async function getTenantScopeEventDirectory(
   }
   if (filter.label_lang != null) {
     query.set("label_lang", filter.label_lang);
+  }
+  if (filter.event_kind != null) {
+    query.set("event_kind", filter.event_kind);
   }
   const suffix = query.toString();
 

@@ -76,9 +76,14 @@ export default async function AppLayout({
       href: `/${locale}/app/configuration/unity`
     },
     {
-      key: "event",
-      label: t("navigation.event"),
-      href: `/${locale}/app/configuration/event`
+      key: "eventStandard",
+      label: t("navigation.eventStandard"),
+      href: `/${locale}/app/configuration/event/standard`
+    },
+    {
+      key: "eventFact",
+      label: t("navigation.eventFact"),
+      href: `/${locale}/app/configuration/event/fact`
     },
     {
       key: "calculation",

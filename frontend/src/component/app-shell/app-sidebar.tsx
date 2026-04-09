@@ -29,6 +29,8 @@ type NavigationIconKind =
     | "action"
     | "unity"
     | "event"
+    | "eventStandard"
+    | "eventFact"
     | "calculation";
 
 function CalculationIcon({ className }: { className?: string }) {
@@ -75,6 +77,8 @@ function SidebarNavigationIcon({
         case "unity":
             return <UnityIcon className={className} />;
         case "event":
+        case "eventStandard":
+        case "eventFact":
             return <EventPathIcon className={className} />;
         case "calculation":
             return <CalculationIcon className={className} />;

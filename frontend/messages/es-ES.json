@@ -8,7 +8,8 @@
       "field": "Campos",
       "action": "Acciones",
       "unity": "Unidades",
-      "event": "Eventos",
+      "eventStandard": "Patrón",
+      "eventFact": "Hechos",
       "calculation": "Cálculo"
     },
     "topbar": {
@@ -405,9 +406,9 @@
     },
     "discardConfirm": "¿Descartar cambios no guardados?"
   },
-  "EventConfigurationPage": {
-    "title": "Eventos",
-    "description": "Registra y ajusta eventos del alcance activo. La lista permite filtrar por período, ubicación, unidad y acción, manteniendo edición e historial en el mismo flujo.",
+  "EventConfigurationPageFact": {
+    "title": "Hechos",
+    "description": "Registra eventos con fecha y, si aplica, unidad (lote). Cada fila es un hecho en el tiempo: filtra por período, ubicación, ítem y acción, y edita las entradas de la acción en el mismo flujo.",
     "list": {
       "emptyScope": "Crea un alcance antes de registrar eventos.",
       "missingCurrentScope": "Define un alcance activo en el encabezado antes de registrar eventos.",
@@ -428,7 +429,7 @@
       },
       "unity": {
         "label": "Unidad",
-        "hint": "Selecciona la unidad si el evento registra un hecho sobre ella.\nDeja la unidad vacía si el evento se refiere a un patrón."
+        "hint": "Selecciona la unidad cuando el hecho se refiera a un lote.\nDeja vacío si el evento no está vinculado a una unidad."
       },
       "location": {
         "label": "Ubicación",
@@ -478,6 +479,81 @@
       "delete": "No se pudo eliminar el evento. Inténtalo de nuevo.",
       "deleteBlockedDetail": "No es posible eliminar el evento mientras resultados aún lo referencian.",
       "momentRequired": "Indica la fecha y hora del evento.",
+      "locationRequired": "Selecciona una ubicación.",
+      "itemRequired": "Selecciona un ítem.",
+      "actionRequired": "Selecciona una acción."
+    },
+    "discardConfirm": "¿Descartar los cambios no guardados?"
+  },
+  "EventConfigurationPageStandard": {
+    "title": "Patrón",
+    "description": "Los eventos patrón definen reglas por ubicación, ítem y acción usando el campo de edad actual del alcance. No hay fecha ni unidad: el vínculo es al campo marcado como edad actual del lote.",
+    "list": {
+      "emptyScope": "Crea un alcance antes de registrar eventos patrón.",
+      "missingCurrentScope": "Define un alcance activo en el encabezado antes de registrar eventos patrón.",
+      "loadError": "No se pudieron cargar los eventos patrón de este alcance. Inténtalo de nuevo.",
+      "fallbackLocation": "Ubicación no disponible",
+      "fallbackUnity": "Unidad no disponible",
+      "fallbackItem": "Ítem no disponible",
+      "fallbackAction": "Acción no disponible"
+    },
+    "history": {
+      "title": "Historial de cambios",
+      "description": "Consulta el historial de eventos patrón del alcance activo: quién cambió qué, cuándo y un resumen breve."
+    },
+    "section": {
+      "ageField": {
+        "label": "Campo de edad actual",
+        "hint": "El evento patrón usa el campo del alcance marcado como edad actual del lote. Ajusta esa marca en la configuración de campos si es necesario."
+      },
+      "location": {
+        "label": "Ubicación",
+        "hint": "Elige la ubicación a la que aplica el patrón."
+      },
+      "item": {
+        "label": "Ítem",
+        "hint": "Elige el ítem relacionado con el patrón."
+      },
+      "action": {
+        "label": "Acción",
+        "hint": "Elige la acción que describe el patrón."
+      },
+      "actionInput": {
+        "title": "Campos de entrada de la acción",
+        "hint": "Completa los campos usados como entrada en las fórmulas de la acción seleccionada.",
+        "loadingAriaLabel": "Cargando campos de entrada de la acción",
+        "loadError": "No se pudieron cargar los campos de entrada de la acción.",
+        "saveError": "No se pudieron guardar los campos de entrada de la acción."
+      }
+    },
+    "filter": {
+      "toggleAriaLabel": "Mostrar u ocultar el panel de filtros de la lista",
+      "toggleLabel": "Filtro",
+      "title": "Filtros de la lista",
+      "momentFromLabel": "Período inicial",
+      "momentToLabel": "Período final",
+      "locationLabel": "Ubicación",
+      "itemLabel": "Ítem",
+      "actionLabel": "Acción",
+      "all": "",
+      "allAria": "Sin filtro",
+      "confirm": "Ok"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "new": "Nuevo",
+      "delete": "Eliminar",
+      "undoDelete": "Desmarcar eliminación",
+      "save": "Guardar",
+      "saving": "Guardando..."
+    },
+    "readOnlyNotice": "Puedes consultar los eventos patrón del alcance activo, pero solo miembros master o administradores pueden crearlos o editarlos.",
+    "error": {
+      "save": "No se pudo guardar el evento patrón. Inténtalo de nuevo.",
+      "create": "No se pudo crear el evento patrón. Inténtalo de nuevo.",
+      "delete": "No se pudo eliminar el evento patrón. Inténtalo de nuevo.",
+      "deleteBlockedDetail": "No es posible eliminar el evento mientras resultados aún lo referencian.",
+      "currentAgeFieldMissing": "Marca un campo como edad actual del lote en la configuración de campos de este alcance antes de crear un evento patrón.",
       "locationRequired": "Selecciona una ubicación.",
       "itemRequired": "Selecciona un ítem.",
       "actionRequired": "Selecciona una acción."

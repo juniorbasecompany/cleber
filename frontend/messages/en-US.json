@@ -8,7 +8,8 @@
       "field": "Fields",
       "action": "Actions",
       "unity": "Units",
-      "event": "Events",
+      "eventStandard": "Pattern",
+      "eventFact": "Facts",
       "calculation": "Calculation"
     },
     "topbar": {
@@ -405,9 +406,9 @@
     },
     "discardConfirm": "Discard unsaved changes?"
   },
-  "EventConfigurationPage": {
-    "title": "Events",
-    "description": "Record and adjust events for the active scope. The list can be filtered by period, location, unit, and action while keeping edit and history in one flow.",
+  "EventConfigurationPageFact": {
+    "title": "Facts",
+    "description": "Record events with a timestamp and, when relevant, a unity (batch). Each row is a fact in time: filter by period, location, item, and action, and edit action inputs in the same flow.",
     "list": {
       "emptyScope": "Create a scope before recording events.",
       "missingCurrentScope": "Select an active scope in the header before recording events.",
@@ -428,7 +429,7 @@
       },
       "unity": {
         "label": "Unity",
-        "hint": "Select the unity when the event records a fact about it.\nLeave unity empty when the event refers to a pattern."
+        "hint": "Select the unity when the fact refers to a batch.\nLeave empty when the event is not tied to a unity."
       },
       "location": {
         "label": "Location",
@@ -478,6 +479,81 @@
       "delete": "Could not delete the event. Try again.",
       "deleteBlockedDetail": "The event cannot be deleted while results still reference it.",
       "momentRequired": "Enter the event date and time.",
+      "locationRequired": "Select a location.",
+      "itemRequired": "Select an item.",
+      "actionRequired": "Select an action."
+    },
+    "discardConfirm": "Discard unsaved changes?"
+  },
+  "EventConfigurationPageStandard": {
+    "title": "Pattern",
+    "description": "Pattern events define rules by location, item, and action using the scope current age field. There is no date or unity: the link is to the field marked as the batch current age.",
+    "list": {
+      "emptyScope": "Create a scope before recording pattern events.",
+      "missingCurrentScope": "Select an active scope in the header before recording pattern events.",
+      "loadError": "Could not load pattern events for this scope. Try again.",
+      "fallbackLocation": "Unavailable location",
+      "fallbackUnity": "Unavailable unity",
+      "fallbackItem": "Unavailable item",
+      "fallbackAction": "Unavailable action"
+    },
+    "history": {
+      "title": "Change history",
+      "description": "Review the pattern event history for the active scope: who changed what, when, and a concise summary."
+    },
+    "section": {
+      "ageField": {
+        "label": "Current age field",
+        "hint": "Pattern events use the scope field marked as batch current age. Change that flag in field settings if needed."
+      },
+      "location": {
+        "label": "Location",
+        "hint": "Choose the location the pattern applies to."
+      },
+      "item": {
+        "label": "Item",
+        "hint": "Choose the item related to the pattern."
+      },
+      "action": {
+        "label": "Action",
+        "hint": "Choose the action that describes the pattern."
+      },
+      "actionInput": {
+        "title": "Action input fields",
+        "hint": "Fill in the fields used as input in formulas for the selected action.",
+        "loadingAriaLabel": "Loading action input fields",
+        "loadError": "Could not load action input fields.",
+        "saveError": "Could not save action input fields."
+      }
+    },
+    "filter": {
+      "toggleAriaLabel": "Show or hide the list filter panel",
+      "toggleLabel": "Filter",
+      "title": "List filters",
+      "momentFromLabel": "Start period",
+      "momentToLabel": "End period",
+      "locationLabel": "Location",
+      "itemLabel": "Item",
+      "actionLabel": "Action",
+      "all": "",
+      "allAria": "No filter",
+      "confirm": "Ok"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "new": "New",
+      "delete": "Delete",
+      "undoDelete": "Undo delete",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "readOnlyNotice": "You can view pattern events in the active scope, but only master or administrator members can create or edit them.",
+    "error": {
+      "save": "Could not save the pattern event. Try again.",
+      "create": "Could not create the pattern event. Try again.",
+      "delete": "Could not delete the pattern event. Try again.",
+      "deleteBlockedDetail": "The event cannot be deleted while results still reference it.",
+      "currentAgeFieldMissing": "Mark one field as batch current age in this scope field settings before creating a pattern event.",
       "locationRequired": "Select a location.",
       "itemRequired": "Select an item.",
       "actionRequired": "Select an action."

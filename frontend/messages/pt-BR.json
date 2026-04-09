@@ -8,7 +8,8 @@
       "field": "Campos",
       "action": "Ações",
       "unity": "Unidades",
-      "event": "Eventos",
+      "eventStandard": "Padrão",
+      "eventFact": "Fatos",
       "calculation": "Cálculo"
     },
     "topbar": {
@@ -405,9 +406,9 @@
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },
-  "EventConfigurationPage": {
-    "title": "Eventos",
-    "description": "Registre e ajuste os eventos do escopo ativo. A lista permite filtrar por período, local, unidade e ação, mantendo edição e histórico no mesmo fluxo.",
+  "EventConfigurationPageFact": {
+    "title": "Fatos",
+    "description": "Registre eventos com data e, se aplicável, unidade (lote). Cada linha é um fato no tempo: filtre por período, local, item e ação, e edite entradas da ação no mesmo fluxo.",
     "list": {
       "emptyScope": "Crie um escopo antes de registrar eventos.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de registrar eventos.",
@@ -428,7 +429,7 @@
       },
       "unity": {
         "label": "Unidade",
-        "hint": "Selecione a unidade se o evento registra um fato sobre ela.\nDeixe a unidade vazia se o evento se refere a um padrão."
+        "hint": "Selecione a unidade quando o fato se refere a um lote.\nDeixe vazio se o evento não estiver vinculado a uma unidade."
       },
       "location": {
         "label": "Local",
@@ -478,6 +479,81 @@
       "delete": "Não foi possível apagar o evento. Tente novamente.",
       "deleteBlockedDetail": "Não é possível apagar o evento enquanto resultados ainda o referenciam.",
       "momentRequired": "Informe a data e hora do evento.",
+      "locationRequired": "Selecione um local.",
+      "itemRequired": "Selecione um item.",
+      "actionRequired": "Selecione uma ação."
+    },
+    "discardConfirm": "Descartar alterações não salvas?"
+  },
+  "EventConfigurationPageStandard": {
+    "title": "Padrão",
+    "description": "Eventos padrão definem regras por local, item e ação usando o campo de idade atual do escopo. Não há data nem unidade: o vínculo é ao campo marcado como idade atual do lote.",
+    "list": {
+      "emptyScope": "Crie um escopo antes de registrar eventos padrão.",
+      "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de registrar eventos padrão.",
+      "loadError": "Não foi possível carregar os eventos padrão deste escopo. Tente novamente.",
+      "fallbackLocation": "Local indisponível",
+      "fallbackUnity": "Unidade indisponível",
+      "fallbackItem": "Item indisponível",
+      "fallbackAction": "Ação indisponível"
+    },
+    "history": {
+      "title": "Histórico de alterações",
+      "description": "Consulte o histórico dos eventos padrão do escopo ativo: quem alterou, quando e um resumo do que mudou."
+    },
+    "section": {
+      "ageField": {
+        "label": "Campo de idade atual",
+        "hint": "O evento padrão usa o campo do escopo marcado como idade atual do lote. Ajuste esse marcador no cadastro de campos, se necessário."
+      },
+      "location": {
+        "label": "Local",
+        "hint": "Selecione o local ao qual o padrão se aplica."
+      },
+      "item": {
+        "label": "Item",
+        "hint": "Selecione o item relacionado ao padrão."
+      },
+      "action": {
+        "label": "Ação",
+        "hint": "Selecione a ação que descreve o padrão."
+      },
+      "actionInput": {
+        "title": "Campos de entrada da ação",
+        "hint": "Preencha os campos usados como entrada nas fórmulas da ação selecionada.",
+        "loadingAriaLabel": "Carregando campos de entrada da ação",
+        "loadError": "Não foi possível carregar os campos de entrada da ação.",
+        "saveError": "Não foi possível salvar os campos de entrada da ação."
+      }
+    },
+    "filter": {
+      "toggleAriaLabel": "Mostrar ou ocultar o painel de filtros da lista",
+      "toggleLabel": "Filtro",
+      "title": "Filtros da lista",
+      "momentFromLabel": "Período inicial",
+      "momentToLabel": "Período final",
+      "locationLabel": "Local",
+      "itemLabel": "Item",
+      "actionLabel": "Ação",
+      "all": "",
+      "allAria": "Nenhum filtro",
+      "confirm": "Ok"
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "new": "Novo",
+      "delete": "Apagar",
+      "undoDelete": "Desmarcar exclusão",
+      "save": "Salvar",
+      "saving": "Salvando..."
+    },
+    "readOnlyNotice": "Você pode consultar os eventos padrão do escopo ativo, mas só membros master ou administrador podem criar ou editar.",
+    "error": {
+      "save": "Não foi possível salvar o evento padrão. Tente novamente.",
+      "create": "Não foi possível criar o evento padrão. Tente novamente.",
+      "delete": "Não foi possível apagar o evento padrão. Tente novamente.",
+      "deleteBlockedDetail": "Não é possível apagar o evento enquanto resultados ainda o referenciam.",
+      "currentAgeFieldMissing": "Marque um campo como idade atual do lote no cadastro de campos deste escopo antes de criar um evento padrão.",
       "locationRequired": "Selecione um local.",
       "itemRequired": "Selecione um item.",
       "actionRequired": "Selecione uma ação."

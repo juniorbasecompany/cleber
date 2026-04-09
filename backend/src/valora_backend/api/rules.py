@@ -310,6 +310,19 @@ def _field_in_scope_or_404(
     return row
 
 
+def _field_current_age_in_scope_or_400(
+    session: Session, *, scope_id: int, field_id: int
+) -> Field:
+    """Evento-padrão exige o campo de idade atual do escopo (`is_current_age`)."""
+    row = _field_in_scope_or_404(session, scope_id=scope_id, field_id=field_id)
+    if not row.is_current_age:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Age field must be the scope current age field",
+        )
+    return row
+
+
 def _action_in_scope_or_404(
     session: Session, *, scope_id: int, action_id: int
 ) -> Action:
@@ -2275,6 +2288,15 @@ def list_scope_events(
     location_id: Annotated[list[int] | None, Query()] = None,
     item_id: Annotated[list[int] | None, Query()] = None,
     action_id: Annotated[int | None, Query()] = None,
+    event_kind: Annotated[
+        Literal["standard", "fact"] | None,
+        Query(
+            description=(
+                "Filtra eventos-padrão (standard, com age_field_id) ou fatos "
+                "(fact, sem age_field_id). Omitido: lista mista."
+            ),
+        ),
+    ] = None,
     label_lang: Annotated[
         Literal["pt-BR", "en", "es"],
         Query(description="Idioma dos rotulos no resumo de inputs por evento."),
@@ -2321,6 +2343,10 @@ def list_scope_events(
             item_list=[],
         )
     query = select(Event).where(Event.action_id.in_(action_id_list))
+    if event_kind == "standard":
+        query = query.where(Event.age_field_id.isnot(None))
+    elif event_kind == "fact":
+        query = query.where(Event.age_field_id.is_(None))
     if moment_from_utc is not None:
         query = query.where(Event.moment_utc >= moment_from_utc)
     if moment_to_utc is not None:
@@ -2385,7 +2411,9 @@ def create_scope_event(
     if body.unity_id is not None:
         _get_scope_unity_or_404(session, scope_id=scope_id, unity_id=body.unity_id)
     if body.age_field_id is not None:
-        _field_in_scope_or_404(session, scope_id=scope_id, field_id=body.age_field_id)
+        _field_current_age_in_scope_or_400(
+            session, scope_id=scope_id, field_id=body.age_field_id
+        )
     is_standard = body.age_field_id is not None
     moment: datetime | None = None
     if not is_standard:
@@ -2410,6 +2438,7 @@ def create_scope_event(
         location_id=None,
         item_id=None,
         action_id=None,
+        event_kind="standard" if is_standard else "fact",
         label_lang="pt-BR",
         member=member,
         session=session,
@@ -2450,7 +2479,7 @@ def patch_scope_event(
         row.unity_id = body.unity_id
     if "age_field_id" in body.model_fields_set:
         if body.age_field_id is not None:
-            _field_in_scope_or_404(
+            _field_current_age_in_scope_or_400(
                 session, scope_id=scope_id, field_id=body.age_field_id
             )
         row.age_field_id = body.age_field_id
@@ -2466,6 +2495,7 @@ def patch_scope_event(
         location_id=None,
         item_id=None,
         action_id=None,
+        event_kind="standard" if row.age_field_id is not None else "fact",
         label_lang="pt-BR",
         member=member,
         session=session,
@@ -2485,6 +2515,9 @@ def delete_scope_event(
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
     row = _event_in_scope_or_404(session, scope_id=scope_id, event_id=event_id)
+    event_kind_for_list: Literal["standard", "fact"] = (
+        "standard" if row.age_field_id is not None else "fact"
+    )
     if session.scalar(select(Result.id).where(Result.event_id == row.id).limit(1)):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -2500,6 +2533,7 @@ def delete_scope_event(
         location_id=None,
         item_id=None,
         action_id=None,
+        event_kind=event_kind_for_list,
         label_lang="pt-BR",
         member=member,
         session=session,

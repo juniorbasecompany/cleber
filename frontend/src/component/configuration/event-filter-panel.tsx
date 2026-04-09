@@ -27,6 +27,8 @@ type EventFilterPanelCopy = {
 
 type EventFilterPanelProps = {
   locale: string;
+  /** Quando false, omite o filtro por intervalo de data (ex.: eventos padrão sem momento). */
+  showMomentRange?: boolean;
   copy: EventFilterPanelCopy;
   filterMomentFromInput: string;
   filterMomentToInput: string;
@@ -45,6 +47,7 @@ type EventFilterPanelProps = {
 
 export function EventFilterPanel({
   locale,
+  showMomentRange = true,
   copy,
   filterMomentFromInput,
   filterMomentToInput,
@@ -62,37 +65,41 @@ export function EventFilterPanel({
 }: EventFilterPanelProps) {
   return (
     <DirectoryFilterPanel>
-      <DirectoryFilterCard>
-        <div className="ui-field">
-          <label className="ui-field-label" htmlFor="event-filter-moment-from">
-            {copy.momentFromLabel}
-          </label>
-          <TenantDateTimePicker
-            id="event-filter-moment-from"
-            value={filterMomentFromInput ? new Date(filterMomentFromInput) : null}
-            onChange={onFilterMomentFromChange}
-            locale={locale}
-            hidePlaceholder
-            periodBoundary="start"
-          />
-        </div>
-      </DirectoryFilterCard>
+      {showMomentRange ? (
+        <>
+          <DirectoryFilterCard>
+            <div className="ui-field">
+              <label className="ui-field-label" htmlFor="event-filter-moment-from">
+                {copy.momentFromLabel}
+              </label>
+              <TenantDateTimePicker
+                id="event-filter-moment-from"
+                value={filterMomentFromInput ? new Date(filterMomentFromInput) : null}
+                onChange={onFilterMomentFromChange}
+                locale={locale}
+                hidePlaceholder
+                periodBoundary="start"
+              />
+            </div>
+          </DirectoryFilterCard>
 
-      <DirectoryFilterCard>
-        <div className="ui-field">
-          <label className="ui-field-label" htmlFor="event-filter-moment-to">
-            {copy.momentToLabel}
-          </label>
-          <TenantDateTimePicker
-            id="event-filter-moment-to"
-            value={filterMomentToInput ? new Date(filterMomentToInput) : null}
-            onChange={onFilterMomentToChange}
-            locale={locale}
-            hidePlaceholder
-            periodBoundary="end"
-          />
-        </div>
-      </DirectoryFilterCard>
+          <DirectoryFilterCard>
+            <div className="ui-field">
+              <label className="ui-field-label" htmlFor="event-filter-moment-to">
+                {copy.momentToLabel}
+              </label>
+              <TenantDateTimePicker
+                id="event-filter-moment-to"
+                value={filterMomentToInput ? new Date(filterMomentToInput) : null}
+                onChange={onFilterMomentToChange}
+                locale={locale}
+                hidePlaceholder
+                periodBoundary="end"
+              />
+            </div>
+          </DirectoryFilterCard>
+        </>
+      ) : null}
 
       <DirectoryFilterCard>
         <HierarchyDropdownField

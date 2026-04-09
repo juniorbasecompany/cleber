@@ -183,7 +183,8 @@ export type TenantScopeEventRecord = {
   location_id: number;
   item_id: number;
   action_id: number;
-  moment_utc: string;
+  moment_utc?: string | null;
+  age_field_id?: number | null;
   /** Resumo dos inputs salvos (rótulo: valor), calculado no servidor. */
   input_summary?: string | null;
 };

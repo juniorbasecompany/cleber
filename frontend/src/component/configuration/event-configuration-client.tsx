@@ -55,10 +55,11 @@ export type EventConfigurationCopy = {
   loadError: string;
   historyTitle: string;
   historyDescription: string;
-  momentLabel: string;
-  momentHint: string;
-  unityLabel: string;
-  unityHint: string;
+  /** Painel Fatos apenas. */
+  momentLabel?: string;
+  momentHint?: string;
+  unityLabel?: string;
+  unityHint?: string;
   locationLabel: string;
   locationHint: string;
   itemLabel: string;
@@ -96,16 +97,24 @@ export type EventConfigurationCopy = {
   createError: string;
   deleteError: string;
   deleteBlockedDetail: string;
-  momentRequired: string;
+  momentRequired?: string;
   locationRequired: string;
   itemRequired: string;
   actionRequired: string;
   discardConfirm: string;
+  /** Painel Padrão: rótulo do campo de idade atual do escopo. */
+  ageFieldLabel?: string;
+  ageFieldHint?: string;
+  currentAgeFieldMissing?: string;
 };
 
 type EventConfigurationClientProps = {
   locale: string;
   labelLang: LabelLang;
+  /** Fatos: data e unidade opcional. Padrão: age_field_id do campo de idade atual. */
+  variant: "fact" | "standard";
+  /** Base da rota para query `?event=`, ex. `/${locale}/app/configuration/event/fact`. */
+  basePath: string;
   currentScope: TenantScopeRecord | null;
   hasAnyScope: boolean;
   initialEventDirectory: TenantScopeEventDirectoryResponse | null;
@@ -141,7 +150,9 @@ function sortEventDirectoryItemListOldestFirst(
   actionSortOrderById: Map<number, number>
 ): TenantScopeEventRecord[] {
   return [...itemList].sort((left, right) => {
-    const byDay = left.moment_utc.slice(0, 10).localeCompare(right.moment_utc.slice(0, 10));
+    const leftM = left.moment_utc ?? "";
+    const rightM = right.moment_utc ?? "";
+    const byDay = leftM.slice(0, 10).localeCompare(rightM.slice(0, 10));
     if (byDay !== 0) {
       return byDay;
     }
@@ -151,9 +162,33 @@ function sortEventDirectoryItemListOldestFirst(
     if (byActionSortOrder !== 0) {
       return byActionSortOrder;
     }
-    const byMoment = left.moment_utc.localeCompare(right.moment_utc);
+    const byMoment = leftM.localeCompare(rightM);
     if (byMoment !== 0) {
       return byMoment;
+    }
+    return left.id - right.id;
+  });
+}
+
+/** Eventos padrão sem `moment_utc`: local, item, ordem da ação, id. */
+function sortEventDirectoryItemListStandardFirst(
+  itemList: TenantScopeEventRecord[],
+  actionSortOrderById: Map<number, number>
+): TenantScopeEventRecord[] {
+  return [...itemList].sort((left, right) => {
+    const byLoc = left.location_id - right.location_id;
+    if (byLoc !== 0) {
+      return byLoc;
+    }
+    const byItem = left.item_id - right.item_id;
+    if (byItem !== 0) {
+      return byItem;
+    }
+    const byActionSortOrder =
+      (actionSortOrderById.get(left.action_id) ?? Number.MAX_SAFE_INTEGER)
+      - (actionSortOrderById.get(right.action_id) ?? Number.MAX_SAFE_INTEGER);
+    if (byActionSortOrder !== 0) {
+      return byActionSortOrder;
     }
     return left.id - right.id;
   });
@@ -205,7 +240,10 @@ function toLocalMomentInputValue(date: Date): string {
   return `${year}-${month}-${day}T${hour}:${minute}`;
 }
 
-function toLocalMomentInputFromUtc(value: string): string {
+function toLocalMomentInputFromUtc(value: string | null | undefined): string {
+  if (value == null || value === "") {
+    return "";
+  }
   const parsed = parseUtcMoment(value);
   if (!parsed) {
     return "";
@@ -257,6 +295,7 @@ type ScopeFieldOption = {
   id: number;
   sqlType: string;
   label: string;
+  is_current_age: boolean;
 };
 
 type EventActionInputDraft = {
@@ -363,7 +402,8 @@ function normalizeScopeFieldOptionList(
   return response.item_list.map((item) => ({
     id: item.id,
     sqlType: item.sql_type,
-    label: item.label_name?.trim() || `#${item.id}`
+    label: item.label_name?.trim() || `#${item.id}`,
+    is_current_age: item.is_current_age
   }));
 }
 
@@ -381,6 +421,8 @@ function isDeleteBlockedDetail(detail: string | null): boolean {
 export function EventConfigurationClient({
   locale,
   labelLang,
+  variant,
+  basePath,
   currentScope,
   hasAnyScope,
   initialEventDirectory,
@@ -395,7 +437,7 @@ export function EventConfigurationClient({
   const initialSearchEventKey = parseSelectedEventKey(searchParams.get("event"));
 
   const configurationPath = `/${locale}/app`;
-  const eventPath = `/${locale}/app/configuration/event`;
+  const eventPath = basePath;
 
   const replacePath = useCallback(
     (nextPath: string) => {
@@ -481,10 +523,16 @@ export function EventConfigurationClient({
       ? null
       : {
         ...initialEventDirectory,
-        item_list: sortEventDirectoryItemListOldestFirst(
-          initialEventDirectory.item_list,
-          actionSortOrderById
-        )
+        item_list:
+          variant === "fact"
+            ? sortEventDirectoryItemListOldestFirst(
+              initialEventDirectory.item_list,
+              actionSortOrderById
+            )
+            : sortEventDirectoryItemListStandardFirst(
+              initialEventDirectory.item_list,
+              actionSortOrderById
+            )
       }
   );
 
@@ -508,10 +556,12 @@ export function EventConfigurationClient({
   const [momentInput, setMomentInput] = useState(
     initialSelectedEvent
       ? toLocalMomentInputFromUtc(initialSelectedEvent.moment_utc)
-      : nowLocalMomentInput()
+      : variant === "standard"
+        ? ""
+        : nowLocalMomentInput()
   );
   const [unityId, setUnityId] = useState<number | null>(
-    initialSelectedEvent?.unity_id ?? null
+    variant === "standard" ? null : (initialSelectedEvent?.unity_id ?? null)
   );
   const [locationId, setLocationId] = useState<number | null>(
     initialSelectedEvent?.location_id ?? null
@@ -525,8 +575,10 @@ export function EventConfigurationClient({
   const [baseline, setBaseline] = useState({
     momentInput: initialSelectedEvent
       ? toLocalMomentInputFromUtc(initialSelectedEvent.moment_utc)
-      : nowLocalMomentInput(),
-    unityId: initialSelectedEvent?.unity_id ?? null,
+      : variant === "standard"
+        ? ""
+        : nowLocalMomentInput(),
+    unityId: variant === "standard" ? null : (initialSelectedEvent?.unity_id ?? null),
     locationId: initialSelectedEvent?.location_id ?? null,
     itemId: initialSelectedEvent?.item_id ?? null,
     actionId: initialSelectedEvent?.action_id ?? null
@@ -536,6 +588,7 @@ export function EventConfigurationClient({
     location?: string;
     item?: string;
     action?: string;
+    currentAge?: string;
   }>({});
   const [requestErrorMessage, setRequestErrorMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -547,6 +600,10 @@ export function EventConfigurationClient({
   const [filterItemIdList, setFilterItemIdList] = useState<number[]>([]);
   const [filterActionId, setFilterActionId] = useState<number | null>(null);
   const [scopeFieldOptionList, setScopeFieldOptionList] = useState<ScopeFieldOption[]>([]);
+  const currentAgeField = useMemo(
+    () => scopeFieldOptionList.find((item) => item.is_current_age) ?? null,
+    [scopeFieldOptionList]
+  );
   const [eventActionInputDraftList, setEventActionInputDraftList] = useState<
     EventActionInputDraft[]
   >([]);
@@ -639,7 +696,7 @@ export function EventConfigurationClient({
         setDirectory(null);
         setIsCreateMode(false);
         setSelectedEventId(null);
-        const nextMomentInput = nowLocalMomentInput();
+        const nextMomentInput = variant === "standard" ? "" : nowLocalMomentInput();
         setMomentInput(nextMomentInput);
         setUnityId(null);
         setLocationId(null);
@@ -656,15 +713,21 @@ export function EventConfigurationClient({
         setRequestErrorMessage(null);
         setIsDeletePending(false);
         selectedEventKeyRef.current = null;
-        return null;
-      }
+      return null;
+    }
 
-      const directoryWithSortedList: TenantScopeEventDirectoryResponse = {
+    const directoryWithSortedList: TenantScopeEventDirectoryResponse = {
         ...nextDirectory,
-        item_list: sortEventDirectoryItemListOldestFirst(
-          nextDirectory.item_list,
-          actionSortOrderById
-        )
+        item_list:
+          variant === "fact"
+            ? sortEventDirectoryItemListOldestFirst(
+              nextDirectory.item_list,
+              actionSortOrderById
+            )
+            : sortEventDirectoryItemListStandardFirst(
+              nextDirectory.item_list,
+              actionSortOrderById
+            )
       };
 
       const nextKey = resolveSelectedEventKey(
@@ -679,8 +742,11 @@ export function EventConfigurationClient({
 
       const nextMomentInput = nextSelectedEvent
         ? toLocalMomentInputFromUtc(nextSelectedEvent.moment_utc)
-        : nowLocalMomentInput();
-      const nextUnityId = nextSelectedEvent?.unity_id ?? null;
+        : variant === "standard"
+          ? ""
+          : nowLocalMomentInput();
+      const nextUnityId =
+        variant === "standard" ? null : (nextSelectedEvent?.unity_id ?? null);
       const nextLocationId = nextSelectedEvent?.location_id ?? null;
       const nextItemId = nextSelectedEvent?.item_id ?? null;
       const nextActionId = nextSelectedEvent?.action_id ?? null;
@@ -709,7 +775,7 @@ export function EventConfigurationClient({
 
       return nextKey;
     },
-    [actionSortOrderById]
+    [actionSortOrderById, variant]
   );
 
   const applySyncFromHandlers = useCallback(
@@ -782,6 +848,7 @@ export function EventConfigurationClient({
       query.set("action_id", String(filterActionId));
     }
     query.set("label_lang", labelLang);
+    query.set("event_kind", variant === "standard" ? "standard" : "fact");
 
     try {
       const response = await fetch(
@@ -814,7 +881,8 @@ export function EventConfigurationClient({
       isFetchResultStale,
       labelLang,
       scopeId,
-      syncFromDirectory
+      syncFromDirectory,
+      variant
     ]
   );
 
@@ -994,30 +1062,34 @@ export function EventConfigurationClient({
     []
   );
 
-  const isDirty = useMemo(
-    () =>
-      momentInput.trim() !== baseline.momentInput.trim() ||
-      unityId !== baseline.unityId ||
+  const isDirty = useMemo(() => {
+    const momentOrUnityDirty =
+      variant === "fact"
+        ? momentInput.trim() !== baseline.momentInput.trim() || unityId !== baseline.unityId
+        : false;
+    return (
+      momentOrUnityDirty ||
       locationId !== baseline.locationId ||
       itemId !== baseline.itemId ||
       actionId !== baseline.actionId ||
       eventActionInputDirty ||
-      isDeletePending,
-    [
-      actionId,
-      baseline.actionId,
-      baseline.locationId,
-      baseline.momentInput,
-      baseline.itemId,
-      baseline.unityId,
-      eventActionInputDirty,
-      isDeletePending,
-      locationId,
-      momentInput,
-      itemId,
-      unityId
-    ]
-  );
+      isDeletePending
+    );
+  }, [
+    actionId,
+    baseline.actionId,
+    baseline.locationId,
+    baseline.momentInput,
+    baseline.itemId,
+    baseline.unityId,
+    eventActionInputDirty,
+    isDeletePending,
+    locationId,
+    momentInput,
+    itemId,
+    unityId,
+    variant
+  ]);
 
   const validate = useCallback(() => {
     const nextError: {
@@ -1025,10 +1097,15 @@ export function EventConfigurationClient({
       location?: string;
       item?: string;
       action?: string;
+      currentAge?: string;
     } = {};
 
-    if (!toUtcIsoFromLocalInput(momentInput)) {
-      nextError.moment = copy.momentRequired;
+    if (variant === "fact") {
+      if (!toUtcIsoFromLocalInput(momentInput)) {
+        nextError.moment = copy.momentRequired;
+      }
+    } else if (currentAgeField == null) {
+      nextError.currentAge = copy.currentAgeFieldMissing;
     }
     if (locationId == null) {
       nextError.location = copy.locationRequired;
@@ -1045,12 +1122,15 @@ export function EventConfigurationClient({
   }, [
     actionId,
     copy.actionRequired,
+    copy.currentAgeFieldMissing,
     copy.locationRequired,
     copy.momentRequired,
     copy.itemRequired,
+    currentAgeField,
+    itemId,
     locationId,
     momentInput,
-    itemId
+    variant
   ]);
 
   const handleChangeActionInputValue = useCallback((fieldId: number, value: string) => {
@@ -1260,25 +1340,42 @@ export function EventConfigurationClient({
       return;
     }
 
-    const momentUtc = toUtcIsoFromLocalInput(momentInput);
-    if (!isDeletePending && !momentUtc) {
+    const momentUtc = variant === "fact" ? toUtcIsoFromLocalInput(momentInput) : null;
+    if (!isDeletePending && variant === "fact" && !momentUtc) {
       setFieldError((previous) => ({ ...previous, moment: copy.momentRequired }));
+      return;
+    }
+    if (!isDeletePending && variant === "standard" && currentAgeField == null) {
+      setFieldError((previous) => ({
+        ...previous,
+        currentAge: copy.currentAgeFieldMissing
+      }));
       return;
     }
 
     setIsSaving(true);
     try {
       if (isCreateMode) {
+        const createBody =
+          variant === "fact"
+            ? {
+              unity_id: unityId,
+              location_id: locationId,
+              item_id: itemId,
+              action_id: actionId,
+              moment_utc: momentUtc
+            }
+            : {
+              unity_id: null,
+              location_id: locationId,
+              item_id: itemId,
+              action_id: actionId,
+              age_field_id: currentAgeField!.id
+            };
         const response = await fetch(`/api/auth/tenant/current/scopes/${scopeId}/events`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            unity_id: unityId,
-            location_id: locationId,
-            item_id: itemId,
-            action_id: actionId,
-            moment_utc: momentUtc
-          })
+          body: JSON.stringify(createBody)
         });
         const data: unknown = await response.json().catch(() => ({}));
 
@@ -1309,6 +1406,22 @@ export function EventConfigurationClient({
         return;
       }
 
+      const patchBody =
+        variant === "fact"
+          ? {
+            unity_id: unityId,
+            location_id: locationId,
+            item_id: itemId,
+            action_id: actionId,
+            moment_utc: momentUtc
+          }
+          : {
+            unity_id: null,
+            location_id: locationId,
+            item_id: itemId,
+            action_id: actionId,
+            age_field_id: currentAgeField!.id
+          };
       const response = await fetch(
         `/api/auth/tenant/current/scopes/${scopeId}/events/${selectedEvent.id}`,
         isDeletePending
@@ -1316,13 +1429,7 @@ export function EventConfigurationClient({
           : {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              unity_id: unityId,
-              location_id: locationId,
-              item_id: itemId,
-              action_id: actionId,
-              moment_utc: momentUtc
-            })
+            body: JSON.stringify(patchBody)
           }
       );
       const data: unknown = await response.json().catch(() => ({}));
@@ -1384,8 +1491,10 @@ export function EventConfigurationClient({
     copy.createError,
     copy.deleteBlockedDetail,
     copy.deleteError,
+    copy.currentAgeFieldMissing,
     copy.momentRequired,
     copy.saveError,
+    currentAgeField,
     directory,
     isCreateMode,
     isDeletePending,
@@ -1400,7 +1509,8 @@ export function EventConfigurationClient({
     refreshSavedEventActionInputState,
     itemId,
     unityId,
-    validate
+    validate,
+    variant
   ]);
 
   const canEditForm = Boolean(directory?.can_edit);
@@ -1413,6 +1523,7 @@ export function EventConfigurationClient({
   const footerErrorMessage =
     requestErrorMessage ??
     fieldError.moment ??
+    fieldError.currentAge ??
     fieldError.location ??
     fieldError.item ??
     fieldError.action ??
@@ -1434,6 +1545,7 @@ export function EventConfigurationClient({
             panel: (
               <EventFilterPanel
                 locale={locale}
+                showMomentRange={variant === "fact"}
                 copy={{
                   momentFromLabel: copy.filterMomentFromLabel,
                   momentToLabel: copy.filterMomentToLabel,
@@ -1465,7 +1577,7 @@ export function EventConfigurationClient({
                 }}
               />
             ),
-            storageSegment: "event"
+            storageSegment: variant === "fact" ? "event-fact" : "event-standard"
           }
           : undefined
       }
@@ -1486,7 +1598,7 @@ export function EventConfigurationClient({
           <div className="ui-directory-list">
             <ConfigurationDirectoryListToolbarRow
               showFilterToggle={directory != null}
-              filterSegment="event"
+              filterSegment={variant === "fact" ? "event-fact" : "event-standard"}
               filterToggleAriaLabel={copy.filterToggleAriaLabel}
               filterToggleLabel={copy.filterToggleLabel}
               end={
@@ -1520,9 +1632,13 @@ export function EventConfigurationClient({
                     <p className="ui-directory-title ui-directory-title-emphasis">
                       {resolveActionLabel(item.action_id)}
                     </p>
-                    <p className="ui-directory-date">{formatMomentCompact(item.moment_utc)}</p>
+                    <p className="ui-directory-date">
+                      {variant === "fact"
+                        ? (item.moment_utc ? formatMomentCompact(item.moment_utc) : "–")
+                        : "–"}
+                    </p>
                   </div>
-                  {item.unity_id != null ? (
+                  {variant === "fact" && item.unity_id != null ? (
                     <p className="ui-directory-title ui-directory-title-emphasis">
                       {resolveUnityLabel(item.unity_id)}
                     </p>
@@ -1542,44 +1658,62 @@ export function EventConfigurationClient({
       editorForm={
         directory ? (
           <>
-            <section className="ui-card ui-form-section ui-border-accent">
-              <EditorPanelFlashOverlay active={isEditorFlashActive} />
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-unity">
-                  {copy.unityLabel}
-                </label>
-                <select
-                  id="event-unity"
-                  className="ui-input ui-input-select"
-                  value={unityId == null ? "" : String(unityId)}
-                  onChange={(event) => {
-                    const raw = event.target.value;
-                    const nextUnityId = raw === "" ? null : parseNumericFilter(raw);
-                    setUnityId(nextUnityId);
-                    if (nextUnityId != null) {
-                      const record = unityRecordById.get(nextUnityId);
-                      if (record) {
-                        setLocationId(record.location_id);
-                        setFieldError((prev) => ({ ...prev, location: undefined }));
-                        if (itemId != null && !record.item_id_list.includes(itemId)) {
-                          setItemId(null);
+            {variant === "standard" ? (
+              <section className="ui-card ui-form-section ui-border-accent">
+                <EditorPanelFlashOverlay active={isEditorFlashActive} />
+                <div className="ui-field">
+                  <span className="ui-field-label">{copy.ageFieldLabel}</span>
+                  <p className="ui-directory-title ui-directory-title-emphasis">
+                    {currentAgeField?.label ?? copy.currentAgeFieldMissing}
+                  </p>
+                  <p className="ui-field-hint">{copy.ageFieldHint}</p>
+                  {fieldError.currentAge ? (
+                    <p className="ui-field-error">{fieldError.currentAge}</p>
+                  ) : null}
+                </div>
+              </section>
+            ) : null}
+
+            {variant === "fact" ? (
+              <section className="ui-card ui-form-section ui-border-accent">
+                <EditorPanelFlashOverlay active={isEditorFlashActive} />
+                <div className="ui-field">
+                  <label className="ui-field-label" htmlFor="event-unity">
+                    {copy.unityLabel}
+                  </label>
+                  <select
+                    id="event-unity"
+                    className="ui-input ui-input-select"
+                    value={unityId == null ? "" : String(unityId)}
+                    onChange={(event) => {
+                      const raw = event.target.value;
+                      const nextUnityId = raw === "" ? null : parseNumericFilter(raw);
+                      setUnityId(nextUnityId);
+                      if (nextUnityId != null) {
+                        const record = unityRecordById.get(nextUnityId);
+                        if (record) {
+                          setLocationId(record.location_id);
+                          setFieldError((prev) => ({ ...prev, location: undefined }));
+                          if (itemId != null && !record.item_id_list.includes(itemId)) {
+                            setItemId(null);
+                          }
                         }
                       }
-                    }
-                    setRequestErrorMessage(null);
-                  }}
-                  disabled={isDeletePending || !canEditForm}
-                >
-                  <option value="" aria-label={copy.filterAllAria}></option>
-                  {unityOptionList.map((item) => (
-                    <option key={item.id} value={item.id}>
-                      {item.label}
-                    </option>
-                  ))}
-                </select>
-                <p className="ui-field-hint">{copy.unityHint}</p>
-              </div>
-            </section>
+                      setRequestErrorMessage(null);
+                    }}
+                    disabled={isDeletePending || !canEditForm}
+                  >
+                    <option value="" aria-label={copy.filterAllAria}></option>
+                    {unityOptionList.map((item) => (
+                      <option key={item.id} value={item.id}>
+                        {item.label}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="ui-field-hint">{copy.unityHint}</p>
+                </div>
+              </section>
+            ) : null}
 
             <section className="ui-card ui-form-section ui-border-accent">
               <HierarchySingleSelectField
@@ -1658,28 +1792,30 @@ export function EventConfigurationClient({
                 onChangeInputValue={handleChangeActionInputValue}
               />
 
-              <div className="ui-field">
-                <label className="ui-field-label" htmlFor="event-moment">
-                  {copy.momentLabel}
-                </label>
-                <TenantDateTimePicker
-                  id="event-moment"
-                  value={momentInput ? new Date(momentInput) : null}
-                  onChange={(value) => {
-                    setMomentInput(value ? toLocalMomentInputValue(value) : "");
-                    setFieldError((previous) => ({ ...previous, moment: undefined }));
-                    setRequestErrorMessage(null);
-                  }}
-                  disabled={isDeletePending || !canEditForm}
-                  showFlash={Boolean(fieldError.moment)}
-                  locale={locale}
-                  hidePlaceholder
-                />
-                <p className="ui-field-hint">{copy.momentHint}</p>
-                {fieldError.moment ? (
-                  <p className="ui-field-error">{fieldError.moment}</p>
-                ) : null}
-              </div>
+              {variant === "fact" ? (
+                <div className="ui-field">
+                  <label className="ui-field-label" htmlFor="event-moment">
+                    {copy.momentLabel}
+                  </label>
+                  <TenantDateTimePicker
+                    id="event-moment"
+                    value={momentInput ? new Date(momentInput) : null}
+                    onChange={(value) => {
+                      setMomentInput(value ? toLocalMomentInputValue(value) : "");
+                      setFieldError((previous) => ({ ...previous, moment: undefined }));
+                      setRequestErrorMessage(null);
+                    }}
+                    disabled={isDeletePending || !canEditForm}
+                    showFlash={Boolean(fieldError.moment)}
+                    locale={locale}
+                    hidePlaceholder
+                  />
+                  <p className="ui-field-hint">{copy.momentHint}</p>
+                  {fieldError.moment ? (
+                    <p className="ui-field-error">{fieldError.moment}</p>
+                  ) : null}
+                </div>
+              ) : null}
             </section>
 
             {actionId != null
