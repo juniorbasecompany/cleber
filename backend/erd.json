@@ -592,8 +592,8 @@
       "id": "event",
       "name": "event",
       "comment": "É o momento em que determinada fórmula é aplicada.",
-      "x": 664.79356749751,
-      "y": 593.6398556206941,
+      "x": 659.182571345967,
+      "y": 631.7946294511843,
       "locked": false,
       "fields": [
         {
@@ -613,7 +613,7 @@
         {
           "id": "unity_id",
           "name": "unity_id",
-          "comment": "Indica a ligação com uma unidade específica. Quando preenchido, location_id deve ser igual a unity.location_id e item_id deve pertencer a unity.item_id_list. O evento ligado a uma unidade é um fato; quando não está, é um padrão (standard)  e estará ligado ao age_field_id.",
+          "comment": "Indica a ligação com uma unidade específica. Quando preenchido, location_id deve ser igual a unity.location_id e item_id deve pertencer a unity.item_id_list. O evento ligado a uma unidade é um fato; quando não está, é um padrão (standard).",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -635,20 +635,6 @@
           "unique": false,
           "notNull": false,
           "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "age_field_id",
-          "name": "age_field_id",
-          "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": false,
-          "increment": false,
-          "comment": "Indica o campo que é usado para determinar a idade do lote (is_current_age = true). O evento que tem age_field_id é um padrão (standard). Quando não tem, deverá ter unity_id e então é um fato, com data.",
           "size": "",
           "values": []
         },
@@ -1699,17 +1685,6 @@
       "cardinality": "one_to_many",
       "updateConstraint": "Cascade",
       "deleteConstraint": "Restrict"
-    },
-    {
-      "id": "event.age_field_id",
-      "name": "event.age_field_id",
-      "startTableId": "field",
-      "startFieldId": "id",
-      "endTableId": "event",
-      "endFieldId": "age_field_id",
-      "cardinality": "one_to_many",
-      "updateConstraint": "Cascade",
-      "deleteConstraint": "Restrict"
     }
   ],
   "notes": [
@@ -1759,13 +1734,13 @@
     },
     {
       "id": 4,
-      "x": 1110.6518950025693,
-      "y": 1175.8322768523885,
+      "x": 1124.1182857662716,
+      "y": 1082.68974073678,
       "title": "result - cálculo",
-      "content": "O resultado do cálculo provêm de duas fonte:\nfato: quando o evento tem unit_id\npadrão: quando o evento tem age_field_id.",
+      "content": "O resultado do cálculo provêm de duas fonte:\nfato: quando o evento tem unity_id\npadrão: quando o evento não tem unity_id - neste caso, deverá ser rastreado o campo que indica a idade atual do lote (field.is_current_age), para então saber em que dia será gravado o resultado.",
       "locked": false,
       "color": "#fcf7ac",
-      "height": 162,
+      "height": 256,
       "width": 298.95311841270455
     }
   ],
