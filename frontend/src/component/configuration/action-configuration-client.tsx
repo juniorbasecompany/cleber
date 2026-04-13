@@ -916,7 +916,7 @@ export function ActionConfigurationClient({
     canEdit: directory?.can_edit ?? false
   });
   const footerErrorMessage =
-    requestErrorMessage ?? fieldError.actionName ?? null;
+    requestErrorMessage ?? formulaLoadError ?? fieldError.actionName ?? null;
 
   const asideEmptyMessage = !currentScope
     ? hasAnyScope
@@ -1099,11 +1099,6 @@ export function ActionConfigurationClient({
             {(isCreateMode && directory.can_edit) ||
               (!isCreateMode && selectedAction) ? (
               <>
-                {!isCreateMode && formulaLoadError ? (
-                  <div className="ui-notice-attention ui-notice-block">
-                    {formulaLoadError}
-                  </div>
-                ) : null}
                 <ActionFormulaSection
                   canEdit={
                     isCreateMode ? Boolean(directory.can_edit) : formulasCanEdit

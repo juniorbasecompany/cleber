@@ -7,7 +7,7 @@ import re
 from collections import defaultdict
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import UTC, date, datetime, timedelta
-from typing import Any, Annotated, Literal
+from typing import Any, Annotated, Literal, TypeAlias
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -38,6 +38,16 @@ from valora_backend.api.auth import (
 )
 from valora_backend.config import Settings
 from valora_backend.model.null_if_empty import commit_session_with_null_if_empty
+from valora_backend.rules.field_sql_formula import (
+    FieldSqlFormulaKind,
+    classify_field_sql_type,
+    coerce_formula_result_to_temporal,
+    default_temporal_runtime,
+    normalize_sql_type,
+    parse_temporal_input_string,
+    parse_temporal_result_text,
+    serialize_temporal_for_storage,
+)
 from valora_backend.rules.formula_simple_eval import build_formula_simple_eval
 from valora_backend.rules.formula_statement_validate import (
     FormulaStatementValidationError,
@@ -53,6 +63,18 @@ from valora_backend.services.deepl_label_translation import (
 
 router = APIRouter(prefix="/auth/tenant/current", tags=["scope-rules"])
 
+FormulaRuntimePrimitive: TypeAlias = str | bool | int | float | date | datetime
+
+
+def _field_sql_formula_kind_or_400(sql_type: str) -> FieldSqlFormulaKind:
+    try:
+        return classify_field_sql_type(sql_type)
+    except ValueError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(exc),
+        ) from exc
+
 
 def _normalize_optional_result_text(value: str | None) -> str | None:
     if value is None:
@@ -61,32 +83,8 @@ def _normalize_optional_result_text(value: str | None) -> str | None:
     return normalized or None
 
 
-def _normalize_sql_type(sql_type: str) -> str:
-    return " ".join(sql_type.strip().upper().split())
-
-
-def _sql_type_family_or_400(sql_type: str) -> Literal["text", "boolean", "integer", "numeric"]:
-    normalized = _normalize_sql_type(sql_type)
-    if normalized in {"TEXT", "CHAR", "VARCHAR"} or normalized.startswith(
-        ("CHAR(", "VARCHAR(")
-    ):
-        return "text"
-    if normalized == "BOOLEAN":
-        return "boolean"
-    if normalized in {"INTEGER", "INT", "BIGINT", "SMALLINT"}:
-        return "integer"
-    if normalized in {"NUMERIC", "DECIMAL", "FLOAT", "REAL", "DOUBLE", "DOUBLE PRECISION"}:
-        return "numeric"
-    if normalized.startswith(("NUMERIC(", "DECIMAL(")):
-        return "numeric"
-    raise HTTPException(
-        status_code=status.HTTP_400_BAD_REQUEST,
-        detail=f"Unsupported field.type for formula execution: {sql_type}",
-    )
-
-
 def _numeric_scale_from_sql_type(sql_type: str) -> int | None:
-    normalized = _normalize_sql_type(sql_type)
+    normalized = normalize_sql_type(sql_type)
     match = re.fullmatch(r"(?:NUMERIC|DECIMAL)\(\s*\d+\s*,\s*(\d+)\s*\)", normalized)
     if not match:
         return None
@@ -180,30 +178,42 @@ def _parse_numeric_value_or_400(value: Any, *, detail: str) -> Decimal:
 
 def _coerce_input_runtime_value_or_400(
     field: Field, value: str, *, event_id: int
-) -> str | bool | int | float:
+) -> FormulaRuntimePrimitive:
     detail = f"Event {event_id} has an invalid input for field {field.id}"
-    family = _sql_type_family_or_400(field.type)
-    if family == "text":
+    kind = _field_sql_formula_kind_or_400(field.type)
+    if kind.family == "text":
         return value.strip()
-    if family == "boolean":
+    if kind.family == "boolean":
         return _parse_boolean_value_or_400(value, detail=detail)
-    if family == "integer":
+    if kind.family == "integer":
         return _parse_integer_value_or_400(value, detail=detail)
+    if kind.family == "temporal":
+        assert kind.temporal_kind is not None
+        try:
+            return parse_temporal_input_string(value, kind.temporal_kind)
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=detail,
+            ) from None
     numeric_value = _parse_numeric_value_or_400(value, detail=detail)
     return float(numeric_value)
 
 
 def _extract_result_runtime_value_or_none(
     row: Result, field: Field, *, event_id: int
-) -> str | bool | int | float | None:
-    family = _sql_type_family_or_400(field.type)
-    if family == "text":
+) -> FormulaRuntimePrimitive | None:
+    kind = _field_sql_formula_kind_or_400(field.type)
+    if kind.family == "text":
         return row.text_value
-    if family == "boolean":
+    if kind.family == "boolean":
         return row.boolean_value
+    if kind.family == "temporal":
+        assert kind.temporal_kind is not None
+        return parse_temporal_result_text(row.text_value, kind.temporal_kind)
     if row.numeric_value is None:
         return None
-    if family == "integer":
+    if kind.family == "integer":
         return _parse_integer_value_or_400(
             row.numeric_value,
             detail=f"Event {event_id} has a non-integer result for field {field.id}",
@@ -216,14 +226,17 @@ def _extract_result_runtime_value_or_none(
     )
 
 
-def _default_runtime_value_for_field(field: Field) -> str | bool | int | float:
-    family = _sql_type_family_or_400(field.type)
-    if family == "text":
+def _default_runtime_value_for_field(field: Field) -> FormulaRuntimePrimitive:
+    kind = _field_sql_formula_kind_or_400(field.type)
+    if kind.family == "text":
         return ""
-    if family == "boolean":
+    if kind.family == "boolean":
         return False
-    if family == "integer":
+    if kind.family == "integer":
         return 0
+    if kind.family == "temporal":
+        assert kind.temporal_kind is not None
+        return default_temporal_runtime(kind.temporal_kind)
     return 0.0
 
 
@@ -239,8 +252,8 @@ def _coerce_formula_output_to_result_payload_or_400(
         f"Event {event_id} formula {formula_id} (sort_order {formula_order}) "
         f"returned an invalid value for field {field.id}"
     )
-    family = _sql_type_family_or_400(field.type)
-    if family == "text":
+    kind = _field_sql_formula_kind_or_400(field.type)
+    if kind.family == "text":
         text_value = _normalize_optional_result_text(str(value))
         return {
             "text_value": text_value,
@@ -248,7 +261,7 @@ def _coerce_formula_output_to_result_payload_or_400(
             "numeric_value": None,
             "runtime_value": text_value,
         }
-    if family == "boolean":
+    if kind.family == "boolean":
         boolean_value = _parse_boolean_value_or_400(value, detail=detail_prefix)
         return {
             "text_value": None,
@@ -256,7 +269,23 @@ def _coerce_formula_output_to_result_payload_or_400(
             "numeric_value": None,
             "runtime_value": boolean_value,
         }
-    if family == "integer":
+    if kind.family == "temporal":
+        assert kind.temporal_kind is not None
+        try:
+            runtime = coerce_formula_result_to_temporal(value, kind.temporal_kind)
+        except ValueError as exc:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"{detail_prefix}: {exc}",
+            ) from exc
+        text_value = serialize_temporal_for_storage(runtime, kind.temporal_kind)
+        return {
+            "text_value": text_value,
+            "boolean_value": None,
+            "numeric_value": None,
+            "runtime_value": runtime,
+        }
+    if kind.family == "integer":
         integer_value = _parse_integer_value_or_400(value, detail=detail_prefix)
         return {
             "text_value": None,
@@ -2785,7 +2814,7 @@ def calculate_scope_current_age(
                 formula_row.action_id
             )
 
-    input_runtime_by_event_id: defaultdict[int, dict[int, str | bool | int | float]] = (
+    input_runtime_by_event_id: defaultdict[int, dict[int, FormulaRuntimePrimitive]] = (
         defaultdict(dict)
     )
     for input_row in session.scalars(
@@ -2909,7 +2938,7 @@ def calculate_scope_current_age(
     )
 
     state_by_group: defaultdict[
-        tuple[int, int], dict[int, str | bool | int | float]
+        tuple[int, int], dict[int, FormulaRuntimePrimitive]
     ] = defaultdict(dict)
     current_window_by_group: dict[tuple[int, int], dict[str, int]] = {}
     close_after_day_by_group: dict[

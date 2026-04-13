@@ -6,7 +6,8 @@ export type ConfigurationEditorFooterProps = {
     cancelLabel?: string;
     discardConfirm: string;
     isDirty: boolean;
-    footerErrorMessage: string | null;
+    /** Texto simples ou conteúdo rico (por exemplo mensagens com formatação). */
+    footerErrorMessage: ReactNode | null;
     footerNoticeMessage?: string | null;
     footerNoticeTone?: "success" | "attention";
     onSave: () => void;

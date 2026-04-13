@@ -192,7 +192,7 @@ export function ActionFormulaSection({
         />
       ) : null}
 
-      {isLoading ? (
+      {isLoading && rowList.length === 0 ? (
         <div aria-busy="true" aria-label={t("loadingAriaLabel")}>
           <FormulaRowsSkeleton rowCount={3} />
         </div>

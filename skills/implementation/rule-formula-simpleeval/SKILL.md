@@ -21,10 +21,34 @@ O texto persistido em [`formula.statement`](../../../backend/src/valora_backend/
 
 - **Lado esquerdo:** exclusivamente `${field:<id>}` (quem recebe o valor).
 - **Separador:** primeiro caractere `=` na instrução (após trim).
-- **Lado direito:** expressão de cálculo com referências `${field:…}` e funções da lista branca; internamente substituídas por nomes `f_<id>` para o SimpleEval.
-- **Regra de modelagem:** não há variáveis/campos temporários intermediários entre fórmulas no contrato atual. Cada fórmula atribui diretamente para `${field:<id>}`.
+- **Lado direito:** expressão de cálculo com referências `${field:…}` e `${input:…}` e funções da lista branca; internamente substituídas por nomes `f_<id>` e `i_<id>` para o SimpleEval.
+- **Regra de modelagem:** não há variáveis ou campos temporários intermediários entre fórmulas no contrato atual. Cada fórmula atribui diretamente para `${field:<id>}`.
 
-Na gravação (`POST`/`PATCH` de fórmulas), o backend valida este formato, a existência dos `field_id` no escopo e um **dry-run** da RHS com valores stub (`Decimal("0")` por campo referido na expressão). Códigos estáveis de erro: `formula_invalid_assignment`, `formula_invalid_target`, `formula_unknown_field_id`, `formula_expression_invalid`. Implementação: `valora_backend/rules/formula_statement_validate.py` e `formula_simple_eval.py`.
+### Cuidado com `=` na RHS
+
+Qualquer **`=`** adicional na mesma linha quebra o contrato de **uma única** atribuição. Por isso **não** use argumentos nomeados que contenham `=` na RHS (ex.: `timedelta(days=1)`). Prefira argumentos posicionais: `timedelta(1)` soma um dia, `timedelta(7)` soma sete dias (equivalente prático a uma semana). Meses e anos usam as funções `add_months` e `add_years` da lista branca.
+
+Na gravação (`POST`/`PATCH` de fórmulas), o backend valida este formato, a existência dos `field_id` no escopo e um **dry-run** da RHS com valores **stub por tipo** de cada campo referido (ver secção seguinte). Códigos estáveis de erro: `formula_invalid_assignment`, `formula_invalid_target`, `formula_unknown_field_id`, `formula_expression_invalid`. Implementação: `valora_backend/rules/formula_statement_validate.py`, `formula_simple_eval.py` e `field_sql_formula.py`.
+
+## Dry-run (stubs)
+
+Ao validar a RHS, cada referência `${field:id}` ou `${input:id}` recebe um valor de teste coerente com o `field.type` SQL daquele id no escopo:
+
+| Família do tipo (`field.type`) | Stub |
+|-------------------------------|------|
+| texto | `""` |
+| `BOOLEAN` | `False` |
+| inteiro | `0` |
+| numérico (incl. `NUMERIC`, `DECIMAL`, `FLOAT`, …) | `0` (inteiro; evita falha de dry-run em expressões com literais `float`, ex.: `f_1 + 0.20`) |
+| `DATE` | `date(2000, 1, 1)` |
+| `TIMESTAMP` / `TIMESTAMPTZ` (e variantes com precisão) | `datetime(2000, 1, 1, 0, 0, 0)` |
+
+## Tipos temporais na execução
+
+- **`DATE`:** valores em runtime são `datetime.date`; resultado persistido em `result.text_value` como `YYYY-MM-DD`.
+- **`TIMESTAMP` / `TIMESTAMPTZ`:** valores em runtime são `datetime.datetime` **naive** (sem fuso); resultado em `text_value` em ISO (segundos típicos, ex.: `2024-03-15T14:30:00`).
+- **Entrada do utilizador:** strings ISO aceites por `date.fromisoformat` / `datetime.fromisoformat` (com `Z` opcional convertido para instante e depois armazenado como naive conforme o backend).
+- **Valor default** quando um campo referido ainda não existe no estado do grupo: `1970-01-01` (data) ou `1970-01-01T00:00:00` (data e hora), de forma determinística.
 
 ## API conceitual
 
@@ -36,25 +60,27 @@ Na gravação (`POST`/`PATCH` de fórmulas), o backend valida este formato, a ex
 
 Implementação de referência: [reference.md](./reference.md).
 
-## Funções permitidas (baseline)
+## Funções permitidas (lista branca atual)
 
-O conjunto inicial documentado para o projeto:
-
-| Função   | Uso típico                          |
-|----------|-------------------------------------|
-| `date`   | Construir datas para comparações    |
-| `abs`    | Valor absoluto                      |
-| `min`    | Mínimo                              |
-| `max`    | Máximo                              |
-| `round`  | Arredondamento                      |
-| `Decimal`| Valores monetários / precisão fixa  |
+| Função | Uso típico |
+|--------|------------|
+| `date` | Construir `date` |
+| `datetime` | Construir `datetime` |
+| `timedelta` | Somar dias (`timedelta(1)`), horas, etc. |
+| `add_months` | Somar meses de calendário a `date` ou `datetime` |
+| `add_years` | Somar anos de calendário a `date` ou `datetime` |
+| `abs` | Valor absoluto |
+| `min` | Mínimo |
+| `max` | Máximo |
+| `round` | Arredondamento |
+| `Decimal` | Valores monetários ou precisão fixa |
 
 **Novas funções** só entram na lista branca após **revisão explícita** (superfície de ataque, determinismo, efeitos colaterais).
 
 ## Limitações explícitas
 
 - Cada `statement` deve seguir atribuição única `${field:id} = <expressão>`.
-- Cada `expression` é **uma** expressão SimpleEval: **sem** `import`, **sem** módulo completo e sem outro operador de atribuição fora do separador principal.
+- Cada `expression` é **uma** expressão SimpleEval: **sem** `import`, **sem** módulo completo e sem outro operador de atribuição fora do separador principal (nem `=` em argumentos nomeados na RHS; ver secção acima).
 - Não usar este padrão misturado com **FEEL**, **JSONLogic** ou outro motor na mesma regra sem decisão arquitectural e contrato de proveniência claros.
 
 ## Proveniência
@@ -66,9 +92,10 @@ Alinhar com:
 
 Ao persistir regras executadas pelo utilizador, gravar identificador e **versão** da regra, e inputs necessários para **reproduzir e explicar** o resultado (o que o contrato de proveniência já exige para valor derivado).
 
-## Dependência
+## Dependências
 
-O pacote `simpleeval` está declarado em `backend/pyproject.toml` (intervalo de versão fixado, por exemplo `>=1.0.7,<2`). Em upgrades, rever changelog e regressões de segurança.
+- `simpleeval`: declarado em `backend/pyproject.toml` (intervalo de versão fixado, por exemplo `>=1.0.7,<2`). Em upgrades, rever changelog e regressões de segurança.
+- `python-dateutil`: usado internamente por `add_months` / `add_years` (relativedelta). Em upgrades, rever changelog.
 
 ## Segurança
 

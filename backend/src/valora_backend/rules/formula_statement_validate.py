@@ -5,11 +5,13 @@ from __future__ import annotations
 import logging
 import re
 from dataclasses import dataclass
+from typing import Any
 
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from valora_backend.model.rules import Field
+from valora_backend.rules.field_sql_formula import stub_value_for_formula_dry_run
 from valora_backend.rules.formula_simple_eval import build_formula_simple_eval
 
 logger = logging.getLogger(__name__)
@@ -131,9 +133,11 @@ def validate_formula_statement_for_scope(
     input_id_in_rhs = parsed.input_id_in_rhs
     all_referenced = {target_id} | field_id_in_rhs | input_id_in_rhs
 
-    scope_field_ids = set(
-        session.scalars(select(Field.id).where(Field.scope_id == scope_id)).all()
-    )
+    row_list = session.execute(
+        select(Field.id, Field.type).where(Field.scope_id == scope_id)
+    ).all()
+    scope_field_ids = {row[0] for row in row_list}
+    field_type_by_id = {row[0]: row[1] for row in row_list}
     unknown = all_referenced - scope_field_ids
     if unknown:
         raise FormulaStatementValidationError(
@@ -142,14 +146,17 @@ def validate_formula_statement_for_scope(
         )
 
     transformed_rhs = parsed.transformed_rhs
-    # Só são necessários nomes para referências que aparecem na RHS.
-    # Usar int 0: com Decimal("0") o dry-run falha em expressões com literais float
-    # (ex.: f_1 + 0.20) porque Python não soma Decimal + float.
-    stub_names: dict[str, int] = {}
+    # Stubs alinhados ao `field.type` de cada referência (texto, booleano, temporal, etc.)
+    # para o dry-run aceitar expressões que não seriam válidas com um único tipo stub.
+    stub_names: dict[str, Any] = {}
     for field_id in field_id_in_rhs:
-        stub_names[_python_name_for_field(field_id)] = 0
+        stub_names[_python_name_for_field(field_id)] = stub_value_for_formula_dry_run(
+            field_type_by_id[field_id]
+        )
     for field_id in input_id_in_rhs:
-        stub_names[_python_name_for_input(field_id)] = 0
+        stub_names[_python_name_for_input(field_id)] = stub_value_for_formula_dry_run(
+            field_type_by_id[field_id]
+        )
 
     try:
         evaluator = build_formula_simple_eval(stub_names)

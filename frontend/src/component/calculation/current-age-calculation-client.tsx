@@ -507,6 +507,10 @@ export function CurrentAgeCalculationClient({
   const showResultSkeleton =
     !requestErrorMessage && (isReading || isCalculating || isDeleting);
 
+  /** Erros de API (cálculo, leitura, etc.) e validação do período: sempre no footer. */
+  const combinedFooterError: ReactNode | null =
+    requestErrorMessage ?? footerErrorMessage ?? null;
+
   const configurationPath = `/${locale}/app`;
 
   useEffect(() => {
@@ -889,9 +893,7 @@ export function CurrentAgeCalculationClient({
           </div>
 
           <section className="ui-page-stack">
-            {requestErrorMessage ? (
-              <div className="ui-panel ui-empty-panel">{requestErrorMessage}</div>
-            ) : showResultSkeleton ? (
+            {showResultSkeleton ? (
               <CurrentAgeResultTableSkeleton
                 busyAriaLabel={copy.resultTableBusyAriaLabel}
                 columnCount={Math.max(2, fieldList.length)}
@@ -999,7 +1001,7 @@ export function CurrentAgeCalculationClient({
             cancelLabel={copy.cancel}
             discardConfirm={copy.discardConfirm}
             isDirty={false}
-            footerErrorMessage={footerErrorMessage}
+            footerErrorMessage={combinedFooterError}
             footerNoticeMessage={footerNoticeMessage}
             footerNoticeTone="attention"
             onSave={() => void handleRead()}
