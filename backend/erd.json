@@ -324,12 +324,21 @@
         {
           "name": "location_scope_parent_sort_idx",
           "unique": false,
-          "fields": ["scope_id", "parent_location_id", "sort_order", "id"]
+          "fields": [
+            "scope_id",
+            "parent_location_id",
+            "sort_order",
+            "id"
+          ]
         },
         {
           "name": "location_scope_parent_name_idx",
           "unique": false,
-          "fields": ["scope_id", "parent_location_id", "name"]
+          "fields": [
+            "scope_id",
+            "parent_location_id",
+            "name"
+          ]
         }
       ],
       "color": "#ff0000",
@@ -423,6 +432,67 @@
       "y": 114.16736251662459
     },
     {
+      "id": "kind",
+      "name": "kind",
+      "x": 29.31976766687103,
+      "y": 475.54990795950437,
+      "locked": false,
+      "fields": [
+        {
+          "id": "id",
+          "name": "id",
+          "comment": "Identificador do tipo de item.",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "unsigned": true,
+          "notNull": true,
+          "increment": true,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "scope_id",
+          "name": "scope_id",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "Escopo a qual pertence este tipo de item.",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "name",
+          "name": "name",
+          "comment": "Nome do tipo de item. Pode ser um nome mais descritívo.",
+          "type": "TEXT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        }
+      ],
+      "comment": "Aqui são guardados os tipos de itens. Exemplo: galinha, cobb, fêmea. Nome deve ser único por escopo.",
+      "indices": [],
+      "constraints": [
+        {
+          "name": "kind_scope_name_unique",
+          "constraint": "UNIQUE (scope_id, name)"
+        }
+      ],
+      "color": "#ff0000"
+    },
+    {
       "id": "item",
       "name": "item",
       "comment": "Use para cadastrar o item. Pode ser, por exemplo: galinha, fêmea, branca, vermelha.",
@@ -431,12 +501,21 @@
         {
           "name": "item_scope_parent_sort_idx",
           "unique": false,
-          "fields": ["scope_id", "parent_item_id", "sort_order", "id"]
+          "fields": [
+            "scope_id",
+            "parent_item_id",
+            "sort_order",
+            "id"
+          ]
         },
         {
           "name": "item_scope_parent_kind_idx",
           "unique": false,
-          "fields": ["scope_id", "parent_item_id", "kind_id"]
+          "fields": [
+            "scope_id",
+            "parent_item_id",
+            "kind_id"
+          ]
         }
       ],
       "fields": [
@@ -527,6 +606,87 @@
       ],
       "x": -92.51991009760508,
       "y": 774.2257029170571
+    },
+    {
+      "id": "unity",
+      "name": "unity",
+      "x": 737.5263419199713,
+      "y": 42.941097534780795,
+      "locked": false,
+      "fields": [
+        {
+          "id": "id",
+          "name": "id",
+          "comment": "Identificador da unidade.",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": true,
+          "unique": false,
+          "unsigned": true,
+          "notNull": true,
+          "increment": true
+        },
+        {
+          "id": "name",
+          "name": "name",
+          "type": "TEXT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "comment": "Nome da unidade. Dados legados podem usar o padrão '#<id>'.",
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "location_id",
+          "name": "location_id",
+          "comment": "Local ao qual a unidade está vinculada.",
+          "type": "BIGINT",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "item_id_list",
+          "name": "item_id_list",
+          "comment": "Lista de IDs de item. Array of BIGINT (PostgreSQL: BIGINT[])",
+          "type": "BIGINT[]",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        },
+        {
+          "id": "creation_utc",
+          "name": "creation_utc",
+          "comment": "Momento de criação da unidade.",
+          "type": "TIMESTAMP",
+          "default": "",
+          "check": "",
+          "primary": false,
+          "unique": false,
+          "notNull": true,
+          "increment": false,
+          "size": "",
+          "values": []
+        }
+      ],
+      "comment": "Esta é a unidade alocada. Representa um efetivamente um grupo de animais, um lote.",
+      "indices": [],
+      "color": "#ff0000"
     },
     {
       "id": "field",
@@ -1358,148 +1518,6 @@
       ],
       "x": -929.2716296167907,
       "y": 653.9725037624705
-    },
-    {
-      "id": "kind",
-      "name": "kind",
-      "x": 29.31976766687103,
-      "y": 475.54990795950437,
-      "locked": false,
-      "fields": [
-        {
-          "id": "id",
-          "name": "id",
-          "comment": "Identificador do tipo de item.",
-          "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": true,
-          "unique": false,
-          "unsigned": true,
-          "notNull": true,
-          "increment": true,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "scope_id",
-          "name": "scope_id",
-          "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "comment": "Escopo a qual pertence este tipo de item.",
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "name",
-          "name": "name",
-          "comment": "Nome do tipo de item. Pode ser um nome mais descritívo.",
-          "type": "TEXT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "size": "",
-          "values": []
-        }
-      ],
-      "comment": "Aqui são guardados os tipos de itens. Exemplo: galinha, cobb, fêmea. Nome deve ser único por escopo.",
-      "indices": [],
-      "constraints": [
-        {
-          "name": "kind_scope_name_unique",
-          "constraint": "UNIQUE (scope_id, name)"
-        }
-      ],
-      "color": "#ff0000"
-    },
-    {
-      "id": "unity",
-      "name": "unity",
-      "x": 737.5263419199713,
-      "y": 42.941097534780795,
-      "locked": false,
-      "fields": [
-        {
-          "id": "id",
-          "name": "id",
-          "comment": "Identificador da unidade.",
-          "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": true,
-          "unique": false,
-          "unsigned": true,
-          "notNull": true,
-          "increment": true
-        },
-        {
-          "id": "name",
-          "name": "name",
-          "type": "TEXT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "comment": "Nome da unidade. Dados legados podem usar o padrão '#<id>'.",
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "location_id",
-          "name": "location_id",
-          "comment": "Local ao qual a unidade está vinculada.",
-          "type": "BIGINT",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "item_id_list",
-          "name": "item_id_list",
-          "comment": "Lista de IDs de item. Array of BIGINT (PostgreSQL: BIGINT[])",
-          "type": "BIGINT[]",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "size": "",
-          "values": []
-        },
-        {
-          "id": "creation_utc",
-          "name": "creation_utc",
-          "comment": "Momento de criação da unidade.",
-          "type": "TIMESTAMP",
-          "default": "",
-          "check": "",
-          "primary": false,
-          "unique": false,
-          "notNull": true,
-          "increment": false,
-          "size": "",
-          "values": []
-        }
-      ],
-      "comment": "Esta é a unidade alocada. Representa um efetivamente um grupo de animais, um lote.",
-      "indices": [],
-      "color": "#ff0000"
     }
   ],
   "relationships": [
@@ -1804,8 +1822,8 @@
   "notes": [
     {
       "id": 0,
-      "x": 1144.7309268362758,
-      "y": 636.8821477952391,
+      "x": 1164.7309268362762,
+      "y": 1012.596433509525,
       "title": "formula.statement e tokens",
       "content": "Os tokens `${field:X}` e `${input:X}` são identificadores estruturados usados para resolver valores is durante a execução da fórmula.\nEles codificam dois aspectos: o `field_id` (X) e a origem do valor (`field` = estado, `input` = evento).\nDevem seguir um padrão rígido e ser validados por parsing, garantindo que sejam reconhecíveis e semanticamente consistentes.",
       "locked": false,
@@ -1826,8 +1844,8 @@
     },
     {
       "id": 2,
-      "x": 732.9852042338007,
-      "y": 351.7472468019251,
+      "x": 1161.5566328052291,
+      "y": 77.46153251621072,
       "title": "unity.item_id_list",
       "content": "Observe que aqui temos a lista de item que estão compondo a unidade. Quando o evento está ligado a uma unidade, location_id deve coincidir com unity.location_id e item_id deve pertencer a esta lista.",
       "locked": false,
@@ -1837,8 +1855,8 @@
     },
     {
       "id": 3,
-      "x": 1147.469009944575,
-      "y": 309.0876906156156,
+      "x": 1541.7547242302892,
+      "y": 1017.6591191870443,
       "title": "formula.statement e field.id",
       "content": "Os tokens ${field:X} e ${input:X} mantêm um vínculo lógico com field.id = X.\nEssa relação não é uma FK explícita, pois está embutida na instrução textual, exigindo validação por parsing.\nA integridade deve ser garantida na aplicação (ou via validação prévia), assegurando que todo X referenciado exista em field.",
       "locked": false,
@@ -1848,24 +1866,24 @@
     },
     {
       "id": 4,
-      "x": 1144.3802163135092,
-      "y": 992.2903582952595,
+      "x": 1482.9516448849377,
+      "y": 1495.1475011524026,
       "title": "result - cálculo",
       "content": "O resultado do cálculo provém de duas fontes:\nFato: quando o evento tem unity_id.\nPadrão (standard): quando o evento não tem unity_id.\nDeve rastrear o campo que indica a idade atual do lote (field.is_current_age) e gravar em result.age.\nEm inglês usar \"standard\" como tradução para \"Padrão\".",
       "locked": false,
       "color": "#fcf7ac",
       "height": 306,
-      "width": 298.95311841270455
+      "width": 300
     },
     {
       "id": 5,
-      "x": 350,
-      "y": 620,
+      "x": 1161.428571428572,
+      "y": 621.4285714285713,
       "title": "event: trigger de consistência com unity",
       "content": "Além de FKs e do CHECK event_unity_moment_pair, o PostgreSQL aplica a função validate_event_unity_consistency() via trigger event_unity_consistency_trg na tabela event (migration alembic a2b3c4d5e6f7_event_unity_consistency_trigger.py). Quando event.unity_id está preenchido, exige event.location_id = unity.location_id e event.item_id contido em unity.item_id_list.",
       "locked": false,
       "color": "#fcf7ac",
-      "height": 220,
+      "height": 330,
       "width": 300
     }
   ],
