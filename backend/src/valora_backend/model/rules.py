@@ -354,6 +354,14 @@ class Input(Base):
         nullable=False,
         comment="Ligação com a definição do campo. Este é o campo de entrada da ação.",
     )
+    age: Mapped[int | None] = mapped_column(
+        Integer,
+        nullable=True,
+        comment=(
+            "Idade na qual o valor foi registrado; NULL quando não recorrente ou sem "
+            "ocorrência por idade."
+        ),
+    )
     value: Mapped[str] = mapped_column(
         Text,
         nullable=False,
@@ -391,20 +399,19 @@ class Result(Base):
             "o evento-origem é um padrão (sem unity_id próprio)."
         ),
     )
+    age: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        comment=(
+            "Idade em dias do lote no momento do resultado (referência operacional; "
+            "alinha-se ao cálculo de idade atual do escopo)."
+        ),
+    )
     event_id: Mapped[int] = mapped_column(
         BIGINT_COMPAT,
         ForeignKey("event.id", onupdate="CASCADE", ondelete="RESTRICT"),
         nullable=False,
         comment="Ligação com o evento onde o resultado da fórmula foi aplicado.",
-    )
-    moment_utc: Mapped[datetime] = mapped_column(
-        DateTime(timezone=False),
-        nullable=False,
-        comment=(
-            "Data referente ao resultado. Para fato (evento com unity_id), alinha-se "
-            "ao evento. Para padrão (standard), vem do fluxo que usa o campo de idade "
-            "atual do escopo (field.is_current_age), não de coluna no evento."
-        ),
     )
     field_id: Mapped[int] = mapped_column(
         BIGINT_COMPAT,

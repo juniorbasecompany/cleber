@@ -12,7 +12,7 @@ from typing import Any, Annotated, Literal, TypeAlias
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from pydantic import BaseModel, Field as PydanticField, model_validator
-from sqlalchemy import func, or_, select, text, true
+from sqlalchemy import Date, asc, cast, func, or_, select, text, true
 from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
@@ -20,7 +20,7 @@ from sqlalchemy.orm import Session
 from valora_backend.auth.dependencies import get_current_member
 from valora_backend.auth.service import ADMIN_ROLE, MASTER_ROLE
 from valora_backend.db import get_session
-from valora_backend.model.identity import Item, Location, Member, Scope
+from valora_backend.model.identity import Item, Location, Member, Scope, Unity
 from valora_backend.model.rules import (
     Action,
     Event,
@@ -64,6 +64,31 @@ from valora_backend.services.deepl_label_translation import (
 router = APIRouter(prefix="/auth/tenant/current", tags=["scope-rules"])
 
 FormulaRuntimePrimitive: TypeAlias = str | bool | int | float | date | datetime
+
+
+def _result_execution_calendar_date_sql_expr(session: Session):
+    """Data de execução do resultado: date(creation_utc) + age (mesma convenção da migração)."""
+    if session.get_bind().dialect.name == "postgresql":
+        return cast(Unity.creation_utc, Date) + Result.age
+    return text(
+        "date(unity.creation_utc, '+' || CAST(result.age AS TEXT) || ' days')"
+    )
+
+
+def _result_execution_in_period(
+    session: Session,
+    *,
+    moment_from_utc: datetime,
+    moment_to_utc: datetime,
+):
+    mf = moment_from_utc.date()
+    mt = moment_to_utc.date()
+    if session.get_bind().dialect.name == "postgresql":
+        return (cast(Unity.creation_utc, Date) + Result.age).between(mf, mt)
+    return text(
+        "date(unity.creation_utc, '+' || CAST(result.age AS TEXT) || ' days') "
+        "BETWEEN :mf AND :mt"
+    ).bindparams(mf=mf.isoformat(), mt=mt.isoformat())
 
 
 def _field_sql_formula_kind_or_400(sql_type: str) -> FieldSqlFormulaKind:
@@ -1949,8 +1974,8 @@ class ScopeCurrentAgeCalculationRecord(BaseModel):
     location_id: int
     item_id: int
     action_id: int
-    event_moment_utc: datetime
-    result_moment_utc: datetime
+    event_moment_utc: datetime | None
+    result_age: int
     text_value: str | None
     boolean_value: bool | None
     numeric_value: Decimal | None
@@ -2006,7 +2031,7 @@ def _build_current_age_response_from_result_rows(
                 item_id=event_row.item_id,
                 action_id=event_row.action_id,
                 event_moment_utc=event_row.moment_utc,
-                result_moment_utc=result_row.moment_utc,
+                result_age=result_row.age,
                 text_value=result_row.text_value,
                 boolean_value=result_row.boolean_value,
                 numeric_value=result_row.numeric_value,
@@ -2044,18 +2069,23 @@ def _list_scope_current_age_results(
     query = (
         select(Result, Event)
         .join(Event, Result.event_id == Event.id)
+        .join(Unity, Result.unity_id == Unity.id)
         .join(Action, Event.action_id == Action.id)
         .where(
             Action.scope_id == scope_id,
-            Result.moment_utc >= moment_from_utc,
-            Result.moment_utc <= moment_to_utc,
+            _result_execution_in_period(
+                session,
+                moment_from_utc=moment_from_utc,
+                moment_to_utc=moment_to_utc,
+            ),
             *event_predicates,
         )
     )
+    exec_date_expr = _result_execution_calendar_date_sql_expr(session)
     result_row_list = list(
         session.execute(
             query.order_by(
-                func.date(Result.moment_utc).asc(),
+                asc(exec_date_expr),
                 Action.sort_order.asc(),
                 Event.moment_utc.asc(),
                 Event.id.asc(),
@@ -2680,13 +2710,19 @@ def delete_scope_current_age(
         )
 
     _apply_member_audit_context(session, member)
-    deleted_result = session.execute(
-        delete(Result).where(
-            Result.moment_utc >= moment_from_utc,
-            Result.moment_utc <= moment_to_utc,
+    result_id_subq = (
+        select(Result.id)
+        .join(Unity, Result.unity_id == Unity.id)
+        .where(
+            _result_execution_in_period(
+                session,
+                moment_from_utc=moment_from_utc,
+                moment_to_utc=moment_to_utc,
+            ),
             Result.event_id.in_(event_id_list),
         )
     )
+    deleted_result = session.execute(delete(Result).where(Result.id.in_(result_id_subq)))
 
     if (deleted_result.rowcount or 0) > 0:
         _apply_member_audit_context(session, member)
@@ -2867,12 +2903,14 @@ def calculate_scope_current_age(
                 final_age_by_event_id[event_id] = normalized_age
                 age_source_runtime_by_event_id[event_id][final_field.id] = normalized_age
 
+    exec_date_ord = _result_execution_calendar_date_sql_expr(session)
     for row in session.scalars(
         select(Result)
+        .join(Unity, Result.unity_id == Unity.id)
         .where(Result.event_id.in_(event_id_list))
         .order_by(
             Result.event_id.asc(),
-            Result.moment_utc.asc(),
+            asc(exec_date_ord),
             Result.formula_order.asc(),
             Result.id.asc(),
         )
@@ -2921,13 +2959,19 @@ def calculate_scope_current_age(
         )
 
     _apply_member_audit_context(session, member)
-    deleted_result = session.execute(
-        delete(Result).where(
-            Result.moment_utc >= moment_from_utc,
-            Result.moment_utc <= moment_to_utc,
+    result_id_subq_calc = (
+        select(Result.id)
+        .join(Unity, Result.unity_id == Unity.id)
+        .where(
+            _result_execution_in_period(
+                session,
+                moment_from_utc=moment_from_utc,
+                moment_to_utc=moment_to_utc,
+            ),
             Result.event_id.in_(event_id_list),
         )
     )
+    deleted_result = session.execute(delete(Result).where(Result.id.in_(result_id_subq_calc)))
     deleted_result_count = deleted_result.rowcount or 0
 
     occurrence_list = _build_execution_occurrence_list(
@@ -3042,8 +3086,27 @@ def calculate_scope_current_age(
             group_state[target_field.id] = typed_payload["runtime_value"]
 
             if moment_from_utc <= execution_moment_utc <= moment_to_utc:
+                age_val = group_state.get(current_field.id)
+                if age_val is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "code": "current_age_missing_for_result",
+                            "message": (
+                                f"Event {row.id}: current age is required to persist results"
+                            ),
+                            "event_id": row.id,
+                        },
+                    )
+                persisted_age = _parse_integer_value_or_400(
+                    age_val,
+                    detail=(
+                        f"Event {row.id}: current age must be an integer for result rows"
+                    ),
+                )
                 current_result = Result(
                     unity_id=row.unity_id,
+                    age=persisted_age,
                     event_id=row.id,
                     field_id=target_field.id,
                     formula_id=formula_row.id,
@@ -3051,7 +3114,6 @@ def calculate_scope_current_age(
                     text_value=typed_payload["text_value"],
                     boolean_value=typed_payload["boolean_value"],
                     numeric_value=typed_payload["numeric_value"],
-                    moment_utc=execution_moment_utc,
                 )
                 session.add(current_result)
                 result_row_list.append((current_result, row, "created"))
@@ -3105,6 +3167,7 @@ class ScopeInputRecord(BaseModel):
     id: int
     event_id: int
     field_id: int
+    age: int | None = None
     value: str
 
 
@@ -3116,10 +3179,12 @@ class ScopeInputListResponse(BaseModel):
 class ScopeInputCreateRequest(BaseModel):
     field_id: int
     value: str = PydanticField(min_length=1, max_length=65535)
+    age: int | None = None
 
 
 class ScopeInputPatchRequest(BaseModel):
     value: str | None = PydanticField(default=None, min_length=1, max_length=65535)
+    age: int | None = None
 
 
 @router.get(
@@ -3142,7 +3207,11 @@ def list_scope_event_inputs(
         can_edit=_member_can_edit_scope_rules(member),
         item_list=[
             ScopeInputRecord(
-                id=r.id, event_id=r.event_id, field_id=r.field_id, value=r.value
+                id=r.id,
+                event_id=r.event_id,
+                field_id=r.field_id,
+                age=r.age,
+                value=r.value,
             )
             for r in rows
         ],
@@ -3167,6 +3236,7 @@ def create_scope_event_input(
         event_id=event_id,
         field_id=body.field_id,
         value=body.value.strip(),
+        age=body.age,
     )
     session.add(row)
     _apply_member_audit_context(session, member)
@@ -3198,6 +3268,8 @@ def patch_scope_event_input(
     row = _input_in_event_or_404(session, event_id=event_id, input_id=input_id)
     if body.value is not None:
         row.value = body.value.strip()
+    if "age" in body.model_fields_set:
+        row.age = body.age
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
@@ -3230,6 +3302,7 @@ def delete_scope_event_input(
 class ScopeResultRecord(BaseModel):
     id: int
     unity_id: int
+    age: int
     event_id: int
     field_id: int
     formula_id: int
@@ -3237,7 +3310,6 @@ class ScopeResultRecord(BaseModel):
     text_value: str | None
     boolean_value: bool | None
     numeric_value: Decimal | None
-    moment_utc: datetime
 
 
 class ScopeResultListResponse(BaseModel):
@@ -3253,7 +3325,7 @@ class ScopeResultCreateRequest(BaseModel):
     text_value: str | None = PydanticField(default=None, max_length=65535)
     boolean_value: bool | None = None
     numeric_value: Decimal | None = None
-    moment_utc: datetime | None = None
+    age: int
 
 
 class ScopeResultPatchRequest(BaseModel):
@@ -3262,7 +3334,7 @@ class ScopeResultPatchRequest(BaseModel):
     text_value: str | None = PydanticField(default=None, max_length=65535)
     boolean_value: bool | None = None
     numeric_value: Decimal | None = None
-    moment_utc: datetime | None = None
+    age: int | None = None
 
 
 @router.get(
@@ -3289,6 +3361,7 @@ def list_scope_event_results(
             ScopeResultRecord(
                 id=r.id,
                 unity_id=r.unity_id,
+                age=r.age,
                 event_id=r.event_id,
                 field_id=r.field_id,
                 formula_id=r.formula_id,
@@ -3296,7 +3369,6 @@ def list_scope_event_results(
                 text_value=r.text_value,
                 boolean_value=r.boolean_value,
                 numeric_value=r.numeric_value,
-                moment_utc=r.moment_utc,
             )
             for r in rows
         ],
@@ -3323,11 +3395,9 @@ def create_scope_event_result(
         action_id=event_row.action_id,
         formula_id=body.formula_id,
     )
-    moment = body.moment_utc or datetime.now(UTC)
-    if moment.tzinfo is not None:
-        moment = moment.astimezone(UTC).replace(tzinfo=None)
     row = Result(
         unity_id=body.unity_id,
+        age=body.age,
         event_id=event_id,
         field_id=body.field_id,
         formula_id=formula_row.id,
@@ -3339,7 +3409,6 @@ def create_scope_event_result(
         text_value=_normalize_optional_result_text(body.text_value),
         boolean_value=body.boolean_value,
         numeric_value=body.numeric_value,
-        moment_utc=moment,
     )
     session.add(row)
     _apply_member_audit_context(session, member)
@@ -3379,11 +3448,8 @@ def patch_scope_event_result(
         row.boolean_value = body.boolean_value
     if "numeric_value" in body.model_fields_set:
         row.numeric_value = body.numeric_value
-    if body.moment_utc is not None:
-        m = body.moment_utc
-        if m.tzinfo is not None:
-            m = m.astimezone(UTC).replace(tzinfo=None)
-        row.moment_utc = m
+    if "age" in body.model_fields_set:
+        row.age = body.age
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)

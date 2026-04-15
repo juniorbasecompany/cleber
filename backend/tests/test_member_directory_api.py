@@ -2077,6 +2077,7 @@ def test_create_scope_event_result_supports_typed_values_from_erd() -> None:
         field_id=7,
         formula_id=13,
         numeric_value="12.5000000000",
+        age=3,
     )
     event_row = SimpleNamespace(action_id=3)
     formula_row = SimpleNamespace(id=13, sort_order=2)
@@ -2119,7 +2120,7 @@ def test_create_scope_event_result_supports_typed_values_from_erd() -> None:
     assert created_row.text_value is None
     assert created_row.boolean_value is None
     assert str(created_row.numeric_value) == "12.5000000000"
-    assert created_row.moment_utc.tzinfo is None
+    assert created_row.age == 3
     list_results.assert_called_once_with(5, 9, member, session)
 
 
@@ -2128,6 +2129,7 @@ def test_patch_scope_event_result_can_replace_and_clear_typed_values() -> None:
     member = SimpleNamespace(role=2, tenant_id=1)
     existing_row = Result(
         unity_id=42,
+        age=5,
         event_id=9,
         field_id=7,
         formula_id=13,
@@ -2135,7 +2137,6 @@ def test_patch_scope_event_result_can_replace_and_clear_typed_values() -> None:
         text_value=None,
         boolean_value=True,
         numeric_value=None,
-        moment_utc=datetime(2026, 4, 6, 12, 0, 0),
     )
     existing_row.id = 11
 
@@ -2347,7 +2348,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     text_value=None,
                     boolean_value=None,
                     numeric_value=10,
-                    moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+                    age=0,
                 ),
                 Result(
                     unity_id=unity.id,
@@ -2358,7 +2359,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     text_value=None,
                     boolean_value=None,
                     numeric_value=12,
-                    moment_utc=datetime(2026, 4, 4, 12, 0, 0),
+                    age=3,
                 ),
                 Result(
                     unity_id=unity.id,
@@ -2369,7 +2370,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     text_value=None,
                     boolean_value=None,
                     numeric_value=999,
-                    moment_utc=datetime(2026, 4, 2, 12, 5, 0),
+                    age=1,
                 ),
                 Result(
                     unity_id=unity.id,
@@ -2380,7 +2381,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
                     text_value=None,
                     boolean_value=None,
                     numeric_value=11,
-                    moment_utc=datetime(2026, 4, 2, 12, 6, 0),
+                    age=1,
                 ),
             ]
         )
@@ -2587,11 +2588,13 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
             name="#match",
             location_id=location.id,
             item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
         )
         unity_other = Unity(
             name="#other",
             location_id=location.id,
             item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
         )
         session.add_all([unity_match, unity_other])
         session.flush()
@@ -2650,7 +2653,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     text_value=None,
                     boolean_value=None,
                     numeric_value=10,
-                    moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+                    age=0,
                 ),
                 Result(
                     unity_id=unity_match.id,
@@ -2661,7 +2664,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     text_value=None,
                     boolean_value=None,
                     numeric_value=12,
-                    moment_utc=datetime(2026, 4, 4, 12, 0, 0),
+                    age=3,
                 ),
                 Result(
                     unity_id=unity_match.id,
@@ -2672,7 +2675,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     text_value=None,
                     boolean_value=None,
                     numeric_value=999,
-                    moment_utc=datetime(2026, 4, 2, 12, 5, 0),
+                    age=1,
                 ),
                 Result(
                     unity_id=unity_match.id,
@@ -2683,7 +2686,7 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
                     text_value=None,
                     boolean_value=None,
                     numeric_value=11,
-                    moment_utc=datetime(2026, 4, 2, 12, 6, 0),
+                    age=1,
                 ),
             ]
         )
@@ -2793,7 +2796,7 @@ def test_read_scope_current_age_reads_existing_results_without_recalculation() -
             text_value=None,
             boolean_value=None,
             numeric_value=11,
-            moment_utc=datetime(2026, 4, 2, 12, 5, 0),
+            age=1,
         )
         session.add(result)
         session.commit()
@@ -2881,11 +2884,13 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
             name="#a",
             location_id=location.id,
             item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
         )
         unity_b = Unity(
             name="#b",
             location_id=location.id,
             item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
         )
         session.add_all([unity_a, unity_b])
         session.flush()
@@ -2924,7 +2929,7 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
             text_value=None,
             boolean_value=None,
             numeric_value=11,
-            moment_utc=datetime(2026, 4, 2, 12, 5, 0),
+            age=1,
         )
         result_b = Result(
             unity_id=unity_b.id,
@@ -2935,7 +2940,7 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
             text_value=None,
             boolean_value=None,
             numeric_value=22,
-            moment_utc=datetime(2026, 4, 2, 14, 5, 0),
+            age=1,
         )
         session.add_all([result_a, result_b])
         session.commit()
@@ -3063,7 +3068,7 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
             text_value=None,
             boolean_value=None,
             numeric_value=10,
-            moment_utc=datetime(2026, 4, 1, 8, 5, 0),
+            age=0,
         )
         deleted_result = Result(
             unity_id=unity.id,
@@ -3074,7 +3079,7 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
             text_value=None,
             boolean_value=None,
             numeric_value=11,
-            moment_utc=datetime(2026, 4, 2, 12, 5, 0),
+            age=1,
         )
         session.add_all([kept_result, deleted_result])
         session.commit()
@@ -3155,11 +3160,13 @@ def test_delete_scope_current_age_filters_by_unity_id() -> None:
             name="#a",
             location_id=location.id,
             item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
         )
         unity_b = Unity(
             name="#b",
             location_id=location.id,
             item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
         )
         session.add_all([unity_a, unity_b])
         session.flush()
@@ -3198,7 +3205,7 @@ def test_delete_scope_current_age_filters_by_unity_id() -> None:
             text_value=None,
             boolean_value=None,
             numeric_value=10,
-            moment_utc=datetime(2026, 4, 2, 10, 5, 0),
+            age=1,
         )
         result_b = Result(
             unity_id=unity_b.id,
@@ -3209,7 +3216,7 @@ def test_delete_scope_current_age_filters_by_unity_id() -> None:
             text_value=None,
             boolean_value=None,
             numeric_value=11,
-            moment_utc=datetime(2026, 4, 2, 12, 5, 0),
+            age=1,
         )
         session.add_all([result_a, result_b])
         session.commit()
@@ -3366,7 +3373,7 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
                     text_value=None,
                     boolean_value=None,
                     numeric_value=10,
-                    moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+                    age=0,
                 ),
                 Result(
                     unity_id=unity.id,
@@ -3377,7 +3384,7 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
                     text_value=None,
                     boolean_value=None,
                     numeric_value=22,
-                    moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+                    age=2,
                 ),
             ]
         )
@@ -3562,7 +3569,7 @@ def test_calculate_scope_current_age_rounds_numeric_result_to_field_scale_half_u
                     text_value=None,
                     boolean_value=None,
                     numeric_value=10,
-                    moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+                    age=0,
                 ),
                 Result(
                     unity_id=unity.id,
@@ -3573,7 +3580,7 @@ def test_calculate_scope_current_age_rounds_numeric_result_to_field_scale_half_u
                     text_value=None,
                     boolean_value=None,
                     numeric_value=12,
-                    moment_utc=datetime(2026, 4, 3, 8, 0, 0),
+                    age=2,
                 ),
                 Input(
                     event_id=calc_event.id,
@@ -3782,7 +3789,7 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
                     text_value=None,
                     boolean_value=None,
                     numeric_value=10,
-                    moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+                    age=0,
                 ),
                 Result(
                     unity_id=unity.id,
@@ -3793,7 +3800,7 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
                     text_value=None,
                     boolean_value=None,
                     numeric_value=11,
-                    moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+                    age=3,
                 ),
             ]
         )
@@ -3815,14 +3822,14 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
                 row.formula_id,
                 row.formula_order,
                 int(row.numeric_value) if row.numeric_value is not None else None,
-                row.result_moment_utc.date().isoformat(),
+                row.result_age,
             )
             for row in response.item_list
         ] == [
-            (initial_event.id, anchor_current_formula.id, 0, 10, "2026-04-01"),
-            (first_event_on_final_day.id, final_day_increment_formula.id, 0, 11, "2026-04-03"),
-            (first_event_on_final_day.id, final_day_mirror_formula.id, 1, 11, "2026-04-03"),
-            (second_event_on_final_day.id, final_day_anchor_formula.id, 0, 11, "2026-04-03"),
+            (initial_event.id, anchor_current_formula.id, 0, 10, 10),
+            (first_event_on_final_day.id, final_day_increment_formula.id, 0, 11, 11),
+            (first_event_on_final_day.id, final_day_mirror_formula.id, 1, 11, 11),
+            (second_event_on_final_day.id, final_day_anchor_formula.id, 0, 11, 11),
         ]
 
 
@@ -3987,7 +3994,7 @@ def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type
                     text_value=None,
                     boolean_value=None,
                     numeric_value=10,
-                    moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+                    age=0,
                 ),
                 Result(
                     unity_id=unity.id,
@@ -3998,7 +4005,7 @@ def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type
                     text_value=None,
                     boolean_value=None,
                     numeric_value=11,
-                    moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+                    age=2,
                 ),
             ]
         )
@@ -4345,15 +4352,15 @@ def test_calculate_scope_current_age_repeats_recurrent_event_on_following_days()
                 row.event_id,
                 row.formula_id,
                 int(row.numeric_value) if row.numeric_value is not None else None,
-                row.result_moment_utc.date().isoformat(),
+                row.result_age,
             )
             for row in response.item_list
         ] == [
-            (alojamento_event.id, anchor_initial_formula.id, 10, "2026-04-04"),
-            (alojamento_event.id, anchor_current_formula.id, 10, "2026-04-04"),
-            (alojamento_event.id, anchor_final_formula.id, 12, "2026-04-04"),
-            (idade_event.id, recurrent_increment_formula.id, 11, "2026-04-04"),
-            (idade_event.id, recurrent_increment_formula.id, 12, "2026-04-05"),
+            (alojamento_event.id, anchor_initial_formula.id, 10, 10),
+            (alojamento_event.id, anchor_current_formula.id, 10, 10),
+            (alojamento_event.id, anchor_final_formula.id, 12, 10),
+            (idade_event.id, recurrent_increment_formula.id, 11, 11),
+            (idade_event.id, recurrent_increment_formula.id, 12, 12),
         ]
 
 
@@ -4516,16 +4523,16 @@ def test_calculate_scope_current_age_ignores_age_input_without_formula_target() 
                 row.event_id,
                 row.formula_id,
                 int(row.numeric_value) if row.numeric_value is not None else None,
-                row.result_moment_utc.date().isoformat(),
+                row.result_age,
             )
             for row in response.item_list
         ] == [
-            (alojamento_event.id, anchor_initial_formula.id, 10, "2026-04-04"),
-            (alojamento_event.id, anchor_current_formula.id, 10, "2026-04-04"),
-            (alojamento_event.id, anchor_final_formula.id, 12, "2026-04-04"),
-            (unrelated_event.id, unrelated_formula.id, 10, "2026-04-04"),
-            (idade_event.id, recurrent_increment_formula.id, 11, "2026-04-04"),
-            (idade_event.id, recurrent_increment_formula.id, 12, "2026-04-05"),
+            (alojamento_event.id, anchor_initial_formula.id, 10, 10),
+            (alojamento_event.id, anchor_current_formula.id, 10, 10),
+            (alojamento_event.id, anchor_final_formula.id, 12, 10),
+            (unrelated_event.id, unrelated_formula.id, 10, 10),
+            (idade_event.id, recurrent_increment_formula.id, 11, 11),
+            (idade_event.id, recurrent_increment_formula.id, 12, 12),
         ]
 
 
@@ -4672,14 +4679,14 @@ def test_calculate_scope_current_age_does_not_repeat_non_recurrent_event_on_foll
                 row.event_id,
                 row.formula_id,
                 int(row.numeric_value) if row.numeric_value is not None else None,
-                row.result_moment_utc.date().isoformat(),
+                row.result_age,
             )
             for row in response.item_list
         ] == [
-            (alojamento_event.id, anchor_initial_formula.id, 10, "2026-04-04"),
-            (alojamento_event.id, anchor_current_formula.id, 10, "2026-04-04"),
-            (alojamento_event.id, anchor_final_formula.id, 20, "2026-04-04"),
-            (idade_event.id, single_increment_formula.id, 11, "2026-04-04"),
+            (alojamento_event.id, anchor_initial_formula.id, 10, 10),
+            (alojamento_event.id, anchor_current_formula.id, 10, 10),
+            (alojamento_event.id, anchor_final_formula.id, 20, 10),
+            (idade_event.id, single_increment_formula.id, 11, 11),
         ]
 
 
@@ -4840,7 +4847,7 @@ def test_calculate_scope_current_age_does_not_mix_different_location_item_groups
                     text_value=None,
                     boolean_value=None,
                     numeric_value=10,
-                    moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+                    age=0,
                 ),
                 Result(
                     unity_id=unity_b.id,
@@ -4851,7 +4858,7 @@ def test_calculate_scope_current_age_does_not_mix_different_location_item_groups
                     text_value=None,
                     boolean_value=None,
                     numeric_value=12,
-                    moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+                    age=2,
                 ),
             ]
         )
