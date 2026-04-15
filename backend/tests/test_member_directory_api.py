@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import unicodedata
+from collections import defaultdict
 from collections.abc import Generator
 from contextlib import contextmanager
 from decimal import Decimal
@@ -4332,6 +4333,359 @@ def test_calculate_scope_current_age_repeats_recurrent_event_on_following_days()
             (idade_event.id, recurrent_increment_formula.id, 11, 11),
             (idade_event.id, recurrent_increment_formula.id, 12, 12),
         ]
+
+
+def test_calculate_scope_current_age_runs_all_actions_on_day_when_age_hits_final() -> None:
+    """Com idade atual atingindo o teto no mesmo dia, todas as ações daquele dia devem executar (ordem por sort_order)."""
+    with build_rules_session() as (session, tenant_id):
+        scope = Scope(
+            name="Aves",
+            tenant_id=tenant_id,
+        )
+        session.add(scope)
+        session.flush()
+
+        location = Location(
+            name="Granja A",
+            scope_id=scope.id,
+            parent_location_id=None,
+            sort_order=0,
+        )
+        kind = Kind(scope_id=scope.id, name="lote")
+        anchor_action = Action(scope_id=scope.id, sort_order=0)
+        recurrent_age_action = Action(scope_id=scope.id, sort_order=1, is_recurrent=True)
+        extra_action = Action(scope_id=scope.id, sort_order=2, is_recurrent=True)
+        initial_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=0,
+            is_initial_age=True,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        current_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=1,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=True,
+        )
+        final_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=2,
+            is_initial_age=False,
+            is_final_age=True,
+            is_current_age=False,
+        )
+        extra_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=3,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        session.add_all(
+            [
+                location,
+                kind,
+                anchor_action,
+                recurrent_age_action,
+                extra_action,
+                initial_field,
+                current_field,
+                final_field,
+                extra_field,
+            ]
+        )
+        session.flush()
+
+        anchor_initial_formula = Formula(
+            action_id=anchor_action.id,
+            sort_order=0,
+            statement=f"${{field:{initial_field.id}}} = ${{input:{initial_field.id}}}",
+        )
+        anchor_current_formula = Formula(
+            action_id=anchor_action.id,
+            sort_order=1,
+            statement=f"${{field:{current_field.id}}} = ${{field:{initial_field.id}}}",
+        )
+        anchor_final_formula = Formula(
+            action_id=anchor_action.id,
+            sort_order=2,
+            statement=f"${{field:{final_field.id}}} = ${{input:{final_field.id}}}",
+        )
+        recurrent_increment_formula = Formula(
+            action_id=recurrent_age_action.id,
+            sort_order=0,
+            statement=f"${{field:{current_field.id}}} = ${{field:{current_field.id}}} + 1",
+        )
+        extra_mirror_formula = Formula(
+            action_id=extra_action.id,
+            sort_order=0,
+            statement=f"${{field:{extra_field.id}}} = ${{field:{current_field.id}}}",
+        )
+        session.add_all(
+            [
+                anchor_initial_formula,
+                anchor_current_formula,
+                anchor_final_formula,
+                recurrent_increment_formula,
+                extra_mirror_formula,
+            ]
+        )
+        session.flush()
+
+        item = Item(
+            scope_id=scope.id,
+            kind_id=kind.id,
+            parent_item_id=None,
+            sort_order=0,
+        )
+        session.add(item)
+        session.flush()
+
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
+        alojamento_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=anchor_action.id,
+            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            unity_id=unity.id,
+        )
+        idade_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=recurrent_age_action.id,
+            moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            unity_id=unity.id,
+        )
+        extra_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=extra_action.id,
+            moment_utc=datetime(2026, 4, 4, 10, 0, 0),
+            unity_id=unity.id,
+        )
+        session.add_all([alojamento_event, idade_event, extra_event])
+        session.flush()
+
+        session.add_all(
+            [
+                Input(event_id=alojamento_event.id, field_id=initial_field.id, value="10"),
+                Input(event_id=alojamento_event.id, field_id=final_field.id, value="12"),
+            ]
+        )
+        session.commit()
+
+        response = calculate_scope_current_age(
+            scope_id=scope.id,
+            body=ScopeCurrentAgeCalculationRequest(),
+            member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
+            session=session,
+        )
+
+        formula_id_by_age: defaultdict[int, set[int]] = defaultdict(set)
+        for row in response.item_list:
+            formula_id_by_age[row.result_age].add(row.formula_id)
+
+        max_age = max(formula_id_by_age.keys())
+        last_day_formulas = formula_id_by_age[max_age]
+        assert recurrent_increment_formula.id in last_day_formulas, (
+            "incremento de idade deve rodar no último dia de idade calculado"
+        )
+        assert extra_mirror_formula.id in last_day_formulas, (
+            "ação com sort_order maior deve ainda rodar no dia em que a idade atinge o final"
+        )
+
+
+def test_calculate_scope_current_age_calculates_age_15_completely() -> None:
+    """Garante que o último age (15) mantém todas as ações recorrentes esperadas."""
+    with build_rules_session() as (session, tenant_id):
+        scope = Scope(
+            name="Aves",
+            tenant_id=tenant_id,
+        )
+        session.add(scope)
+        session.flush()
+
+        location = Location(
+            name="Granja A",
+            scope_id=scope.id,
+            parent_location_id=None,
+            sort_order=0,
+        )
+        kind = Kind(scope_id=scope.id, name="lote")
+        anchor_action = Action(scope_id=scope.id, sort_order=0)
+        recurrent_stock_action = Action(scope_id=scope.id, sort_order=1, is_recurrent=True)
+        recurrent_age_action = Action(scope_id=scope.id, sort_order=2, is_recurrent=True)
+        initial_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=0,
+            is_initial_age=True,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        current_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=1,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=True,
+        )
+        final_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=2,
+            is_initial_age=False,
+            is_final_age=True,
+            is_current_age=False,
+        )
+        stock_field = Field(
+            scope_id=scope.id,
+            type="INTEGER",
+            sort_order=3,
+            is_initial_age=False,
+            is_final_age=False,
+            is_current_age=False,
+        )
+        session.add_all(
+            [
+                location,
+                kind,
+                anchor_action,
+                recurrent_stock_action,
+                recurrent_age_action,
+                initial_field,
+                current_field,
+                final_field,
+                stock_field,
+            ]
+        )
+        session.flush()
+
+        anchor_initial_formula = Formula(
+            action_id=anchor_action.id,
+            sort_order=0,
+            statement=f"${{field:{initial_field.id}}} = ${{input:{initial_field.id}}}",
+        )
+        anchor_current_formula = Formula(
+            action_id=anchor_action.id,
+            sort_order=1,
+            statement=f"${{field:{current_field.id}}} = ${{field:{initial_field.id}}}",
+        )
+        anchor_final_formula = Formula(
+            action_id=anchor_action.id,
+            sort_order=2,
+            statement=f"${{field:{final_field.id}}} = ${{input:{final_field.id}}}",
+        )
+        recurrent_increment_formula = Formula(
+            action_id=recurrent_age_action.id,
+            sort_order=0,
+            statement=f"${{field:{current_field.id}}} = ${{field:{current_field.id}}} + 1",
+        )
+        recurrent_stock_formula = Formula(
+            action_id=recurrent_stock_action.id,
+            sort_order=0,
+            statement=f"${{field:{stock_field.id}}} = 1000 - (${{field:{current_field.id}}} * 10)",
+        )
+        session.add_all(
+            [
+                anchor_initial_formula,
+                anchor_current_formula,
+                anchor_final_formula,
+                recurrent_increment_formula,
+                recurrent_stock_formula,
+            ]
+        )
+        session.flush()
+
+        item = Item(
+            scope_id=scope.id,
+            kind_id=kind.id,
+            parent_item_id=None,
+            sort_order=0,
+        )
+        session.add(item)
+        session.flush()
+
+        unity = Unity(
+            name="Lote 1",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add(unity)
+        session.flush()
+
+        alojamento_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=anchor_action.id,
+            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            unity_id=unity.id,
+        )
+        stock_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=recurrent_stock_action.id,
+            moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            unity_id=unity.id,
+        )
+        idade_event = Event(
+            location_id=location.id,
+            item_id=item.id,
+            action_id=recurrent_age_action.id,
+            moment_utc=datetime(2026, 4, 4, 10, 0, 0),
+            unity_id=unity.id,
+        )
+        session.add_all([alojamento_event, stock_event, idade_event])
+        session.flush()
+
+        session.add_all(
+            [
+                Input(event_id=alojamento_event.id, field_id=initial_field.id, value="10"),
+                Input(event_id=alojamento_event.id, field_id=final_field.id, value="15"),
+            ]
+        )
+        session.commit()
+
+        response = calculate_scope_current_age(
+            scope_id=scope.id,
+            body=ScopeCurrentAgeCalculationRequest(),
+            member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
+            session=session,
+        )
+
+        formula_id_by_age: defaultdict[int, set[int]] = defaultdict(set)
+        numeric_value_by_formula_age: dict[tuple[int, int], Decimal] = {}
+        for row in response.item_list:
+            formula_id_by_age[row.result_age].add(row.formula_id)
+            if row.numeric_value is not None:
+                numeric_value_by_formula_age[(row.formula_id, row.result_age)] = Decimal(
+                    str(row.numeric_value)
+                )
+
+        assert 15 in formula_id_by_age, "o cálculo deve produzir explicitamente o age 15"
+        assert recurrent_increment_formula.id in formula_id_by_age[15], (
+            "a ação de incremento deve produzir resultado no age 15"
+        )
+        assert recurrent_stock_formula.id in formula_id_by_age[15], (
+            "a ação recorrente posterior também deve produzir resultado no age 15"
+        )
+        assert numeric_value_by_formula_age[(recurrent_stock_formula.id, 15)] == Decimal("850")
 
 
 def test_calculate_scope_current_age_ignores_age_input_without_formula_target() -> None:

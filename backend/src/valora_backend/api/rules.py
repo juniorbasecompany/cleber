@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import re
 from collections import defaultdict
+from itertools import groupby
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import UTC, date, datetime, timedelta
 from typing import Any, Annotated, Literal, TypeAlias
@@ -2300,6 +2301,7 @@ def _build_execution_occurrence_list(
     action_by_id: dict[int, Action],
     window_meta_by_event_id: dict[int, dict[str, int]],
     unity_by_id: dict[int, Unity],
+    current_age_action_id_set: set[int],
 ) -> list[dict[str, Any]]:
     occurrence_list: list[dict[str, Any]] = []
     event_row_list_by_group: defaultdict[int, list[Event]] = defaultdict(list)
@@ -2333,6 +2335,7 @@ def _build_execution_occurrence_list(
             {
                 "source_event": row,
                 "execution_moment_utc": row.moment_utc,
+                "current_age_action_priority": 0 if row.action_id in current_age_action_id_set else 1,
                 "action_sort_order": action_row.sort_order,
                 "is_actual_event_day": True,
             }
@@ -2355,6 +2358,7 @@ def _build_execution_occurrence_list(
                         execution_day=next_execution_day,
                         source_moment_utc=row.moment_utc,
                     ),
+                    "current_age_action_priority": 0 if row.action_id in current_age_action_id_set else 1,
                     "action_sort_order": action_row.sort_order,
                     "is_actual_event_day": False,
                 }
@@ -2363,13 +2367,24 @@ def _build_execution_occurrence_list(
 
     occurrence_list.sort(
         key=lambda item: (
+            item["source_event"].unity_id or 0,
             item["execution_moment_utc"].date(),
+            item["current_age_action_priority"],
             item["action_sort_order"],
             item["execution_moment_utc"],
             item["source_event"].id,
         )
     )
     return occurrence_list
+
+
+def _current_age_occurrence_unity_day_key(occurrence: dict[str, Any]) -> tuple[int, date]:
+    """Chave para agrupar ocorrências por unidade e dia civil (fecho da janela ao fim do dia)."""
+    row = occurrence["source_event"]
+    uid = row.unity_id
+    if uid is None:
+        return (0, occurrence["execution_moment_utc"].date())
+    return (uid, occurrence["execution_moment_utc"].date())
 
 
 @router.get(
@@ -2825,6 +2840,7 @@ def calculate_scope_current_age(
     formula_row_list_by_action: defaultdict[int, list[Formula]] = defaultdict(list)
     parsed_formula_by_id = {}
     action_id_set_by_age_target_field_id: defaultdict[int, set[int]] = defaultdict(set)
+    current_age_action_id_set: set[int] = set()
     for formula_row in formula_row_list:
         try:
             parsed_formula = parse_formula_statement(formula_row.statement)
@@ -2842,6 +2858,8 @@ def calculate_scope_current_age(
             )
         formula_row_list_by_action[formula_row.action_id].append(formula_row)
         parsed_formula_by_id[formula_row.id] = parsed_formula
+        if parsed_formula.target_field_id == current_field.id:
+            current_age_action_id_set.add(formula_row.action_id)
         if parsed_formula.target_field_id in (initial_field.id, final_field.id):
             action_id_set_by_age_target_field_id[parsed_formula.target_field_id].add(
                 formula_row.action_id
@@ -2965,6 +2983,7 @@ def calculate_scope_current_age(
         action_by_id=action_by_id,
         window_meta_by_event_id=window_meta_by_event_id,
         unity_by_id=unity_by_id,
+        current_age_action_id_set=current_age_action_id_set,
     )
 
     state_by_group: defaultdict[int, dict[int, FormulaRuntimePrimitive]] = defaultdict(dict)
@@ -2977,149 +2996,169 @@ def calculate_scope_current_age(
         tuple[Result, Event, Literal["created", "updated", "unchanged"] | None]
     ] = []
 
-    for occurrence in occurrence_list:
-        row = occurrence["source_event"]
-        execution_moment_utc = occurrence["execution_moment_utc"]
-        window_meta = window_meta_by_event_id.get(row.id)
-        if window_meta is None:
-            continue
-        if row.unity_id is None:
-            continue
-
-        group_key = row.unity_id
-        if occurrence["is_actual_event_day"]:
-            pending_close = close_after_day_by_group.get(group_key)
-            if pending_close is not None and pending_close["window"] != window_meta:
-                close_after_day_by_group.pop(group_key, None)
-            if group_key not in close_after_day_by_group:
-                current_window_by_group[group_key] = window_meta
-
-        active_window = current_window_by_group.get(group_key)
-        if active_window is None:
-            continue
-        pending_close = close_after_day_by_group.get(group_key)
-        execution_day = execution_moment_utc.date()
-        if pending_close is not None and pending_close["window"] == active_window:
-            if execution_day > pending_close["close_after_day"]:
-                current_window_by_group.pop(group_key, None)
+    for (unity_id_day, execution_day_key), day_occurrence_iter in groupby(
+        occurrence_list,
+        key=_current_age_occurrence_unity_day_key,
+    ):
+        for occurrence in day_occurrence_iter:
+            row = occurrence["source_event"]
+            execution_moment_utc = occurrence["execution_moment_utc"]
+            window_meta = window_meta_by_event_id.get(row.id)
+            if window_meta is None:
+                continue
+            if row.unity_id is None:
                 continue
 
-        group_state = state_by_group[group_key]
-        for field_id, runtime_value in age_source_runtime_by_event_id.get(row.id, {}).items():
-            group_state[field_id] = runtime_value
+            group_key = row.unity_id
+            if occurrence["is_actual_event_day"]:
+                pending_close = close_after_day_by_group.get(group_key)
+                if pending_close is not None and pending_close["window"] != window_meta:
+                    close_after_day_by_group.pop(group_key, None)
+                if group_key not in close_after_day_by_group:
+                    current_window_by_group[group_key] = window_meta
 
-        if occurrence["is_actual_event_day"] and row.id == active_window["source_initial_event_id"]:
-            group_state[initial_field.id] = active_window["source_initial_age"]
-            group_state[current_field.id] = active_window["source_initial_age"]
+            active_window = current_window_by_group.get(group_key)
+            if active_window is None:
+                continue
+            pending_close = close_after_day_by_group.get(group_key)
+            execution_day = execution_moment_utc.date()
+            if pending_close is not None and pending_close["window"] == active_window:
+                if execution_day > pending_close["close_after_day"]:
+                    current_window_by_group.pop(group_key, None)
+                    continue
 
-        formula_list = formula_row_list_by_action.get(row.action_id, [])
-        event_input_runtime = input_runtime_by_event_id.get(row.id, {})
-        for formula_row in formula_list:
-            parsed_formula = parsed_formula_by_id[formula_row.id]
-            evaluator_names: dict[str, Any] = {}
+            group_state = state_by_group[group_key]
+            for field_id, runtime_value in age_source_runtime_by_event_id.get(row.id, {}).items():
+                group_state[field_id] = runtime_value
 
-            for field_id in parsed_formula.field_id_in_rhs:
-                runtime_value = group_state.get(field_id)
-                if runtime_value is None:
-                    runtime_value = _default_runtime_value_for_field(field_by_id[field_id])
-                    group_state[field_id] = runtime_value
-                evaluator_names[f"f_{field_id}"] = runtime_value
+            if occurrence["is_actual_event_day"] and row.id == active_window["source_initial_event_id"]:
+                group_state[initial_field.id] = active_window["source_initial_age"]
+                group_state[current_field.id] = active_window["source_initial_age"]
 
-            for field_id in parsed_formula.input_id_in_rhs:
-                if field_id not in event_input_runtime:
+            formula_list = formula_row_list_by_action.get(row.action_id, [])
+            event_input_runtime = input_runtime_by_event_id.get(row.id, {})
+            for formula_row in formula_list:
+                parsed_formula = parsed_formula_by_id[formula_row.id]
+                evaluator_names: dict[str, Any] = {}
+
+                for field_id in parsed_formula.field_id_in_rhs:
+                    runtime_value = group_state.get(field_id)
+                    if runtime_value is None:
+                        runtime_value = _default_runtime_value_for_field(field_by_id[field_id])
+                        group_state[field_id] = runtime_value
+                    evaluator_names[f"f_{field_id}"] = runtime_value
+
+                for field_id in parsed_formula.input_id_in_rhs:
+                    if field_id not in event_input_runtime:
+                        raise HTTPException(
+                            status_code=status.HTTP_400_BAD_REQUEST,
+                            detail={
+                                "code": "current_age_formula_input_missing",
+                                "message": (
+                                    f"Event {row.id} formula {formula_row.id} "
+                                    f"(sort_order {formula_row.sort_order}) requires input "
+                                    f"for field {field_id}"
+                                ),
+                                "event_id": row.id,
+                                "action_id": row.action_id,
+                                "formula_id": formula_row.id,
+                                "formula_sort_order": formula_row.sort_order,
+                                "field_id": field_id,
+                            },
+                        )
+                    evaluator_names[f"i_{field_id}"] = event_input_runtime[field_id]
+
+                try:
+                    formula_value = build_formula_simple_eval(evaluator_names).eval(
+                        parsed_formula.transformed_rhs
+                    )
+                except Exception as exc:  # noqa: BLE001
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=(
+                            f"Event {row.id} formula {formula_row.id} "
+                            f"(sort_order {formula_row.sort_order}) could not be evaluated: {exc}"
+                        ),
+                    ) from exc
+
+                target_field = field_by_id[parsed_formula.target_field_id]
+                typed_payload = _coerce_formula_output_to_result_payload_or_400(
+                    formula_value,
+                    field=target_field,
+                    event_id=row.id,
+                    formula_id=formula_row.id,
+                    formula_order=formula_row.sort_order,
+                )
+                group_state[target_field.id] = typed_payload["runtime_value"]
+
+                age_val = group_state.get(current_field.id)
+                if age_val is None:
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail={
-                            "code": "current_age_formula_input_missing",
+                            "code": "current_age_missing_for_result",
                             "message": (
-                                f"Event {row.id} formula {formula_row.id} "
-                                f"(sort_order {formula_row.sort_order}) requires input "
-                                f"for field {field_id}"
+                                f"Event {row.id}: current age is required to persist results"
                             ),
                             "event_id": row.id,
-                            "action_id": row.action_id,
-                            "formula_id": formula_row.id,
-                            "formula_sort_order": formula_row.sort_order,
-                            "field_id": field_id,
                         },
                     )
-                evaluator_names[f"i_{field_id}"] = event_input_runtime[field_id]
-
-            try:
-                formula_value = build_formula_simple_eval(evaluator_names).eval(
-                    parsed_formula.transformed_rhs
-                )
-            except Exception as exc:  # noqa: BLE001
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
+                persisted_age = _parse_integer_value_or_400(
+                    age_val,
                     detail=(
-                        f"Event {row.id} formula {formula_row.id} "
-                        f"(sort_order {formula_row.sort_order}) could not be evaluated: {exc}"
+                        f"Event {row.id}: current age must be an integer for result rows"
                     ),
-                ) from exc
+                )
+                current_result = Result(
+                    unity_id=row.unity_id,
+                    age=persisted_age,
+                    event_id=row.id,
+                    field_id=target_field.id,
+                    formula_id=formula_row.id,
+                    formula_order=formula_row.sort_order,
+                    text_value=typed_payload["text_value"],
+                    boolean_value=typed_payload["boolean_value"],
+                    numeric_value=typed_payload["numeric_value"],
+                )
+                session.add(current_result)
+                result_row_list.append((current_result, row, "created"))
+                created_count += 1
 
-            target_field = field_by_id[parsed_formula.target_field_id]
-            typed_payload = _coerce_formula_output_to_result_payload_or_400(
-                formula_value,
-                field=target_field,
-                event_id=row.id,
-                formula_id=formula_row.id,
-                formula_order=formula_row.sort_order,
-            )
-            group_state[target_field.id] = typed_payload["runtime_value"]
-
-            age_val = group_state.get(current_field.id)
-            if age_val is None:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        "code": "current_age_missing_for_result",
-                        "message": (
-                            f"Event {row.id}: current age is required to persist results"
+            current_age_state = group_state.get(current_field.id)
+            if current_age_state is not None:
+                normalized_current_age = _parse_integer_value_or_400(
+                    current_age_state,
+                    detail=f"Event {row.id} produced a non-integer current age",
+                )
+                if normalized_current_age > active_window["source_final_age"]:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail=(
+                            f"Event {row.id} produced current age {normalized_current_age}, "
+                            f"which exceeds final age {active_window['source_final_age']}"
                         ),
-                        "event_id": row.id,
-                    },
-                )
-            persisted_age = _parse_integer_value_or_400(
-                age_val,
-                detail=(
-                    f"Event {row.id}: current age must be an integer for result rows"
-                ),
-            )
-            current_result = Result(
-                unity_id=row.unity_id,
-                age=persisted_age,
-                event_id=row.id,
-                field_id=target_field.id,
-                formula_id=formula_row.id,
-                formula_order=formula_row.sort_order,
-                text_value=typed_payload["text_value"],
-                boolean_value=typed_payload["boolean_value"],
-                numeric_value=typed_payload["numeric_value"],
-            )
-            session.add(current_result)
-            result_row_list.append((current_result, row, "created"))
-            created_count += 1
+                    )
 
-        current_age_state = group_state.get(current_field.id)
-        if current_age_state is not None:
-            normalized_current_age = _parse_integer_value_or_400(
-                current_age_state,
-                detail=f"Event {row.id} produced a non-integer current age",
-            )
-            if normalized_current_age > active_window["source_final_age"]:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=(
-                        f"Event {row.id} produced current age {normalized_current_age}, "
-                        f"which exceeds final age {active_window['source_final_age']}"
-                    ),
-                )
-            if normalized_current_age >= active_window["source_final_age"]:
-                close_after_day_by_group[group_key] = {
-                    "window": active_window,
-                    "close_after_day": execution_day,
-                }
+        # Fecha a janela só depois de todas as ocorrências do mesmo dia na mesma unidade.
+        if unity_id_day == 0:
+            continue
+        group_key_day = unity_id_day
+        active_window_day = current_window_by_group.get(group_key_day)
+        if active_window_day is None:
+            continue
+        group_state_day = state_by_group[group_key_day]
+        current_age_end_day = group_state_day.get(current_field.id)
+        if current_age_end_day is None:
+            continue
+        normalized_end_day = _parse_integer_value_or_400(
+            current_age_end_day,
+            detail=f"Unity {group_key_day}: current age must be an integer after day processing",
+        )
+        if normalized_end_day >= active_window_day["source_final_age"]:
+            close_after_day_by_group[group_key_day] = {
+                "window": active_window_day,
+                "close_after_day": execution_day_key,
+            }
 
     if not result_row_list and deleted_result_count == 0:
         return ScopeCurrentAgeCalculationResponse(
