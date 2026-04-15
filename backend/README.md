@@ -22,7 +22,7 @@ A fonte de verdade do diagrama entidade-relacionamento (JSON drawDB) é [`erd.js
 | `formula` | idem | Passos de fórmula por ação (`sort_order`, `statement`). |
 | `label`   | idem | Rótulo i18n ligado a `field` **ou** `action`. |
 | `event`   | idem | Evento operacional (`unity_id`, `moment_utc`, `location_id`, `item_id`, `action_id`). **Fato:** `unity_id` e `moment_utc` obrigatórios (não nulos). **Padrão (standard):** `unity_id` e `moment_utc` devem ser NULL. O `CHECK event_unity_moment_pair` impede só um dos dois preenchido. Com `unity_id` preenchido, `location_id` = `unity.location_id` e `item_id` ∈ `unity.item_id_list`. Em inglês técnico, traduza **«padrão»** neste sentido sempre **standard** (não *pattern*, *default*, etc.). |
-| `input`   | idem | Entrada por evento e campo. |
+| `input`   | idem | Entrada por evento e campo; se nenhuma fórmula da mesma ação referenciar mais `${input:field_id}`, a API remove linhas órfãs em `input` para esse par ação+campo (ver [`erd.enrichment-changelog.md`](erd.enrichment-changelog.md)). |
 | `result`  | idem | Resultado por evento e campo; `unity_id` (obrigatório) identifica a unidade mesmo para eventos-padrão. Valor tipado em `text_value`, `boolean_value` ou `numeric_value`, além de rastreio da fórmula via `formula_id` e `formula_order`. |
 
 Convenções e extensões do JSON (por exemplo `constraints`, `nullIfEmpty` em campos) estão descritas na skill [`.cursor/skills/export-erd-drawdb/SKILL.md`](../.cursor/skills/export-erd-drawdb/SKILL.md).
