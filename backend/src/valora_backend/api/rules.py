@@ -75,22 +75,6 @@ def _result_execution_calendar_date_sql_expr(session: Session):
     )
 
 
-def _result_execution_in_period(
-    session: Session,
-    *,
-    moment_from_utc: datetime,
-    moment_to_utc: datetime,
-):
-    mf = moment_from_utc.date()
-    mt = moment_to_utc.date()
-    if session.get_bind().dialect.name == "postgresql":
-        return (cast(Unity.creation_utc, Date) + Result.age).between(mf, mt)
-    return text(
-        "date(unity.creation_utc, '+' || CAST(result.age AS TEXT) || ' days') "
-        "BETWEEN :mf AND :mt"
-    ).bindparams(mf=mf.isoformat(), mt=mt.isoformat())
-
-
 def _field_sql_formula_kind_or_400(sql_type: str) -> FieldSqlFormulaKind:
     try:
         return classify_field_sql_type(sql_type)
@@ -1958,8 +1942,6 @@ class ScopeEventPatchRequest(BaseModel):
 
 
 class ScopeCurrentAgeCalculationRequest(BaseModel):
-    moment_from_utc: datetime
-    moment_to_utc: datetime
     unity_id: int | None = None
     location_id: int | None = None
     item_id: int | None = None
@@ -1983,11 +1965,11 @@ class ScopeCurrentAgeCalculationRecord(BaseModel):
 
 
 ScopeCurrentAgeCalculationEmptyReason = Literal[
-    "no_events_before_period_end",
+    "no_events_in_scope",
     "no_eligible_window",
-    "no_results_in_selected_period",
-    "no_persisted_results_in_period",
-    "no_results_to_delete_in_period",
+    "no_results_after_calculation",
+    "no_persisted_results",
+    "no_results_to_delete",
 ]
 
 
@@ -2052,8 +2034,6 @@ def _build_current_age_response_from_result_rows(
 def _list_scope_current_age_results(
     *,
     scope_id: int,
-    moment_from_utc: datetime,
-    moment_to_utc: datetime,
     unity_id: int | None,
     location_id: int | None,
     item_id: int | None,
@@ -2073,11 +2053,6 @@ def _list_scope_current_age_results(
         .join(Action, Event.action_id == Action.id)
         .where(
             Action.scope_id == scope_id,
-            _result_execution_in_period(
-                session,
-                moment_from_utc=moment_from_utc,
-                moment_to_utc=moment_to_utc,
-            ),
             *event_predicates,
         )
     )
@@ -2103,7 +2078,7 @@ def _list_scope_current_age_results(
         created_count=0,
         updated_count=0,
         unchanged_count=0,
-        empty_reason="no_persisted_results_in_period",
+        empty_reason="no_persisted_results",
         item_list=[],
     )
 
@@ -2190,9 +2165,12 @@ def _build_window_meta_by_event_id(
     initial_age_by_event_id: dict[int, int],
     final_age_by_event_id: dict[int, int],
 ) -> dict[int, dict[str, int]]:
-    event_row_list_by_group: defaultdict[tuple[int, int], list[Event]] = defaultdict(list)
+    # Uma janela de idade por unidade (lote): estado único por unity_id.
+    event_row_list_by_group: defaultdict[int, list[Event]] = defaultdict(list)
     for row in event_row_list:
-        event_row_list_by_group[(row.location_id, row.item_id)].append(row)
+        if row.unity_id is None:
+            continue
+        event_row_list_by_group[row.unity_id].append(row)
 
     window_meta_by_event_id: dict[int, dict[str, int]] = {}
     for group_event_row_list in event_row_list_by_group.values():
@@ -2269,12 +2247,14 @@ def _build_execution_occurrence_list(
     event_row_list: list[Event],
     action_by_id: dict[int, Action],
     window_meta_by_event_id: dict[int, dict[str, int]],
-    moment_to_utc: datetime,
+    unity_by_id: dict[int, Unity],
 ) -> list[dict[str, Any]]:
     occurrence_list: list[dict[str, Any]] = []
-    event_row_list_by_group: defaultdict[tuple[int, int], list[Event]] = defaultdict(list)
+    event_row_list_by_group: defaultdict[int, list[Event]] = defaultdict(list)
     for row in event_row_list:
-        event_row_list_by_group[(row.location_id, row.item_id)].append(row)
+        if row.unity_id is None:
+            continue
+        event_row_list_by_group[row.unity_id].append(row)
 
     next_same_action_day_by_event_id: dict[int, date | None] = {}
     for group_event_row_list in event_row_list_by_group.values():
@@ -2284,10 +2264,18 @@ def _build_execution_occurrence_list(
             next_same_action_day_by_event_id[row.id] = next_day_by_action_id.get(row.action_id)
             next_day_by_action_id[row.action_id] = row_day
 
-    period_end_day = moment_to_utc.date()
     for row in event_row_list:
         if row.id not in window_meta_by_event_id:
             continue
+        if row.moment_utc is None or row.unity_id is None:
+            continue
+        window_meta = window_meta_by_event_id[row.id]
+        unity = unity_by_id.get(row.unity_id)
+        if unity is None:
+            continue
+        creation_day = unity.creation_utc.date()
+        source_final_age = window_meta["source_final_age"]
+        period_end_day = creation_day + timedelta(days=source_final_age)
         action_row = action_by_id[row.action_id]
         occurrence_list.append(
             {
@@ -2631,22 +2619,8 @@ def read_scope_current_age(
 ):
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
 
-    moment_from_utc = body.moment_from_utc
-    moment_to_utc = body.moment_to_utc
-    if moment_from_utc.tzinfo is not None:
-        moment_from_utc = moment_from_utc.astimezone(UTC).replace(tzinfo=None)
-    if moment_to_utc.tzinfo is not None:
-        moment_to_utc = moment_to_utc.astimezone(UTC).replace(tzinfo=None)
-    if moment_from_utc > moment_to_utc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid event period",
-        )
-
     return _list_scope_current_age_results(
         scope_id=scope_id,
-        moment_from_utc=moment_from_utc,
-        moment_to_utc=moment_to_utc,
         unity_id=body.unity_id,
         location_id=body.location_id,
         item_id=body.item_id,
@@ -2667,18 +2641,6 @@ def delete_scope_current_age(
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
 
-    moment_from_utc = body.moment_from_utc
-    moment_to_utc = body.moment_to_utc
-    if moment_from_utc.tzinfo is not None:
-        moment_from_utc = moment_from_utc.astimezone(UTC).replace(tzinfo=None)
-    if moment_to_utc.tzinfo is not None:
-        moment_to_utc = moment_to_utc.astimezone(UTC).replace(tzinfo=None)
-    if moment_from_utc > moment_to_utc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid event period",
-        )
-
     event_predicates = _current_age_event_filter_predicates_for_scope_event_query(
         session,
         scope_id=scope_id,
@@ -2692,7 +2654,6 @@ def delete_scope_current_age(
             .join(Action, Event.action_id == Action.id)
             .where(
                 Action.scope_id == scope_id,
-                Event.moment_utc <= moment_to_utc,
                 *event_predicates,
             )
         )
@@ -2705,23 +2666,12 @@ def delete_scope_current_age(
             created_count=0,
             updated_count=0,
             unchanged_count=0,
-            empty_reason="no_results_to_delete_in_period",
+            empty_reason="no_results_to_delete",
             item_list=[],
         )
 
     _apply_member_audit_context(session, member)
-    result_id_subq = (
-        select(Result.id)
-        .join(Unity, Result.unity_id == Unity.id)
-        .where(
-            _result_execution_in_period(
-                session,
-                moment_from_utc=moment_from_utc,
-                moment_to_utc=moment_to_utc,
-            ),
-            Result.event_id.in_(event_id_list),
-        )
-    )
+    result_id_subq = select(Result.id).where(Result.event_id.in_(event_id_list))
     deleted_result = session.execute(delete(Result).where(Result.id.in_(result_id_subq)))
 
     if (deleted_result.rowcount or 0) > 0:
@@ -2734,7 +2684,7 @@ def delete_scope_current_age(
         created_count=0,
         updated_count=0,
         unchanged_count=0,
-        empty_reason="no_results_to_delete_in_period",
+        empty_reason="no_results_to_delete",
         item_list=[],
     )
 
@@ -2751,18 +2701,6 @@ def calculate_scope_current_age(
 ):
     _require_scope_rules_editor(member)
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
-
-    moment_from_utc = body.moment_from_utc
-    moment_to_utc = body.moment_to_utc
-    if moment_from_utc.tzinfo is not None:
-        moment_from_utc = moment_from_utc.astimezone(UTC).replace(tzinfo=None)
-    if moment_to_utc.tzinfo is not None:
-        moment_to_utc = moment_to_utc.astimezone(UTC).replace(tzinfo=None)
-    if moment_from_utc > moment_to_utc:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid event period",
-        )
 
     event_predicates = _current_age_event_filter_predicates_for_scope_event_query(
         session,
@@ -2794,7 +2732,8 @@ def calculate_scope_current_age(
                 .join(Action, Event.action_id == Action.id)
                 .where(
                     Action.scope_id == scope_id,
-                    Event.moment_utc <= moment_to_utc,
+                    Event.moment_utc.isnot(None),
+                    Event.unity_id.isnot(None),
                     *event_predicates,
                 )
             )
@@ -2813,9 +2752,15 @@ def calculate_scope_current_age(
             created_count=0,
             updated_count=0,
             unchanged_count=0,
-            empty_reason="no_events_before_period_end",
+            empty_reason="no_events_in_scope",
             item_list=[],
         )
+
+    unity_id_set = {row.unity_id for row in event_row_list if row.unity_id is not None}
+    unity_by_id = {
+        u.id: u
+        for u in session.scalars(select(Unity).where(Unity.id.in_(unity_id_set)))
+    }
 
     event_id_list = [row.id for row in event_row_list]
     formula_row_list = list(
@@ -2959,18 +2904,7 @@ def calculate_scope_current_age(
         )
 
     _apply_member_audit_context(session, member)
-    result_id_subq_calc = (
-        select(Result.id)
-        .join(Unity, Result.unity_id == Unity.id)
-        .where(
-            _result_execution_in_period(
-                session,
-                moment_from_utc=moment_from_utc,
-                moment_to_utc=moment_to_utc,
-            ),
-            Result.event_id.in_(event_id_list),
-        )
-    )
+    result_id_subq_calc = select(Result.id).where(Result.event_id.in_(event_id_list))
     deleted_result = session.execute(delete(Result).where(Result.id.in_(result_id_subq_calc)))
     deleted_result_count = deleted_result.rowcount or 0
 
@@ -2978,17 +2912,12 @@ def calculate_scope_current_age(
         event_row_list=event_row_list,
         action_by_id=action_by_id,
         window_meta_by_event_id=window_meta_by_event_id,
-        moment_to_utc=moment_to_utc,
+        unity_by_id=unity_by_id,
     )
 
-    state_by_group: defaultdict[
-        tuple[int, int], dict[int, FormulaRuntimePrimitive]
-    ] = defaultdict(dict)
-    current_window_by_group: dict[tuple[int, int], dict[str, int]] = {}
-    close_after_day_by_group: dict[
-        tuple[int, int],
-        dict[str, Any],
-    ] = {}
+    state_by_group: defaultdict[int, dict[int, FormulaRuntimePrimitive]] = defaultdict(dict)
+    current_window_by_group: dict[int, dict[str, int]] = {}
+    close_after_day_by_group: dict[int, dict[str, Any]] = {}
     created_count = 0
     updated_count = 0
     unchanged_count = 0
@@ -3002,8 +2931,10 @@ def calculate_scope_current_age(
         window_meta = window_meta_by_event_id.get(row.id)
         if window_meta is None:
             continue
+        if row.unity_id is None:
+            continue
 
-        group_key = (row.location_id, row.item_id)
+        group_key = row.unity_id
         if occurrence["is_actual_event_day"]:
             pending_close = close_after_day_by_group.get(group_key)
             if pending_close is not None and pending_close["window"] != window_meta:
@@ -3085,39 +3016,38 @@ def calculate_scope_current_age(
             )
             group_state[target_field.id] = typed_payload["runtime_value"]
 
-            if moment_from_utc <= execution_moment_utc <= moment_to_utc:
-                age_val = group_state.get(current_field.id)
-                if age_val is None:
-                    raise HTTPException(
-                        status_code=status.HTTP_400_BAD_REQUEST,
-                        detail={
-                            "code": "current_age_missing_for_result",
-                            "message": (
-                                f"Event {row.id}: current age is required to persist results"
-                            ),
-                            "event_id": row.id,
-                        },
-                    )
-                persisted_age = _parse_integer_value_or_400(
-                    age_val,
-                    detail=(
-                        f"Event {row.id}: current age must be an integer for result rows"
-                    ),
+            age_val = group_state.get(current_field.id)
+            if age_val is None:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail={
+                        "code": "current_age_missing_for_result",
+                        "message": (
+                            f"Event {row.id}: current age is required to persist results"
+                        ),
+                        "event_id": row.id,
+                    },
                 )
-                current_result = Result(
-                    unity_id=row.unity_id,
-                    age=persisted_age,
-                    event_id=row.id,
-                    field_id=target_field.id,
-                    formula_id=formula_row.id,
-                    formula_order=formula_row.sort_order,
-                    text_value=typed_payload["text_value"],
-                    boolean_value=typed_payload["boolean_value"],
-                    numeric_value=typed_payload["numeric_value"],
-                )
-                session.add(current_result)
-                result_row_list.append((current_result, row, "created"))
-                created_count += 1
+            persisted_age = _parse_integer_value_or_400(
+                age_val,
+                detail=(
+                    f"Event {row.id}: current age must be an integer for result rows"
+                ),
+            )
+            current_result = Result(
+                unity_id=row.unity_id,
+                age=persisted_age,
+                event_id=row.id,
+                field_id=target_field.id,
+                formula_id=formula_row.id,
+                formula_order=formula_row.sort_order,
+                text_value=typed_payload["text_value"],
+                boolean_value=typed_payload["boolean_value"],
+                numeric_value=typed_payload["numeric_value"],
+            )
+            session.add(current_result)
+            result_row_list.append((current_result, row, "created"))
+            created_count += 1
 
         current_age_state = group_state.get(current_field.id)
         if current_age_state is not None:
@@ -3146,7 +3076,7 @@ def calculate_scope_current_age(
             created_count=0,
             updated_count=0,
             unchanged_count=0,
-            empty_reason="no_results_in_selected_period",
+            empty_reason="no_results_after_calculation",
             item_list=[],
         )
 

@@ -573,7 +573,7 @@
   },
   "CalculationPage": {
     "title": "Cálculo de edad actual",
-    "description": "Selecciona un período para localizar eventos con edad inicial y final, recalcular el campo de edad actual y revisar los resultados guardados dentro del filtro elegido.",
+    "description": "Usa los filtros opcionales (unidad, ubicación, ítem) para recalcular el campo de edad actual a partir de eventos con edad inicial y final en la misma unidad, y revisar los resultados guardados.",
     "status": {
       "readyTitle": "Campos de edad listos",
       "readyDescription": "El alcance activo ya tiene un campo inicial, uno actual y uno final para soportar el recálculo diario.",
@@ -586,10 +586,6 @@
       "readOnlyNotice": "Puedes consultar este panel, pero solo miembros master o administradores pueden recalcular y grabar resultados."
     },
     "panel": {
-      "startLabel": "Fecha inicial",
-      "endLabel": "Fecha final",
-      "startHint": "Informa la fecha y hora inicial del período que se considerará en el cálculo.",
-      "endHint": "Informa la fecha y hora final del período que se considerará en el cálculo.",
       "unityLabel": "Unidad",
       "unityHint": "Opcional. Limita el cálculo a eventos de esta unidad. Con unidad seleccionada, la ubicación sigue el registro de la unidad y la lista de ítems muestra solo los permitidos para ella.",
       "filterAllAria": "Sin filtro de unidad",
@@ -604,20 +600,18 @@
       "delete": "Eliminar",
       "deleting": "Eliminando...",
       "resultTableBusyAriaLabel": "Actualizando tabla de resultados",
-      "validationRequired": "Selecciona las dos fechas para calcular.",
-      "validationOrder": "La fecha inicial debe ser menor o igual que la fecha final.",
       "error": "No se pudo calcular la edad actual. Inténtalo de nuevo.",
       "errorMissingFormulaInput": "Informa {fieldLabel} en la fórmula {formulaLabel} en el evento de {eventLabel}.",
-      "deleteError": "No se pudieron eliminar los resultados del período. Inténtalo de nuevo."
+      "deleteError": "No se pudieron eliminar los resultados. Inténtalo de nuevo."
     },
     "result": {
-      "empty": "Ningún evento elegible produjo resultados en este período.",
-      "emptyNoEventsBeforePeriodEnd": "No hay eventos registrados hasta el final del período seleccionado.",
-      "emptyNoEligibleWindow": "Hay eventos en el período analizado, pero no se encontró ningún conjunto elegible. Para calcular, debe existir una edad inicial y después una edad final para la misma ubicación y el mismo ítem.",
-      "emptyNoResultsInSelectedPeriod": "Se encontraron eventos elegibles, pero no se produjo ningún resultado dentro del período seleccionado.",
-      "emptyNoPersistedResultsInPeriod": "No existen resultados calculados guardados para este período.",
-      "emptyNoResultsToDeleteInPeriod": "No había resultados calculados para eliminar en este período.",
-      "dateLabel": "Fecha",
+      "empty": "Ningún evento elegible produjo resultados con los filtros actuales.",
+      "emptyNoEventsInScope": "No hay eventos en el alcance que cumplan los filtros.",
+      "emptyNoEligibleWindow": "Hay eventos analizados, pero no se encontró ningún conjunto elegible. Para calcular, debe existir una edad inicial y después una edad final en la misma unidad.",
+      "emptyNoResultsAfterCalculation": "Se encontraron eventos elegibles, pero no se produjo ningún resultado nuevo.",
+      "emptyNoPersistedResults": "No existen resultados calculados guardados para los filtros actuales.",
+      "emptyNoResultsToDelete": "No había resultados calculados para eliminar con los filtros actuales.",
+      "ageLabel": "Edad (días)",
       "actionLabel": "Acción",
       "formulaLabel": "Fórmula",
       "emptyValue": "Sin valor",

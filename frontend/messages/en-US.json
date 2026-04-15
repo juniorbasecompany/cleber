@@ -573,7 +573,7 @@
   },
   "CalculationPage": {
     "title": "Current age calculation",
-    "description": "Choose a period to find events with initial and final age, recalculate the current age field, and review the results saved inside the selected filter.",
+    "description": "Use optional filters (unity, location, item) to recalculate the current age field from events with initial and final age on the same unity, and review saved results.",
     "status": {
       "readyTitle": "Age fields are ready",
       "readyDescription": "The active scope already has one initial, one current, and one final age field to support the daily recalculation.",
@@ -586,10 +586,6 @@
       "readOnlyNotice": "You can view this panel, but only master or administrator members can recalculate and write results."
     },
     "panel": {
-      "startLabel": "Start date",
-      "endLabel": "End date",
-      "startHint": "Enter the start date and time for the period considered in the calculation.",
-      "endHint": "Enter the end date and time for the period considered in the calculation.",
       "unityLabel": "Unity",
       "unityHint": "Optional. Limits the calculation to events for this unity. With a unity selected, location follows the unity record and the item list shows only items allowed for it.",
       "filterAllAria": "No unity filter",
@@ -604,20 +600,18 @@
       "delete": "Delete",
       "deleting": "Deleting...",
       "resultTableBusyAriaLabel": "Updating results table",
-      "validationRequired": "Select both dates to calculate.",
-      "validationOrder": "The start date must be earlier than or equal to the end date.",
       "error": "Could not calculate the current age. Try again.",
       "errorMissingFormulaInput": "Provide {fieldLabel} in formula {formulaLabel} for the event {eventLabel}.",
-      "deleteError": "Could not delete the results in this period. Try again."
+      "deleteError": "Could not delete the results. Try again."
     },
     "result": {
-      "empty": "No eligible event produced results in this period.",
-      "emptyNoEventsBeforePeriodEnd": "There are no recorded events up to the end of the selected period.",
-      "emptyNoEligibleWindow": "There are events in the analyzed period, but no eligible set was found. To calculate, there must be an initial age followed by a final age for the same location and item.",
-      "emptyNoResultsInSelectedPeriod": "Eligible events were found, but no result was produced inside the selected period.",
-      "emptyNoPersistedResultsInPeriod": "There are no saved calculated results for this period.",
-      "emptyNoResultsToDeleteInPeriod": "There were no calculated results to delete in this period.",
-      "dateLabel": "Date",
+      "empty": "No eligible event produced results with the current filters.",
+      "emptyNoEventsInScope": "There are no events in scope matching the filters.",
+      "emptyNoEligibleWindow": "There are analyzed events, but no eligible set was found. To calculate, there must be an initial age followed by a final age on the same unity.",
+      "emptyNoResultsAfterCalculation": "Eligible events were found, but no new result was produced.",
+      "emptyNoPersistedResults": "There are no saved calculated results for the current filters.",
+      "emptyNoResultsToDelete": "There were no calculated results to delete for the current filters.",
+      "ageLabel": "Age (days)",
       "actionLabel": "Action",
       "formulaLabel": "Formula",
       "emptyValue": "No value",

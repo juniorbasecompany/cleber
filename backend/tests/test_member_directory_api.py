@@ -2389,10 +2389,7 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-04T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -2695,15 +2692,13 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
         response = calculate_scope_current_age(
             scope_id=scope.id,
             body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-04T23:59:00Z",
                 unity_id=unity_other.id,
             ),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
 
-        assert response.empty_reason == "no_events_before_period_end"
+        assert response.empty_reason == "no_events_in_scope"
         assert response.item_list == []
 
 
@@ -2803,10 +2798,7 @@ def test_read_scope_current_age_reads_existing_results_without_recalculation() -
 
         response = read_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-03T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -2948,8 +2940,6 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
         filtered = read_scope_current_age(
             scope_id=scope.id,
             body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-03T23:59:00Z",
                 unity_id=unity_a.id,
             ),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
@@ -2962,17 +2952,14 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
 
         all_rows = read_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-03T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
         assert all_rows.unchanged_count == 2
 
 
-def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
+def test_delete_scope_current_age_removes_results_for_filtered_events_only() -> None:
     with build_rules_session() as (session, tenant_id):
         scope = Scope(
             name="Aves",
@@ -3025,13 +3012,19 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
         session.add(item)
         session.flush()
 
-        unity = Unity(
-            name="Lote 1",
+        unity_kept = Unity(
+            name="Lote kept",
             location_id=location.id,
             item_id_list=[item.id],
             creation_utc=datetime(2026, 4, 1, 0, 0, 0),
         )
-        session.add(unity)
+        unity_deleted = Unity(
+            name="Lote delete",
+            location_id=location.id,
+            item_id_list=[item.id],
+            creation_utc=datetime(2026, 4, 1, 0, 0, 0),
+        )
+        session.add_all([unity_kept, unity_deleted])
         session.flush()
 
         formula = Formula(
@@ -3047,20 +3040,20 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
             item_id=item.id,
             action_id=action.id,
             moment_utc=datetime(2026, 4, 1, 8, 0, 0),
-            unity_id=unity.id,
+            unity_id=unity_kept.id,
         )
         deleted_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
             moment_utc=datetime(2026, 4, 2, 12, 0, 0),
-            unity_id=unity.id,
+            unity_id=unity_deleted.id,
         )
         session.add_all([kept_event, deleted_event])
         session.flush()
 
         kept_result = Result(
-            unity_id=unity.id,
+            unity_id=unity_kept.id,
             event_id=kept_event.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -3071,7 +3064,7 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
             age=0,
         )
         deleted_result = Result(
-            unity_id=unity.id,
+            unity_id=unity_deleted.id,
             event_id=deleted_event.id,
             field_id=field.id,
             formula_id=formula.id,
@@ -3086,10 +3079,7 @@ def test_delete_scope_current_age_removes_results_in_selected_period() -> None:
 
         response = delete_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-02T00:00:00Z",
-                moment_to_utc="2026-04-02T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(unity_id=unity_deleted.id),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -3224,8 +3214,6 @@ def test_delete_scope_current_age_filters_by_unity_id() -> None:
         delete_scope_current_age(
             scope_id=scope.id,
             body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-02T00:00:00Z",
-                moment_to_utc="2026-04-02T23:59:00Z",
                 unity_id=unity_a.id,
             ),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
@@ -3392,10 +3380,7 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-03T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -3593,10 +3578,7 @@ def test_calculate_scope_current_age_rounds_numeric_result_to_field_scale_half_u
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-03T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -3808,10 +3790,7 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-04T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -4013,10 +3992,7 @@ def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-03T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -4181,10 +4157,7 @@ def test_calculate_scope_current_age_opens_window_from_age_inputs_and_keeps_futu
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-02T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -4339,10 +4312,7 @@ def test_calculate_scope_current_age_repeats_recurrent_event_on_following_days()
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-04T00:00:00Z",
-                moment_to_utc="2026-04-10T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -4510,10 +4480,7 @@ def test_calculate_scope_current_age_ignores_age_input_without_formula_target() 
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-04T00:00:00Z",
-                moment_to_utc="2026-04-10T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -4666,10 +4633,7 @@ def test_calculate_scope_current_age_does_not_repeat_non_recurrent_event_on_foll
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-04T00:00:00Z",
-                moment_to_utc="2026-04-10T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )
@@ -4866,10 +4830,7 @@ def test_calculate_scope_current_age_does_not_mix_different_location_item_groups
 
         response = calculate_scope_current_age(
             scope_id=scope.id,
-            body=ScopeCurrentAgeCalculationRequest(
-                moment_from_utc="2026-04-01T00:00:00Z",
-                moment_to_utc="2026-04-03T23:59:00Z",
-            ),
+            body=ScopeCurrentAgeCalculationRequest(),
             member=SimpleNamespace(role=2, tenant_id=tenant_id, account_id=1),
             session=session,
         )

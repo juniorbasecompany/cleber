@@ -199,11 +199,11 @@ export type ScopeCurrentAgeCalculationStatus =
   | "unchanged";
 
 export type ScopeCurrentAgeCalculationEmptyReason =
-  | "no_events_before_period_end"
+  | "no_events_in_scope"
   | "no_eligible_window"
-  | "no_results_in_selected_period"
-  | "no_persisted_results_in_period"
-  | "no_results_to_delete_in_period";
+  | "no_results_after_calculation"
+  | "no_persisted_results"
+  | "no_results_to_delete";
 
 export type ScopeCurrentAgeCalculationRecord = {
   event_id: number;
@@ -214,8 +214,9 @@ export type ScopeCurrentAgeCalculationRecord = {
   location_id: number;
   item_id: number;
   action_id: number;
-  event_moment_utc: string;
-  result_moment_utc: string;
+  event_moment_utc: string | null;
+  /** Idade em dias (eixo do resultado), alinhada a `date(unity.creation_utc) + age`. */
+  result_age: number;
   text_value?: string | null;
   boolean_value?: boolean | null;
   numeric_value?: number | string | null;

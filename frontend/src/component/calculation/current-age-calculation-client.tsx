@@ -12,7 +12,6 @@ import { ConfigurationEditorFooter } from "@/component/configuration/configurati
 import { CurrentAgeResultTableSkeleton } from "@/component/ui/skeleton-patterns";
 import { HierarchySingleSelectField } from "@/component/configuration/hierarchy-dropdown-field";
 import { StatusPanel } from "@/component/app-shell/status-panel";
-import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import type {
   ScopeCurrentAgeCalculationEmptyReason,
   ScopeFormulaRecord,
@@ -42,10 +41,6 @@ type CurrentAgeCalculationCopy = {
   emptyScope: string;
   missingCurrentScope: string;
   readOnlyNotice: string;
-  startLabel: string;
-  endLabel: string;
-  startHint: string;
-  endHint: string;
   unityLabel: string;
   unityHint: string;
   filterAllAria: string;
@@ -59,18 +54,16 @@ type CurrentAgeCalculationCopy = {
   calculating: string;
   delete: string;
   deleting: string;
-  validationRequired: string;
-  validationOrder: string;
   calculateError: string;
   calculateErrorMissingFormulaInput: string;
   deleteError: string;
   resultEmptyDefault: string;
-  resultEmptyNoEventsBeforePeriodEnd: string;
+  resultEmptyNoEventsInScope: string;
   resultEmptyNoEligibleWindow: string;
-  resultEmptyNoResultsInSelectedPeriod: string;
-  resultEmptyNoPersistedResultsInPeriod: string;
-  resultEmptyNoResultsToDeleteInPeriod: string;
-  resultDateLabel: string;
+  resultEmptyNoResultsAfterCalculation: string;
+  resultEmptyNoPersistedResults: string;
+  resultEmptyNoResultsToDelete: string;
+  resultAgeLabel: string;
   actionLabel: string;
   formulaLabel: string;
   emptyValue: string;
@@ -92,18 +85,6 @@ type CurrentAgeCalculationClientProps = {
   initialFormulaList: ScopeFormulaRecord[];
   copy: CurrentAgeCalculationCopy;
 };
-
-function formatDayCompact(value: string) {
-  const parsed = new Date(value);
-  if (Number.isNaN(parsed.getTime())) {
-    return value;
-  }
-  return new Intl.DateTimeFormat(undefined, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric"
-  }).format(parsed);
-}
 
 function formatPersistedValue(
   item: ScopeCurrentAgeCalculationRecord,
@@ -252,16 +233,16 @@ function resolveEmptyResultMessage(
   copy: CurrentAgeCalculationCopy
 ) {
   switch (emptyReason) {
-    case "no_events_before_period_end":
-      return copy.resultEmptyNoEventsBeforePeriodEnd;
+    case "no_events_in_scope":
+      return copy.resultEmptyNoEventsInScope;
     case "no_eligible_window":
       return copy.resultEmptyNoEligibleWindow;
-    case "no_results_in_selected_period":
-      return copy.resultEmptyNoResultsInSelectedPeriod;
-    case "no_persisted_results_in_period":
-      return copy.resultEmptyNoPersistedResultsInPeriod;
-    case "no_results_to_delete_in_period":
-      return copy.resultEmptyNoResultsToDeleteInPeriod;
+    case "no_results_after_calculation":
+      return copy.resultEmptyNoResultsAfterCalculation;
+    case "no_persisted_results":
+      return copy.resultEmptyNoPersistedResults;
+    case "no_results_to_delete":
+      return copy.resultEmptyNoResultsToDelete;
     default:
       return copy.resultEmptyDefault;
   }
@@ -337,8 +318,6 @@ export function CurrentAgeCalculationClient({
   copy
 }: CurrentAgeCalculationClientProps) {
   const [footerPortalTarget, setFooterPortalTarget] = useState<HTMLElement | null>(null);
-  const [momentFrom, setMomentFrom] = useState<Date | null>(null);
-  const [momentTo, setMomentTo] = useState<Date | null>(null);
   const [unityId, setUnityId] = useState<number | null>(null);
   const [locationId, setLocationId] = useState<number | null>(null);
   const [itemId, setItemId] = useState<number | null>(null);
@@ -461,7 +440,7 @@ export function CurrentAgeCalculationClient({
       return [];
     }
     return [...result.item_list].sort((left, right) => (
-      left.result_moment_utc.slice(0, 10).localeCompare(right.result_moment_utc.slice(0, 10))
+      left.result_age - right.result_age
       || (actionOrderById.get(left.action_id) ?? Number.MAX_SAFE_INTEGER)
         - (actionOrderById.get(right.action_id) ?? Number.MAX_SAFE_INTEGER)
       || left.formula_order - right.formula_order
@@ -476,14 +455,14 @@ export function CurrentAgeCalculationClient({
   }, [actionOrderById, fieldSortOrderById, result]);
 
   const resultDisplayRowList = useMemo(() => {
-    let previousDayKey = "";
+    let previousAgeKey = Number.NaN;
     let dayBandIndex = -1;
 
     return resultRowList.map((item) => {
-      const dayKey = item.result_moment_utc.slice(0, 10);
-      if (dayKey !== previousDayKey) {
+      const ageKey = item.result_age;
+      if (ageKey !== previousAgeKey) {
         dayBandIndex += 1;
-        previousDayKey = dayKey;
+        previousAgeKey = ageKey;
       }
       return { item, dayBandIndex };
     });
@@ -507,7 +486,7 @@ export function CurrentAgeCalculationClient({
   const showResultSkeleton =
     !requestErrorMessage && (isReading || isCalculating || isDeleting);
 
-  /** Erros de API (cálculo, leitura, etc.) e validação do período: sempre no footer. */
+  /** Erros de API (cálculo, leitura, etc.): sempre no footer. */
   const combinedFooterError: ReactNode | null =
     requestErrorMessage ?? footerErrorMessage ?? null;
 
@@ -519,7 +498,7 @@ export function CurrentAgeCalculationClient({
 
   useEffect(() => {
     setActiveDropdown(null);
-  }, [result, momentFrom, momentTo, unityId, locationId, itemId]);
+  }, [result, unityId, locationId, itemId]);
 
   useEffect(() => {
     if (activeDropdown == null) {
@@ -566,24 +545,11 @@ export function CurrentAgeCalculationClient({
     if (!currentScope || !canEdit || !isReady) {
       return false;
     }
-    if (!momentFrom || !momentTo) {
-      setFooterErrorMessage(copy.validationRequired);
-      return false;
-    }
-    if (momentFrom.getTime() > momentTo.getTime()) {
-      setFooterErrorMessage(copy.validationOrder);
-      return false;
-    }
     return true;
   }
 
   async function handleRead() {
     if (!validateRequest() || !currentScope) {
-      return;
-    }
-    const currentMomentFrom = momentFrom;
-    const currentMomentTo = momentTo;
-    if (!currentMomentFrom || !currentMomentTo) {
       return;
     }
 
@@ -598,8 +564,6 @@ export function CurrentAgeCalculationClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            moment_from_utc: currentMomentFrom.toISOString(),
-            moment_to_utc: currentMomentTo.toISOString(),
             unity_id: unityId,
             location_id: locationId,
             item_id: itemId
@@ -639,11 +603,6 @@ export function CurrentAgeCalculationClient({
     if (!validateRequest() || !currentScope) {
       return;
     }
-    const currentMomentFrom = momentFrom;
-    const currentMomentTo = momentTo;
-    if (!currentMomentFrom || !currentMomentTo) {
-      return;
-    }
 
     setIsCalculating(true);
     setRequestErrorMessage(null);
@@ -656,8 +615,6 @@ export function CurrentAgeCalculationClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            moment_from_utc: currentMomentFrom.toISOString(),
-            moment_to_utc: currentMomentTo.toISOString(),
             unity_id: unityId,
             location_id: locationId,
             item_id: itemId
@@ -697,11 +654,6 @@ export function CurrentAgeCalculationClient({
     if (!validateRequest() || !currentScope) {
       return;
     }
-    const currentMomentFrom = momentFrom;
-    const currentMomentTo = momentTo;
-    if (!currentMomentFrom || !currentMomentTo) {
-      return;
-    }
 
     setIsDeleting(true);
     setRequestErrorMessage(null);
@@ -714,8 +666,6 @@ export function CurrentAgeCalculationClient({
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            moment_from_utc: currentMomentFrom.toISOString(),
-            moment_to_utc: currentMomentTo.toISOString(),
             unity_id: unityId,
             location_id: locationId,
             item_id: itemId
@@ -765,50 +715,6 @@ export function CurrentAgeCalculationClient({
 
           <div className="ui-current-age-filter-panel">
             <DirectoryFilterPanel>
-              <DirectoryFilterCard>
-              <div className="ui-grid-cards-2">
-                <div className="ui-field">
-                  <label className="ui-field-label" htmlFor="current-age-start">
-                    {copy.startLabel}
-                  </label>
-                  <TenantDateTimePicker
-                    id="current-age-start"
-                    value={momentFrom}
-                    onChange={(value) => {
-                      setMomentFrom(value);
-                      setRequestErrorMessage(null);
-                      setFooterErrorMessage(null);
-                    }}
-                    disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
-                    locale={locale}
-                    hidePlaceholder
-                    periodBoundary="start"
-                  />
-                  <p className="ui-field-hint">{copy.startHint}</p>
-                </div>
-
-                <div className="ui-field">
-                  <label className="ui-field-label" htmlFor="current-age-end">
-                    {copy.endLabel}
-                  </label>
-                  <TenantDateTimePicker
-                    id="current-age-end"
-                    value={momentTo}
-                    onChange={(value) => {
-                      setMomentTo(value);
-                      setRequestErrorMessage(null);
-                      setFooterErrorMessage(null);
-                    }}
-                    disabled={!canEdit || !isReady || isCalculating || isReading || isDeleting}
-                    locale={locale}
-                    hidePlaceholder
-                    periodBoundary="end"
-                  />
-                  <p className="ui-field-hint">{copy.endHint}</p>
-                </div>
-              </div>
-              </DirectoryFilterCard>
-
               <DirectoryFilterCard>
                 <div className="ui-field">
                   <label className="ui-field-label" htmlFor="current-age-unity">
@@ -912,7 +818,7 @@ export function CurrentAgeCalculationClient({
                     </colgroup>
                     <thead>
                       <tr>
-                        <th scope="col">{copy.resultDateLabel}</th>
+                        <th scope="col">{copy.resultAgeLabel}</th>
                         {fieldList.map((field) => (
                           <th
                             key={`header-${field.id}`}
@@ -936,7 +842,7 @@ export function CurrentAgeCalculationClient({
                               ? "ui-current-age-table-day-band-even"
                               : "ui-current-age-table-day-band-odd"}
                           >
-                            <td>{formatDayCompact(item.result_moment_utc)}</td>
+                            <td>{String(item.result_age)}</td>
                             {fieldList.map((field) => {
                               if (field.id !== item.field_id) {
                                 return <td key={`${item.result_id}-${field.id}`}></td>;
