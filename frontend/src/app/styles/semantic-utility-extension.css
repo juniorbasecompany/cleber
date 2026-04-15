@@ -120,6 +120,11 @@
   background: white;
 }
 
+.ui-current-age-table tbody td:first-child {
+  font-size: 0.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
 .ui-current-age-table th:last-child,
 .ui-current-age-table td:last-child {
   border-right: none;

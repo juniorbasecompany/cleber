@@ -611,7 +611,7 @@
       "emptyNoResultsAfterCalculation": "Se encontraron eventos elegibles, pero no se produjo ningún resultado nuevo.",
       "emptyNoPersistedResults": "No existen resultados calculados guardados para los filtros actuales.",
       "emptyNoResultsToDelete": "No había resultados calculados para eliminar con los filtros actuales.",
-      "ageLabel": "Edad (días)",
+      "ageLabel": "#",
       "actionLabel": "Acción",
       "formulaLabel": "Fórmula",
       "emptyValue": "Sin valor",
