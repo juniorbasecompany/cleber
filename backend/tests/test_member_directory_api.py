@@ -4596,8 +4596,10 @@ def test_calculate_scope_current_age_calculates_age_15_completely() -> None:
         )
         kind = Kind(scope_id=scope.id, name="lote")
         anchor_action = Action(scope_id=scope.id, sort_order=0)
-        recurrent_stock_action = Action(scope_id=scope.id, sort_order=1, is_recurrent=True)
-        recurrent_age_action = Action(scope_id=scope.id, sort_order=2, is_recurrent=True)
+        # Idade antes do estoque: a ordenação do cálculo segue action_sort_order no mesmo dia;
+        # o incremento da idade precisa rodar antes da fórmula que consome o campo de idade atual.
+        recurrent_age_action = Action(scope_id=scope.id, sort_order=1, is_recurrent=True)
+        recurrent_stock_action = Action(scope_id=scope.id, sort_order=2, is_recurrent=True)
         initial_field = Field(
             scope_id=scope.id,
             type="INTEGER",

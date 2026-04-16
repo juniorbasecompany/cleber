@@ -2341,12 +2341,15 @@ def _build_execution_occurrence_list(
             )
             next_execution_day += timedelta(days=1)
 
+    # Ordena primeiro por action_sort_order para respeitar a sequência configurada no escopo
+    # (ex.: mortalidade antes do incremento da idade no mesmo dia). A prioridade de fórmulas
+    # que atualizam o campo de idade atual só desempata entre ações com o mesmo sort_order.
     occurrence_list.sort(
         key=lambda item: (
             item["source_event"].unity_id or 0,
             item["execution_day"],
-            item["current_age_action_priority"],
             item["action_sort_order"],
+            item["current_age_action_priority"],
             item["source_event"].id,
         )
     )
