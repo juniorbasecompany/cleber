@@ -97,15 +97,8 @@
         "emailFieldHint": "Informe o email que receberá o convite. O primeiro acesso usa uma conta Google com esse mesmo endereço."
       },
       "access": {
-        "title": "Acesso",
-        "description": "Papel e situação controlam o alcance do membro neste licenciado.",
         "emailLabel": "Email",
-        "memberEmailHint": "Endereço do convite e do primeiro login. Pode ser alterado a qualquer momento e não precisa coincidir com o email da conta Google após o vínculo.",
-        "roleLabel": "Papel",
-        "statusLabel": "Situação",
-        "accountLinked": "Conta vinculada",
-        "accountPending": "Aguardando vínculo da conta",
-        "accountTopicLabel": "Conta"
+        "memberEmailHint": "Endereço do convite e do primeiro login. Pode ser alterado a qualquer momento e não precisa coincidir com o email da conta Google após o vínculo."
       }
     },
     "action": {
@@ -408,7 +401,7 @@
   },
   "EventConfigurationPageFact": {
     "title": "Fatos",
-    "description": "Registre fatos com unidade (lote) e data ou hora do evento, ambos obrigatórios. Cada linha é um fato no tempo: filtre por período, local, item e ação, e edite entradas da ação no mesmo fluxo.",
+    "description": "Registre fatos com unidade (lote) e idade no eixo do escopo, ambos obrigatórios. Filtre por faixa de idade, local, item e ação, e edite entradas da ação no mesmo fluxo.",
     "list": {
       "emptyScope": "Crie um escopo antes de registrar eventos.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de registrar eventos.",
@@ -423,13 +416,13 @@
       "description": "Consulte o histórico dos eventos do escopo ativo: quem alterou, quando e um resumo do que mudou."
     },
     "section": {
-      "moment": {
-        "label": "Data e hora do evento",
-        "hint": "Informe o momento em que o evento aconteceu. O sistema salva em UTC e exibe no seu horário local."
+      "age": {
+        "label": "Idade",
+        "hint": "Valor inteiro no eixo de idade do escopo (mesma unidade dos campos de idade do escopo, por exemplo dias)."
       },
       "unity": {
         "label": "Unidade",
-        "hint": "Selecione a unidade do lote. Em fatos, unidade e data ou hora são obrigatórios."
+        "hint": "Selecione a unidade do lote. Em fatos, unidade e idade são obrigatórios."
       },
       "location": {
         "label": "Local",
@@ -455,8 +448,8 @@
       "toggleAriaLabel": "Mostrar ou ocultar o painel de filtros da lista",
       "toggleLabel": "Filtro",
       "title": "Filtros da lista",
-      "momentFromLabel": "Período inicial",
-      "momentToLabel": "Período final",
+      "ageFromLabel": "Idade mínima",
+      "ageToLabel": "Idade máxima",
       "locationLabel": "Local",
       "itemLabel": "Item",
       "actionLabel": "Ação",
@@ -478,22 +471,17 @@
       "create": "Não foi possível criar o evento. Tente novamente.",
       "delete": "Não foi possível apagar o evento. Tente novamente.",
       "deleteBlockedDetail": "Não é possível apagar o evento enquanto resultados ainda o referenciam.",
-      "momentRequired": "Informe a data e hora do evento.",
-      "unityRequired": "Selecione uma unidade. Em fatos, unidade e data ou hora são obrigatórios.",
+      "ageRequired": "Informe um número inteiro não negativo para a idade.",
+      "unityRequired": "Selecione uma unidade. Em fatos, unidade e idade são obrigatórios.",
       "locationRequired": "Selecione um local.",
       "itemRequired": "Selecione um item.",
-      "actionRequired": "Selecione uma ação.",
-      "api": {
-        "event_moment_requires_unity": "Em fatos, unidade e data ou hora são obrigatórios. Em padrão, os dois ficam vazios. Remova data e hora ou inclua unidade para registrar um fato.",
-        "event_standard_moment_forbidden": "Em padrão, unidade e data ou hora devem ficar vazios. Remova data e hora ou registre um fato com unidade e momento.",
-        "event_fact_moment_required": "Em fatos, unidade e data ou hora são obrigatórios. Para limpar data e hora, remova a unidade (evento padrão)."
-      }
+      "actionRequired": "Selecione uma ação."
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },
   "EventConfigurationPageStandard": {
     "title": "Padrão",
-    "description": "Eventos padrão definem regras por local, item e ação usando o campo de idade atual do escopo.",
+    "description": "Eventos padrão definem regras por local, item, ação e idade no eixo do escopo, usando o campo de idade atual do escopo.",
     "list": {
       "emptyScope": "Crie um escopo antes de registrar eventos padrão.",
       "missingCurrentScope": "Defina um escopo ativo no seletor do cabeçalho antes de registrar eventos padrão.",
@@ -508,9 +496,9 @@
       "description": "Consulte o histórico dos eventos padrão do escopo ativo: quem alterou, quando e um resumo do que mudou."
     },
     "section": {
-      "ageField": {
-        "label": "Campo de idade atual",
-        "hint": "O evento padrão usa o campo do escopo marcado como idade atual do lote. Ajuste esse marcador no cadastro de campos, se necessário."
+      "age": {
+        "label": "Idade",
+        "hint": "Valor inteiro no eixo de idade do escopo (mesma unidade dos campos de idade do escopo, por exemplo dias)."
       },
       "location": {
         "label": "Local",
@@ -536,8 +524,8 @@
       "toggleAriaLabel": "Mostrar ou ocultar o painel de filtros da lista",
       "toggleLabel": "Filtro",
       "title": "Filtros da lista",
-      "momentFromLabel": "Período inicial",
-      "momentToLabel": "Período final",
+      "ageFromLabel": "Idade mínima",
+      "ageToLabel": "Idade máxima",
       "locationLabel": "Local",
       "itemLabel": "Item",
       "actionLabel": "Ação",
@@ -563,11 +551,7 @@
       "locationRequired": "Selecione um local.",
       "itemRequired": "Selecione um item.",
       "actionRequired": "Selecione uma ação.",
-      "api": {
-        "event_moment_requires_unity": "Em fatos, unidade e data ou hora são obrigatórios. Em padrão, os dois ficam vazios. Remova data e hora ou inclua unidade para registrar um fato.",
-        "event_standard_moment_forbidden": "Em padrão, unidade e data ou hora devem ficar vazios. Remova data e hora ou registre um fato com unidade e momento.",
-        "event_fact_moment_required": "Em fatos, unidade e data ou hora são obrigatórios. Para limpar data e hora, remova a unidade (evento padrão)."
-      }
+      "ageRequired": "Informe um número inteiro não negativo para a idade."
     },
     "discardConfirm": "Descartar alterações não salvas?"
   },

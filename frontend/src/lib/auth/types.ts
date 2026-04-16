@@ -183,7 +183,7 @@ export type TenantScopeEventRecord = {
   location_id: number;
   item_id: number;
   action_id: number;
-  moment_utc?: string | null;
+  age: number;
   /** Resumo dos inputs salvos (rótulo: valor), calculado no servidor. */
   input_summary?: string | null;
 };
@@ -214,8 +214,9 @@ export type ScopeCurrentAgeCalculationRecord = {
   location_id: number;
   item_id: number;
   action_id: number;
-  event_moment_utc: string | null;
-  /** Idade em dias (eixo do resultado), alinhada a `date(unity.creation_utc) + age`. */
+  /** Idade na linha do evento (eixo do escopo). */
+  event_age: number;
+  /** Idade no resultado materializado (eixo do escopo). */
   result_age: number;
   text_value?: string | null;
   boolean_value?: boolean | null;

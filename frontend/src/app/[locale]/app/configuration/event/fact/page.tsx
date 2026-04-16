@@ -82,8 +82,8 @@ export default async function EventFactConfigurationPage({
           loadError: t("list.loadError"),
           historyTitle: t("history.title"),
           historyDescription: t("history.description"),
-          momentLabel: t("section.moment.label"),
-          momentHint: t("section.moment.hint"),
+          ageLabel: t("section.age.label"),
+          ageHint: t("section.age.hint"),
           unityLabel: t("section.unity.label"),
           unityHint: t("section.unity.hint"),
           locationLabel: t("section.location.label"),
@@ -100,8 +100,8 @@ export default async function EventFactConfigurationPage({
           filterTitle: t("filter.title"),
           filterToggleAriaLabel: t("filter.toggleAriaLabel"),
           filterToggleLabel: t("filter.toggleLabel"),
-          filterMomentFromLabel: t("filter.momentFromLabel"),
-          filterMomentToLabel: t("filter.momentToLabel"),
+          filterAgeFromLabel: t("filter.ageFromLabel"),
+          filterAgeToLabel: t("filter.ageToLabel"),
           filterLocationLabel: t("filter.locationLabel"),
           filterItemLabel: t("filter.itemLabel"),
           filterActionLabel: t("filter.actionLabel"),
@@ -123,17 +123,12 @@ export default async function EventFactConfigurationPage({
           createError: t("error.create"),
           deleteError: t("error.delete"),
           deleteBlockedDetail: t("error.deleteBlockedDetail"),
-          momentRequired: t("error.momentRequired"),
+          ageRequired: t("error.ageRequired"),
           unityRequired: t("error.unityRequired"),
           locationRequired: t("error.locationRequired"),
           itemRequired: t("error.itemRequired"),
           actionRequired: t("error.actionRequired"),
-          discardConfirm: t("discardConfirm"),
-          scopeEventApiError: {
-            event_moment_requires_unity: t("error.api.event_moment_requires_unity"),
-            event_standard_moment_forbidden: t("error.api.event_standard_moment_forbidden"),
-            event_fact_moment_required: t("error.api.event_fact_moment_required")
-          }
+          discardConfirm: t("discardConfirm")
         }}
       />
     </Suspense>

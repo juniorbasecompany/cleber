@@ -16,3 +16,9 @@ def test_unity_model_exposes_name_column() -> None:
 def test_event_model_exposes_unity_id_column() -> None:
     column_key_set = {column.key for column in inspect(Event).columns}
     assert "unity_id" in column_key_set
+
+
+def test_event_model_exposes_age_not_moment_utc() -> None:
+    column_key_set = {column.key for column in inspect(Event).columns}
+    assert "age" in column_key_set
+    assert "moment_utc" not in column_key_set

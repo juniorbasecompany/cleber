@@ -97,15 +97,8 @@
         "emailFieldHint": "Enter the email that will receive the invite. First sign-in uses a Google account with that same address."
       },
       "access": {
-        "title": "Access",
-        "description": "Role and status control the member's reach inside this tenant.",
         "emailLabel": "Email",
-        "memberEmailHint": "Invite and first-login address. You can change it anytime; it does not have to match the Google account email after the link is established.",
-        "roleLabel": "Role",
-        "statusLabel": "Status",
-        "accountLinked": "Linked account",
-        "accountPending": "Waiting for account link",
-        "accountTopicLabel": "Account"
+        "memberEmailHint": "Invite and first-login address. You can change it anytime; it does not have to match the Google account email after the link is established."
       }
     },
     "action": {
@@ -408,7 +401,7 @@
   },
   "EventConfigurationPageFact": {
     "title": "Facts",
-    "description": "Record facts with a unity (batch) and an event date and time, both required. Each row is a fact in time: filter by period, location, item, and action, and edit action inputs in the same flow.",
+    "description": "Record facts with a unity (batch) and an age on the scope timeline, both required. Filter by age range, location, item, and action, and edit action inputs in the same flow.",
     "list": {
       "emptyScope": "Create a scope before recording events.",
       "missingCurrentScope": "Select an active scope in the header before recording events.",
@@ -423,13 +416,13 @@
       "description": "Review the event history for the active scope: who changed what, when, and a concise summary."
     },
     "section": {
-      "moment": {
-        "label": "Event date and time",
-        "hint": "Enter when the event happened. The system stores UTC and shows your local time."
+      "age": {
+        "label": "Age",
+        "hint": "Whole number on the scope age axis (same unit as the scope age fields, for example days)."
       },
       "unity": {
         "label": "Unity",
-        "hint": "Select the batch unity. For facts, both a unity and a timestamp are required."
+        "hint": "Select the batch unity. Facts require a unity and an age."
       },
       "location": {
         "label": "Location",
@@ -455,8 +448,8 @@
       "toggleAriaLabel": "Show or hide the list filter panel",
       "toggleLabel": "Filter",
       "title": "List filters",
-      "momentFromLabel": "Start period",
-      "momentToLabel": "End period",
+      "ageFromLabel": "Minimum age",
+      "ageToLabel": "Maximum age",
       "locationLabel": "Location",
       "itemLabel": "Item",
       "actionLabel": "Action",
@@ -478,22 +471,17 @@
       "create": "Could not create the event. Try again.",
       "delete": "Could not delete the event. Try again.",
       "deleteBlockedDetail": "The event cannot be deleted while results still reference it.",
-      "momentRequired": "Enter the event date and time.",
-      "unityRequired": "Select a unity. Facts require both a unity and a timestamp.",
+      "ageRequired": "Enter a non-negative whole number for age.",
+      "unityRequired": "Select a unity. Facts require a unity and an age.",
       "locationRequired": "Select a location.",
       "itemRequired": "Select an item.",
-      "actionRequired": "Select an action.",
-      "api": {
-        "event_moment_requires_unity": "Facts require a unity and a timestamp. Standard events leave both empty. Remove the date and time or add a unity to record a fact.",
-        "event_standard_moment_forbidden": "Standard events require unity_id and moment_utc to be empty. Remove the date and time, or record a fact with a unity and timestamp.",
-        "event_fact_moment_required": "Facts require a unity and a timestamp. To clear the date and time, remove the unity (standard event)."
-      }
+      "actionRequired": "Select an action."
     },
     "discardConfirm": "Discard unsaved changes?"
   },
   "EventConfigurationPageStandard": {
     "title": "Pattern",
-    "description": "Pattern events define rules by location, item, and action using the scope current age field.",
+    "description": "Pattern events define rules by location, item, action, and age on the scope timeline, using the scope current age field.",
     "list": {
       "emptyScope": "Create a scope before recording pattern events.",
       "missingCurrentScope": "Select an active scope in the header before recording pattern events.",
@@ -508,9 +496,9 @@
       "description": "Review the pattern event history for the active scope: who changed what, when, and a concise summary."
     },
     "section": {
-      "ageField": {
-        "label": "Current age field",
-        "hint": "Pattern events use the scope field marked as batch current age. Change that flag in field settings if needed."
+      "age": {
+        "label": "Age",
+        "hint": "Whole number on the scope age axis (same unit as the scope age fields, for example days)."
       },
       "location": {
         "label": "Location",
@@ -536,8 +524,8 @@
       "toggleAriaLabel": "Show or hide the list filter panel",
       "toggleLabel": "Filter",
       "title": "List filters",
-      "momentFromLabel": "Start period",
-      "momentToLabel": "End period",
+      "ageFromLabel": "Minimum age",
+      "ageToLabel": "Maximum age",
       "locationLabel": "Location",
       "itemLabel": "Item",
       "actionLabel": "Action",
@@ -563,11 +551,7 @@
       "locationRequired": "Select a location.",
       "itemRequired": "Select an item.",
       "actionRequired": "Select an action.",
-      "api": {
-        "event_moment_requires_unity": "Facts require a unity and a timestamp. Standard events leave both empty. Remove the date and time or add a unity to record a fact.",
-        "event_standard_moment_forbidden": "Standard events require unity_id and moment_utc to be empty. Remove the date and time, or record a fact with a unity and timestamp.",
-        "event_fact_moment_required": "Facts require a unity and a timestamp. To clear the date and time, remove the unity (standard event)."
-      }
+      "ageRequired": "Enter a non-negative whole number for age."
     },
     "discardConfirm": "Discard unsaved changes?"
   },

@@ -275,7 +275,7 @@ class Event(Base):
 
     __tablename__ = "event"
     __table_args__ = {
-        "comment": "É o momento em que determinada fórmula é aplicada.",
+        "comment": "Registro em que determinada fórmula se aplica, com idade no eixo do escopo.",
     }
 
     id: Mapped[int] = mapped_column(
@@ -292,15 +292,16 @@ class Event(Base):
             "Ligação opcional ao lote (unidade). Quando preenchido, location_id deve "
             "coincidir com unity.location_id e item_id deve pertencer a "
             "unity.item_id_list. Evento com unity_id é um fato; sem unity_id é um "
-            "padrão (standard). Paridade obrigatória com moment_utc (CHECK no banco)."
+            "padrão (standard)."
         ),
     )
-    moment_utc: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=False),
-        nullable=True,
+    age: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
         comment=(
-            "Momento do fato. Presente apenas quando unity_id é informado. NULL em "
-            "eventos-padrão (standard), sem unity_id."
+            "Idade no eixo do escopo (valor inteiro; a unidade, ex. dia ou semana, é a "
+            "definida pelos campos de idade do escopo). Obrigatório para fato e para "
+            "padrão (standard)."
         ),
     )
     location_id: Mapped[int] = mapped_column(
@@ -358,8 +359,8 @@ class Input(Base):
         Integer,
         nullable=True,
         comment=(
-            "Idade na qual o valor foi registrado; NULL quando não recorrente ou sem "
-            "ocorrência por idade."
+            "Idade na qual o valor foi registrado (mesma unidade implícita do escopo); "
+            "NULL quando não recorrente ou sem ocorrência por idade."
         ),
     )
     value: Mapped[str] = mapped_column(
@@ -403,8 +404,8 @@ class Result(Base):
         Integer,
         nullable=False,
         comment=(
-            "Idade em dias do lote no momento do resultado (referência operacional; "
-            "alinha-se ao cálculo de idade atual do escopo)."
+            "Idade no eixo do escopo no momento do resultado (inteiro; unidade implícita "
+            "pelos campos de idade do escopo)."
         ),
     )
     event_id: Mapped[int] = mapped_column(

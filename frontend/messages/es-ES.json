@@ -97,15 +97,8 @@
         "emailFieldHint": "Indica el correo que recibirá la invitación. El primer acceso usa una cuenta de Google con esa misma dirección."
       },
       "access": {
-        "title": "Acceso",
-        "description": "El rol y el estado controlan el alcance del miembro dentro de este licenciatario.",
         "emailLabel": "Correo electrónico",
-        "memberEmailHint": "Dirección de la invitación y del primer acceso. Puedes cambiarla en cualquier momento; no tiene que coincidir con el correo de la cuenta de Google tras el vínculo.",
-        "roleLabel": "Rol",
-        "statusLabel": "Estado",
-        "accountLinked": "Cuenta vinculada",
-        "accountPending": "Esperando vínculo de la cuenta",
-        "accountTopicLabel": "Cuenta"
+        "memberEmailHint": "Dirección de la invitación y del primer acceso. Puedes cambiarla en cualquier momento; no tiene que coincidir con el correo de la cuenta de Google tras el vínculo."
       }
     },
     "action": {
@@ -408,7 +401,7 @@
   },
   "EventConfigurationPageFact": {
     "title": "Hechos",
-    "description": "Registra hechos con unidad (lote) y fecha u hora del evento, ambos obligatorios. Cada fila es un hecho en el tiempo: filtra por período, ubicación, ítem y acción, y edita las entradas de la acción en el mismo flujo.",
+    "description": "Registra hechos con unidad (lote) y edad en el eje del alcance, ambos obligatorios. Filtra por rango de edad, ubicación, ítem y acción, y edita las entradas de la acción en el mismo flujo.",
     "list": {
       "emptyScope": "Crea un alcance antes de registrar eventos.",
       "missingCurrentScope": "Define un alcance activo en el encabezado antes de registrar eventos.",
@@ -423,13 +416,13 @@
       "description": "Consulta el historial de eventos del alcance activo: quién cambió qué, cuándo y un resumen breve."
     },
     "section": {
-      "moment": {
-        "label": "Fecha y hora del evento",
-        "hint": "Indica cuándo ocurrió el evento. El sistema guarda en UTC y muestra en tu hora local."
+      "age": {
+        "label": "Edad",
+        "hint": "Número entero en el eje de edad del alcance (misma unidad que los campos de edad del alcance, por ejemplo días)."
       },
       "unity": {
         "label": "Unidad",
-        "hint": "Selecciona la unidad del lote. En hechos, unidad y fecha u hora son obligatorias."
+        "hint": "Selecciona la unidad del lote. En hechos, unidad y edad son obligatorias."
       },
       "location": {
         "label": "Ubicación",
@@ -455,8 +448,8 @@
       "toggleAriaLabel": "Mostrar u ocultar el panel de filtros de la lista",
       "toggleLabel": "Filtro",
       "title": "Filtros de la lista",
-      "momentFromLabel": "Período inicial",
-      "momentToLabel": "Período final",
+      "ageFromLabel": "Edad mínima",
+      "ageToLabel": "Edad máxima",
       "locationLabel": "Ubicación",
       "itemLabel": "Ítem",
       "actionLabel": "Acción",
@@ -478,22 +471,17 @@
       "create": "No se pudo crear el evento. Inténtalo de nuevo.",
       "delete": "No se pudo eliminar el evento. Inténtalo de nuevo.",
       "deleteBlockedDetail": "No es posible eliminar el evento mientras resultados aún lo referencian.",
-      "momentRequired": "Indica la fecha y hora del evento.",
-      "unityRequired": "Selecciona una unidad. En hechos, unidad y fecha u hora son obligatorias.",
+      "ageRequired": "Indica un número entero no negativo para la edad.",
+      "unityRequired": "Selecciona una unidad. En hechos, unidad y edad son obligatorias.",
       "locationRequired": "Selecciona una ubicación.",
       "itemRequired": "Selecciona un ítem.",
-      "actionRequired": "Selecciona una acción.",
-      "api": {
-        "event_moment_requires_unity": "En hechos, unidad y fecha u hora son obligatorias. En patrón, ambas quedan vacías. Quita fecha y hora o añade unidad para registrar un hecho.",
-        "event_standard_moment_forbidden": "En patrón, unidad y fecha u hora deben quedar vacías. Quita fecha y hora o registra un hecho con unidad y momento.",
-        "event_fact_moment_required": "En hechos, unidad y fecha u hora son obligatorias. Para borrar fecha y hora, quita la unidad (evento patrón)."
-      }
+      "actionRequired": "Selecciona una acción."
     },
     "discardConfirm": "¿Descartar los cambios no guardados?"
   },
   "EventConfigurationPageStandard": {
     "title": "Patrón",
-    "description": "Los eventos patrón definen reglas por ubicación, ítem y acción usando el campo de edad actual del alcance.",
+    "description": "Los eventos patrón definen reglas por ubicación, ítem, acción y edad en el eje del alcance, usando el campo de edad actual del alcance.",
     "list": {
       "emptyScope": "Crea un alcance antes de registrar eventos patrón.",
       "missingCurrentScope": "Define un alcance activo en el encabezado antes de registrar eventos patrón.",
@@ -508,9 +496,9 @@
       "description": "Consulta el historial de eventos patrón del alcance activo: quién cambió qué, cuándo y un resumen breve."
     },
     "section": {
-      "ageField": {
-        "label": "Campo de edad actual",
-        "hint": "El evento patrón usa el campo del alcance marcado como edad actual del lote. Ajusta esa marca en la configuración de campos si es necesario."
+      "age": {
+        "label": "Edad",
+        "hint": "Número entero en el eje de edad del alcance (misma unidad que los campos de edad del alcance, por ejemplo días)."
       },
       "location": {
         "label": "Ubicación",
@@ -536,8 +524,8 @@
       "toggleAriaLabel": "Mostrar u ocultar el panel de filtros de la lista",
       "toggleLabel": "Filtro",
       "title": "Filtros de la lista",
-      "momentFromLabel": "Período inicial",
-      "momentToLabel": "Período final",
+      "ageFromLabel": "Edad mínima",
+      "ageToLabel": "Edad máxima",
       "locationLabel": "Ubicación",
       "itemLabel": "Ítem",
       "actionLabel": "Acción",
@@ -563,11 +551,7 @@
       "locationRequired": "Selecciona una ubicación.",
       "itemRequired": "Selecciona un ítem.",
       "actionRequired": "Selecciona una acción.",
-      "api": {
-        "event_moment_requires_unity": "En hechos, unidad y fecha u hora son obligatorias. En patrón, ambas quedan vacías. Quita fecha y hora o añade unidad para registrar un hecho.",
-        "event_standard_moment_forbidden": "En patrón, unidad y fecha u hora deben quedar vacías. Quita fecha y hora o registra un hecho con unidad y momento.",
-        "event_fact_moment_required": "En hechos, unidad y fecha u hora son obligatorias. Para borrar fecha y hora, quita la unidad (evento patrón)."
-      }
+      "ageRequired": "Indica un número entero no negativo para la edad."
     },
     "discardConfirm": "¿Descartar los cambios no guardados?"
   },

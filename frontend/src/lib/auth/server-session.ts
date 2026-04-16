@@ -315,8 +315,8 @@ export async function getTenantScopeActionFormulaList(
 export async function getTenantScopeEventDirectory(
   scopeId: number,
   filter: {
-    moment_from_utc?: string;
-    moment_to_utc?: string;
+    age_from?: number;
+    age_to?: number;
     location_id?: number | number[];
     item_id?: number | number[];
     action_id?: number;
@@ -332,11 +332,11 @@ export async function getTenantScopeEventDirectory(
   }
 
   const query = new URLSearchParams();
-  if (filter.moment_from_utc) {
-    query.set("moment_from_utc", filter.moment_from_utc);
+  if (filter.age_from != null) {
+    query.set("age_from", String(filter.age_from));
   }
-  if (filter.moment_to_utc) {
-    query.set("moment_to_utc", filter.moment_to_utc);
+  if (filter.age_to != null) {
+    query.set("age_to", String(filter.age_to));
   }
   if (Array.isArray(filter.location_id)) {
     for (const locationId of filter.location_id) {

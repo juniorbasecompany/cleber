@@ -1,7 +1,6 @@
 "use client";
 
 import { HierarchyDropdownField } from "@/component/configuration/hierarchy-dropdown-field";
-import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel,
@@ -15,8 +14,8 @@ type EventFilterOption = {
 };
 
 type EventFilterPanelCopy = {
-  momentFromLabel: string;
-  momentToLabel: string;
+  ageFromLabel: string;
+  ageToLabel: string;
   locationLabel: string;
   itemLabel: string;
   actionLabel: string;
@@ -27,19 +26,19 @@ type EventFilterPanelCopy = {
 
 type EventFilterPanelProps = {
   locale: string;
-  /** Quando false, omite o filtro por intervalo de data (ex.: eventos padrão sem momento). */
-  showMomentRange?: boolean;
+  /** Quando false, omite o filtro por faixa de idade. */
+  showAgeRange?: boolean;
   copy: EventFilterPanelCopy;
-  filterMomentFromInput: string;
-  filterMomentToInput: string;
+  filterAgeFromInput: string;
+  filterAgeToInput: string;
   filterLocationIdList: number[];
   filterItemIdList: number[];
   filterActionId: number | null;
   locationItemList: TenantLocationRecord[];
   itemHierarchyList: TenantItemRecord[];
   actionOptionList: EventFilterOption[];
-  onFilterMomentFromChange: (value: Date | null) => void;
-  onFilterMomentToChange: (value: Date | null) => void;
+  onFilterAgeFromChange: (value: string) => void;
+  onFilterAgeToChange: (value: string) => void;
   onFilterLocationChange: (valueList: number[]) => void;
   onFilterItemChange: (valueList: number[]) => void;
   onFilterActionChange: (value: string) => void;
@@ -47,54 +46,65 @@ type EventFilterPanelProps = {
 
 export function EventFilterPanel({
   locale,
-  showMomentRange = true,
+  showAgeRange = true,
   copy,
-  filterMomentFromInput,
-  filterMomentToInput,
+  filterAgeFromInput,
+  filterAgeToInput,
   filterLocationIdList,
   filterItemIdList,
   filterActionId,
   locationItemList,
   itemHierarchyList,
   actionOptionList,
-  onFilterMomentFromChange,
-  onFilterMomentToChange,
+  onFilterAgeFromChange,
+  onFilterAgeToChange,
   onFilterLocationChange,
   onFilterItemChange,
   onFilterActionChange
 }: EventFilterPanelProps) {
+  void locale;
   return (
     <DirectoryFilterPanel>
-      {showMomentRange ? (
+      {showAgeRange ? (
         <>
           <DirectoryFilterCard>
             <div className="ui-field">
-              <label className="ui-field-label" htmlFor="event-filter-moment-from">
-                {copy.momentFromLabel}
+              <label className="ui-field-label" htmlFor="event-filter-age-from">
+                {copy.ageFromLabel}
               </label>
-              <TenantDateTimePicker
-                id="event-filter-moment-from"
-                value={filterMomentFromInput ? new Date(filterMomentFromInput) : null}
-                onChange={onFilterMomentFromChange}
-                locale={locale}
-                hidePlaceholder
-                periodBoundary="start"
+              <input
+                id="event-filter-age-from"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                className="ui-input"
+                value={filterAgeFromInput}
+                onChange={(event) => {
+                  onFilterAgeFromChange(event.target.value);
+                }}
+                aria-label={copy.ageFromLabel}
               />
             </div>
           </DirectoryFilterCard>
 
           <DirectoryFilterCard>
             <div className="ui-field">
-              <label className="ui-field-label" htmlFor="event-filter-moment-to">
-                {copy.momentToLabel}
+              <label className="ui-field-label" htmlFor="event-filter-age-to">
+                {copy.ageToLabel}
               </label>
-              <TenantDateTimePicker
-                id="event-filter-moment-to"
-                value={filterMomentToInput ? new Date(filterMomentToInput) : null}
-                onChange={onFilterMomentToChange}
-                locale={locale}
-                hidePlaceholder
-                periodBoundary="end"
+              <input
+                id="event-filter-age-to"
+                type="number"
+                min={0}
+                step={1}
+                inputMode="numeric"
+                className="ui-input"
+                value={filterAgeToInput}
+                onChange={(event) => {
+                  onFilterAgeToChange(event.target.value);
+                }}
+                aria-label={copy.ageToLabel}
               />
             </div>
           </DirectoryFilterCard>

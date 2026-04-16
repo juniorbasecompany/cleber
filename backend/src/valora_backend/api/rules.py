@@ -557,18 +557,6 @@ def _event_in_scope_or_404(
     return row
 
 
-def _event_unity_moment_pair_or_400(row: Event) -> None:
-    """Padrão (standard): `unity_id` e `moment_utc` nulos. Fato (fact): ambos obrigatórios (não nulos)."""
-    if (row.unity_id is None) ^ (row.moment_utc is None):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "code": "event_unity_moment_mismatch",
-                "message": "Standard events require unity_id and moment_utc to be null; facts require both to be set.",
-            },
-        )
-
-
 def _input_in_event_or_404(
     session: Session, *, event_id: int, input_id: int
 ) -> Input:
@@ -1969,7 +1957,7 @@ class ScopeEventRecord(BaseModel):
     location_id: int
     item_id: int
     action_id: int
-    moment_utc: datetime | None = None
+    age: int
     input_summary: str | None = None
 
 
@@ -1982,7 +1970,7 @@ class ScopeEventCreateRequest(BaseModel):
     location_id: int
     item_id: int
     action_id: int
-    moment_utc: datetime | None = None
+    age: int = PydanticField(ge=0)
     unity_id: int | None = None
 
 
@@ -1990,7 +1978,7 @@ class ScopeEventPatchRequest(BaseModel):
     location_id: int | None = None
     item_id: int | None = None
     action_id: int | None = None
-    moment_utc: datetime | None = None
+    age: int | None = PydanticField(default=None, ge=0)
     unity_id: int | None = None
 
 
@@ -2009,7 +1997,7 @@ class ScopeCurrentAgeCalculationRecord(BaseModel):
     location_id: int
     item_id: int
     action_id: int
-    event_moment_utc: datetime | None
+    event_age: int
     result_age: int
     text_value: str | None
     boolean_value: bool | None
@@ -2065,7 +2053,7 @@ def _build_current_age_response_from_result_rows(
                 location_id=event_row.location_id,
                 item_id=event_row.item_id,
                 action_id=event_row.action_id,
-                event_moment_utc=event_row.moment_utc,
+                event_age=event_row.age,
                 result_age=result_row.age,
                 text_value=result_row.text_value,
                 boolean_value=result_row.boolean_value,
@@ -2115,7 +2103,7 @@ def _list_scope_current_age_results(
             query.order_by(
                 asc(exec_date_expr),
                 Action.sort_order.asc(),
-                Event.moment_utc.asc(),
+                Event.age.asc(),
                 Event.id.asc(),
                 Result.formula_order.asc(),
                 Result.id.asc(),
@@ -2191,25 +2179,11 @@ def _normalize_whole_age_runtime_or_400(
 
 def _event_execution_sort_key(
     *,
-    moment_utc: datetime,
+    event_calendar_day: date,
     action_sort_order: int,
     event_id: int,
-) -> tuple[datetime.date, int, datetime, int]:
-    return (moment_utc.date(), action_sort_order, moment_utc, event_id)
-
-
-def _combine_day_with_source_moment(
-    *, execution_day: date, source_moment_utc: datetime
-) -> datetime:
-    return datetime(
-        execution_day.year,
-        execution_day.month,
-        execution_day.day,
-        source_moment_utc.hour,
-        source_moment_utc.minute,
-        source_moment_utc.second,
-        source_moment_utc.microsecond,
-    )
+) -> tuple[date, int, int]:
+    return (event_calendar_day, action_sort_order, event_id)
 
 
 def _build_window_meta_by_event_id(
@@ -2314,14 +2288,18 @@ def _build_execution_occurrence_list(
     for group_event_row_list in event_row_list_by_group.values():
         next_day_by_action_id: dict[int, date] = {}
         for row in reversed(group_event_row_list):
-            row_day = row.moment_utc.date()
+            unity = unity_by_id.get(row.unity_id) if row.unity_id else None
+            if unity is None:
+                continue
+            creation_day = unity.creation_utc.date()
+            row_day = creation_day + timedelta(days=row.age)
             next_same_action_day_by_event_id[row.id] = next_day_by_action_id.get(row.action_id)
             next_day_by_action_id[row.action_id] = row_day
 
     for row in event_row_list:
         if row.id not in window_meta_by_event_id:
             continue
-        if row.moment_utc is None or row.unity_id is None:
+        if row.unity_id is None:
             continue
         window_meta = window_meta_by_event_id[row.id]
         unity = unity_by_id.get(row.unity_id)
@@ -2331,10 +2309,11 @@ def _build_execution_occurrence_list(
         source_final_age = window_meta["source_final_age"]
         period_end_day = creation_day + timedelta(days=source_final_age)
         action_row = action_by_id[row.action_id]
+        event_day = creation_day + timedelta(days=row.age)
         occurrence_list.append(
             {
                 "source_event": row,
-                "execution_moment_utc": row.moment_utc,
+                "execution_day": event_day,
                 "current_age_action_priority": 0 if row.action_id in current_age_action_id_set else 1,
                 "action_sort_order": action_row.sort_order,
                 "is_actual_event_day": True,
@@ -2349,15 +2328,12 @@ def _build_execution_occurrence_list(
                 recurrence_last_day,
                 next_same_action_day - timedelta(days=1),
             )
-        next_execution_day = row.moment_utc.date() + timedelta(days=1)
+        next_execution_day = event_day + timedelta(days=1)
         while next_execution_day <= recurrence_last_day:
             occurrence_list.append(
                 {
                     "source_event": row,
-                    "execution_moment_utc": _combine_day_with_source_moment(
-                        execution_day=next_execution_day,
-                        source_moment_utc=row.moment_utc,
-                    ),
+                    "execution_day": next_execution_day,
                     "current_age_action_priority": 0 if row.action_id in current_age_action_id_set else 1,
                     "action_sort_order": action_row.sort_order,
                     "is_actual_event_day": False,
@@ -2368,10 +2344,9 @@ def _build_execution_occurrence_list(
     occurrence_list.sort(
         key=lambda item: (
             item["source_event"].unity_id or 0,
-            item["execution_moment_utc"].date(),
+            item["execution_day"],
             item["current_age_action_priority"],
             item["action_sort_order"],
-            item["execution_moment_utc"],
             item["source_event"].id,
         )
     )
@@ -2383,8 +2358,8 @@ def _current_age_occurrence_unity_day_key(occurrence: dict[str, Any]) -> tuple[i
     row = occurrence["source_event"]
     uid = row.unity_id
     if uid is None:
-        return (0, occurrence["execution_moment_utc"].date())
-    return (uid, occurrence["execution_moment_utc"].date())
+        return (0, occurrence["execution_day"])
+    return (uid, occurrence["execution_day"])
 
 
 @router.get(
@@ -2393,8 +2368,8 @@ def _current_age_occurrence_unity_day_key(occurrence: dict[str, Any]) -> tuple[i
 )
 def list_scope_events(
     scope_id: int,
-    moment_from_utc: Annotated[datetime | None, Query()] = None,
-    moment_to_utc: Annotated[datetime | None, Query()] = None,
+    age_from: Annotated[int | None, Query(ge=0)] = None,
+    age_to: Annotated[int | None, Query(ge=0)] = None,
     location_id: Annotated[list[int] | None, Query()] = None,
     item_id: Annotated[list[int] | None, Query()] = None,
     action_id: Annotated[int | None, Query()] = None,
@@ -2423,18 +2398,10 @@ def list_scope_events(
     item_id_list = item_id or []
 
     _get_tenant_scope(session, actor=member, scope_id=scope_id)
-    if moment_from_utc is not None and moment_from_utc.tzinfo is not None:
-        moment_from_utc = moment_from_utc.astimezone(UTC).replace(tzinfo=None)
-    if moment_to_utc is not None and moment_to_utc.tzinfo is not None:
-        moment_to_utc = moment_to_utc.astimezone(UTC).replace(tzinfo=None)
-    if (
-        moment_from_utc is not None
-        and moment_to_utc is not None
-        and moment_from_utc > moment_to_utc
-    ):
+    if age_from is not None and age_to is not None and age_from > age_to:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid event period",
+            detail="Invalid event age range",
         )
     for location_id_item in location_id_list:
         _location_in_scope_or_404(
@@ -2457,10 +2424,10 @@ def list_scope_events(
         query = query.where(Event.unity_id.is_(None))
     elif event_kind == "fact":
         query = query.where(Event.unity_id.isnot(None))
-    if moment_from_utc is not None:
-        query = query.where(Event.moment_utc >= moment_from_utc)
-    if moment_to_utc is not None:
-        query = query.where(Event.moment_utc <= moment_to_utc)
+    if age_from is not None:
+        query = query.where(Event.age >= age_from)
+    if age_to is not None:
+        query = query.where(Event.age <= age_to)
     if location_id_list:
         expanded_location_id_list = _expand_scope_location_id_list_with_descendants(
             session, scope_id=scope_id, location_id_list=location_id_list
@@ -2473,11 +2440,7 @@ def list_scope_events(
         query = query.where(Event.item_id.in_(expanded_item_id_list))
     if action_id is not None:
         query = query.where(Event.action_id == action_id)
-    rows = list(
-        session.scalars(
-            query.order_by(Event.moment_utc.asc().nulls_last(), Event.id.asc())
-        )
-    )
+    rows = list(session.scalars(query.order_by(Event.age.asc(), Event.id.asc())))
     summary_by_event_id = _event_input_summary_by_event_id(
         session,
         event_id_list=[r.id for r in rows],
@@ -2492,7 +2455,7 @@ def list_scope_events(
                 location_id=r.location_id,
                 item_id=r.item_id,
                 action_id=r.action_id,
-                moment_utc=r.moment_utc,
+                age=r.age,
                 input_summary=summary_by_event_id.get(r.id),
             )
             for r in rows
@@ -2518,35 +2481,22 @@ def create_scope_event(
         session, scope_id=scope_id, action_id=body.action_id
     )
     is_standard = body.unity_id is None
-    if is_standard and body.moment_utc is not None:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail={
-                "code": "event_standard_moment_forbidden",
-                "message": "Standard events require unity_id and moment_utc to be null; omit the timestamp.",
-            },
-        )
-    moment: datetime | None = None
     if not is_standard:
         _get_scope_unity_or_404(session, scope_id=scope_id, unity_id=body.unity_id)
-        moment = body.moment_utc or datetime.now(UTC)
-        if moment.tzinfo is not None:
-            moment = moment.astimezone(UTC).replace(tzinfo=None)
     row = Event(
         unity_id=body.unity_id,
         location_id=body.location_id,
         item_id=body.item_id,
         action_id=action.id,
-        moment_utc=moment,
+        age=body.age,
     )
-    _event_unity_moment_pair_or_400(row)
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)
     return list_scope_events(
         scope_id=scope_id,
-        moment_from_utc=None,
-        moment_to_utc=None,
+        age_from=None,
+        age_to=None,
         location_id=None,
         item_id=None,
         action_id=None,
@@ -2584,39 +2534,12 @@ def patch_scope_event(
         row.action_id = body.action_id
     if "unity_id" in body.model_fields_set:
         row.unity_id = body.unity_id
-        if body.unity_id is None:
-            row.moment_utc = None
-        else:
+        if body.unity_id is not None:
             _get_scope_unity_or_404(
                 session, scope_id=scope_id, unity_id=body.unity_id
             )
-    if "moment_utc" in body.model_fields_set:
-        if body.moment_utc is None:
-            if row.unity_id is not None:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        "code": "event_fact_moment_required",
-                        "message": "Facts require unity_id and moment_utc; remove the unity first to clear the timestamp.",
-                    },
-                )
-            row.moment_utc = None
-        else:
-            if row.unity_id is None:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail={
-                        "code": "event_moment_requires_unity",
-                        "message": "Facts require unity_id and moment_utc; add a unity or remove the timestamp for a standard event.",
-                    },
-                )
-            moment = body.moment_utc
-            if moment.tzinfo is not None:
-                moment = moment.astimezone(UTC).replace(tzinfo=None)
-            row.moment_utc = moment
-    if row.unity_id is not None and row.moment_utc is None:
-        row.moment_utc = datetime.now(UTC).replace(tzinfo=None)
-    _event_unity_moment_pair_or_400(row)
+    if "age" in body.model_fields_set and body.age is not None:
+        row.age = body.age
     if row.unity_id is not None:
         _get_scope_unity_or_404(session, scope_id=scope_id, unity_id=row.unity_id)
     session.add(row)
@@ -2624,8 +2547,8 @@ def patch_scope_event(
     commit_session_with_null_if_empty(session)
     return list_scope_events(
         scope_id=scope_id,
-        moment_from_utc=None,
-        moment_to_utc=None,
+        age_from=None,
+        age_to=None,
         location_id=None,
         item_id=None,
         action_id=None,
@@ -2662,8 +2585,8 @@ def delete_scope_event(
     session.commit()
     return list_scope_events(
         scope_id=scope_id,
-        moment_from_utc=None,
-        moment_to_utc=None,
+        age_from=None,
+        age_to=None,
         location_id=None,
         item_id=None,
         action_id=None,
@@ -2789,24 +2712,38 @@ def calculate_scope_current_age(
     )
     field_by_id = {row.id: row for row in field_row_list}
 
-    # Eventos padrão (standard) têm moment_utc NULL no evento; esta query só inclui
-    # fatos com data na linha. Incluir padrão exigiria ocorrências sintéticas por dia
-    # (ver README: calculate-current-age).
-    event_row_list = sorted(
-        list(
-            session.scalars(
-                select(Event)
-                .join(Action, Event.action_id == Action.id)
-                .where(
-                    Action.scope_id == scope_id,
-                    Event.moment_utc.isnot(None),
-                    Event.unity_id.isnot(None),
-                    *event_predicates,
-                )
+    # Apenas fatos (unity_id preenchido); idade na linha do evento (`event.age`).
+    event_row_list_raw = list(
+        session.scalars(
+            select(Event)
+            .join(Action, Event.action_id == Action.id)
+            .where(
+                Action.scope_id == scope_id,
+                Event.unity_id.isnot(None),
+                *event_predicates,
             )
-        ),
+        )
+    )
+    unity_id_set_for_sort = {
+        row.unity_id for row in event_row_list_raw if row.unity_id is not None
+    }
+    unity_by_id = {
+        u.id: u
+        for u in session.scalars(select(Unity).where(Unity.id.in_(unity_id_set_for_sort)))
+    }
+
+    def _fact_calendar_day(row: Event) -> date:
+        if row.unity_id is None:
+            return date.min
+        u = unity_by_id.get(row.unity_id)
+        if u is None:
+            return date.min
+        return u.creation_utc.date() + timedelta(days=row.age)
+
+    event_row_list = sorted(
+        event_row_list_raw,
         key=lambda row: _event_execution_sort_key(
-            moment_utc=row.moment_utc,
+            event_calendar_day=_fact_calendar_day(row),
             action_sort_order=action_by_id[row.action_id].sort_order,
             event_id=row.id,
         ),
@@ -2822,12 +2759,6 @@ def calculate_scope_current_age(
             empty_reason="no_events_in_scope",
             item_list=[],
         )
-
-    unity_id_set = {row.unity_id for row in event_row_list if row.unity_id is not None}
-    unity_by_id = {
-        u.id: u
-        for u in session.scalars(select(Unity).where(Unity.id.in_(unity_id_set)))
-    }
 
     event_id_list = [row.id for row in event_row_list]
     formula_row_list = list(
@@ -3002,7 +2933,7 @@ def calculate_scope_current_age(
     ):
         for occurrence in day_occurrence_iter:
             row = occurrence["source_event"]
-            execution_moment_utc = occurrence["execution_moment_utc"]
+            execution_day = occurrence["execution_day"]
             window_meta = window_meta_by_event_id.get(row.id)
             if window_meta is None:
                 continue
@@ -3021,7 +2952,6 @@ def calculate_scope_current_age(
             if active_window is None:
                 continue
             pending_close = close_after_day_by_group.get(group_key)
-            execution_day = execution_moment_utc.date()
             if pending_close is not None and pending_close["window"] == active_window:
                 if execution_day > pending_close["close_after_day"]:
                     current_window_by_group.pop(group_key, None)

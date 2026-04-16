@@ -1,4 +1,4 @@
-"""Listagem e criação de eventos com `event_kind` e paridade unity_id / moment_utc."""
+"""Listagem e criação de eventos com `event_kind` e `unity_id` / `age`."""
 
 from __future__ import annotations
 
@@ -120,20 +120,20 @@ def client_session_master() -> tuple[TestClient, Session, int, int]:
     session.add(unity)
     session.flush()
 
-    moment = datetime(2026, 4, 2, 12, 0, 0)
+    # Idade alinhada a date(moment) - date(creation_utc) no mesmo critério da migração.
     ev_fact = Event(
         unity_id=unity.id,
         location_id=location.id,
         item_id=item.id,
         action_id=action.id,
-        moment_utc=moment,
+        age=1,
     )
     ev_std = Event(
         unity_id=None,
         location_id=location.id,
         item_id=item.id,
         action_id=action.id,
-        moment_utc=None,
+        age=0,
     )
     session.add_all([ev_fact, ev_std])
     session.commit()
@@ -180,34 +180,25 @@ def test_list_scope_events_event_kind_filters(
     assert ids_fact.isdisjoint(ids_std)
 
 
-def test_create_scope_event_rejects_moment_without_unity(
+def test_create_scope_event_standard_requires_age(
     client_session_master: tuple[TestClient, Session, int, int],
 ) -> None:
+    """Corpo sem `age` deve falhar na validação (campo obrigatório)."""
     client, session, scope_id, _other_field_id = client_session_master
 
-    row = session.scalars(select(Location).where(Location.scope_id == scope_id)).first()
-    assert row is not None
-    location_id = row.id
-    item = session.scalars(select(Item).where(Item.scope_id == scope_id)).first()
-    assert item is not None
-    action = session.scalars(select(Action).where(Action.scope_id == scope_id)).first()
-    assert action is not None
+    location_id = session.scalars(select(Location).where(Location.scope_id == scope_id)).first().id
+    item_id = session.scalars(select(Item).where(Item.scope_id == scope_id)).first().id
+    action_id = session.scalars(select(Action).where(Action.scope_id == scope_id)).first().id
 
     response = client.post(
         f"/auth/tenant/current/scopes/{scope_id}/events",
         json={
             "location_id": location_id,
-            "item_id": item.id,
-            "action_id": action.id,
-            "moment_utc": "2026-04-03T12:00:00",
+            "item_id": item_id,
+            "action_id": action_id,
         },
     )
-    assert response.status_code == 400
-    detail = response.json()["detail"]
-    if isinstance(detail, dict):
-        assert detail.get("code") == "event_standard_moment_forbidden"
-    else:
-        assert "standard" in detail.lower() or "moment" in detail.lower()
+    assert response.status_code == 422
 
 
 def test_create_scope_event_standard_without_unity(
@@ -228,6 +219,7 @@ def test_create_scope_event_standard_without_unity(
             "location_id": location_id,
             "item_id": item_id,
             "action_id": action_id,
+            "age": 2,
         },
     )
     assert response.status_code == 200, response.text
@@ -238,4 +230,4 @@ def test_create_scope_event_standard_without_unity(
     )
     assert new_row is not None
     assert new_row["unity_id"] is None
-    assert new_row["moment_utc"] is None
+    assert new_row["age"] == 2

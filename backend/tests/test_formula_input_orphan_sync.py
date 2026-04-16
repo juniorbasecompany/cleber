@@ -95,7 +95,7 @@ def _seed_scope_action_fields_event_input(
         location_id=location.id,
         item_id=item.id,
         action_id=action.id,
-        moment_utc=None,
+        age=0,
     )
     session.add(event)
     session.flush()

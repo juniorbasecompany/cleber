@@ -82,6 +82,8 @@ export default async function EventStandardConfigurationPage({
           loadError: t("list.loadError"),
           historyTitle: t("history.title"),
           historyDescription: t("history.description"),
+          ageLabel: t("section.age.label"),
+          ageHint: t("section.age.hint"),
           locationLabel: t("section.location.label"),
           locationHint: t("section.location.hint"),
           itemLabel: t("section.item.label"),
@@ -96,8 +98,8 @@ export default async function EventStandardConfigurationPage({
           filterTitle: t("filter.title"),
           filterToggleAriaLabel: t("filter.toggleAriaLabel"),
           filterToggleLabel: t("filter.toggleLabel"),
-          filterMomentFromLabel: t("filter.momentFromLabel"),
-          filterMomentToLabel: t("filter.momentToLabel"),
+          filterAgeFromLabel: t("filter.ageFromLabel"),
+          filterAgeToLabel: t("filter.ageToLabel"),
           filterLocationLabel: t("filter.locationLabel"),
           filterItemLabel: t("filter.itemLabel"),
           filterActionLabel: t("filter.actionLabel"),
@@ -119,16 +121,12 @@ export default async function EventStandardConfigurationPage({
           createError: t("error.create"),
           deleteError: t("error.delete"),
           deleteBlockedDetail: t("error.deleteBlockedDetail"),
+          ageRequired: t("error.ageRequired"),
           locationRequired: t("error.locationRequired"),
           itemRequired: t("error.itemRequired"),
           actionRequired: t("error.actionRequired"),
           discardConfirm: t("discardConfirm"),
-          currentAgeFieldMissing: t("error.currentAgeFieldMissing"),
-          scopeEventApiError: {
-            event_moment_requires_unity: t("error.api.event_moment_requires_unity"),
-            event_standard_moment_forbidden: t("error.api.event_standard_moment_forbidden"),
-            event_fact_moment_required: t("error.api.event_fact_moment_required")
-          }
+          currentAgeFieldMissing: t("error.currentAgeFieldMissing")
         }}
       />
     </Suspense>

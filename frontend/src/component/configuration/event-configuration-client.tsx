@@ -14,7 +14,6 @@ import { EventActionField } from "@/component/configuration/event-action-field";
 import { EventFilterPanel } from "@/component/configuration/event-filter-panel";
 import { HierarchySingleSelectField } from "@/component/configuration/hierarchy-dropdown-field";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
-import { TenantDateTimePicker } from "@/component/ui/tenant-date-time-picker";
 import { EditorPanelFlashOverlay } from "@/component/configuration/editor-panel-flash-overlay";
 import { useEditorPanelFlash } from "@/component/configuration/use-editor-panel-flash";
 import { useEditorNewIntentGeneration } from "@/component/configuration/use-editor-new-intent-generation";
@@ -47,11 +46,6 @@ import {
 
 const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
 
-type ScopeEventApiErrorCode =
-  | "event_moment_requires_unity"
-  | "event_standard_moment_forbidden"
-  | "event_fact_moment_required";
-
 export type EventConfigurationCopy = {
   title: string;
   description: string;
@@ -60,9 +54,8 @@ export type EventConfigurationCopy = {
   loadError: string;
   historyTitle: string;
   historyDescription: string;
-  /** Painel Fatos apenas. */
-  momentLabel?: string;
-  momentHint?: string;
+  ageLabel: string;
+  ageHint: string;
   unityLabel?: string;
   unityHint?: string;
   locationLabel: string;
@@ -79,8 +72,8 @@ export type EventConfigurationCopy = {
   filterTitle: string;
   filterToggleAriaLabel: string;
   filterToggleLabel: string;
-  filterMomentFromLabel: string;
-  filterMomentToLabel: string;
+  filterAgeFromLabel: string;
+  filterAgeToLabel: string;
   filterLocationLabel: string;
   filterItemLabel: string;
   filterActionLabel: string;
@@ -102,7 +95,7 @@ export type EventConfigurationCopy = {
   createError: string;
   deleteError: string;
   deleteBlockedDetail: string;
-  momentRequired?: string;
+  ageRequired?: string;
   unityRequired?: string;
   locationRequired: string;
   itemRequired: string;
@@ -110,7 +103,7 @@ export type EventConfigurationCopy = {
   discardConfirm: string;
   currentAgeFieldMissing?: string;
   /** Mensagens por `detail.code` da API de eventos (REST); ver `rules.py`. */
-  scopeEventApiError?: Partial<Record<ScopeEventApiErrorCode, string>>;
+  scopeEventApiError?: Partial<Record<string, string>>;
 };
 
 function resolveScopeEventHttpErrorMessage(
@@ -120,7 +113,7 @@ function resolveScopeEventHttpErrorMessage(
 ): string {
   const code = parseErrorCode(payload);
   if (code && scopeEventApiError) {
-    const mapped = scopeEventApiError[code as ScopeEventApiErrorCode];
+    const mapped = scopeEventApiError[code];
     if (typeof mapped === "string" && mapped.trim()) {
       return mapped;
     }
@@ -131,7 +124,7 @@ function resolveScopeEventHttpErrorMessage(
 type EventConfigurationClientProps = {
   locale: string;
   labelLang: LabelLang;
-  /** Fatos: `unity_id` e `moment_utc` obrigatórios. Padrão (standard): ambos NULL; o escopo deve ter campo de idade atual. */
+  /** Fatos: `unity_id` obrigatório. Padrão (standard): `unity_id` ausente. `age` obrigatório em ambos. */
   variant: "fact" | "standard";
   /** Base da rota para query `?event=`, ex. `/${locale}/app/configuration/event/fact`. */
   basePath: string;
@@ -164,17 +157,15 @@ function parseSelectedEventKey(raw: string | null): EventSelectionKey {
   return parsed;
 }
 
-/** Lista do diretório: mais antigo primeiro (mesma regra da API `list_scope_events`). */
+/** Lista do diretório: menor `age` primeiro (mesma regra da API `list_scope_events`). */
 function sortEventDirectoryItemListOldestFirst(
   itemList: TenantScopeEventRecord[],
   actionSortOrderById: Map<number, number>
 ): TenantScopeEventRecord[] {
   return [...itemList].sort((left, right) => {
-    const leftM = left.moment_utc ?? "";
-    const rightM = right.moment_utc ?? "";
-    const byDay = leftM.slice(0, 10).localeCompare(rightM.slice(0, 10));
-    if (byDay !== 0) {
-      return byDay;
+    const byAge = left.age - right.age;
+    if (byAge !== 0) {
+      return byAge;
     }
     const byActionSortOrder =
       (actionSortOrderById.get(left.action_id) ?? Number.MAX_SAFE_INTEGER)
@@ -182,15 +173,11 @@ function sortEventDirectoryItemListOldestFirst(
     if (byActionSortOrder !== 0) {
       return byActionSortOrder;
     }
-    const byMoment = leftM.localeCompare(rightM);
-    if (byMoment !== 0) {
-      return byMoment;
-    }
     return left.id - right.id;
   });
 }
 
-/** Eventos padrão: `unity_id` e `moment_utc` nulos; ordenação por local, item, ação e id. */
+/** Eventos padrão: ordenação por local, item, ação, idade e id. */
 function sortEventDirectoryItemListStandardFirst(
   itemList: TenantScopeEventRecord[],
   actionSortOrderById: Map<number, number>
@@ -209,6 +196,10 @@ function sortEventDirectoryItemListStandardFirst(
       - (actionSortOrderById.get(right.action_id) ?? Number.MAX_SAFE_INTEGER);
     if (byActionSortOrder !== 0) {
       return byActionSortOrder;
+    }
+    const byAge = left.age - right.age;
+    if (byAge !== 0) {
+      return byAge;
     }
     return left.id - right.id;
   });
@@ -235,69 +226,16 @@ function resolveSelectedEventKey(
   return canCreate ? "new" : null;
 }
 
-function normalizeUtcMomentInput(value: string): string {
-  if (/[zZ]$|[+-]\d{2}:\d{2}$/.test(value)) {
-    return value;
-  }
-  return `${value}Z`;
-}
-
-function parseUtcMoment(value: string): Date | null {
-  const parsed = new Date(normalizeUtcMomentInput(value));
-  return Number.isNaN(parsed.getTime()) ? null : parsed;
-}
-
-function pad2(value: number): string {
-  return String(value).padStart(2, "0");
-}
-
-function toLocalMomentInputValue(date: Date): string {
-  const year = date.getFullYear();
-  const month = pad2(date.getMonth() + 1);
-  const day = pad2(date.getDate());
-  const hour = pad2(date.getHours());
-  const minute = pad2(date.getMinutes());
-  return `${year}-${month}-${day}T${hour}:${minute}`;
-}
-
-function toLocalMomentInputFromUtc(value: string | null | undefined): string {
-  if (value == null || value === "") {
-    return "";
-  }
-  const parsed = parseUtcMoment(value);
-  if (!parsed) {
-    return "";
-  }
-  return toLocalMomentInputValue(parsed);
-}
-
-function toUtcIsoFromLocalInput(value: string): string | null {
-  if (!value.trim()) {
+function parseNonNegativeInt(value: string): number | null {
+  const trimmed = value.trim();
+  if (!trimmed) {
     return null;
   }
-  const localMoment = new Date(value);
-  if (Number.isNaN(localMoment.getTime())) {
+  const parsed = Number.parseInt(trimmed, 10);
+  if (!Number.isFinite(parsed) || parsed < 0) {
     return null;
   }
-  return localMoment.toISOString();
-}
-
-function formatMomentCompact(value: string): string {
-  const parsed = parseUtcMoment(value);
-  if (!parsed) {
-    return value;
-  }
-  return new Intl.DateTimeFormat(undefined, {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit"
-  }).format(parsed);
-}
-
-function nowLocalMomentInput(): string {
-  return toLocalMomentInputValue(new Date());
+  return parsed;
 }
 
 function parseNumericFilter(value: string): number | null {
@@ -350,6 +288,26 @@ function buildEventInputSummary(
   }
 
   return valueSummaryList.join(UI_TEXT_SEPARATOR);
+}
+
+function mergeScopeFieldMetadataIntoDraftList(
+  draftList: EventActionInputDraft[],
+  fieldList: ScopeFieldOption[]
+): EventActionInputDraft[] {
+  if (draftList.length === 0 || fieldList.length === 0) {
+    return draftList;
+  }
+  return draftList.map((draft) => {
+    const scopeField = fieldList.find((item) => item.id === draft.fieldId);
+    if (scopeField == null) {
+      return draft;
+    }
+    return {
+      ...draft,
+      sqlType: scopeField.sqlType,
+      label: scopeField.label
+    };
+  });
 }
 
 function areEventActionInputDraftListsEqual(
@@ -573,12 +531,12 @@ export function EventConfigurationClient({
     typeof initialSelectedEventKey === "number" ? initialSelectedEventKey : null
   );
   const [isCreateMode, setIsCreateMode] = useState(initialSelectedEventKey === "new");
-  const [momentInput, setMomentInput] = useState(
+  const [ageInput, setAgeInput] = useState(
     initialSelectedEvent
-      ? toLocalMomentInputFromUtc(initialSelectedEvent.moment_utc)
+      ? String(initialSelectedEvent.age)
       : variant === "standard"
         ? ""
-        : nowLocalMomentInput()
+        : "0"
   );
   const [unityId, setUnityId] = useState<number | null>(
     variant === "standard" ? null : (initialSelectedEvent?.unity_id ?? null)
@@ -593,18 +551,18 @@ export function EventConfigurationClient({
     initialSelectedEvent?.action_id ?? null
   );
   const [baseline, setBaseline] = useState({
-    momentInput: initialSelectedEvent
-      ? toLocalMomentInputFromUtc(initialSelectedEvent.moment_utc)
+    ageInput: initialSelectedEvent
+      ? String(initialSelectedEvent.age)
       : variant === "standard"
         ? ""
-        : nowLocalMomentInput(),
+        : "0",
     unityId: variant === "standard" ? null : (initialSelectedEvent?.unity_id ?? null),
     locationId: initialSelectedEvent?.location_id ?? null,
     itemId: initialSelectedEvent?.item_id ?? null,
     actionId: initialSelectedEvent?.action_id ?? null
   });
   const [fieldError, setFieldError] = useState<{
-    moment?: string;
+    age?: string;
     unity?: string;
     location?: string;
     item?: string;
@@ -615,12 +573,14 @@ export function EventConfigurationClient({
   const [isSaving, setIsSaving] = useState(false);
   const [isDeletePending, setIsDeletePending] = useState(false);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
-  const [filterMomentFromInput, setFilterMomentFromInput] = useState("");
-  const [filterMomentToInput, setFilterMomentToInput] = useState("");
+  const [filterAgeFromInput, setFilterAgeFromInput] = useState("");
+  const [filterAgeToInput, setFilterAgeToInput] = useState("");
   const [filterLocationIdList, setFilterLocationIdList] = useState<number[]>([]);
   const [filterItemIdList, setFilterItemIdList] = useState<number[]>([]);
   const [filterActionId, setFilterActionId] = useState<number | null>(null);
   const [scopeFieldOptionList, setScopeFieldOptionList] = useState<ScopeFieldOption[]>([]);
+  const scopeFieldOptionListRef = useRef<ScopeFieldOption[]>(scopeFieldOptionList);
+  scopeFieldOptionListRef.current = scopeFieldOptionList;
   const currentAgeField = useMemo(
     () => scopeFieldOptionList.find((item) => item.is_current_age) ?? null,
     [scopeFieldOptionList]
@@ -639,7 +599,6 @@ export function EventConfigurationClient({
   const editorPanelElementRef = useRef<HTMLDivElement | null>(null);
   const { newIntentGeneration, bumpNewIntent } = useEditorNewIntentGeneration();
   const selectedEventKeyRef = useRef<EventSelectionKey>(initialSelectedEventKey);
-  const didMountFilterRef = useRef(false);
   const {
     bumpAfterProgrammaticSync,
     captureGenerationAtFetchStart,
@@ -717,14 +676,14 @@ export function EventConfigurationClient({
         setDirectory(null);
         setIsCreateMode(false);
         setSelectedEventId(null);
-        const nextMomentInput = variant === "standard" ? "" : nowLocalMomentInput();
-        setMomentInput(nextMomentInput);
+        const nextAgeInput = variant === "standard" ? "" : "0";
+        setAgeInput(nextAgeInput);
         setUnityId(null);
         setLocationId(null);
         setItemId(null);
         setActionId(null);
         setBaseline({
-          momentInput: nextMomentInput,
+          ageInput: nextAgeInput,
           unityId: null,
           locationId: null,
           itemId: null,
@@ -761,11 +720,11 @@ export function EventConfigurationClient({
           ? directoryWithSortedList.item_list.find((item) => item.id === nextKey) ?? null
           : null;
 
-      const nextMomentInput = nextSelectedEvent
-        ? toLocalMomentInputFromUtc(nextSelectedEvent.moment_utc)
+      const nextAgeInput = nextSelectedEvent
+        ? String(nextSelectedEvent.age)
         : variant === "standard"
           ? ""
-          : nowLocalMomentInput();
+          : "0";
       const nextUnityId =
         variant === "standard" ? null : (nextSelectedEvent?.unity_id ?? null);
       const nextLocationId = nextSelectedEvent?.location_id ?? null;
@@ -775,13 +734,13 @@ export function EventConfigurationClient({
       setDirectory(directoryWithSortedList);
       setIsCreateMode(nextKey === "new");
       setSelectedEventId(typeof nextKey === "number" ? nextKey : null);
-      setMomentInput(nextMomentInput);
+      setAgeInput(nextAgeInput);
       setUnityId(nextUnityId);
       setLocationId(nextLocationId);
       setItemId(nextItemId);
       setActionId(nextActionId);
       setBaseline({
-        momentInput: nextMomentInput,
+        ageInput: nextAgeInput,
         unityId: nextUnityId,
         locationId: nextLocationId,
         itemId: nextItemId,
@@ -851,13 +810,13 @@ export function EventConfigurationClient({
 
     const fetchGenerationAtStart = captureGenerationAtFetchStart();
     const query = new URLSearchParams();
-    const filterMomentFromUtc = toUtcIsoFromLocalInput(filterMomentFromInput);
-    const filterMomentToUtc = toUtcIsoFromLocalInput(filterMomentToInput);
-    if (filterMomentFromUtc) {
-      query.set("moment_from_utc", filterMomentFromUtc);
+    const filterAgeFrom = parseNonNegativeInt(filterAgeFromInput);
+    const filterAgeTo = parseNonNegativeInt(filterAgeToInput);
+    if (filterAgeFrom != null) {
+      query.set("age_from", String(filterAgeFrom));
     }
-    if (filterMomentToUtc) {
-      query.set("moment_to_utc", filterMomentToUtc);
+    if (filterAgeTo != null) {
+      query.set("age_to", String(filterAgeTo));
     }
     for (const locationId of filterLocationIdList) {
       query.append("location_id", String(locationId));
@@ -896,8 +855,8 @@ export function EventConfigurationClient({
       copy.loadError,
       filterActionId,
       filterLocationIdList,
-      filterMomentFromInput,
-      filterMomentToInput,
+      filterAgeFromInput,
+      filterAgeToInput,
       filterItemIdList,
       isFetchResultStale,
       labelLang,
@@ -908,10 +867,6 @@ export function EventConfigurationClient({
   );
 
   useEffect(() => {
-    if (!didMountFilterRef.current) {
-      didMountFilterRef.current = true;
-      return;
-    }
     void loadEventDirectory();
   }, [loadEventDirectory]);
 
@@ -971,7 +926,7 @@ export function EventConfigurationClient({
         }
 
         const scopeFieldByIdMap = new Map<number, ScopeFieldOption>();
-        for (const scopeField of scopeFieldOptionList) {
+        for (const scopeField of scopeFieldOptionListRef.current) {
           scopeFieldByIdMap.set(scopeField.id, scopeField);
         }
         const inputByFieldIdMap = new Map<number, ScopeInputListResponse["item_list"][number]>();
@@ -1020,14 +975,19 @@ export function EventConfigurationClient({
     return () => {
       active = false;
     };
-  }, [
-    actionId,
-    copy.actionInputLoadError,
-    isCreateMode,
-    scopeFieldOptionList,
-    scopeId,
-    selectedEventId
-  ]);
+  }, [actionId, copy.actionInputLoadError, isCreateMode, scopeId, selectedEventId]);
+
+  useEffect(() => {
+    if (scopeFieldOptionList.length === 0) {
+      return;
+    }
+    setEventActionInputDraftList((previous) =>
+      mergeScopeFieldMetadataIntoDraftList(previous, scopeFieldOptionList)
+    );
+    setEventActionInputBaselineList((previous) =>
+      mergeScopeFieldMetadataIntoDraftList(previous, scopeFieldOptionList)
+    );
+  }, [scopeFieldOptionList]);
 
   const resolveLocationLabel = useCallback(
     (id: number | null) => (id == null ? "-" : (locationMap.get(id) ?? copy.fallbackLocation)),
@@ -1084,12 +1044,11 @@ export function EventConfigurationClient({
   );
 
   const isDirty = useMemo(() => {
-    const momentOrUnityDirty =
-      variant === "fact"
-        ? momentInput.trim() !== baseline.momentInput.trim() || unityId !== baseline.unityId
-        : false;
+    const ageOrUnityDirty =
+      ageInput.trim() !== baseline.ageInput.trim()
+      || (variant === "fact" && unityId !== baseline.unityId);
     return (
-      momentOrUnityDirty ||
+      ageOrUnityDirty ||
       locationId !== baseline.locationId ||
       itemId !== baseline.itemId ||
       actionId !== baseline.actionId ||
@@ -1098,15 +1057,15 @@ export function EventConfigurationClient({
     );
   }, [
     actionId,
+    ageInput,
     baseline.actionId,
+    baseline.ageInput,
     baseline.locationId,
-    baseline.momentInput,
     baseline.itemId,
     baseline.unityId,
     eventActionInputDirty,
     isDeletePending,
     locationId,
-    momentInput,
     itemId,
     unityId,
     variant
@@ -1114,7 +1073,7 @@ export function EventConfigurationClient({
 
   const validate = useCallback(() => {
     const nextError: {
-      moment?: string;
+      age?: string;
       unity?: string;
       location?: string;
       item?: string;
@@ -1122,12 +1081,12 @@ export function EventConfigurationClient({
       currentAge?: string;
     } = {};
 
+    if (parseNonNegativeInt(ageInput) == null) {
+      nextError.age = copy.ageRequired;
+    }
     if (variant === "fact") {
       if (unityId == null) {
         nextError.unity = copy.unityRequired;
-      }
-      if (!toUtcIsoFromLocalInput(momentInput)) {
-        nextError.moment = copy.momentRequired;
       }
     } else if (currentAgeField == null) {
       nextError.currentAge = copy.currentAgeFieldMissing;
@@ -1147,15 +1106,15 @@ export function EventConfigurationClient({
   }, [
     actionId,
     copy.actionRequired,
+    copy.ageRequired,
     copy.currentAgeFieldMissing,
     copy.locationRequired,
-    copy.momentRequired,
     copy.unityRequired,
     copy.itemRequired,
+    ageInput,
     currentAgeField,
     itemId,
     locationId,
-    momentInput,
     unityId,
     variant
   ]);
@@ -1367,9 +1326,9 @@ export function EventConfigurationClient({
       return;
     }
 
-    const momentUtc = variant === "fact" ? toUtcIsoFromLocalInput(momentInput) : null;
-    if (!isDeletePending && variant === "fact" && !momentUtc) {
-      setFieldError((previous) => ({ ...previous, moment: copy.momentRequired }));
+    const ageValue = parseNonNegativeInt(ageInput);
+    if (!isDeletePending && ageValue == null) {
+      setFieldError((previous) => ({ ...previous, age: copy.ageRequired }));
       return;
     }
     if (!isDeletePending && variant === "standard" && currentAgeField == null) {
@@ -1390,12 +1349,13 @@ export function EventConfigurationClient({
               location_id: locationId,
               item_id: itemId,
               action_id: actionId,
-              moment_utc: momentUtc
+              age: ageValue
             }
             : {
               location_id: locationId,
               item_id: itemId,
-              action_id: actionId
+              action_id: actionId,
+              age: ageValue
             };
         const response = await fetch(`/api/auth/tenant/current/scopes/${scopeId}/events`, {
           method: "POST",
@@ -1440,14 +1400,14 @@ export function EventConfigurationClient({
             location_id: locationId,
             item_id: itemId,
             action_id: actionId,
-            moment_utc: momentUtc
+            age: ageValue
           }
           : {
             location_id: locationId,
             item_id: itemId,
             action_id: actionId,
             unity_id: null,
-            moment_utc: null
+            age: ageValue
           };
       const response = await fetch(
         `/api/auth/tenant/current/scopes/${scopeId}/events/${selectedEvent.id}`,
@@ -1522,8 +1482,8 @@ export function EventConfigurationClient({
     copy.createError,
     copy.deleteBlockedDetail,
     copy.deleteError,
+    copy.ageRequired,
     copy.currentAgeFieldMissing,
-    copy.momentRequired,
     copy.saveError,
     currentAgeField,
     directory,
@@ -1532,7 +1492,7 @@ export function EventConfigurationClient({
     eventActionInputDraftList,
     eventActionInputDirty,
     locationId,
-    momentInput,
+    ageInput,
     scopeId,
     selectedEvent,
     selectedEventInputSummary,
@@ -1553,7 +1513,7 @@ export function EventConfigurationClient({
   });
   const footerErrorMessage =
     requestErrorMessage ??
-    fieldError.moment ??
+    fieldError.age ??
     fieldError.unity ??
     fieldError.currentAge ??
     fieldError.location ??
@@ -1577,10 +1537,10 @@ export function EventConfigurationClient({
             panel: (
               <EventFilterPanel
                 locale={locale}
-                showMomentRange={variant === "fact"}
+                showAgeRange
                 copy={{
-                  momentFromLabel: copy.filterMomentFromLabel,
-                  momentToLabel: copy.filterMomentToLabel,
+                  ageFromLabel: copy.filterAgeFromLabel,
+                  ageToLabel: copy.filterAgeToLabel,
                   locationLabel: copy.filterLocationLabel,
                   itemLabel: copy.filterItemLabel,
                   actionLabel: copy.filterActionLabel,
@@ -1588,20 +1548,16 @@ export function EventConfigurationClient({
                   allAriaLabel: copy.filterAllAria,
                   confirmLabel: copy.filterConfirm
                 }}
-                filterMomentFromInput={filterMomentFromInput}
-                filterMomentToInput={filterMomentToInput}
+                filterAgeFromInput={filterAgeFromInput}
+                filterAgeToInput={filterAgeToInput}
                 filterLocationIdList={filterLocationIdList}
                 filterItemIdList={filterItemIdList}
                 filterActionId={filterActionId}
                 locationItemList={initialLocationDirectory?.item_list ?? []}
                 itemHierarchyList={initialItemDirectory?.item_list ?? []}
                 actionOptionList={actionOptionList}
-                onFilterMomentFromChange={(value) => {
-                  setFilterMomentFromInput(value ? toLocalMomentInputValue(value) : "");
-                }}
-                onFilterMomentToChange={(value) => {
-                  setFilterMomentToInput(value ? toLocalMomentInputValue(value) : "");
-                }}
+                onFilterAgeFromChange={setFilterAgeFromInput}
+                onFilterAgeToChange={setFilterAgeToInput}
                 onFilterLocationChange={setFilterLocationIdList}
                 onFilterItemChange={setFilterItemIdList}
                 onFilterActionChange={(value) => {
@@ -1664,11 +1620,7 @@ export function EventConfigurationClient({
                     <p className="ui-directory-title ui-directory-title-emphasis">
                       {resolveActionLabel(item.action_id)}
                     </p>
-                    <p className="ui-directory-date">
-                      {variant === "fact"
-                        ? (item.moment_utc ? formatMomentCompact(item.moment_utc) : "–")
-                        : "–"}
-                    </p>
+                    <p className="ui-directory-date">{String(item.age)}</p>
                   </div>
                   {variant === "fact" && item.unity_id != null ? (
                     <p className="ui-directory-title ui-directory-title-emphasis">
@@ -1816,30 +1768,31 @@ export function EventConfigurationClient({
                 onChangeInputValue={handleChangeActionInputValue}
               />
 
-              {variant === "fact" ? (
-                <div className="ui-field">
-                  <label className="ui-field-label" htmlFor="event-moment">
-                    {copy.momentLabel}
-                  </label>
-                  <TenantDateTimePicker
-                    id="event-moment"
-                    value={momentInput ? new Date(momentInput) : null}
-                    onChange={(value) => {
-                      setMomentInput(value ? toLocalMomentInputValue(value) : "");
-                      setFieldError((previous) => ({ ...previous, moment: undefined }));
-                      setRequestErrorMessage(null);
-                    }}
-                    disabled={isDeletePending || !canEditForm}
-                    showFlash={Boolean(fieldError.moment)}
-                    locale={locale}
-                    hidePlaceholder
-                  />
-                  <p className="ui-field-hint">{copy.momentHint}</p>
-                  {fieldError.moment ? (
-                    <p className="ui-field-error">{fieldError.moment}</p>
-                  ) : null}
-                </div>
-              ) : null}
+              <div className="ui-field">
+                <label className="ui-field-label" htmlFor="event-age">
+                  {copy.ageLabel}
+                </label>
+                <input
+                  id="event-age"
+                  type="number"
+                  min={0}
+                  step={1}
+                  inputMode="numeric"
+                  className="ui-input"
+                  value={ageInput}
+                  onChange={(event) => {
+                    setAgeInput(event.target.value);
+                    setFieldError((previous) => ({ ...previous, age: undefined }));
+                    setRequestErrorMessage(null);
+                  }}
+                  disabled={isDeletePending || !canEditForm}
+                  aria-invalid={Boolean(fieldError.age)}
+                />
+                <p className="ui-field-hint">{copy.ageHint}</p>
+                {fieldError.age ? (
+                  <p className="ui-field-error">{fieldError.age}</p>
+                ) : null}
+              </div>
             </section>
 
             {actionId != null

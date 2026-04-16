@@ -2300,28 +2300,28 @@ def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_fin
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            age=0,
         )
         current_event_day_2 = Event(
             unity_id=unity.id,
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
         )
         current_event_day_3 = Event(
             unity_id=unity.id,
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
-            moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            age=2,
         )
         final_event = Event(
             unity_id=unity.id,
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 12, 0, 0),
+            age=3,
         )
         session.add_all(
             [initial_event, current_event_day_2, current_event_day_3, final_event]
@@ -2601,28 +2601,28 @@ def test_calculate_scope_current_age_filters_out_events_for_non_matching_unity()
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            age=0,
             unity_id=unity_match.id,
         )
         current_event_day_2 = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity_match.id,
         )
         current_event_day_3 = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
-            moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            age=2,
             unity_id=unity_match.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 12, 0, 0),
+            age=3,
             unity_id=unity_match.id,
         )
         session.add_all(
@@ -2777,7 +2777,7 @@ def test_read_scope_current_age_reads_existing_results_without_recalculation() -
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity.id,
         )
         session.add(event)
@@ -2900,14 +2900,14 @@ def test_read_scope_current_age_filters_by_unity_id() -> None:
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity_a.id,
         )
         event_b = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
-            moment_utc=datetime(2026, 4, 2, 14, 0, 0),
+            age=1,
             unity_id=unity_b.id,
         )
         session.add_all([event_a, event_b])
@@ -3040,14 +3040,14 @@ def test_delete_scope_current_age_removes_results_for_filtered_events_only() -> 
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
-            moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+            age=0,
             unity_id=unity_kept.id,
         )
         deleted_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity_deleted.id,
         )
         session.add_all([kept_event, deleted_event])
@@ -3174,14 +3174,14 @@ def test_delete_scope_current_age_filters_by_unity_id() -> None:
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
-            moment_utc=datetime(2026, 4, 2, 10, 0, 0),
+            age=1,
             unity_id=unity_a.id,
         )
         event_b = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity_b.id,
         )
         session.add_all([event_a, event_b])
@@ -3322,28 +3322,28 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            age=0,
             unity_id=unity.id,
         )
         double_event_same_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=double_action.id,
-            moment_utc=datetime(2026, 4, 2, 8, 0, 0),
+            age=1,
             unity_id=unity.id,
         )
         plus_event_same_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=plus_action.id,
-            moment_utc=datetime(2026, 4, 2, 18, 0, 0),
+            age=1,
             unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            age=2,
             unity_id=unity.id,
         )
         session.add_all(
@@ -3524,21 +3524,21 @@ def test_calculate_scope_current_age_rounds_numeric_result_to_field_scale_half_u
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+            age=0,
             unity_id=unity.id,
         )
         calc_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=calc_action.id,
-            moment_utc=datetime(2026, 4, 2, 8, 0, 0),
+            age=1,
             unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 3, 8, 0, 0),
+            age=2,
             unity_id=unity.id,
         )
         session.add_all([initial_event, calc_event, final_event])
@@ -3727,28 +3727,28 @@ def test_calculate_scope_current_age_keeps_processing_remaining_events_in_final_
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 8, 0, 0),
+            age=0,
             unity_id=unity.id,
         )
         first_event_on_final_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=final_day_first_action.id,
-            moment_utc=datetime(2026, 4, 3, 8, 0, 0),
+            age=2,
             unity_id=unity.id,
         )
         second_event_on_final_day = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=final_day_last_action.id,
-            moment_utc=datetime(2026, 4, 3, 18, 0, 0),
+            age=2,
             unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         session.add_all(
@@ -3943,21 +3943,21 @@ def test_calculate_scope_current_age_defaults_missing_result_state_by_field_type
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            age=0,
             unity_id=unity.id,
         )
         current_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity.id,
         )
         final_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            age=2,
             unity_id=unity.id,
         )
         session.add_all([initial_event, current_event, final_event])
@@ -4127,14 +4127,14 @@ def test_calculate_scope_current_age_opens_window_from_age_inputs_and_keeps_futu
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            age=0,
             unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=current_action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity.id,
         )
         session.add_all([alojamento_event, idade_event])
@@ -4290,14 +4290,14 @@ def test_calculate_scope_current_age_repeats_recurrent_event_on_following_days()
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_age_action.id,
-            moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         session.add_all([alojamento_event, idade_event])
@@ -4460,21 +4460,21 @@ def test_calculate_scope_current_age_runs_all_actions_on_day_when_age_hits_final
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_age_action.id,
-            moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         extra_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=extra_action.id,
-            moment_utc=datetime(2026, 4, 4, 10, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         session.add_all([alojamento_event, idade_event, extra_event])
@@ -4634,21 +4634,21 @@ def test_calculate_scope_current_age_calculates_age_15_completely() -> None:
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         stock_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_stock_action.id,
-            moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_age_action.id,
-            moment_utc=datetime(2026, 4, 4, 10, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         session.add_all([alojamento_event, stock_event, idade_event])
@@ -4803,21 +4803,21 @@ def test_calculate_scope_current_age_ignores_age_input_without_formula_target() 
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         unrelated_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=unrelated_action.id,
-            moment_utc=datetime(2026, 4, 4, 10, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=recurrent_age_action.id,
-            moment_utc=datetime(2026, 4, 4, 11, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         session.add_all([alojamento_event, unrelated_event, idade_event])
@@ -4964,14 +4964,14 @@ def test_calculate_scope_current_age_does_not_repeat_non_recurrent_event_on_foll
             location_id=location.id,
             item_id=item.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 4, 8, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         idade_event = Event(
             location_id=location.id,
             item_id=item.id,
             action_id=single_age_action.id,
-            moment_utc=datetime(2026, 4, 4, 9, 0, 0),
+            age=3,
             unity_id=unity.id,
         )
         session.add_all([alojamento_event, idade_event])
@@ -5129,21 +5129,21 @@ def test_calculate_scope_current_age_does_not_mix_different_location_item_groups
             location_id=location_a.id,
             item_id=item_a.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 1, 12, 0, 0),
+            age=0,
             unity_id=unity_a.id,
         )
         current_event_group_b = Event(
             location_id=location_b.id,
             item_id=item_b.id,
             action_id=current_action.id,
-            moment_utc=datetime(2026, 4, 2, 12, 0, 0),
+            age=1,
             unity_id=unity_b.id,
         )
         final_event_group_b = Event(
             location_id=location_b.id,
             item_id=item_b.id,
             action_id=anchor_action.id,
-            moment_utc=datetime(2026, 4, 3, 12, 0, 0),
+            age=2,
             unity_id=unity_b.id,
         )
         session.add_all([initial_event_group_a, current_event_group_b, final_event_group_b])

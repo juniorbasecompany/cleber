@@ -819,7 +819,7 @@
     {
       "id": "event",
       "name": "event",
-      "comment": "Registro em que a fórmula da ação se aplica. Fato: unity_id e moment_utc obrigatórios (não nulos). Padrão (standard): unity_id e moment_utc devem ser NULL. Em inglês técnico, «padrão» neste sentido é sempre standard.",
+      "comment": "Registro em que a fórmula da ação se aplica. Fato: unity_id obrigatório. Padrão (standard): unity_id NULL. Coluna age (inteiro NOT NULL) em todos os casos: unidade de idade implícita do escopo. Em inglês técnico, «padrão» neste sentido é sempre standard.",
       "x": 659.182571345967,
       "y": 631.7946294511843,
       "locked": false,
@@ -841,7 +841,7 @@
         {
           "id": "unity_id",
           "name": "unity_id",
-          "comment": "NULL em evento padrão (standard); obrigatório em fato. Quando preenchido, location_id = unity.location_id e item_id ∈ unity.item_id_list. Em paridade com moment_utc (CHECK event_unity_moment_pair).",
+          "comment": "NULL em evento padrão (standard); obrigatório em fato. Quando preenchido, location_id = unity.location_id e item_id ∈ unity.item_id_list.",
           "type": "BIGINT",
           "default": "",
           "check": "",
@@ -853,15 +853,15 @@
           "values": []
         },
         {
-          "id": "moment_utc",
-          "name": "moment_utc",
-          "comment": "NULL em evento padrão (standard); obrigatório em fato. Paridade com unity_id (CHECK event_unity_moment_pair).",
-          "type": "TIMESTAMP",
+          "id": "age",
+          "name": "age",
+          "comment": "Idade no eixo do escopo (inteiro; unidade implícita pelos campos de idade do escopo). Obrigatório em fato e em padrão.",
+          "type": "INTEGER",
           "default": "",
-          "check": "Ver event_unity_moment_pair em constraints.",
+          "check": "",
           "primary": false,
           "unique": false,
-          "notNull": false,
+          "notNull": true,
           "increment": false,
           "size": "",
           "values": []
@@ -909,12 +909,7 @@
           "values": []
         }
       ],
-      "constraints": [
-        {
-          "name": "event_unity_moment_pair",
-          "constraint": "CHECK ((unity_id IS NULL AND moment_utc IS NULL) OR (unity_id IS NOT NULL AND moment_utc IS NOT NULL))"
-        }
-      ],
+      "constraints": [],
       "indices": [],
       "color": "#0000ff"
     },
@@ -1880,7 +1875,7 @@
       "x": 1161.428571428572,
       "y": 621.4285714285713,
       "title": "event: trigger de consistência com unity",
-      "content": "Além de FKs e do CHECK event_unity_moment_pair, o PostgreSQL aplica a função validate_event_unity_consistency() via trigger event_unity_consistency_trg na tabela event (migration alembic a2b3c4d5e6f7_event_unity_consistency_trigger.py). Quando event.unity_id está preenchido, exige event.location_id = unity.location_id e event.item_id contido em unity.item_id_list.",
+      "content": "Além de FKs, o PostgreSQL aplica a função validate_event_unity_consistency() via trigger event_unity_consistency_trg na tabela event (migration alembic a2b3c4d5e6f7_event_unity_consistency_trigger.py). Quando event.unity_id está preenchido, exige event.location_id = unity.location_id e event.item_id contido em unity.item_id_list.",
       "locked": false,
       "color": "#fcf7ac",
       "height": 330,
