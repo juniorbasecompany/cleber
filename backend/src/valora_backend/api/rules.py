@@ -8,7 +8,7 @@ from collections import defaultdict
 from itertools import groupby
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import UTC, date, datetime, timedelta
-from typing import Any, Annotated, Literal, TypeAlias
+from typing import Any, Annotated, Literal, Self, TypeAlias
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -3276,7 +3276,7 @@ class ScopeResultCreateRequest(BaseModel):
     text_value: str | None = PydanticField(default=None, max_length=65535)
     boolean_value: bool | None = None
     numeric_value: Decimal | None = None
-    age: int
+    age: int = PydanticField(ge=0)
 
 
 class ScopeResultPatchRequest(BaseModel):
@@ -3286,6 +3286,13 @@ class ScopeResultPatchRequest(BaseModel):
     boolean_value: bool | None = None
     numeric_value: Decimal | None = None
     age: int | None = None
+
+    @model_validator(mode="after")
+    def reject_explicit_null_age(self) -> Self:
+        # PATCH parcial: omitir age não altera; enviar null é inválido (coluna NOT NULL).
+        if "age" in self.model_fields_set and self.age is None:
+            raise ValueError("age cannot be null")
+        return self
 
 
 @router.get(

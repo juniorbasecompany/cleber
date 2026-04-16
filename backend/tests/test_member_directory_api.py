@@ -11,6 +11,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 from fastapi import HTTPException
+from pydantic import ValidationError
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event, select
 from sqlalchemy.orm import Session, sessionmaker
@@ -2181,6 +2182,74 @@ def test_patch_scope_event_result_can_replace_and_clear_typed_values() -> None:
     session.add.assert_called_with(existing_row)
     find_result.assert_called_once_with(session, event_id=9, result_id=11)
     list_results.assert_called_once_with(5, 9, member, session)
+
+
+def test_scope_result_patch_request_rejects_explicit_null_age() -> None:
+    with pytest.raises(ValidationError) as exc_info:
+        ScopeResultPatchRequest.model_validate({"age": None})
+    assert "age cannot be null" in str(exc_info.value)
+
+
+def test_scope_result_patch_request_accepts_age_zero() -> None:
+    body = ScopeResultPatchRequest.model_validate({"age": 0})
+    assert body.age == 0
+
+
+def test_scope_result_create_request_rejects_negative_age() -> None:
+    with pytest.raises(ValidationError):
+        ScopeResultCreateRequest(
+            unity_id=1,
+            field_id=1,
+            formula_id=1,
+            age=-1,
+        )
+
+
+def test_patch_scope_event_result_updates_age_when_provided() -> None:
+    session = MagicMock()
+    member = SimpleNamespace(role=2, tenant_id=1)
+    existing_row = Result(
+        unity_id=42,
+        age=5,
+        event_id=9,
+        field_id=7,
+        formula_id=13,
+        formula_order=2,
+        text_value=None,
+        boolean_value=None,
+        numeric_value=None,
+    )
+    existing_row.id = 11
+    body = ScopeResultPatchRequest(age=0)
+    event_row = SimpleNamespace(action_id=3)
+
+    with (
+        patch("valora_backend.api.rules._require_scope_rules_editor"),
+        patch(
+            "valora_backend.api.rules._event_in_scope_or_404",
+            return_value=event_row,
+        ),
+        patch(
+            "valora_backend.api.rules._result_in_event_or_404",
+            return_value=existing_row,
+        ),
+        patch("valora_backend.api.rules._apply_member_audit_context"),
+        patch("valora_backend.api.rules.commit_session_with_null_if_empty"),
+        patch(
+            "valora_backend.api.rules.list_scope_event_results",
+            return_value={"ok": True},
+        ),
+    ):
+        patch_scope_event_result(
+            scope_id=5,
+            event_id=9,
+            result_id=11,
+            body=body,
+            member=member,
+            session=session,
+        )
+
+    assert existing_row.age == 0
 
 
 def test_calculate_scope_current_age_executes_formulas_in_order_and_stops_at_final_age() -> None:

@@ -1183,7 +1183,7 @@
           "unique": false,
           "notNull": true,
           "increment": false,
-          "comment": "Idade ao registrar o evento. Este atributo registra o valor do campo da idade atual, no momento do cálculo.",
+          "comment": "Idade no eixo do escopo no momento do resultado (INTEGER NOT NULL; unidade implícita pelos campos de idade do escopo). Não confundir com input.age, que pode ser NULL em eventos recorrentes.",
           "size": "",
           "values": []
         },
@@ -1864,7 +1864,7 @@
       "x": 1482.9516448849377,
       "y": 1495.1475011524026,
       "title": "result - cálculo",
-      "content": "O resultado do cálculo provém de duas fontes:\nFato: quando o evento tem unity_id.\nPadrão (standard): quando o evento não tem unity_id.\nDeve rastrear o campo que indica a idade atual do lote (field.is_current_age) e gravar em result.age.\nEm inglês usar \"standard\" como tradução para \"Padrão\".",
+      "content": "O resultado do cálculo provém de duas fontes:\nFato: quando o evento tem unity_id.\nPadrão (standard): quando o evento não tem unity_id.\nDeve rastrear o campo que indica a idade atual do lote (field.is_current_age) e gravar em result.age.\nresult.age é obrigatório (NOT NULL no banco): toda linha em result tem idade no eixo do escopo no momento do resultado.\ninput.age é outro conceito: pode ser NULL quando o evento não é recorrente por idade.\nEm inglês usar \"standard\" como tradução para \"Padrão\".",
       "locked": false,
       "color": "#fcf7ac",
       "height": 306,
