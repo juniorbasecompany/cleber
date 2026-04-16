@@ -4,7 +4,7 @@
   "private": true,
   "description": "Frontend web app for the Valora system.",
   "scripts": {
-    "dev": "node ./node_modules/next/dist/bin/next dev -p 3003",
+    "dev": "node ./node_modules/next/dist/bin/next dev -p 3003 --webpack",
     "build": "node ./node_modules/next/dist/bin/next build --webpack",
     "start": "node ./node_modules/next/dist/bin/next start",
     "lint": "eslint . && node ./scripts/check-semantic-ui.mjs",
