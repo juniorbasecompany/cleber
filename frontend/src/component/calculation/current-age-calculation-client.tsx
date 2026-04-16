@@ -121,6 +121,37 @@ function isIntegerSqlType(sqlType?: string) {
   return ["INTEGER", "INT", "BIGINT", "SMALLINT"].includes(normalized);
 }
 
+/** Formata número finito em decimal fixo, sem notação científica (ex.: 1e-10, 0E-10). */
+function formatFiniteNumberPlain(n: number): string {
+  return new Intl.NumberFormat("en-US", {
+    notation: "standard",
+    useGrouping: false,
+    maximumFractionDigits: 20,
+  }).format(n);
+}
+
+/** Converte valor numérico da API para texto sem exponencial; preserva string não numérica. */
+function numericValueToPlainString(value: number | string): string {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return value;
+    }
+    const n = Number(trimmed);
+    if (!Number.isFinite(n)) {
+      return value;
+    }
+    return formatFiniteNumberPlain(n);
+  }
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) {
+      return String(value);
+    }
+    return formatFiniteNumberPlain(value);
+  }
+  return String(value);
+}
+
 function formatDecimalString(valueText: string, scale: number) {
   const normalized = valueText.trim();
   if (!/^-?\d+(?:\.\d+)?$/.test(normalized)) {
@@ -141,7 +172,7 @@ function formatDecimalString(valueText: string, scale: number) {
 }
 
 function formatNumericValueForFieldType(value: number | string, fieldType?: string) {
-  const valueText = String(value);
+  const valueText = numericValueToPlainString(value);
   if (isIntegerSqlType(fieldType)) {
     return formatDecimalString(valueText, 0);
   }
