@@ -3455,7 +3455,10 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
             session=session,
         )
 
-        assert response.created_count == 3
+        # Janela = [10..22]. Linhas reais: age 10 (anchor, 10), age 11 (plus, 11), age 22
+        # (double, 22). Carry-forward materializa ages 12..21 reusando o último real
+        # ≤ age alvo — nesse caso sempre (plus_event, plus_formula, 11).
+        assert response.created_count == 13
         assert response.updated_count == 0
         assert response.unchanged_count == 0
         assert [
@@ -3463,12 +3466,17 @@ def test_calculate_scope_current_age_uses_action_sort_order_within_same_day() ->
                 row.event_id,
                 row.formula_id,
                 int(row.numeric_value) if row.numeric_value is not None else None,
+                row.result_age,
             )
             for row in response.item_list
         ] == [
-            (initial_event.id, anchor_formula.id, 10),
-            (plus_event_same_day.id, plus_formula.id, 11),
-            (double_event_same_day.id, double_formula.id, 22),
+            (initial_event.id, anchor_formula.id, 10, 10),
+            (plus_event_same_day.id, plus_formula.id, 11, 11),
+            (double_event_same_day.id, double_formula.id, 22, 22),
+            *[
+                (plus_event_same_day.id, plus_formula.id, 11, age)
+                for age in range(12, 22)
+            ],
         ]
 
 

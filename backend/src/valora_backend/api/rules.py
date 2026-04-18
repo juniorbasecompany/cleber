@@ -3215,6 +3215,13 @@ def calculate_scope_current_age(
     # Evita duas linhas idênticas em `result` quando o teto na idade atual faz dois dias
     # civis distintos persistirem o mesmo `age` (ex.: 19→20 e 20→20 após clamp).
     persisted_result_identity_seen: set[tuple[int, int, int, int]] = set()
+    # Rastreia, por (unity_id, janela, field_id), as linhas reais persistidas — usado ao
+    # final do laço para propagar in-memory: cada age em [primeira_age_real..source_final_age]
+    # que não recebeu fórmula ganha uma linha com os valores e a atribuição
+    # (event_id / formula_id / formula_order) da linha real imediatamente anterior.
+    real_result_list_by_group_window_field: defaultdict[
+        tuple[int, tuple[int, int, int, int], int], list[Result]
+    ] = defaultdict(list)
 
     for (unity_id_day, execution_day_key), day_occurrence_iter in groupby(
         occurrence_list,
@@ -3392,6 +3399,15 @@ def calculate_scope_current_age(
                 )
                 result_row_list.append((current_result, response_event, "created"))
                 created_count += 1
+                window_key_for_carry = (
+                    active_window["source_initial_event_id"],
+                    active_window["source_initial_age"],
+                    active_window["source_final_event_id"],
+                    active_window["source_final_age"],
+                )
+                real_result_list_by_group_window_field[
+                    (row.unity_id, window_key_for_carry, target_field.id)
+                ].append(current_result)
 
             current_age_state = group_state.get(current_field.id)
             if current_age_state is not None:
@@ -3428,6 +3444,60 @@ def calculate_scope_current_age(
                 "window": active_window_day,
                 "close_after_day": execution_day_key,
             }
+
+    # Propagação (carry-forward) em memória → gravação do resultado final: para cada
+    # (unity, janela, field) com ao menos uma linha real, preenche as ages restantes
+    # da janela reutilizando event_id / formula_id / formula_order e os três campos
+    # de valor (text/boolean/numeric) da linha real imediatamente anterior. Assim o
+    # valor se propaga até o fim da janela (ex.: `inicial=10` da age 10 aparece até
+    # `source_final_age`) sem precisar de coluna extra no modelo.
+    real_event_lookup_by_id: dict[int, Event] = {
+        **real_standard_event_by_id,
+        **{e.id: e for e in fact_event_row_list_raw},
+    }
+    for (
+        carry_unity_id,
+        carry_window_key,
+        carry_field_id,
+    ), real_row_list_for_group in real_result_list_by_group_window_field.items():
+        sorted_real_row_list = sorted(
+            real_row_list_for_group,
+            key=lambda result_row_for_sort: (
+                result_row_for_sort.age,
+                result_row_for_sort.formula_order,
+                id(result_row_for_sort),
+            ),
+        )
+        age_set_with_real_row = {real_row.age for real_row in sorted_real_row_list}
+        first_real_age = sorted_real_row_list[0].age
+        source_final_age_for_window = carry_window_key[3]
+        source_cursor_index = 0
+        for age_to_fill in range(first_real_age + 1, source_final_age_for_window + 1):
+            while (
+                source_cursor_index + 1 < len(sorted_real_row_list)
+                and sorted_real_row_list[source_cursor_index + 1].age <= age_to_fill
+            ):
+                source_cursor_index += 1
+            if age_to_fill in age_set_with_real_row:
+                continue
+            source_row = sorted_real_row_list[source_cursor_index]
+            carry_response_event = real_event_lookup_by_id.get(source_row.event_id)
+            if carry_response_event is None:
+                continue
+            carry_result_row = Result(
+                unity_id=source_row.unity_id,
+                age=age_to_fill,
+                event_id=source_row.event_id,
+                field_id=source_row.field_id,
+                formula_id=source_row.formula_id,
+                formula_order=source_row.formula_order,
+                text_value=source_row.text_value,
+                boolean_value=source_row.boolean_value,
+                numeric_value=source_row.numeric_value,
+            )
+            session.add(carry_result_row)
+            result_row_list.append((carry_result_row, carry_response_event, "created"))
+            created_count += 1
 
     if not result_row_list and deleted_result_count == 0:
         return ScopeCurrentAgeCalculationResponse(
