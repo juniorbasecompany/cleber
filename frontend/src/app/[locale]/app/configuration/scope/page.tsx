@@ -14,6 +14,20 @@ export default async function ScopeConfigurationPage({
   params
 }: ScopeConfigurationPageProps) {
   const { locale } = await params;
+  const tState = await getTranslations("State");
+
+  return (
+    <Suspense
+      fallback={
+        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
+      }
+    >
+      <ScopeConfigurationData locale={locale} />
+    </Suspense>
+  );
+}
+
+async function ScopeConfigurationData({ locale }: { locale: string }) {
   const scopeDirectory = await getTenantScopeDirectory();
 
   if (!scopeDirectory) {
@@ -21,7 +35,6 @@ export default async function ScopeConfigurationPage({
   }
 
   const t = await getTranslations("ScopeConfigurationPage");
-  const tState = await getTranslations("State");
 
   const copy = {
     title: t("title"),
@@ -49,16 +62,10 @@ export default async function ScopeConfigurationPage({
   };
 
   return (
-    <Suspense
-      fallback={
-        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
-      }
-    >
-      <ScopeConfigurationClient
-        locale={locale}
-        initialDirectory={scopeDirectory}
-        copy={copy}
-      />
-    </Suspense>
+    <ScopeConfigurationClient
+      locale={locale}
+      initialDirectory={scopeDirectory}
+      copy={copy}
+    />
   );
 }

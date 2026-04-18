@@ -34,6 +34,10 @@ import type {
   TenantUnityRecord
 } from "@/lib/auth/types";
 import { parseErrorCode, parseErrorDetail } from "@/lib/api/parse-error-detail";
+import {
+  cachedDirectoryJsonFetch,
+  invalidateDirectoryRequestCache
+} from "@/lib/api/directory-request-cache";
 import type { LabelLang } from "@/lib/i18n/label-lang";
 import {
   filterItemListByUnity,
@@ -780,22 +784,14 @@ export function EventConfigurationClient({
       return;
     }
 
-    try {
-      const query = new URLSearchParams({ label_lang: labelLang });
-      const response = await fetch(
-        `/api/auth/tenant/current/scopes/${scopeId}/fields?${query.toString()}`
-      );
-      const data: unknown = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setScopeFieldOptionList([]);
-        return;
-      }
-      setScopeFieldOptionList(
-        normalizeScopeFieldOptionList(data as TenantScopeFieldDirectoryResponse)
-      );
-    } catch {
+    const query = new URLSearchParams({ label_lang: labelLang });
+    const url = `/api/auth/tenant/current/scopes/${scopeId}/fields?${query.toString()}`;
+    const result = await cachedDirectoryJsonFetch<TenantScopeFieldDirectoryResponse>(url);
+    if (!result.ok || result.data == null) {
       setScopeFieldOptionList([]);
+      return;
     }
+    setScopeFieldOptionList(normalizeScopeFieldOptionList(result.data));
   }, [labelLang, scopeId]);
 
   useEffect(() => {
@@ -830,24 +826,17 @@ export function EventConfigurationClient({
     query.set("label_lang", labelLang);
     query.set("event_kind", variant === "standard" ? "standard" : "fact");
 
-    try {
-      const response = await fetch(
-        `/api/auth/tenant/current/scopes/${scopeId}/events?${query.toString()}`
-      );
-      const data: unknown = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setRequestErrorMessage(parseErrorDetail(data, copy.loadError) ?? copy.loadError);
-        return;
-      }
-      if (isFetchResultStale(fetchGenerationAtStart)) {
-        return;
-      }
-      syncFromDirectory(
-        data as TenantScopeEventDirectoryResponse,
-        selectedEventKeyRef.current
-      );
-    } catch {
-      setRequestErrorMessage(copy.loadError);
+    const url = `/api/auth/tenant/current/scopes/${scopeId}/events?${query.toString()}`;
+    const result = await cachedDirectoryJsonFetch<TenantScopeEventDirectoryResponse>(url);
+    if (!result.ok) {
+      setRequestErrorMessage(parseErrorDetail(result.data, copy.loadError) ?? copy.loadError);
+      return;
+    }
+    if (isFetchResultStale(fetchGenerationAtStart)) {
+      return;
+    }
+    if (result.data != null) {
+      syncFromDirectory(result.data, selectedEventKeyRef.current);
     }
   },
     [
@@ -1340,6 +1329,9 @@ export function EventConfigurationClient({
     }
 
     setIsSaving(true);
+    invalidateDirectoryRequestCache(
+      `/api/auth/tenant/current/scopes/${scopeId}/events`
+    );
     try {
       if (isCreateMode) {
         const createBody =

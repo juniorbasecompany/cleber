@@ -14,6 +14,20 @@ export default async function TenantConfigurationPage({
   params
 }: TenantConfigurationPageProps) {
   const { locale } = await params;
+  const tState = await getTranslations("State");
+
+  return (
+    <Suspense
+      fallback={
+        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
+      }
+    >
+      <TenantConfigurationData locale={locale} />
+    </Suspense>
+  );
+}
+
+async function TenantConfigurationData({ locale }: { locale: string }) {
   const tenantDetail = await getTenantCurrentDetail();
 
   if (!tenantDetail) {
@@ -21,7 +35,6 @@ export default async function TenantConfigurationPage({
   }
 
   const t = await getTranslations("TenantConfigurationPage");
-  const tState = await getTranslations("State");
 
   const copy = {
     title: t("title"),
@@ -49,16 +62,10 @@ export default async function TenantConfigurationPage({
   };
 
   return (
-    <Suspense
-      fallback={
-        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
-      }
-    >
-      <TenantConfigurationClient
-        locale={locale}
-        initialTenant={tenantDetail}
-        copy={copy}
-      />
-    </Suspense>
+    <TenantConfigurationClient
+      locale={locale}
+      initialTenant={tenantDetail}
+      copy={copy}
+    />
   );
 }

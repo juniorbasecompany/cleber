@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Fragment,
@@ -17,7 +18,15 @@ import {
   directoryEditorSaveDisabled
 } from "@/component/configuration/configuration-directory-editor-policy";
 import { ConfigurationDirectoryEditorShell } from "@/component/configuration/configuration-directory-editor-shell";
-import { ScopeRulesDirectorySortableList } from "@/component/configuration/configuration-scope-rules-directory-sortable";
+import type { ScopeRulesDirectorySortableList as ScopeRulesDirectorySortableListType } from "@/component/configuration/configuration-scope-rules-directory-sortable";
+
+const ScopeRulesDirectorySortableList = dynamic(
+  () =>
+    import("@/component/configuration/configuration-scope-rules-directory-sortable").then(
+      (mod) => mod.ScopeRulesDirectorySortableList
+    ),
+  { ssr: false }
+) as unknown as typeof ScopeRulesDirectorySortableListType;
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
 import { ConfigurationDirectoryListToolbarRow } from "@/component/configuration/configuration-directory-list-toolbar-row";
 import {
@@ -51,6 +60,10 @@ import type {
 } from "@/lib/auth/types";
 import type { LabelLang } from "@/lib/i18n/label-lang";
 import { parseErrorDetail, resolveApiErrorUserMessage } from "@/lib/api/parse-error-detail";
+import {
+  cachedDirectoryJsonFetch,
+  invalidateDirectoryRequestCache
+} from "@/lib/api/directory-request-cache";
 import {
   applyConfigurationSelectionToWindowHistory,
   preferredSelectionKeyAfterEditSave
@@ -459,26 +472,19 @@ export function ActionConfigurationClient({
         query.set("q", normalizedQuery);
       }
 
-      try {
-        const response = await fetch(
-          `/api/auth/tenant/current/scopes/${scopeId}/actions?${query.toString()}`
+      const url = `/api/auth/tenant/current/scopes/${scopeId}/actions?${query.toString()}`;
+      const result = await cachedDirectoryJsonFetch<TenantScopeActionDirectoryResponse>(url);
+      if (!result.ok) {
+        setRequestErrorMessage(
+          parseErrorDetail(result.data, copy.loadError) ?? copy.loadError
         );
-        const data: unknown = await response.json().catch(() => ({}));
-        if (!response.ok) {
-          setRequestErrorMessage(
-            parseErrorDetail(data, copy.loadError) ?? copy.loadError
-          );
-          return;
-        }
-        if (isFetchResultStale(fetchGenerationAtStart)) {
-          return;
-        }
-        syncFromDirectory(
-          data as TenantScopeActionDirectoryResponse,
-          selectedActionKeyRef.current
-        );
-      } catch {
-        setRequestErrorMessage(copy.loadError);
+        return;
+      }
+      if (isFetchResultStale(fetchGenerationAtStart)) {
+        return;
+      }
+      if (result.data != null) {
+        syncFromDirectory(result.data, selectedActionKeyRef.current);
       }
     },
     [
@@ -520,6 +526,9 @@ export function ActionConfigurationClient({
       });
       setIsDirectoryReorderBusy(true);
       setRequestErrorMessage(null);
+      invalidateDirectoryRequestCache(
+        `/api/auth/tenant/current/scopes/${scopeId}/actions`
+      );
       try {
         const query = new URLSearchParams({ label_lang: labelLang });
         const response = await fetch(
@@ -558,26 +567,19 @@ export function ActionConfigurationClient({
       setScopeFieldList([]);
       return;
     }
-    try {
-      const query = new URLSearchParams({ label_lang: labelLang });
-      const response = await fetch(
-        `/api/auth/tenant/current/scopes/${scopeId}/fields?${query.toString()}`
-      );
-      const data: unknown = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setScopeFieldList([]);
-        return;
-      }
-      const parsed = data as TenantScopeFieldDirectoryResponse;
-      setScopeFieldList(
-        parsed.item_list.map((item) => ({
-          id: item.id,
-          labelName: item.label_name?.trim() ?? ""
-        }))
-      );
-    } catch {
+    const query = new URLSearchParams({ label_lang: labelLang });
+    const url = `/api/auth/tenant/current/scopes/${scopeId}/fields?${query.toString()}`;
+    const result = await cachedDirectoryJsonFetch<TenantScopeFieldDirectoryResponse>(url);
+    if (!result.ok || result.data == null) {
       setScopeFieldList([]);
+      return;
     }
+    setScopeFieldList(
+      result.data.item_list.map((item) => ({
+        id: item.id,
+        labelName: item.label_name?.trim() ?? ""
+      }))
+    );
   }, [scopeId, labelLang]);
 
   useEffect(() => {
@@ -727,6 +729,9 @@ export function ActionConfigurationClient({
     }
 
     setIsSaving(true);
+    invalidateDirectoryRequestCache(
+      `/api/auth/tenant/current/scopes/${scopeId}/actions`
+    );
     try {
       if (isCreateMode) {
         const response = await fetch(`/api/auth/tenant/current/scopes/${scopeId}/actions`, {

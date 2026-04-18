@@ -1,3 +1,4 @@
+import { cache } from "react";
 import { cookies } from "next/headers";
 
 import {
@@ -21,7 +22,7 @@ import type {
 
 const apiUrl = getPublicApiUrl();
 
-export async function getAuthSession() {
+export const getAuthSession = cache(async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -45,9 +46,9 @@ export async function getAuthSession() {
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantCurrentDetail() {
+export const getTenantCurrentDetail = cache(async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -71,9 +72,9 @@ export async function getTenantCurrentDetail() {
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantMemberDirectory() {
+export const getTenantMemberDirectory = cache(async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -97,9 +98,9 @@ export async function getTenantMemberDirectory() {
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantScopeDirectory() {
+export const getTenantScopeDirectory = cache(async () => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -123,9 +124,9 @@ export async function getTenantScopeDirectory() {
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantLocationDirectory(scopeId: number) {
+export const getTenantLocationDirectory = cache(async (scopeId: number) => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -152,9 +153,9 @@ export async function getTenantLocationDirectory(scopeId: number) {
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantItemDirectory(scopeId: number) {
+export const getTenantItemDirectory = cache(async (scopeId: number) => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -181,9 +182,9 @@ export async function getTenantItemDirectory(scopeId: number) {
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantUnityDirectory(scopeId: number) {
+export const getTenantUnityDirectory = cache(async (scopeId: number) => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -210,12 +211,12 @@ export async function getTenantUnityDirectory(scopeId: number) {
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantScopeFieldDirectory(
+export const getTenantScopeFieldDirectory = cache(async (
   scopeId: number,
   labelLang: "pt-BR" | "en" | "es"
-) {
+) => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -244,12 +245,12 @@ export async function getTenantScopeFieldDirectory(
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantScopeActionDirectory(
+export const getTenantScopeActionDirectory = cache(async (
   scopeId: number,
   labelLang: "pt-BR" | "en" | "es"
-) {
+) => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -278,12 +279,12 @@ export async function getTenantScopeActionDirectory(
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantScopeActionFormulaList(
+export const getTenantScopeActionFormulaList = cache(async (
   scopeId: number,
   actionId: number
-) {
+) => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -310,9 +311,9 @@ export async function getTenantScopeActionFormulaList(
   } catch {
     return null;
   }
-}
+});
 
-export async function getTenantScopeEventDirectory(
+export const getTenantScopeEventDirectory = cache(async (
   scopeId: number,
   filter: {
     age_from?: number;
@@ -324,7 +325,7 @@ export async function getTenantScopeEventDirectory(
     /** Eventos-padrão (standard) ou fatos (fact); omitido: lista mista. */
     event_kind?: "standard" | "fact";
   } = {}
-) {
+) => {
   const cookieStore = await cookies();
   const token = cookieStore.get(authTokenCookieName)?.value;
   if (!hasAuthSession(token)) {
@@ -383,4 +384,4 @@ export async function getTenantScopeEventDirectory(
   } catch {
     return null;
   }
-}
+});

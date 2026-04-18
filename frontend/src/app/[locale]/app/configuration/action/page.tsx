@@ -17,6 +17,20 @@ type ActionConfigurationPageProps = {
 
 export default async function ActionConfigurationPage({ params }: ActionConfigurationPageProps) {
   const { locale } = await params;
+  const tState = await getTranslations("State");
+
+  return (
+    <Suspense
+      fallback={
+        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
+      }
+    >
+      <ActionConfigurationData locale={locale} />
+    </Suspense>
+  );
+}
+
+async function ActionConfigurationData({ locale }: { locale: string }) {
   const [authSession, scopeDirectory] = await Promise.all([
     getAuthSession(),
     getTenantScopeDirectory()
@@ -37,51 +51,44 @@ export default async function ActionConfigurationPage({ params }: ActionConfigur
       : null;
 
   const t = await getTranslations("ActionConfigurationPage");
-  const tState = await getTranslations("State");
 
   return (
-    <Suspense
-      fallback={
-        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
-      }
-    >
-      <ActionConfigurationClient
-        locale={locale}
-        labelLang={labelLang}
-        currentScope={currentScope}
-        hasAnyScope={scopeDirectory.item_list.length > 0}
-        initialActionDirectory={actionDirectory}
-        copy={{
-          title: t("title"),
-          description: t("description"),
-          empty: t("empty"),
-          emptyScope: t("list.emptyScope"),
-          missingCurrentScope: t("list.missingCurrentScope"),
-          loadError: t("list.loadError"),
-          historyTitle: t("history.title"),
-          historyDescription: t("history.description"),
-          filterSearchLabel: t("filter.searchLabel"),
-          filterToggleAriaLabel: t("filter.toggleAriaLabel"),
-          filterToggleLabel: t("filter.toggleLabel"),
-          actionNameLabel: t("section.actionName.label"),
-          actionNameHint: t("section.actionName.hint"),
-          recurrenceLabel: t("section.recurrence.label"),
-          recurrenceHint: t("section.recurrence.hint"),
-          actionNameRequired: t("error.actionNameRequired"),
-          cancel: t("buttons.cancel"),
-          directoryCreateLabel: t("buttons.new"),
-          delete: t("buttons.delete"),
-          undoDelete: t("buttons.undoDelete"),
-          save: t("buttons.save"),
-          saving: t("buttons.saving"),
-          readOnlyNotice: t("readOnlyNotice"),
-          saveError: t("error.save"),
-          createError: t("error.create"),
-          deleteError: t("error.delete"),
-          deleteBlockedDetail: t("error.deleteBlockedDetail"),
-          discardConfirm: t("discardConfirm")
-        }}
-      />
-    </Suspense>
+    <ActionConfigurationClient
+      locale={locale}
+      labelLang={labelLang}
+      currentScope={currentScope}
+      hasAnyScope={scopeDirectory.item_list.length > 0}
+      initialActionDirectory={actionDirectory}
+      copy={{
+        title: t("title"),
+        description: t("description"),
+        empty: t("empty"),
+        emptyScope: t("list.emptyScope"),
+        missingCurrentScope: t("list.missingCurrentScope"),
+        loadError: t("list.loadError"),
+        historyTitle: t("history.title"),
+        historyDescription: t("history.description"),
+        filterSearchLabel: t("filter.searchLabel"),
+        filterToggleAriaLabel: t("filter.toggleAriaLabel"),
+        filterToggleLabel: t("filter.toggleLabel"),
+        actionNameLabel: t("section.actionName.label"),
+        actionNameHint: t("section.actionName.hint"),
+        recurrenceLabel: t("section.recurrence.label"),
+        recurrenceHint: t("section.recurrence.hint"),
+        actionNameRequired: t("error.actionNameRequired"),
+        cancel: t("buttons.cancel"),
+        directoryCreateLabel: t("buttons.new"),
+        delete: t("buttons.delete"),
+        undoDelete: t("buttons.undoDelete"),
+        save: t("buttons.save"),
+        saving: t("buttons.saving"),
+        readOnlyNotice: t("readOnlyNotice"),
+        saveError: t("error.save"),
+        createError: t("error.create"),
+        deleteError: t("error.delete"),
+        deleteBlockedDetail: t("error.deleteBlockedDetail"),
+        discardConfirm: t("discardConfirm")
+      }}
+    />
   );
 }

@@ -1,11 +1,21 @@
 "use client";
 
-import { ScopeHierarchyConfigurationClient } from "@/component/configuration/scope-hierarchy-configuration-client";
+import dynamic from "next/dynamic";
+
+import type { ScopeHierarchyConfigurationClient as ScopeHierarchyConfigurationClientType } from "@/component/configuration/scope-hierarchy-configuration-client";
 import type {
   TenantItemDirectoryResponse,
   TenantItemRecord,
   TenantScopeRecord
 } from "@/lib/auth/types";
+
+const ScopeHierarchyConfigurationClient = dynamic(
+  () =>
+    import("@/component/configuration/scope-hierarchy-configuration-client").then(
+      (mod) => mod.ScopeHierarchyConfigurationClient
+    ),
+  { ssr: false }
+) as unknown as typeof ScopeHierarchyConfigurationClientType;
 
 type Props = {
   locale: string;

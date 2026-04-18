@@ -17,15 +17,21 @@ import {
   verticalListSortingStrategy
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import dynamic from "next/dynamic";
 import { ConfigurationDirectoryCreateButton } from "@/component/configuration/configuration-directory-create-button";
-import {
-  FormulaStatementEditor,
-  type FormulaFieldOption
-} from "@/component/configuration/formula-statement-editor";
+import type { FormulaFieldOption } from "@/component/configuration/formula-statement-editor";
 import { AppBusyInline } from "@/component/ui/app-busy-fallback";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useTranslations } from "next-intl";
 import { useMemo, type CSSProperties } from "react";
+
+const FormulaStatementEditor = dynamic(
+  () =>
+    import("@/component/configuration/formula-statement-editor").then(
+      (mod) => mod.FormulaStatementEditor
+    ),
+  { ssr: false }
+);
 
 export type ActionFormulaDraftRow = {
   clientKey: string;

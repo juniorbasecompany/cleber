@@ -58,6 +58,10 @@ import type {
   TenantScopeRecord
 } from "@/lib/auth/types";
 import { parseErrorDetail } from "@/lib/api/parse-error-detail";
+import {
+  cachedDirectoryJsonFetch,
+  invalidateDirectoryRequestCache
+} from "@/lib/api/directory-request-cache";
 import { KindSelectOrCreateField } from "@/component/configuration/kind-select-or-create-field";
 
 export type ScopeHierarchySavePayload = {
@@ -586,17 +590,18 @@ export function ScopeHierarchyConfigurationClient<
       query.set("q", normalizedQuery);
     }
 
-    try {
-      const response = await fetch(
-        `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}?${query.toString()}`
-      );
-      const data: unknown = await response.json().catch(() => ({}));
-      if (!response.ok) {
-        setRequestErrorMessage(parseErrorDetail(data, copy.loadError) ?? copy.loadError);
-        return;
-      }
+    const url = `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}?${query.toString()}`;
+    const result = await cachedDirectoryJsonFetch<TDirectory>(url);
+    if (!result.ok) {
+      setRequestErrorMessage(parseErrorDetail(result.data, copy.loadError) ?? copy.loadError);
+      return;
+    }
+    if (result.data == null) {
+      return;
+    }
 
-      const nextDirectory = data as TDirectory;
+    const nextDirectory = result.data;
+    try {
       setDirectory(nextDirectory);
       if (
         isKindEditor &&
@@ -730,6 +735,9 @@ export function ScopeHierarchyConfigurationClient<
     }
 
     setIsSaving(true);
+    invalidateDirectoryRequestCache(
+      `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}`
+    );
     const endpoint = isCreateMode
       ? `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}`
       : `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}/${selectedItem?.id}`;
@@ -822,6 +830,9 @@ export function ScopeHierarchyConfigurationClient<
 
       setIsMoving(true);
       setRequestErrorMessage(null);
+      invalidateDirectoryRequestCache(
+        `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}`
+      );
       try {
         const response = await fetch(
           `/api/auth/tenant/current/scopes/${scopeId}/${apiSegment}/${dragId}/move`,

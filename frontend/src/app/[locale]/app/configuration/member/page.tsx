@@ -14,6 +14,20 @@ export default async function MemberConfigurationPage({
   params
 }: MemberConfigurationPageProps) {
   const { locale } = await params;
+  const tState = await getTranslations("State");
+
+  return (
+    <Suspense
+      fallback={
+        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
+      }
+    >
+      <MemberConfigurationData locale={locale} />
+    </Suspense>
+  );
+}
+
+async function MemberConfigurationData({ locale }: { locale: string }) {
   const memberDirectory = await getTenantMemberDirectory();
 
   if (!memberDirectory) {
@@ -21,7 +35,6 @@ export default async function MemberConfigurationPage({
   }
 
   const t = await getTranslations("MemberConfigurationPage");
-  const tState = await getTranslations("State");
 
   const copy = {
     title: t("title"),
@@ -78,16 +91,10 @@ export default async function MemberConfigurationPage({
   };
 
   return (
-    <Suspense
-      fallback={
-        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
-      }
-    >
-      <MemberConfigurationClient
-        locale={locale}
-        initialDirectory={memberDirectory}
-        copy={copy}
-      />
-    </Suspense>
+    <MemberConfigurationClient
+      locale={locale}
+      initialDirectory={memberDirectory}
+      copy={copy}
+    />
   );
 }

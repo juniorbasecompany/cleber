@@ -18,6 +18,18 @@ export default async function ItemConfigurationPage({
   params
 }: ItemConfigurationPageProps) {
   const { locale } = await params;
+  const tState = await getTranslations("State");
+
+  return (
+    <Suspense
+      fallback={<AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />}
+    >
+      <ItemConfigurationData locale={locale} />
+    </Suspense>
+  );
+}
+
+async function ItemConfigurationData({ locale }: { locale: string }) {
   const [authSession, scopeDirectory] = await Promise.all([
     getAuthSession(),
     getTenantScopeDirectory()
@@ -36,55 +48,50 @@ export default async function ItemConfigurationPage({
     currentScope != null ? await getTenantItemDirectory(currentScope.id) : null;
 
   const t = await getTranslations("ItemConfigurationPage");
-  const tState = await getTranslations("State");
 
   return (
-    <Suspense
-      fallback={<AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />}
-    >
-      <ItemConfigurationClient
-        locale={locale}
-        currentScope={currentScope}
-        hasAnyScope={scopeDirectory.item_list.length > 0}
-        initialItemDirectory={itemDirectory}
-        copy={{
-          title: t("title"),
-          description: t("description"),
-          emptyScope: t("list.emptyScope"),
-          missingCurrentScope: t("list.missingCurrentScope"),
-          historyTitle: t("history.title"),
-          historyDescription: t("history.description"),
-          filterSearchLabel: t("filter.searchLabel"),
-          filterToggleAriaLabel: t("filter.toggleAriaLabel"),
-          filterToggleLabel: t("filter.toggleLabel"),
-          nameLabel: t("section.identity.nameLabel"),
-          nameHint: t("section.identity.nameHint"),
-          kindSelectLabel: t("section.kind.selectLabel"),
-          kindSelectHint: t("section.kind.selectHint"),
-          kindOpenListAriaLabel: t("section.kind.openListAriaLabel"),
-          kindAddAriaLabel: t("section.kind.addAriaLabel"),
-          kindCreateError: t("section.kind.createError"),
-          kindDeleteAriaLabel: t("section.kind.deleteAriaLabel"),
-          kindDeleteError: t("section.kind.deleteError"),
-          validationErrorKind: t("error.validationKind"),
-          dragHandleAria: t("dragHandleAria"),
-          cancel: t("action.cancel"),
-          directoryCreateLabel: t("action.new"),
-          newChild: t("action.newChild"),
-          newSibling: t("action.newSibling"),
-          delete: t("action.delete"),
-          undoDelete: t("action.undoDelete"),
-          save: t("action.save"),
-          saving: t("action.saving"),
-          moveUp: t("action.moveUp"),
-          moveDown: t("action.moveDown"),
-          readOnlyNotice: t("readOnlyNotice"),
-          loadError: t("error.load"),
-          moveError: t("error.move"),
-          validationError: t("error.validation"),
-          discardConfirm: t("discardConfirm")
-        }}
-      />
-    </Suspense>
+    <ItemConfigurationClient
+      locale={locale}
+      currentScope={currentScope}
+      hasAnyScope={scopeDirectory.item_list.length > 0}
+      initialItemDirectory={itemDirectory}
+      copy={{
+        title: t("title"),
+        description: t("description"),
+        emptyScope: t("list.emptyScope"),
+        missingCurrentScope: t("list.missingCurrentScope"),
+        historyTitle: t("history.title"),
+        historyDescription: t("history.description"),
+        filterSearchLabel: t("filter.searchLabel"),
+        filterToggleAriaLabel: t("filter.toggleAriaLabel"),
+        filterToggleLabel: t("filter.toggleLabel"),
+        nameLabel: t("section.identity.nameLabel"),
+        nameHint: t("section.identity.nameHint"),
+        kindSelectLabel: t("section.kind.selectLabel"),
+        kindSelectHint: t("section.kind.selectHint"),
+        kindOpenListAriaLabel: t("section.kind.openListAriaLabel"),
+        kindAddAriaLabel: t("section.kind.addAriaLabel"),
+        kindCreateError: t("section.kind.createError"),
+        kindDeleteAriaLabel: t("section.kind.deleteAriaLabel"),
+        kindDeleteError: t("section.kind.deleteError"),
+        validationErrorKind: t("error.validationKind"),
+        dragHandleAria: t("dragHandleAria"),
+        cancel: t("action.cancel"),
+        directoryCreateLabel: t("action.new"),
+        newChild: t("action.newChild"),
+        newSibling: t("action.newSibling"),
+        delete: t("action.delete"),
+        undoDelete: t("action.undoDelete"),
+        save: t("action.save"),
+        saving: t("action.saving"),
+        moveUp: t("action.moveUp"),
+        moveDown: t("action.moveDown"),
+        readOnlyNotice: t("readOnlyNotice"),
+        loadError: t("error.load"),
+        moveError: t("error.move"),
+        validationError: t("error.validation"),
+        discardConfirm: t("discardConfirm")
+      }}
+    />
   );
 }
