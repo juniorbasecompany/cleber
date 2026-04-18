@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { ScopeConfigurationClient } from "@/component/configuration/scope-configuration-client";
-import { ConfigurationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyFallback } from "@/component/ui/app-busy-fallback";
 import { getTenantScopeDirectory } from "@/lib/auth/server-session";
 
 type ScopeConfigurationPageProps = {
@@ -51,7 +51,7 @@ export default async function ScopeConfigurationPage({
   return (
     <Suspense
       fallback={
-        <ConfigurationWorkspaceSkeleton busyAriaLabel={tState("loadingAriaLabel")} />
+        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
       }
     >
       <ScopeConfigurationClient

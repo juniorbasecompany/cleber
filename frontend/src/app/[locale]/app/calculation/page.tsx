@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { CurrentAgeCalculationClient } from "@/component/calculation/current-age-calculation-client";
-import { CalculationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyFallback } from "@/component/ui/app-busy-fallback";
 import {
   getAuthSession,
   getTenantItemDirectory,
@@ -66,7 +66,10 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
   return (
     <Suspense
       fallback={(
-        <CalculationWorkspaceSkeleton busyAriaLabel={tState("loadingAriaLabel")} />
+        <AppBusyFallback
+          busyAriaLabel={tState("loadingAriaLabel")}
+          pageStackClassName="ui-page-stack-footer"
+        />
       )}
     >
       <CurrentAgeCalculationClient

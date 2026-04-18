@@ -2976,16 +2976,10 @@ button.ui-location-nest-create:disabled {
   color: var(--color-construction-text);
 }
 
-.ui-skeleton {
-  background: var(--gradient-surface-skeleton);
-}
-
-.ui-skeleton-pill {
-  border-radius: var(--radius-skeleton-pill);
-}
-
-.ui-skeleton-tile {
-  border-radius: var(--radius-skeleton-tile);
+.ui-app-busy-inline {
+  margin: 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
 }
 
 .ui-avatar {

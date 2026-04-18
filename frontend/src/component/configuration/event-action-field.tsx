@@ -1,6 +1,6 @@
 "use client";
 
-import { FormFieldsSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyInline } from "@/component/ui/app-busy-fallback";
 
 type EventActionOption = {
   id: number;
@@ -110,12 +110,7 @@ export function EventActionField({
   const inputFieldSection = shouldRenderInputBlock ? (
     <>
       {inputLoading ? (
-        <div
-          aria-busy="true"
-          aria-label={copy.inputLoadingAriaLabel}
-        >
-          <FormFieldsSkeleton fieldCount={3} />
-        </div>
+        <AppBusyInline label={copy.inputLoadingAriaLabel} />
       ) : inputErrorMessage ? (
         <p className="ui-field-error">{inputErrorMessage}</p>
       ) : (

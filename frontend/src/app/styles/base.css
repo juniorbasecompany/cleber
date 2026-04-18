@@ -140,9 +140,6 @@
   --radius-panel: 8px;
   --radius-shell: 0;
   --radius-indicator: 999px;
-  --radius-skeleton-line: 0.5rem;
-  --radius-skeleton-pill: 0.85rem;
-  --radius-skeleton-tile: 1rem;
 
   --border-width-default: 1px;
   --border-width-strong: 1.5px;
@@ -339,8 +336,6 @@
   --gradient-surface-preview: var(--gradient-surface-default);
   --gradient-surface-preview-glow: radial-gradient(circle at top right, hsla(var(--base-accent-color), 70%, 50%, 0.18), transparent 70%);
   --gradient-surface-sidebar: var(--gradient-surface-default);
-  --gradient-surface-skeleton:
-    linear-gradient(90deg, hsla(var(--base-background-color), 36%, 92%, 0.9), hsla(var(--base-background-color), 35%, 96%, 0.95), hsla(var(--base-background-color), 36%, 92%, 0.9));
 }
 
 *,

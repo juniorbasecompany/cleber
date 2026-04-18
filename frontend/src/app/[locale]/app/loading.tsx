@@ -1,9 +1,9 @@
 import { useTranslations } from "next-intl";
 
-import { AppSegmentSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyFallback } from "@/component/ui/app-busy-fallback";
 
 export default function AppLoadingPage() {
   const t = useTranslations("State");
 
-  return <AppSegmentSkeleton busyAriaLabel={t("loadingAriaLabel")} />;
+  return <AppBusyFallback busyAriaLabel={t("loadingAriaLabel")} />;
 }

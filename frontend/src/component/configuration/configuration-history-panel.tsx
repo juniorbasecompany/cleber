@@ -1,6 +1,6 @@
 "use client";
 
-import { HistoryListSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyInline } from "@/component/ui/app-busy-fallback";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -346,11 +346,7 @@ export function ConfigurationHistoryPanel({
         <div className="ui-notice-danger ui-notice-block">{errorMessage}</div>
       ) : null}
 
-      {isLoading ? (
-        <div aria-busy="true" aria-label={t("loadingAriaLabel")}>
-          <HistoryListSkeleton entryCount={5} />
-        </div>
-      ) : null}
+      {isLoading ? <AppBusyInline label={t("loadingAriaLabel")} /> : null}
 
       {!isLoading && !errorMessage && itemList.length > 0 ? (
         <ul className="ui-history-log-list">

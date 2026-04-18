@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { EventConfigurationClient } from "@/component/configuration/event-configuration-client";
-import { ConfigurationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyFallback } from "@/component/ui/app-busy-fallback";
 import {
   getAuthSession,
   getTenantLocationDirectory,
@@ -59,7 +59,7 @@ export default async function EventFactConfigurationPage({
   return (
     <Suspense
       fallback={
-        <ConfigurationWorkspaceSkeleton busyAriaLabel={tState("loadingAriaLabel")} />
+        <AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />
       }
     >
       <EventConfigurationClient

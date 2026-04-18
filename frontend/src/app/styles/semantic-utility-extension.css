@@ -330,47 +330,6 @@
   gap: 0.75rem;
 }
 
-.ui-skeleton-title {
-  height: 1.75rem;
-  width: 14rem;
-}
-
-.ui-skeleton-line {
-  height: 1rem;
-  border-radius: var(--radius-skeleton-line);
-}
-
-.ui-skeleton-line-wide {
-  width: 100%;
-  max-width: var(--measure-copy-wide);
-}
-
-.ui-skeleton-line-medium {
-  width: 100%;
-  max-width: var(--measure-copy);
-}
-
-.ui-skeleton-line-short {
-  width: 83.333333%;
-}
-
-.ui-skeleton-label {
-  height: 1rem;
-  width: 7rem;
-  border-radius: var(--radius-skeleton-line);
-}
-
-.ui-skeleton-label-wide {
-  height: 1rem;
-  width: 8rem;
-  border-radius: var(--radius-skeleton-line);
-}
-
-.ui-skeleton-icon {
-  height: 2.5rem;
-  width: 2.5rem;
-}
-
 .ui-menu-root-fill {
   position: relative;
   z-index: var(--z-content);
@@ -1270,14 +1229,6 @@
 
 .ui-auth-selection-back {
   font-size: 0.875rem;
-}
-
-.ui-loading-panel {
-  padding: 1.5rem;
-}
-
-.ui-loading-card {
-  padding: 1.25rem;
 }
 
 @media (min-width: 640px) {

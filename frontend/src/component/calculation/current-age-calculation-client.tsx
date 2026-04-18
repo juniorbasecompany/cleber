@@ -9,7 +9,7 @@ import {
   DirectoryFilterPanel
 } from "@/component/configuration/directory-filter-panel";
 import { ConfigurationEditorFooter } from "@/component/configuration/configuration-editor-footer";
-import { CurrentAgeResultTableSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyInline } from "@/component/ui/app-busy-fallback";
 import { HierarchySingleSelectField } from "@/component/configuration/hierarchy-dropdown-field";
 import { StatusPanel } from "@/component/app-shell/status-panel";
 import type {
@@ -514,7 +514,7 @@ export function CurrentAgeCalculationClient({
       : copy.emptyScope
     : null;
 
-  const showResultSkeleton =
+  const showResultBusy =
     !requestErrorMessage && (isReading || isCalculating || isDeleting);
 
   /** Erros de API (cálculo, leitura, etc.): sempre no footer. */
@@ -830,11 +830,16 @@ export function CurrentAgeCalculationClient({
           </div>
 
           <section className="ui-page-stack">
-            {showResultSkeleton ? (
-              <CurrentAgeResultTableSkeleton
-                busyAriaLabel={copy.resultTableBusyAriaLabel}
-                columnCount={Math.max(2, fieldList.length)}
-              />
+            {showResultBusy ? (
+              <div
+                className="ui-current-age-table-shell ui-panel"
+                aria-busy="true"
+                aria-label={copy.resultTableBusyAriaLabel}
+              >
+                <div className="ui-current-age-table-scroll" style={{ padding: "0.75rem" }}>
+                  <AppBusyInline label={copy.resultTableBusyAriaLabel} />
+                </div>
+              </div>
             ) : result == null || result.item_list.length === 0 ? null : (
               <div className="ui-current-age-table-shell ui-panel">
                 <div className="ui-current-age-table-scroll">

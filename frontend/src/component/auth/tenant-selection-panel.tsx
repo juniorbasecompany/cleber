@@ -20,7 +20,7 @@ import {
     ValoraMark
 } from "@/component/ui/ui-icons";
 import { Badge } from "@/component/ui/badge";
-import { TenantSelectionSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyFallback } from "@/component/ui/app-busy-fallback";
 
 type TenantSelectionCopy = {
     loadingAriaLabel: string;
@@ -404,7 +404,7 @@ export function TenantSelectionPanel({
     );
 
     if (isLoading) {
-        return <TenantSelectionSkeleton busyAriaLabel={copy.loadingAriaLabel} />;
+        return <AppBusyFallback busyAriaLabel={copy.loadingAriaLabel} />;
     }
 
     return (

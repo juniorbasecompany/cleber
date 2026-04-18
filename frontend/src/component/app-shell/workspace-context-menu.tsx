@@ -1,9 +1,8 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-
-import { MenuListSkeleton } from "@/component/ui/skeleton-patterns";
 import type {
   TenantListResponse,
   TenantOption,
@@ -69,6 +68,7 @@ export function WorkspaceContextMenu({
   initialCurrentScopeId,
   copy
 }: WorkspaceContextMenuProps) {
+  const tState = useTranslations("State");
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [activeMenu, setActiveMenu] = useState<"tenant" | "scope" | null>(null);
@@ -313,7 +313,7 @@ export function WorkspaceContextMenu({
 
               {isLoadingTenantList ? (
                 <div className="ui-menu-list" style={{ padding: "0.35rem 0.5rem" }}>
-                  <MenuListSkeleton rowCount={5} />
+                  <span className="ui-sr-only">{tState("loadingAriaLabel")}</span>
                 </div>
               ) : null}
 
@@ -390,7 +390,7 @@ export function WorkspaceContextMenu({
 
               {isLoadingScopeList ? (
                 <div className="ui-menu-list" style={{ padding: "0.35rem 0.5rem" }}>
-                  <MenuListSkeleton rowCount={5} />
+                  <span className="ui-sr-only">{tState("loadingAriaLabel")}</span>
                 </div>
               ) : null}
 

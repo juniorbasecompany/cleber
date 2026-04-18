@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 
 import { UnityConfigurationClient } from "@/component/configuration/unity-configuration-client";
-import { ConfigurationWorkspaceSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyFallback } from "@/component/ui/app-busy-fallback";
 import {
   getAuthSession,
   getTenantItemDirectory,
@@ -45,12 +45,7 @@ export default async function UnityConfigurationPage({ params }: UnityConfigurat
 
   return (
     <Suspense
-      fallback={(
-        <ConfigurationWorkspaceSkeleton
-          busyAriaLabel={tState("loadingAriaLabel")}
-          growRatio="4-3"
-        />
-      )}
+      fallback={<AppBusyFallback busyAriaLabel={tState("loadingAriaLabel")} />}
     >
       <UnityConfigurationClient
         locale={locale}

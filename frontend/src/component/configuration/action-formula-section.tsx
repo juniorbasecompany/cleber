@@ -22,7 +22,7 @@ import {
   FormulaStatementEditor,
   type FormulaFieldOption
 } from "@/component/configuration/formula-statement-editor";
-import { FormulaRowsSkeleton } from "@/component/ui/skeleton-patterns";
+import { AppBusyInline } from "@/component/ui/app-busy-fallback";
 import { TrashIconButton } from "@/component/ui/trash-icon-button";
 import { useTranslations } from "next-intl";
 import { useMemo, type CSSProperties } from "react";
@@ -193,9 +193,7 @@ export function ActionFormulaSection({
       ) : null}
 
       {isLoading && rowList.length === 0 ? (
-        <div aria-busy="true" aria-label={t("loadingAriaLabel")}>
-          <FormulaRowsSkeleton rowCount={3} />
-        </div>
+        <AppBusyInline label={t("loadingAriaLabel")} />
       ) : rowList.length > 0 ? (
         <DndContext
           id="action-configuration-formula-list"
