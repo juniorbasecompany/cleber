@@ -186,6 +186,11 @@ function formatNumericValueForFieldType(value: number | string, fieldType?: stri
 }
 
 const FORMULA_REFERENCE_TOKEN = /\$\{(field|input):(\d+)\}/g;
+const FORMULA_INPUT_TOKEN = /\$\{input:\d+\}/;
+
+function formulaHasInputToken(statement: string | undefined): boolean {
+  return statement != null && FORMULA_INPUT_TOKEN.test(statement);
+}
 
 function formatFormulaStatement(
   statement: string,
@@ -871,11 +876,20 @@ export function CurrentAgeCalculationClient({
                       {resultDisplayRowList.map(({ item, dayBandIndex }) => {
                         const isExpanded = activeDropdown?.resultId === item.result_id;
                         const isStandardOrigin = item.event_unity_id == null;
+                        const isInputBacked = formulaHasInputToken(
+                          formulaRawStatementById.get(item.formula_id)
+                        );
                         const rowClassName = [
                           dayBandIndex % 2 === 0
                             ? "ui-current-age-table-day-band-even"
                             : "ui-current-age-table-day-band-odd",
                           isStandardOrigin ? "ui-current-age-table-row-standard" : null
+                        ]
+                          .filter(Boolean)
+                          .join(" ");
+                        const valueCellClassName = [
+                          "ui-current-age-table-value-cell",
+                          isInputBacked ? "ui-current-age-table-value-cell-input-backed" : null
                         ]
                           .filter(Boolean)
                           .join(" ");
@@ -894,7 +908,7 @@ export function CurrentAgeCalculationClient({
                               return (
                                 <td
                                   key={`${item.result_id}-${field.id}`}
-                                  className="ui-current-age-table-value-cell"
+                                  className={valueCellClassName}
                                 >
                                   <div className="ui-current-age-table-value-dropdown">
                                     <button
