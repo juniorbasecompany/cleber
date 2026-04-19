@@ -870,13 +870,20 @@ export function CurrentAgeCalculationClient({
                     <tbody>
                       {resultDisplayRowList.map(({ item, dayBandIndex }) => {
                         const isExpanded = activeDropdown?.resultId === item.result_id;
+                        const isStandardOrigin = item.event_unity_id == null;
+                        const rowClassName = [
+                          dayBandIndex % 2 === 0
+                            ? "ui-current-age-table-day-band-even"
+                            : "ui-current-age-table-day-band-odd",
+                          isStandardOrigin ? "ui-current-age-table-row-standard" : null
+                        ]
+                          .filter(Boolean)
+                          .join(" ");
 
                         return (
                           <tr
                             key={item.result_id}
-                            className={dayBandIndex % 2 === 0
-                              ? "ui-current-age-table-day-band-even"
-                              : "ui-current-age-table-day-band-odd"}
+                            className={rowClassName}
                           >
                             <td>{String(item.result_age)}</td>
                             {fieldList.map((field) => {

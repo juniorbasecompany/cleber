@@ -2055,6 +2055,7 @@ class ScopeCurrentAgeCalculationRequest(BaseModel):
 
 class ScopeCurrentAgeCalculationRecord(BaseModel):
     event_id: int
+    event_unity_id: int | None
     result_id: int
     field_id: int
     formula_id: int
@@ -2111,6 +2112,7 @@ def _build_current_age_response_from_result_rows(
         item_list.append(
             ScopeCurrentAgeCalculationRecord(
                 event_id=event_row.id,
+                event_unity_id=event_row.unity_id,
                 result_id=result_row.id,
                 field_id=result_row.field_id,
                 formula_id=result_row.formula_id,

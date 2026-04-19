@@ -120,6 +120,10 @@
   background: white;
 }
 
+.ui-current-age-table tbody tr.ui-current-age-table-row-standard td {
+  background: color-mix(in srgb, var(--color-accent-vertical-border) 8%, white);
+}
+
 .ui-current-age-table tbody td:first-child {
   font-size: 0.6rem;
   font-variant-numeric: tabular-nums;

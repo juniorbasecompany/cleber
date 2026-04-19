@@ -207,6 +207,7 @@ export type ScopeCurrentAgeCalculationEmptyReason =
 
 export type ScopeCurrentAgeCalculationRecord = {
   event_id: number;
+  event_unity_id: number | null;
   result_id: number;
   field_id: number;
   formula_id: number;
