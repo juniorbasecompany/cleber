@@ -490,18 +490,28 @@ export function CurrentAgeCalculationClient({
     ));
   }, [actionOrderById, fieldSortOrderById, result]);
 
-  const resultDisplayRowList = useMemo(() => {
-    let previousAgeKey = Number.NaN;
-    let dayBandIndex = -1;
+  const dayRowList = useMemo(() => {
+    const dayByAge = new Map<number, {
+      resultAge: number;
+      recordByFieldId: Map<number, ScopeCurrentAgeCalculationRecord>;
+    }>();
 
-    return resultRowList.map((item) => {
-      const ageKey = item.result_age;
-      if (ageKey !== previousAgeKey) {
-        dayBandIndex += 1;
-        previousAgeKey = ageKey;
+    for (const item of resultRowList) {
+      let dayRow = dayByAge.get(item.result_age);
+      if (!dayRow) {
+        dayRow = {
+          resultAge: item.result_age,
+          recordByFieldId: new Map<number, ScopeCurrentAgeCalculationRecord>()
+        };
+        dayByAge.set(item.result_age, dayRow);
       }
-      return { item, dayBandIndex };
-    });
+      const existingRecord = dayRow.recordByFieldId.get(item.field_id);
+      if (existingRecord == null || item.result_id > existingRecord.result_id) {
+        dayRow.recordByFieldId.set(item.field_id, item);
+      }
+    }
+
+    return [...dayByAge.values()].sort((left, right) => left.resultAge - right.resultAge);
   }, [resultRowList]);
 
   const emptyResultMessage = useMemo(() => (
@@ -873,42 +883,44 @@ export function CurrentAgeCalculationClient({
                       </tr>
                     </thead>
                     <tbody>
-                      {resultDisplayRowList.map(({ item, dayBandIndex }) => {
-                        const isExpanded = activeDropdown?.resultId === item.result_id;
-                        const isStandardOrigin = item.event_unity_id == null;
-                        const isInputBacked = formulaHasInputToken(
-                          formulaRawStatementById.get(item.formula_id)
-                        );
-                        const isDirectResult = item.result_age === item.event_age;
-                        const rowClassName = dayBandIndex % 2 === 0
+                      {dayRowList.map(({ resultAge, recordByFieldId }, dayIndex) => {
+                        const rowClassName = dayIndex % 2 === 0
                           ? "ui-current-age-table-day-band-even"
                           : "ui-current-age-table-day-band-odd";
-                        const inputBackedClass = isInputBacked && isDirectResult
-                          ? isStandardOrigin
-                            ? "ui-current-age-table-value-cell-input-standard"
-                            : "ui-current-age-table-value-cell-input-unity"
-                          : null;
-                        const valueCellClassName = [
-                          "ui-current-age-table-value-cell",
-                          inputBackedClass
-                        ]
-                          .filter(Boolean)
-                          .join(" ");
 
                         return (
                           <tr
-                            key={item.result_id}
+                            key={resultAge}
                             className={rowClassName}
                           >
-                            <td>{String(item.result_age)}</td>
+                            <td>{String(resultAge)}</td>
                             {fieldList.map((field) => {
-                              if (field.id !== item.field_id) {
-                                return <td key={`${item.result_id}-${field.id}`}></td>;
+                              const item = recordByFieldId.get(field.id);
+                              if (!item) {
+                                return <td key={`${resultAge}-${field.id}`}></td>;
                               }
+
+                              const isExpanded = activeDropdown?.resultId === item.result_id;
+                              const isStandardOrigin = item.event_unity_id == null;
+                              const isInputBacked = formulaHasInputToken(
+                                formulaRawStatementById.get(item.formula_id)
+                              );
+                              const isDirectResult = item.result_age === item.event_age;
+                              const inputBackedClass = isInputBacked && isDirectResult
+                                ? isStandardOrigin
+                                  ? "ui-current-age-table-value-cell-input-standard"
+                                  : "ui-current-age-table-value-cell-input-unity"
+                                : null;
+                              const valueCellClassName = [
+                                "ui-current-age-table-value-cell",
+                                inputBackedClass
+                              ]
+                                .filter(Boolean)
+                                .join(" ");
 
                               return (
                                 <td
-                                  key={`${item.result_id}-${field.id}`}
+                                  key={`${resultAge}-${field.id}`}
                                   className={valueCellClassName}
                                 >
                                   <div className="ui-current-age-table-value-dropdown">
