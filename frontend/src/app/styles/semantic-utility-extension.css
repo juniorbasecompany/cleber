@@ -120,10 +120,6 @@
   background: white;
 }
 
-.ui-current-age-table tbody tr.ui-current-age-table-row-standard td {
-  background: color-mix(in srgb, var(--color-accent-vertical-border) 8%, white);
-}
-
 .ui-current-age-table tbody td:first-child {
   font-size: 0.6rem;
   font-variant-numeric: tabular-nums;
@@ -174,12 +170,12 @@
   padding: 0;
 }
 
-.ui-current-age-table tbody td.ui-current-age-table-value-cell-input-backed {
-  background: color-mix(in srgb, var(--color-accent-vertical-border) 14%, white);
+.ui-current-age-table tbody td.ui-current-age-table-value-cell-input-unity {
+  background: var(--color-positive-surface);
 }
 
-.ui-current-age-table tbody tr.ui-current-age-table-row-standard td.ui-current-age-table-value-cell-input-backed {
-  background: color-mix(in srgb, var(--color-accent-vertical-border) 20%, white);
+.ui-current-age-table tbody td.ui-current-age-table-value-cell-input-standard {
+  background: var(--color-attention-surface);
 }
 
 .ui-current-age-table-value-button {

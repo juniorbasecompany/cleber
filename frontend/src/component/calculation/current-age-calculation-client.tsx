@@ -879,17 +879,18 @@ export function CurrentAgeCalculationClient({
                         const isInputBacked = formulaHasInputToken(
                           formulaRawStatementById.get(item.formula_id)
                         );
-                        const rowClassName = [
-                          dayBandIndex % 2 === 0
-                            ? "ui-current-age-table-day-band-even"
-                            : "ui-current-age-table-day-band-odd",
-                          isStandardOrigin ? "ui-current-age-table-row-standard" : null
-                        ]
-                          .filter(Boolean)
-                          .join(" ");
+                        const isDirectResult = item.result_age === item.event_age;
+                        const rowClassName = dayBandIndex % 2 === 0
+                          ? "ui-current-age-table-day-band-even"
+                          : "ui-current-age-table-day-band-odd";
+                        const inputBackedClass = isInputBacked && isDirectResult
+                          ? isStandardOrigin
+                            ? "ui-current-age-table-value-cell-input-standard"
+                            : "ui-current-age-table-value-cell-input-unity"
+                          : null;
                         const valueCellClassName = [
                           "ui-current-age-table-value-cell",
-                          isInputBacked ? "ui-current-age-table-value-cell-input-backed" : null
+                          inputBackedClass
                         ]
                           .filter(Boolean)
                           .join(" ");
