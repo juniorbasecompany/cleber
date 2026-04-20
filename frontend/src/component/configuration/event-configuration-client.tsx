@@ -181,17 +181,27 @@ function sortEventDirectoryItemListOldestFirst(
   });
 }
 
-/** Eventos padrão: ordenação por local, item, ação, idade e id. */
+/** Eventos padrão: ordenação por idade, local, item, ação e id. */
 function sortEventDirectoryItemListStandardFirst(
   itemList: TenantScopeEventRecord[],
-  actionSortOrderById: Map<number, number>
+  actionSortOrderById: Map<number, number>,
+  locationSortOrderById: Map<number, number>,
+  itemSortOrderById: Map<number, number>
 ): TenantScopeEventRecord[] {
   return [...itemList].sort((left, right) => {
-    const byLoc = left.location_id - right.location_id;
+    const byAge = left.age - right.age;
+    if (byAge !== 0) {
+      return byAge;
+    }
+    const byLoc =
+      (locationSortOrderById.get(left.location_id) ?? Number.MAX_SAFE_INTEGER)
+      - (locationSortOrderById.get(right.location_id) ?? Number.MAX_SAFE_INTEGER);
     if (byLoc !== 0) {
       return byLoc;
     }
-    const byItem = left.item_id - right.item_id;
+    const byItem =
+      (itemSortOrderById.get(left.item_id) ?? Number.MAX_SAFE_INTEGER)
+      - (itemSortOrderById.get(right.item_id) ?? Number.MAX_SAFE_INTEGER);
     if (byItem !== 0) {
       return byItem;
     }
@@ -200,10 +210,6 @@ function sortEventDirectoryItemListStandardFirst(
       - (actionSortOrderById.get(right.action_id) ?? Number.MAX_SAFE_INTEGER);
     if (byActionSortOrder !== 0) {
       return byActionSortOrder;
-    }
-    const byAge = left.age - right.age;
-    if (byAge !== 0) {
-      return byAge;
     }
     return left.id - right.id;
   });
@@ -466,6 +472,22 @@ export function EventConfigurationClient({
     return map;
   }, [initialActionDirectory?.item_list]);
 
+  const locationSortOrderById = useMemo(() => {
+    const map = new Map<number, number>();
+    (initialLocationDirectory?.item_list ?? []).forEach((item, index) => {
+      map.set(item.id, index);
+    });
+    return map;
+  }, [initialLocationDirectory?.item_list]);
+
+  const itemSortOrderById = useMemo(() => {
+    const map = new Map<number, number>();
+    (initialItemDirectory?.item_list ?? []).forEach((item, index) => {
+      map.set(item.id, index);
+    });
+    return map;
+  }, [initialItemDirectory?.item_list]);
+
   const actionOptionList = useMemo(
     () =>
       (initialActionDirectory?.item_list ?? []).map((item) => ({
@@ -513,7 +535,9 @@ export function EventConfigurationClient({
             )
             : sortEventDirectoryItemListStandardFirst(
               initialEventDirectory.item_list,
-              actionSortOrderById
+              actionSortOrderById,
+              locationSortOrderById,
+              itemSortOrderById
             )
       }
   );
@@ -710,7 +734,9 @@ export function EventConfigurationClient({
             )
             : sortEventDirectoryItemListStandardFirst(
               nextDirectory.item_list,
-              actionSortOrderById
+              actionSortOrderById,
+              locationSortOrderById,
+              itemSortOrderById
             )
       };
 
@@ -759,7 +785,7 @@ export function EventConfigurationClient({
 
       return nextKey;
     },
-    [actionSortOrderById, variant]
+    [actionSortOrderById, itemSortOrderById, locationSortOrderById, variant]
   );
 
   const applySyncFromHandlers = useCallback(
