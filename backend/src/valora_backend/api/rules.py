@@ -8,7 +8,7 @@ from collections import defaultdict
 from itertools import groupby
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import UTC, date, datetime, timedelta
-from typing import Any, Annotated, Literal, Self, TypeAlias
+from typing import Any, Annotated, Literal, NoReturn, Self, TypeAlias
 
 import requests
 from fastapi import APIRouter, Depends, HTTPException, Query, status
@@ -3288,31 +3288,43 @@ def calculate_scope_current_age(
                         group_state[field_id] = runtime_value
                     evaluator_names[f"f_{field_id}"] = runtime_value
 
-                for field_id in parsed_formula.input_id_in_rhs:
-                    if field_id not in event_input_runtime:
-                        raise HTTPException(
-                            status_code=status.HTTP_400_BAD_REQUEST,
-                            detail={
-                                "code": "current_age_formula_input_missing",
-                                "message": (
-                                    f"Event {row.id} formula {formula_row.id} "
-                                    f"(sort_order {formula_row.sort_order}) requires input "
-                                    f"for field {field_id}"
-                                ),
-                                "event_id": row.id,
-                                "action_id": row.action_id,
-                                "formula_id": formula_row.id,
-                                "formula_sort_order": formula_row.sort_order,
-                                "field_id": field_id,
-                            },
-                        )
-                    evaluator_names[f"i_{field_id}"] = event_input_runtime[field_id]
+                missing_input_field_id_list: list[int] = []
+                for field_id in sorted(parsed_formula.input_id_in_rhs):
+                    if field_id in event_input_runtime:
+                        evaluator_names[f"i_{field_id}"] = event_input_runtime[field_id]
+                    else:
+                        evaluator_names[f"i_{field_id}"] = None
+                        missing_input_field_id_list.append(field_id)
+
+                def _raise_current_age_formula_input_missing(
+                    missing_field_id: int,
+                ) -> NoReturn:
+                    raise HTTPException(
+                        status_code=status.HTTP_400_BAD_REQUEST,
+                        detail={
+                            "code": "current_age_formula_input_missing",
+                            "message": (
+                                f"Event {row.id} formula {formula_row.id} "
+                                f"(sort_order {formula_row.sort_order}) requires input "
+                                f"for field {missing_field_id}"
+                            ),
+                            "event_id": row.id,
+                            "action_id": row.action_id,
+                            "formula_id": formula_row.id,
+                            "formula_sort_order": formula_row.sort_order,
+                            "field_id": missing_field_id,
+                        },
+                    )
 
                 try:
                     formula_value = build_formula_simple_eval(evaluator_names).eval(
                         parsed_formula.transformed_rhs
                     )
                 except Exception as exc:  # noqa: BLE001
+                    if missing_input_field_id_list:
+                        _raise_current_age_formula_input_missing(
+                            missing_input_field_id_list[0]
+                        )
                     raise HTTPException(
                         status_code=status.HTTP_400_BAD_REQUEST,
                         detail=(
@@ -3322,13 +3334,20 @@ def calculate_scope_current_age(
                     ) from exc
 
                 target_field = field_by_id[parsed_formula.target_field_id]
-                typed_payload = _coerce_formula_output_to_result_payload_or_400(
-                    formula_value,
-                    field=target_field,
-                    event_id=row.id,
-                    formula_id=formula_row.id,
-                    formula_order=formula_row.sort_order,
-                )
+                try:
+                    typed_payload = _coerce_formula_output_to_result_payload_or_400(
+                        formula_value,
+                        field=target_field,
+                        event_id=row.id,
+                        formula_id=formula_row.id,
+                        formula_order=formula_row.sort_order,
+                    )
+                except HTTPException:
+                    if missing_input_field_id_list:
+                        _raise_current_age_formula_input_missing(
+                            missing_input_field_id_list[0]
+                        )
+                    raise
                 if target_field.id == current_field.id:
                     age_cap = active_window["source_final_age"]
                     try:
@@ -3555,24 +3574,37 @@ def calculate_scope_current_age(
                 if carry_response_event is None:
                     continue
                 parsed_formula = parsed_formula_by_id.get(source_row.formula_id)
-                should_copy_source_value = (
+                copy_only = (
                     parsed_formula is None
-                    or bool(parsed_formula.input_id_in_rhs)
                     or parsed_formula.target_field_id == current_field.id
                 )
-                if should_copy_source_value:
-                    carry_text_value = source_row.text_value
-                    carry_boolean_value = source_row.boolean_value
-                    carry_numeric_value = source_row.numeric_value
-                    carry_runtime_value = _extract_result_runtime_value_or_none(
+
+                def _load_carry_values_from_source_row() -> tuple[
+                    Any, Any, Any, FormulaRuntimePrimitive
+                ]:
+                    runtime_value = _extract_result_runtime_value_or_none(
                         source_row,
                         field_by_id[field_id],
                         event_id=source_row.event_id,
                     )
-                    if carry_runtime_value is None:
-                        carry_runtime_value = _default_runtime_value_for_field(
+                    if runtime_value is None:
+                        runtime_value = _default_runtime_value_for_field(
                             field_by_id[field_id]
                         )
+                    return (
+                        source_row.text_value,
+                        source_row.boolean_value,
+                        source_row.numeric_value,
+                        runtime_value,
+                    )
+
+                if copy_only:
+                    (
+                        carry_text_value,
+                        carry_boolean_value,
+                        carry_numeric_value,
+                        carry_runtime_value,
+                    ) = _load_carry_values_from_source_row()
                 else:
                     evaluator_names: dict[str, Any] = {}
                     for referenced_field_id in parsed_formula.field_id_in_rhs:
@@ -3585,30 +3617,48 @@ def calculate_scope_current_age(
                         evaluator_names[f"f_{referenced_field_id}"] = (
                             referenced_runtime_value
                         )
+                    # No carry-forward não existe evento real, logo todo `${input:id}`
+                    # referenciado é tratado como ausente (None). Fórmulas com fallback
+                    # (ex.: `coalesce(${input:X}, ${field:Y})`) conseguem produzir valor;
+                    # fórmulas sem fallback falham no eval/coerce e caem no copy abaixo.
+                    for referenced_input_field_id in parsed_formula.input_id_in_rhs:
+                        evaluator_names[f"i_{referenced_input_field_id}"] = None
                     try:
                         carry_formula_value = build_formula_simple_eval(evaluator_names).eval(
                             parsed_formula.transformed_rhs
                         )
+                        carry_typed_payload = _coerce_formula_output_to_result_payload_or_400(
+                            carry_formula_value,
+                            field=field_by_id[parsed_formula.target_field_id],
+                            event_id=source_row.event_id,
+                            formula_id=source_row.formula_id,
+                            formula_order=source_row.formula_order,
+                        )
                     except Exception as exc:  # noqa: BLE001
-                        raise HTTPException(
-                            status_code=status.HTTP_400_BAD_REQUEST,
-                            detail=(
-                                f"Event {source_row.event_id} formula {source_row.formula_id} "
-                                f"(sort_order {source_row.formula_order}) could not be "
-                                f"evaluated during carry-forward at age {age_to_fill}: {exc}"
-                            ),
-                        ) from exc
-                    carry_typed_payload = _coerce_formula_output_to_result_payload_or_400(
-                        carry_formula_value,
-                        field=field_by_id[parsed_formula.target_field_id],
-                        event_id=source_row.event_id,
-                        formula_id=source_row.formula_id,
-                        formula_order=source_row.formula_order,
-                    )
-                    carry_text_value = carry_typed_payload["text_value"]
-                    carry_boolean_value = carry_typed_payload["boolean_value"]
-                    carry_numeric_value = carry_typed_payload["numeric_value"]
-                    carry_runtime_value = carry_typed_payload["runtime_value"]
+                        # Com input ausente na fórmula, mantém o comportamento histórico
+                        # de copiar o último resultado real do campo; sem input é bug
+                        # legítimo de fórmula e levanta como antes.
+                        if parsed_formula.input_id_in_rhs:
+                            (
+                                carry_text_value,
+                                carry_boolean_value,
+                                carry_numeric_value,
+                                carry_runtime_value,
+                            ) = _load_carry_values_from_source_row()
+                        else:
+                            raise HTTPException(
+                                status_code=status.HTTP_400_BAD_REQUEST,
+                                detail=(
+                                    f"Event {source_row.event_id} formula {source_row.formula_id} "
+                                    f"(sort_order {source_row.formula_order}) could not be "
+                                    f"evaluated during carry-forward at age {age_to_fill}: {exc}"
+                                ),
+                            ) from exc
+                    else:
+                        carry_text_value = carry_typed_payload["text_value"]
+                        carry_boolean_value = carry_typed_payload["boolean_value"]
+                        carry_numeric_value = carry_typed_payload["numeric_value"]
+                        carry_runtime_value = carry_typed_payload["runtime_value"]
 
                 working_state[field_id] = carry_runtime_value
                 carry_result_row = Result(

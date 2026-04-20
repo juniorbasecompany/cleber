@@ -43,6 +43,24 @@ Ao validar a RHS, cada referência `${field:id}` ou `${input:id}` recebe um valo
 | `DATE` | `date(2000, 1, 1)` |
 | `TIMESTAMP` / `TIMESTAMPTZ` (e variantes com precisão) | `datetime(2000, 1, 1, 0, 0, 0)` |
 
+## Inputs ausentes e fallback
+
+Em execução, quando a RHS referencia `${input:id}` mas o evento não traz valor para aquele campo, o avaliador vincula `i_<id> = None` em vez de abortar imediatamente. Em seguida:
+
+- Se a expressão conseguir produzir um valor válido (ex.: via `coalesce(${input:id}, <fallback>)` ou `<expr> if <cond> else <alt>`) e a coerção ao tipo do campo alvo funcionar, esse valor é usado normalmente.
+- Se a avaliação **ou** a coerção ao tipo do campo alvo falharem, o backend levanta o erro estável `current_age_formula_input_missing` (mesmo `code` e estrutura de hoje), referente ao primeiro input ausente pela ordem de `field_id`.
+
+Com isso, `${field:X} = ${input:X}` com input ausente continua falhando com `current_age_formula_input_missing` (não há fallback na expressão). Já `${field:X} = coalesce(${input:X}, ${field:Y})` com input ausente usa o valor de `${field:Y}`.
+
+Exemplos equivalentes de fallback:
+
+- `${field:mortes} = coalesce(${input:mortes}, ${field:mortes_std})`
+- `${field:mortes} = ${input:mortes} if ${input:mortes} is not None else ${field:mortes_std}`
+
+No dry-run de validação (ao gravar a fórmula), os inputs continuam recebendo **stub tipado** (não `None`). O comportamento com `None` só é exercitado em runtime, e apenas quando o input falta de fato.
+
+No **carry-forward** (idades intermediárias da janela sem evento real), as fórmulas com `${input:id}` também tentam avaliar com input ausente (`None`). Se a fórmula conseguir produzir valor válido (ex.: via `coalesce`), ele é usado. Se falhar no eval ou na coerção, o motor mantém o comportamento histórico de **copiar o último resultado real** daquele campo. Isso faz com que um fallback estático (ex.: `coalesce(${input:X}, ${field:X_std})`) tenha efeito também nas idades sem evento informado.
+
 ## Tipos temporais na execução
 
 - **`DATE`:** valores em runtime são `datetime.date`; resultado persistido em `result.text_value` como `YYYY-MM-DD`.
@@ -74,6 +92,7 @@ Implementação de referência: [reference.md](./reference.md).
 | `max` | Máximo |
 | `round` | Arredondamento |
 | `Decimal` | Valores monetários ou precisão fixa |
+| `coalesce` | Retorna o primeiro argumento quando não é `None`; caso contrário o segundo. Útil com `${input:id}` ausente (ver secção "Inputs ausentes e fallback"). |
 
 **Novas funções** só entram na lista branca após **revisão explícita** (superfície de ataque, determinismo, efeitos colaterais).
 

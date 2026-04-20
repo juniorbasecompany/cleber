@@ -22,6 +22,11 @@ def _add_years(d: date | datetime, n: int | float) -> date | datetime:
     return d + relativedelta(years=years)
 
 
+def _coalesce(a: Any, b: Any) -> Any:
+    """Retorna `a` se não for `None`, caso contrário `b` (fallback para inputs ausentes)."""
+    return a if a is not None else b
+
+
 def _safe_truediv(a: Any, b: Any) -> Any:
     """Divisão real; divisor zero produz 0 (inclui decimal.DivisionByZero, subclasse de ZeroDivisionError)."""
     try:
@@ -64,5 +69,6 @@ def build_formula_simple_eval(names: dict[str, Any]) -> SimpleEval:
         "max": max,
         "round": round,
         "Decimal": Decimal,
+        "coalesce": _coalesce,
     }
     return evaluator

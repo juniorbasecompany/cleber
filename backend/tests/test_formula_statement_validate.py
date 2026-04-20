@@ -92,6 +92,16 @@ def test_valid_mixed_field_and_input_on_rhs() -> None:
     )
 
 
+def test_valid_coalesce_input_on_rhs() -> None:
+    """`coalesce(${input:id}, ${field:id})` é válido no dry-run com stubs tipados."""
+    session = _session_with_scope_fields([(1, "INTEGER"), (2, "INTEGER")])
+    validate_formula_statement_for_scope(
+        session,
+        scope_id=10,
+        statement="${field:2} = coalesce(${input:1}, ${field:2})",
+    )
+
+
 def test_valid_timedelta_on_date_field() -> None:
     # `timedelta(days=1)` não pode ser usado: o `=` de keyword quebra o parser de atribuição.
     # Um dia: timedelta(1); sete dias (uma semana): timedelta(7).
