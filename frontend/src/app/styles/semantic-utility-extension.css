@@ -220,13 +220,14 @@
   width: max-content;
   min-width: 0;
   max-width: calc(100vw - 1.5rem);
-  padding: 0.75rem 0.875rem;
+  padding: 0.625rem 0.75rem;
   border: var(--border-width-default) solid var(--color-accent-vertical-border);
   border-radius: var(--radius-card);
   background: white;
   box-shadow: var(--shadow-menu-panel);
   text-align: left;
   white-space: normal;
+  font-size: 0.8125rem;
 }
 
 .ui-current-age-formula-box-row {

@@ -32,6 +32,8 @@ import {
   filterLocationListByUnity
 } from "@/lib/configuration/unity-hierarchy-filter";
 
+const UI_TEXT_SEPARATOR = "\u00A0\u00A0●\u00A0\u00A0";
+
 type CurrentAgeCalculationCopy = {
   title: string;
   description: string;
@@ -412,6 +414,28 @@ export function CurrentAgeCalculationClient({
     }
     return map;
   }, [initialFieldDirectory?.item_list]);
+
+  const locationLabelById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const item of initialLocationDirectory?.item_list ?? []) {
+      const label = item.path_labels.length > 0
+        ? item.path_labels.join(UI_TEXT_SEPARATOR)
+        : item.name.trim() || `#${item.id}`;
+      map.set(item.id, label);
+    }
+    return map;
+  }, [initialLocationDirectory?.item_list]);
+
+  const itemLabelById = useMemo(() => {
+    const map = new Map<number, string>();
+    for (const item of initialItemDirectory?.item_list ?? []) {
+      const label = item.path_labels.length > 0
+        ? item.path_labels.join(UI_TEXT_SEPARATOR)
+        : item.name.trim() || `#${item.id}`;
+      map.set(item.id, label);
+    }
+    return map;
+  }, [initialItemDirectory?.item_list]);
 
   const formulaStatementById = useMemo(() => {
     const map = new Map<number, string>();
@@ -1085,6 +1109,16 @@ export function CurrentAgeCalculationClient({
                 <div className="ui-current-age-formula-box-row">
                   <span>
                     {actionLabelById.get(item.action_id) ?? copy.fallbackAction}
+                  </span>
+                </div>
+                <div className="ui-current-age-formula-box-row">
+                  <span>
+                    {locationLabelById.get(item.location_id) ?? `#${item.location_id}`}
+                  </span>
+                </div>
+                <div className="ui-current-age-formula-box-row">
+                  <span>
+                    {itemLabelById.get(item.item_id) ?? `#${item.item_id}`}
                   </span>
                 </div>
                 <div className="ui-current-age-formula-box-row">
