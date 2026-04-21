@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import {
@@ -166,14 +166,31 @@ function useHierarchyDropdownDismiss(
   }, [isOpen, onDismiss, panelRef, rootRef]);
 }
 
+/**
+ * Estilo inicial aplicado antes da primeira medi\u00e7\u00e3o do trigger. Mant\u00e9m
+ * `position: fixed` e `visibility: hidden` para que o portal n\u00e3o participe do
+ * fluxo do documento (evita flash de barra de rolagem) nem apare\u00e7a fora do
+ * lugar enquanto as coordenadas ainda n\u00e3o foram calculadas.
+ */
+const HIERARCHY_DROPDOWN_HIDDEN_STYLE: CSSProperties = {
+  position: "fixed",
+  top: 0,
+  left: 0,
+  visibility: "hidden",
+  zIndex: "var(--z-menu-panel)"
+};
+
 function useHierarchyDropdownPortalStyle(
   isOpen: boolean,
   triggerRef: React.RefObject<HTMLDivElement | null>
 ) {
-  const [panelStyle, setPanelStyle] = useState<CSSProperties>({});
+  const [panelStyle, setPanelStyle] = useState<CSSProperties>(
+    HIERARCHY_DROPDOWN_HIDDEN_STYLE
+  );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!isOpen) {
+      setPanelStyle(HIERARCHY_DROPDOWN_HIDDEN_STYLE);
       return;
     }
 
