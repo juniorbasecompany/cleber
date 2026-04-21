@@ -615,7 +615,11 @@
       "resultTableBusyAriaLabel": "Updating results table",
       "error": "Could not calculate the current age. Try again.",
       "errorMissingFormulaInput": "Provide {fieldLabel} in formula {formulaLabel} for the event {eventLabel}.",
-      "deleteError": "Could not delete the results. Try again."
+      "deleteError": "Could not delete the results. Try again.",
+      "inputEditSaving": "Saving and recalculating...",
+      "inputEditRequiredError": "Provide a value for {fieldLabel}.",
+      "inputEditSaveError": "Could not save the value. Try again.",
+      "inputEditOkButton": "Ok"
     },
     "result": {
       "empty": "No eligible event produced results with the current filters.",

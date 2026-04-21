@@ -615,7 +615,11 @@
       "resultTableBusyAriaLabel": "Atualizando tabela de resultados",
       "error": "Não foi possível calcular a idade atual. Tente novamente.",
       "errorMissingFormulaInput": "Informe {fieldLabel} na fórmula {formulaLabel} no evento de {eventLabel}.",
-      "deleteError": "Não foi possível apagar os resultados. Tente novamente."
+      "deleteError": "Não foi possível apagar os resultados. Tente novamente.",
+      "inputEditSaving": "Salvando e recalculando...",
+      "inputEditRequiredError": "Informe um valor para {fieldLabel}.",
+      "inputEditSaveError": "Não foi possível salvar o valor. Tente novamente.",
+      "inputEditOkButton": "Ok"
     },
     "result": {
       "empty": "Nenhum evento elegível produziu resultados com os filtros atuais.",

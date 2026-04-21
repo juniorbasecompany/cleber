@@ -1,6 +1,14 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import {
+  Fragment,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode
+} from "react";
 import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
@@ -17,6 +25,8 @@ import type {
   ScopeFormulaRecord,
   ScopeCurrentAgeCalculationRecord,
   ScopeCurrentAgeCalculationResponse,
+  ScopeInputListResponse,
+  ScopeInputRecord,
   TenantItemDirectoryResponse,
   TenantLocationDirectoryResponse,
   TenantScopeActionDirectoryResponse,
@@ -76,6 +86,10 @@ type CurrentAgeCalculationCopy = {
   cancel: string;
   discardConfirm: string;
   resultTableBusyAriaLabel: string;
+  inputEditSaving: string;
+  inputEditRequiredError: string;
+  inputEditSaveError: string;
+  inputEditOkButton: string;
 };
 
 type CurrentAgeCalculationClientProps = {
@@ -374,6 +388,15 @@ export function CurrentAgeCalculationClient({
     top: number;
     left: number;
   } | null>(null);
+  const [inputListByEventId, setInputListByEventId] = useState<
+    Record<number, ScopeInputRecord[]>
+  >({});
+  const fetchedEventIdSetRef = useRef<Set<number>>(new Set());
+  const [editingInputValueByFieldId, setEditingInputValueByFieldId] = useState<
+    Record<number, string>
+  >({});
+  const [isSavingInput, setIsSavingInput] = useState(false);
+  const [inputSaveError, setInputSaveError] = useState<ReactNode | null>(null);
 
   const initialField = useMemo(
     () => initialFieldDirectory?.item_list.find((item) => item.is_initial_age) ?? null,
@@ -411,6 +434,14 @@ export function CurrentAgeCalculationClient({
     const map = new Map<number, string>();
     for (const item of initialFieldDirectory?.item_list ?? []) {
       map.set(item.id, item.label_name?.trim() || `#${item.id}`);
+    }
+    return map;
+  }, [initialFieldDirectory?.item_list]);
+
+  const fieldRecordById = useMemo(() => {
+    const map = new Map<number, TenantScopeFieldRecord>();
+    for (const item of initialFieldDirectory?.item_list ?? []) {
+      map.set(item.id, item);
     }
     return map;
   }, [initialFieldDirectory?.item_list]);
@@ -582,8 +613,11 @@ export function CurrentAgeCalculationClient({
   }, []);
 
   useEffect(() => {
+    if (isSavingInput) {
+      return;
+    }
     setActiveDropdown(null);
-  }, [result, unityId, locationId, itemId]);
+  }, [result, unityId, locationId, itemId, isSavingInput]);
 
   useEffect(() => {
     if (activeDropdown == null) {
@@ -601,16 +635,22 @@ export function CurrentAgeCalculationClient({
       if (target.closest("[data-current-age-dropdown-panel]")) {
         return;
       }
+      if (isSavingInput) {
+        return;
+      }
       setActiveDropdown(null);
     }
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !isSavingInput) {
         setActiveDropdown(null);
       }
     }
 
     function handleViewportChange() {
+      if (isSavingInput) {
+        return;
+      }
       setActiveDropdown(null);
     }
 
@@ -624,7 +664,62 @@ export function CurrentAgeCalculationClient({
       window.removeEventListener("resize", handleViewportChange);
       window.removeEventListener("scroll", handleViewportChange, true);
     };
-  }, [activeDropdown]);
+  }, [activeDropdown, isSavingInput]);
+
+  useEffect(() => {
+    setEditingInputValueByFieldId({});
+    setInputSaveError(null);
+  }, [activeDropdown?.resultId]);
+
+  useEffect(() => {
+    if (activeDropdown == null || !currentScope) {
+      return;
+    }
+    const item = resultRowList.find(
+      (entry) => entry.result_id === activeDropdown.resultId
+    );
+    if (!item) {
+      return;
+    }
+    const statement = formulaRawStatementById.get(item.formula_id);
+    if (!formulaHasInputToken(statement)) {
+      return;
+    }
+    const eventId = item.event_id;
+    if (fetchedEventIdSetRef.current.has(eventId)) {
+      return;
+    }
+
+    let cancelled = false;
+    fetchedEventIdSetRef.current.add(eventId);
+
+    void (async () => {
+      try {
+        const response = await fetch(
+          `/api/auth/tenant/current/scopes/${currentScope.id}/events/${eventId}/inputs`,
+          { method: "GET" }
+        );
+        if (!response.ok) {
+          fetchedEventIdSetRef.current.delete(eventId);
+          return;
+        }
+        const data = (await response.json()) as ScopeInputListResponse;
+        if (cancelled) {
+          return;
+        }
+        setInputListByEventId((prev) => ({
+          ...prev,
+          [eventId]: data.item_list
+        }));
+      } catch {
+        fetchedEventIdSetRef.current.delete(eventId);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [activeDropdown, currentScope, formulaRawStatementById, resultRowList]);
 
   function validateRequest() {
     if (!currentScope || !canEdit || !isReady) {
@@ -773,6 +868,135 @@ export function CurrentAgeCalculationClient({
       );
     } finally {
       setIsDeleting(false);
+    }
+  }
+
+  function getSavedInputValue(eventId: number, fieldId: number): string {
+    const inputList = inputListByEventId[eventId];
+    if (!inputList) {
+      return "";
+    }
+    const row = inputList.find((entry) => entry.field_id === fieldId);
+    return row?.value ?? "";
+  }
+
+  function clearEditingInputValue(fieldId: number) {
+    setEditingInputValueByFieldId((prev) => {
+      if (!(fieldId in prev)) {
+        return prev;
+      }
+      const { [fieldId]: _omit, ...rest } = prev;
+      return rest;
+    });
+  }
+
+  function extractInputFieldIdList(statement: string): number[] {
+    const fieldIdList: number[] = [];
+    const seen = new Set<number>();
+    for (const match of statement.matchAll(FORMULA_REFERENCE_TOKEN)) {
+      if (match[1] !== "input") {
+        continue;
+      }
+      const id = Number(match[2]);
+      if (seen.has(id)) {
+        continue;
+      }
+      seen.add(id);
+      fieldIdList.push(id);
+    }
+    return fieldIdList;
+  }
+
+  async function handleInputOkClick(
+    item: ScopeCurrentAgeCalculationRecord,
+    fieldIdList: number[]
+  ) {
+    if (!currentScope || !canEdit || isSavingInput) {
+      return;
+    }
+    const eventId = item.event_id;
+    const existingList = inputListByEventId[eventId] ?? [];
+
+    type PendingSave = {
+      fieldId: number;
+      trimmedValue: string;
+      existingId: number | null;
+    };
+    const pendingSaveList: PendingSave[] = [];
+
+    for (const fieldId of fieldIdList) {
+      const savedValue = getSavedInputValue(eventId, fieldId);
+      const editingValue = editingInputValueByFieldId[fieldId];
+      const rawValue = editingValue != null ? editingValue : savedValue;
+      const trimmed = rawValue.trim();
+      if (!trimmed) {
+        setInputSaveError(
+          renderTemplateWithSlots(copy.inputEditRequiredError, {
+            fieldLabel: fieldLabelById.get(fieldId) ?? `#${fieldId}`
+          })
+        );
+        return;
+      }
+      if (trimmed === savedValue.trim()) {
+        continue;
+      }
+      const existing = existingList.find((entry) => entry.field_id === fieldId);
+      pendingSaveList.push({
+        fieldId,
+        trimmedValue: trimmed,
+        existingId: existing?.id ?? null
+      });
+    }
+
+    setIsSavingInput(true);
+    setInputSaveError(null);
+
+    try {
+      for (const pendingSave of pendingSaveList) {
+        const endpoint = pendingSave.existingId != null
+          ? `/api/auth/tenant/current/scopes/${currentScope.id}/events/${eventId}/inputs/${pendingSave.existingId}`
+          : `/api/auth/tenant/current/scopes/${currentScope.id}/events/${eventId}/inputs`;
+        const method = pendingSave.existingId != null ? "PATCH" : "POST";
+        const body = pendingSave.existingId != null
+          ? { value: pendingSave.trimmedValue }
+          : { field_id: pendingSave.fieldId, value: pendingSave.trimmedValue };
+        const response = await fetch(endpoint, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body)
+        });
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setInputSaveError(
+            parseErrorDetail(data, copy.inputEditSaveError) ?? copy.inputEditSaveError
+          );
+          setIsSavingInput(false);
+          return;
+        }
+        const listResponse = data as ScopeInputListResponse;
+        setInputListByEventId((prev) => ({
+          ...prev,
+          [eventId]: listResponse.item_list
+        }));
+      }
+    } catch (error) {
+      setInputSaveError(
+        error instanceof Error && error.message.trim()
+          ? error.message
+          : copy.inputEditSaveError
+      );
+      setIsSavingInput(false);
+      return;
+    }
+
+    for (const fieldId of fieldIdList) {
+      clearEditingInputValue(fieldId);
+    }
+
+    try {
+      await handleCalculate();
+    } finally {
+      setIsSavingInput(false);
     }
   }
 
@@ -1100,6 +1324,15 @@ export function CurrentAgeCalculationClient({
               "--ui-current-age-dropdown-left": `${activeDropdown.left}px`
             } as CSSProperties;
 
+            const rawStatement =
+              formulaRawStatementById.get(item.formula_id) ?? `#${item.formula_id}`;
+            const hasInputToken = formulaHasInputToken(rawStatement);
+            const inputFieldIdList = hasInputToken
+              ? extractInputFieldIdList(rawStatement)
+              : [];
+            const inputsDisabled =
+              !canEdit || isCalculating || isReading || isDeleting || isSavingInput;
+
             return (
               <div
                 className="ui-current-age-table-dropdown-panel"
@@ -1123,12 +1356,94 @@ export function CurrentAgeCalculationClient({
                 </div>
                 <div className="ui-current-age-formula-box-row">
                   <span className="ui-current-age-formula-box-formula">
-                    {renderFormulaStatementInline(
-                      formulaRawStatementById.get(item.formula_id) ?? `#${item.formula_id}`,
-                      fieldLabelById
-                    )}
+                    {renderFormulaStatementInline(rawStatement, fieldLabelById)}
                   </span>
                 </div>
+                {hasInputToken && inputFieldIdList.length > 0 ? (
+                  <div className="ui-current-age-formula-box-edit">
+                    {inputFieldIdList.map((fieldId) => {
+                      const field = fieldRecordById.get(fieldId);
+                      const sqlType = field?.sql_type;
+                      const isNumeric =
+                        isIntegerSqlType(sqlType) || extractNumericScale(sqlType) != null;
+                      const isIntegerOnly = isIntegerSqlType(sqlType);
+                      const savedValue = getSavedInputValue(item.event_id, fieldId);
+                      const editingValue = editingInputValueByFieldId[fieldId];
+                      const currentValue = editingValue != null ? editingValue : savedValue;
+                      const scale = extractNumericScale(sqlType);
+                      const step = isIntegerOnly
+                        ? "1"
+                        : scale != null && scale > 0
+                          ? `0.${"0".repeat(scale - 1)}1`
+                          : "any";
+                      const inputId = `current-age-input-${item.result_id}-${fieldId}`;
+                      const fieldLabel = fieldLabelById.get(fieldId) ?? `#${fieldId}`;
+                      return (
+                        <div
+                          key={fieldId}
+                          className="ui-field ui-current-age-formula-box-edit-field"
+                        >
+                          <label className="ui-field-label" htmlFor={inputId}>
+                            {fieldLabel}
+                          </label>
+                          <input
+                            id={inputId}
+                            className="ui-input"
+                            type={isNumeric ? "number" : "text"}
+                            inputMode={
+                              isNumeric ? (isIntegerOnly ? "numeric" : "decimal") : undefined
+                            }
+                            step={isNumeric ? step : undefined}
+                            value={currentValue}
+                            disabled={inputsDisabled}
+                            onChange={(event) => {
+                              const nextValue = event.target.value;
+                              setEditingInputValueByFieldId((prev) => ({
+                                ...prev,
+                                [fieldId]: nextValue
+                              }));
+                              setInputSaveError(null);
+                            }}
+                            onKeyDown={(event) => {
+                              if (event.key === "Enter") {
+                                event.preventDefault();
+                                void handleInputOkClick(item, inputFieldIdList);
+                              }
+                            }}
+                          />
+                        </div>
+                      );
+                    })}
+                    {isSavingInput ? (
+                      <div
+                        className="ui-current-age-formula-box-feedback"
+                        role="status"
+                        aria-live="polite"
+                      >
+                        {copy.inputEditSaving}
+                      </div>
+                    ) : null}
+                    {inputSaveError ? (
+                      <div
+                        className="ui-current-age-formula-box-feedback ui-current-age-formula-box-feedback-error"
+                        role="alert"
+                      >
+                        {inputSaveError}
+                      </div>
+                    ) : null}
+                    <div className="ui-current-age-formula-box-actions">
+                      <button
+                        type="button"
+                        className="ui-button-primary"
+                        onClick={() => void handleInputOkClick(item, inputFieldIdList)}
+                        disabled={inputsDisabled}
+                        aria-busy={isSavingInput}
+                      >
+                        {copy.inputEditOkButton}
+                      </button>
+                    </div>
+                  </div>
+                ) : null}
               </div>
             );
           })(),

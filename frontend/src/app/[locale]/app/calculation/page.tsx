@@ -123,7 +123,11 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           detailedViewLabel: t("result.detailedViewLabel"),
           detailedViewAriaLabel: t("result.detailedViewAriaLabel"),
           cancel: t("buttons.cancel"),
-          discardConfirm: t("discardConfirm")
+          discardConfirm: t("discardConfirm"),
+          inputEditSaving: t("panel.inputEditSaving"),
+          inputEditRequiredError: t.raw("panel.inputEditRequiredError"),
+          inputEditSaveError: t("panel.inputEditSaveError"),
+          inputEditOkButton: t("panel.inputEditOkButton")
         }}
       />
     </Suspense>

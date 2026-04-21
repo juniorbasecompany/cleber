@@ -252,6 +252,33 @@
   word-break: break-word;
 }
 
+.ui-current-age-formula-box-edit {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: var(--border-width-default) solid var(--color-accent-vertical-border);
+}
+
+.ui-current-age-formula-box-edit-field {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.ui-current-age-formula-box-feedback {
+  font-size: 0.75rem;
+  color: var(--color-text-subtle);
+}
+
+.ui-current-age-formula-box-feedback-error {
+  color: var(--color-attention-text, var(--color-text-subtle));
+}
+
+.ui-current-age-formula-box-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
 .ui-shell-page {
   min-height: 100dvh;
 }
