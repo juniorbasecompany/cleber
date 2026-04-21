@@ -3760,7 +3760,6 @@ class ScopeInputRecord(BaseModel):
     id: int
     event_id: int
     field_id: int
-    age: int | None = None
     value: str
 
 
@@ -3772,12 +3771,10 @@ class ScopeInputListResponse(BaseModel):
 class ScopeInputCreateRequest(BaseModel):
     field_id: int
     value: str = PydanticField(min_length=1, max_length=65535)
-    age: int | None = None
 
 
 class ScopeInputPatchRequest(BaseModel):
     value: str | None = PydanticField(default=None, min_length=1, max_length=65535)
-    age: int | None = None
 
 
 @router.get(
@@ -3803,7 +3800,6 @@ def list_scope_event_inputs(
                 id=r.id,
                 event_id=r.event_id,
                 field_id=r.field_id,
-                age=r.age,
                 value=r.value,
             )
             for r in rows
@@ -3829,7 +3825,6 @@ def create_scope_event_input(
         event_id=event_id,
         field_id=body.field_id,
         value=body.value.strip(),
-        age=body.age,
     )
     session.add(row)
     _apply_member_audit_context(session, member)
@@ -3861,8 +3856,6 @@ def patch_scope_event_input(
     row = _input_in_event_or_404(session, event_id=event_id, input_id=input_id)
     if body.value is not None:
         row.value = body.value.strip()
-    if "age" in body.model_fields_set:
-        row.age = body.age
     session.add(row)
     _apply_member_audit_context(session, member)
     commit_session_with_null_if_empty(session)

@@ -1,5 +1,9 @@
 # Plano: colunas `age` em `input` e `result` (ERD como decisão de produto)
 
+## Atualização em 2026-04-21
+
+A coluna **`input.age`** foi **removida** do sistema — ver [plan-remover-input-age.md](plan-remover-input-age.md). Ela nunca chegou a ser consumida pelo motor de cálculo (`_calculate_scope_current_age` indexa o runtime apenas por `field_id`) e mantê-la equivalia a expor um campo sem semântica na API. O restante deste plano continua válido para descrever o eixo **`age`** em **`result`**, que permanece como coluna obrigatória.
+
 ## Estado em 2026-04-15
 
 A decisão de alinhar o banco e o código ao ERD quanto a **`age`** em **`input`** e **`result`**, com **`result`** sem **`moment_utc`**, está **refletida na implementação atual**: modelos em [`backend/src/valora_backend/model/rules.py`](../../backend/src/valora_backend/model/rules.py), API em [`backend/src/valora_backend/api/rules.py`](../../backend/src/valora_backend/api/rules.py) e diagrama em [`backend/erd.json`](../../backend/erd.json). Visão de API e tabelas: [`backend/README.md`](../../backend/README.md).

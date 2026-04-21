@@ -266,7 +266,6 @@ export type ScopeInputRecord = {
   id: number;
   event_id: number;
   field_id: number;
-  age?: number | null;
   value: string;
 };
 

@@ -355,14 +355,6 @@ class Input(Base):
         nullable=False,
         comment="Ligação com a definição do campo. Este é o campo de entrada da ação.",
     )
-    age: Mapped[int | None] = mapped_column(
-        Integer,
-        nullable=True,
-        comment=(
-            "Idade na qual o valor foi registrado (mesma unidade implícita do escopo); "
-            "NULL quando não recorrente ou sem ocorrência por idade."
-        ),
-    )
     value: Mapped[str] = mapped_column(
         Text,
         nullable=False,
