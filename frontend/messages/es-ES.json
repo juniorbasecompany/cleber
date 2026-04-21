@@ -619,7 +619,10 @@
       "inputEditSaving": "Guardando y recalculando...",
       "inputEditRequiredError": "Indica un valor para {fieldLabel}.",
       "inputEditSaveError": "No se pudo guardar el valor. Inténtalo de nuevo.",
-      "inputEditOkButton": "Ok"
+      "inputEditOkButton": "Ok",
+      "formulaStatementAriaLabel": "Instrucción de la fórmula",
+      "formulaStatementRequiredError": "La fórmula no puede estar vacía.",
+      "formulaSaveError": "No se pudo guardar la fórmula. Inténtalo de nuevo."
     },
     "result": {
       "empty": "Ningún evento elegible produjo resultados con los filtros actuales.",

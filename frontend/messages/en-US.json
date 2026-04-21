@@ -619,7 +619,10 @@
       "inputEditSaving": "Saving and recalculating...",
       "inputEditRequiredError": "Provide a value for {fieldLabel}.",
       "inputEditSaveError": "Could not save the value. Try again.",
-      "inputEditOkButton": "Ok"
+      "inputEditOkButton": "Ok",
+      "formulaStatementAriaLabel": "Formula statement",
+      "formulaStatementRequiredError": "The formula cannot be empty.",
+      "formulaSaveError": "Could not save the formula. Try again."
     },
     "result": {
       "empty": "No eligible event produced results with the current filters.",

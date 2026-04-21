@@ -62,6 +62,7 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
 
   const t = await getTranslations("CalculationPage");
   const tState = await getTranslations("State");
+  const tActionFormulas = await getTranslations("ActionConfigurationPage.formulas");
 
   return (
     <Suspense
@@ -127,7 +128,11 @@ export default async function CalculationPage({ params }: CalculationPageProps) 
           inputEditSaving: t("panel.inputEditSaving"),
           inputEditRequiredError: t.raw("panel.inputEditRequiredError"),
           inputEditSaveError: t("panel.inputEditSaveError"),
-          inputEditOkButton: t("panel.inputEditOkButton")
+          inputEditOkButton: t("panel.inputEditOkButton"),
+          formulaStatementAriaLabel: t("panel.formulaStatementAriaLabel"),
+          formulaUnknownFieldLabel: tActionFormulas("unknownFieldLabel"),
+          formulaStatementRequiredError: t("panel.formulaStatementRequiredError"),
+          formulaSaveError: t("panel.formulaSaveError")
         }}
       />
     </Suspense>

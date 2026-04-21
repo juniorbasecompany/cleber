@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import {
   Fragment,
   useEffect,
@@ -12,6 +13,15 @@ import {
 import { createPortal } from "react-dom";
 
 import { PageHeader } from "@/component/app-shell/page-header";
+import type { FormulaFieldOption } from "@/component/configuration/formula-statement-editor";
+
+const FormulaStatementEditor = dynamic(
+  () =>
+    import("@/component/configuration/formula-statement-editor").then(
+      (mod) => mod.FormulaStatementEditor
+    ),
+  { ssr: false }
+);
 import {
   DirectoryFilterCard,
   DirectoryFilterPanel
@@ -90,6 +100,10 @@ type CurrentAgeCalculationCopy = {
   inputEditRequiredError: string;
   inputEditSaveError: string;
   inputEditOkButton: string;
+  formulaStatementAriaLabel: string;
+  formulaUnknownFieldLabel: string;
+  formulaStatementRequiredError: string;
+  formulaSaveError: string;
 };
 
 type CurrentAgeCalculationClientProps = {
@@ -397,6 +411,18 @@ export function CurrentAgeCalculationClient({
   >({});
   const [isSavingInput, setIsSavingInput] = useState(false);
   const [inputSaveError, setInputSaveError] = useState<ReactNode | null>(null);
+  const [formulaStatementByFormulaIdState, setFormulaStatementByFormulaIdState] = useState<
+    Record<number, string>
+  >(() => {
+    const map: Record<number, string> = {};
+    for (const formula of initialFormulaList) {
+      map[formula.id] = formula.statement;
+    }
+    return map;
+  });
+  const [editingFormulaStatementByFormulaId, setEditingFormulaStatementByFormulaId] = useState<
+    Record<number, string>
+  >({});
 
   const initialField = useMemo(
     () => initialFieldDirectory?.item_list.find((item) => item.is_initial_age) ?? null,
@@ -438,6 +464,15 @@ export function CurrentAgeCalculationClient({
     return map;
   }, [initialFieldDirectory?.item_list]);
 
+  const fieldOptionList = useMemo<FormulaFieldOption[]>(
+    () =>
+      (initialFieldDirectory?.item_list ?? []).map((item) => ({
+        id: item.id,
+        labelName: item.label_name ?? ""
+      })),
+    [initialFieldDirectory?.item_list]
+  );
+
   const fieldRecordById = useMemo(() => {
     const map = new Map<number, TenantScopeFieldRecord>();
     for (const item of initialFieldDirectory?.item_list ?? []) {
@@ -471,18 +506,19 @@ export function CurrentAgeCalculationClient({
   const formulaStatementById = useMemo(() => {
     const map = new Map<number, string>();
     for (const formula of initialFormulaList) {
-      map.set(formula.id, formatFormulaStatement(formula.statement, fieldLabelById));
+      const statement = formulaStatementByFormulaIdState[formula.id] ?? formula.statement;
+      map.set(formula.id, formatFormulaStatement(statement, fieldLabelById));
     }
     return map;
-  }, [fieldLabelById, initialFormulaList]);
+  }, [fieldLabelById, formulaStatementByFormulaIdState, initialFormulaList]);
 
   const formulaRawStatementById = useMemo(() => {
     const map = new Map<number, string>();
     for (const formula of initialFormulaList) {
-      map.set(formula.id, formula.statement);
+      map.set(formula.id, formulaStatementByFormulaIdState[formula.id] ?? formula.statement);
     }
     return map;
-  }, [initialFormulaList]);
+  }, [formulaStatementByFormulaIdState, initialFormulaList]);
 
   const fieldSortOrderById = useMemo(() => {
     const map = new Map<number, number>();
@@ -668,6 +704,7 @@ export function CurrentAgeCalculationClient({
 
   useEffect(() => {
     setEditingInputValueByFieldId({});
+    setEditingFormulaStatementByFormulaId({});
     setInputSaveError(null);
   }, [activeDropdown?.resultId]);
 
@@ -917,6 +954,19 @@ export function CurrentAgeCalculationClient({
     const eventId = item.event_id;
     const existingList = inputListByEventId[eventId] ?? [];
 
+    const baselineStatement =
+      formulaRawStatementById.get(item.formula_id) ?? "";
+    const editingFormulaValue = editingFormulaStatementByFormulaId[item.formula_id];
+    const currentFormulaValue =
+      editingFormulaValue != null ? editingFormulaValue : baselineStatement;
+    const trimmedFormulaValue = currentFormulaValue.trim();
+    const isFormulaDirty = trimmedFormulaValue !== baselineStatement.trim();
+
+    if (isFormulaDirty && !trimmedFormulaValue) {
+      setInputSaveError(copy.formulaStatementRequiredError);
+      return;
+    }
+
     type PendingSave = {
       fieldId: number;
       trimmedValue: string;
@@ -950,6 +1000,46 @@ export function CurrentAgeCalculationClient({
 
     setIsSavingInput(true);
     setInputSaveError(null);
+
+    if (isFormulaDirty) {
+      try {
+        const response = await fetch(
+          `/api/auth/tenant/current/scopes/${currentScope.id}/actions/${item.action_id}/formulas/${item.formula_id}`,
+          {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ statement: trimmedFormulaValue })
+          }
+        );
+        const data: unknown = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          setInputSaveError(
+            parseErrorDetail(data, copy.formulaSaveError) ?? copy.formulaSaveError
+          );
+          setIsSavingInput(false);
+          return;
+        }
+        setFormulaStatementByFormulaIdState((prev) => ({
+          ...prev,
+          [item.formula_id]: trimmedFormulaValue
+        }));
+        setEditingFormulaStatementByFormulaId((prev) => {
+          if (!(item.formula_id in prev)) {
+            return prev;
+          }
+          const { [item.formula_id]: _omit, ...rest } = prev;
+          return rest;
+        });
+      } catch (error) {
+        setInputSaveError(
+          error instanceof Error && error.message.trim()
+            ? error.message
+            : copy.formulaSaveError
+        );
+        setIsSavingInput(false);
+        return;
+      }
+    }
 
     try {
       for (const pendingSave of pendingSaveList) {
@@ -1332,6 +1422,13 @@ export function CurrentAgeCalculationClient({
               : [];
             const inputsDisabled =
               !canEdit || isCalculating || isReading || isDeleting || isSavingInput;
+            const editingFormulaValue = editingFormulaStatementByFormulaId[item.formula_id];
+            const currentFormulaValue =
+              editingFormulaValue != null ? editingFormulaValue : rawStatement;
+            const isFormulaDirty = currentFormulaValue.trim() !== rawStatement.trim();
+            const showOkButton =
+              canEdit && (isFormulaDirty || (hasInputToken && inputFieldIdList.length > 0));
+            const showEditBlock = canEdit;
 
             return (
               <div
@@ -1354,66 +1451,86 @@ export function CurrentAgeCalculationClient({
                     {itemLabelById.get(item.item_id) ?? `#${item.item_id}`}
                   </span>
                 </div>
-                <div className="ui-current-age-formula-box-row">
-                  <span className="ui-current-age-formula-box-formula">
-                    {renderFormulaStatementInline(rawStatement, fieldLabelById)}
-                  </span>
+                <div className="ui-current-age-formula-box-row ui-current-age-formula-box-row-formula">
+                  {canEdit ? (
+                    <FormulaStatementEditor
+                      id={`current-age-formula-${item.formula_id}`}
+                      value={currentFormulaValue}
+                      onChange={(next) => {
+                        setEditingFormulaStatementByFormulaId((prev) => ({
+                          ...prev,
+                          [item.formula_id]: next
+                        }));
+                        setInputSaveError(null);
+                      }}
+                      disabled={inputsDisabled}
+                      fieldList={fieldOptionList}
+                      unknownFieldLabel={copy.formulaUnknownFieldLabel}
+                      ariaLabel={copy.formulaStatementAriaLabel}
+                    />
+                  ) : (
+                    <span className="ui-current-age-formula-box-formula">
+                      {renderFormulaStatementInline(rawStatement, fieldLabelById)}
+                    </span>
+                  )}
                 </div>
-                {hasInputToken && inputFieldIdList.length > 0 ? (
+                {showEditBlock ? (
                   <div className="ui-current-age-formula-box-edit">
-                    {inputFieldIdList.map((fieldId) => {
-                      const field = fieldRecordById.get(fieldId);
-                      const sqlType = field?.sql_type;
-                      const isNumeric =
-                        isIntegerSqlType(sqlType) || extractNumericScale(sqlType) != null;
-                      const isIntegerOnly = isIntegerSqlType(sqlType);
-                      const savedValue = getSavedInputValue(item.event_id, fieldId);
-                      const editingValue = editingInputValueByFieldId[fieldId];
-                      const currentValue = editingValue != null ? editingValue : savedValue;
-                      const scale = extractNumericScale(sqlType);
-                      const step = isIntegerOnly
-                        ? "1"
-                        : scale != null && scale > 0
-                          ? `0.${"0".repeat(scale - 1)}1`
-                          : "any";
-                      const inputId = `current-age-input-${item.result_id}-${fieldId}`;
-                      const fieldLabel = fieldLabelById.get(fieldId) ?? `#${fieldId}`;
-                      return (
-                        <div
-                          key={fieldId}
-                          className="ui-field ui-current-age-formula-box-edit-field"
-                        >
-                          <label className="ui-field-label" htmlFor={inputId}>
-                            {fieldLabel}
-                          </label>
-                          <input
-                            id={inputId}
-                            className="ui-input"
-                            type={isNumeric ? "number" : "text"}
-                            inputMode={
-                              isNumeric ? (isIntegerOnly ? "numeric" : "decimal") : undefined
-                            }
-                            step={isNumeric ? step : undefined}
-                            value={currentValue}
-                            disabled={inputsDisabled}
-                            onChange={(event) => {
-                              const nextValue = event.target.value;
-                              setEditingInputValueByFieldId((prev) => ({
-                                ...prev,
-                                [fieldId]: nextValue
-                              }));
-                              setInputSaveError(null);
-                            }}
-                            onKeyDown={(event) => {
-                              if (event.key === "Enter") {
-                                event.preventDefault();
-                                void handleInputOkClick(item, inputFieldIdList);
+                    {hasInputToken && inputFieldIdList.length > 0
+                      ? inputFieldIdList.map((fieldId) => {
+                        const field = fieldRecordById.get(fieldId);
+                        const sqlType = field?.sql_type;
+                        const isNumeric =
+                          isIntegerSqlType(sqlType) || extractNumericScale(sqlType) != null;
+                        const isIntegerOnly = isIntegerSqlType(sqlType);
+                        const savedValue = getSavedInputValue(item.event_id, fieldId);
+                        const editingValue = editingInputValueByFieldId[fieldId];
+                        const currentValue = editingValue != null ? editingValue : savedValue;
+                        const scale = extractNumericScale(sqlType);
+                        const step = isIntegerOnly
+                          ? "1"
+                          : scale != null && scale > 0
+                            ? `0.${"0".repeat(scale - 1)}1`
+                            : "any";
+                        const inputId = `current-age-input-${item.result_id}-${fieldId}`;
+                        const fieldLabel = fieldLabelById.get(fieldId) ?? `#${fieldId}`;
+                        return (
+                          <div
+                            key={fieldId}
+                            className="ui-field ui-current-age-formula-box-edit-field"
+                          >
+                            <label className="ui-field-label" htmlFor={inputId}>
+                              {fieldLabel}
+                            </label>
+                            <input
+                              id={inputId}
+                              className="ui-input"
+                              type={isNumeric ? "number" : "text"}
+                              inputMode={
+                                isNumeric ? (isIntegerOnly ? "numeric" : "decimal") : undefined
                               }
-                            }}
-                          />
-                        </div>
-                      );
-                    })}
+                              step={isNumeric ? step : undefined}
+                              value={currentValue}
+                              disabled={inputsDisabled}
+                              onChange={(event) => {
+                                const nextValue = event.target.value;
+                                setEditingInputValueByFieldId((prev) => ({
+                                  ...prev,
+                                  [fieldId]: nextValue
+                                }));
+                                setInputSaveError(null);
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === "Enter") {
+                                  event.preventDefault();
+                                  void handleInputOkClick(item, inputFieldIdList);
+                                }
+                              }}
+                            />
+                          </div>
+                        );
+                      })
+                      : null}
                     {isSavingInput ? (
                       <div
                         className="ui-current-age-formula-box-feedback"
@@ -1431,17 +1548,19 @@ export function CurrentAgeCalculationClient({
                         {inputSaveError}
                       </div>
                     ) : null}
-                    <div className="ui-current-age-formula-box-actions">
-                      <button
-                        type="button"
-                        className="ui-button-primary"
-                        onClick={() => void handleInputOkClick(item, inputFieldIdList)}
-                        disabled={inputsDisabled}
-                        aria-busy={isSavingInput}
-                      >
-                        {copy.inputEditOkButton}
-                      </button>
-                    </div>
+                    {showOkButton ? (
+                      <div className="ui-current-age-formula-box-actions">
+                        <button
+                          type="button"
+                          className="ui-button-primary"
+                          onClick={() => void handleInputOkClick(item, inputFieldIdList)}
+                          disabled={inputsDisabled}
+                          aria-busy={isSavingInput}
+                        >
+                          {copy.inputEditOkButton}
+                        </button>
+                      </div>
+                    ) : null}
                   </div>
                 ) : null}
               </div>

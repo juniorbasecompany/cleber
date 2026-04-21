@@ -619,7 +619,10 @@
       "inputEditSaving": "Salvando e recalculando...",
       "inputEditRequiredError": "Informe um valor para {fieldLabel}.",
       "inputEditSaveError": "Não foi possível salvar o valor. Tente novamente.",
-      "inputEditOkButton": "Ok"
+      "inputEditOkButton": "Ok",
+      "formulaStatementAriaLabel": "Instrução da fórmula",
+      "formulaStatementRequiredError": "A fórmula não pode ficar vazia.",
+      "formulaSaveError": "Não foi possível salvar a fórmula. Tente novamente."
     },
     "result": {
       "empty": "Nenhum evento elegível produziu resultados com os filtros atuais.",
