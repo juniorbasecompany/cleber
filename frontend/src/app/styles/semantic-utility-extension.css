@@ -220,7 +220,7 @@
   width: max-content;
   min-width: 0;
   max-width: calc(100vw - 1.5rem);
-  padding: 0.625rem 0.75rem;
+  padding: 0 0.75rem 0.625rem;
   border: var(--border-width-default) solid var(--color-accent-vertical-border);
   border-radius: var(--radius-card);
   background: white;
@@ -239,6 +239,20 @@
   margin-top: 0.5rem;
 }
 
+.ui-current-age-formula-box-row-action {
+  margin: 0 -0.75rem 0;
+  padding: 0.5rem 0.75rem;
+  background: var(--color-surface-muted);
+  border-bottom: var(--border-width-default) solid var(--color-accent-vertical-border);
+  border-top-left-radius: calc(var(--radius-card) - var(--border-width-default));
+  border-top-right-radius: calc(var(--radius-card) - var(--border-width-default));
+  font-weight: 600;
+}
+
+.ui-current-age-formula-box-row-action+.ui-current-age-formula-box-row {
+  margin-top: 0.625rem;
+}
+
 .ui-current-age-formula-box-label {
   font-size: 0.7rem;
   font-weight: 700;
@@ -255,9 +269,7 @@
 .ui-current-age-formula-box-edit {
   display: grid;
   gap: 0.5rem;
-  margin-top: 0.75rem;
-  padding-top: 0.75rem;
-  border-top: var(--border-width-default) solid var(--color-accent-vertical-border);
+  margin-top: 0.5rem;
 }
 
 .ui-current-age-formula-box-edit-field {
@@ -277,6 +289,7 @@
 .ui-current-age-formula-box-actions {
   display: flex;
   justify-content: flex-end;
+  gap: 0.5rem;
 }
 
 .ui-shell-page {

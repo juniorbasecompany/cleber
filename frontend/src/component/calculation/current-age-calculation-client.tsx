@@ -1499,9 +1499,39 @@ export function CurrentAgeCalculationClient({
             const currentFormulaValue =
               editingFormulaValue != null ? editingFormulaValue : rawStatement;
             const isFormulaDirty = currentFormulaValue.trim() !== rawStatement.trim();
-            const showOkButton =
-              canEdit && (isFormulaDirty || (hasInputToken && inputFieldIdList.length > 0));
+            const isInputDirty = inputFieldIdList.some((fieldId) => {
+              const editingValue = editingInputValueByFieldId[fieldId];
+              if (editingValue == null) {
+                return false;
+              }
+              const savedValue = getSavedInputValue(item.event_id, fieldId);
+              return editingValue.trim() !== savedValue.trim();
+            });
+            const isDirty = isFormulaDirty || isInputDirty;
             const showEditBlock = canEdit;
+
+            const formulaId = item.formula_id;
+            const handleCancelEdit = () => {
+              setEditingFormulaStatementByFormulaId((prev) => {
+                if (!(formulaId in prev)) {
+                  return prev;
+                }
+                const { [formulaId]: _omit, ...rest } = prev;
+                return rest;
+              });
+              setEditingInputValueByFieldId((prev) => {
+                if (inputFieldIdList.every((fieldId) => !(fieldId in prev))) {
+                  return prev;
+                }
+                const next = { ...prev };
+                for (const fieldId of inputFieldIdList) {
+                  delete next[fieldId];
+                }
+                return next;
+              });
+              setInputSaveError(null);
+              setActiveDropdown(null);
+            };
 
             return (
               <div
@@ -1510,7 +1540,7 @@ export function CurrentAgeCalculationClient({
                 data-current-age-dropdown-panel
                 style={dropdownStyle}
               >
-                <div className="ui-current-age-formula-box-row">
+                <div className="ui-current-age-formula-box-row ui-current-age-formula-box-row-action">
                   <span>
                     {actionLabelById.get(item.action_id) ?? copy.fallbackAction}
                   </span>
@@ -1622,19 +1652,25 @@ export function CurrentAgeCalculationClient({
                         {inputSaveError}
                       </div>
                     ) : null}
-                    {showOkButton ? (
-                      <div className="ui-current-age-formula-box-actions">
-                        <button
-                          type="button"
-                          className="ui-button-primary"
-                          onClick={() => void handleInputOkClick(item, inputFieldIdList)}
-                          disabled={inputsDisabled}
-                          aria-busy={isSavingInput}
-                        >
-                          {copy.inputEditOkButton}
-                        </button>
-                      </div>
-                    ) : null}
+                    <div className="ui-current-age-formula-box-actions">
+                      <button
+                        type="button"
+                        className="ui-button-secondary"
+                        onClick={handleCancelEdit}
+                        disabled={isSavingInput}
+                      >
+                        {copy.cancel}
+                      </button>
+                      <button
+                        type="button"
+                        className="ui-button-primary"
+                        onClick={() => void handleInputOkClick(item, inputFieldIdList)}
+                        disabled={inputsDisabled || !isDirty}
+                        aria-busy={isSavingInput}
+                      >
+                        {copy.inputEditOkButton}
+                      </button>
+                    </div>
                   </div>
                 ) : null}
               </div>
